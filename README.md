@@ -20,28 +20,15 @@ This course covers essential software engineering concepts including:
 - GitHub account
 - Text editor or IDE (VS Code, PyCharm, etc.)
 
-### ⚠️ Important: Contributor Agreement
-Before contributing to this repository, all students and contributors must read and agree to the terms in [CONTRIBUTING.md](CONTRIBUTING.md). By submitting any work (code, documentation, or other materials), you automatically agree to:
-- Assign copyright of your contributions to the institution
-- Waive moral rights in your contributions
-- Grant license for educational use
-- Accept the terms of the Contributor License Agreement
+### ⚠️ Important: Academic Integrity
+All work submitted must follow academic integrity guidelines outlined in [CONTRIBUTING.md](CONTRIBUTING.md). By submitting work, you confirm it is your own and properly cites any sources used.
 
-**If you do not agree to these terms, do not submit any contributions to this repository.**
+### Quick Start
 
-### Repository Setup
-
-1. **Fork this repository** to your GitHub account
-2. **Clone your fork** to your local machine:
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/intro-se-2025-labs.git
-   cd intro-se-2025-labs
-   ```
-3. **Configure Git** (if first time):
-   ```bash
-   git config --global user.name "Your Name"
-   git config --global user.email "your.email@example.com"
-   ```
+1. **Complete [Lab 0: Development Environment Setup](labs/lab0.md)** first
+2. **Fork this repository** to your GitHub account  
+3. **Open in GitHub Codespaces** (recommended) or clone locally
+4. **Start with Lab 1** after environment is ready
 
 ### Working on Labs
 
@@ -56,10 +43,13 @@ For each lab:
 ```
 intro-se-2025-labs/
 ├── README.md                 # This file - general course info
-├── .gitignore               # Git ignore file
-├── lab1.md                  # Lab 1: GitHub Fork, Branch, and Pull Request
-├── lab2.md                  # Lab 2: [To be added]
-├── ...
+├── requirements.txt          # Python dependencies
+├── .devcontainer/           # Codespaces configuration
+├── .github/workflows/       # Automated testing
+├── labs/
+│   ├── lab0.md              # Lab 0: Environment Setup
+│   ├── lab1.md              # Lab 1: Git and GitHub Basics
+│   └── lab2.md              # Lab 2: [To be added]
 └── students/
     ├── README.md            # Instructions for students folder
     ├── jdoe/                # Student work folders (GitHub username)
@@ -73,7 +63,8 @@ intro-se-2025-labs/
 
 ## Lab Schedule
 
-- **Lab 1**: GitHub Fork, Branch, and Pull Request (90 min)
+- **Lab 0**: Development Environment Setup (30 min)
+- **Lab 1**: GitHub Fork, Branch, and Pull Request (45 min)
 - **Lab 2**: [Coming soon]
 - **Lab 3**: [Coming soon]
 - *[Additional labs will be added throughout the course]*
@@ -103,15 +94,17 @@ If you encounter issues:
 4. Test your code locally before pushing
 5. Review error messages carefully
 
-## License and Rights
+## Development Environment
 
-This repository is licensed under the [Apache License 2.0](LICENSE). All contributions are subject to the terms outlined in [CONTRIBUTING.md](CONTRIBUTING.md).
+This repository includes:
+- **GitHub Codespaces support** for consistent cloud development
+- **Automated testing** via GitHub Actions
+- **Code quality tools** (black, flake8, mypy)
+- **Pre-commit hooks** for code formatting
 
-### Key Points:
-- **All student contributions become property of the institution**
-- **Contributions may be used for educational purposes and research**
-- **Students waive moral rights to their contributions**
-- **Work may be displayed in future course materials**
+## License
+
+This repository is licensed under the [Apache License 2.0](LICENSE).
 
 ## Instructor Resources
 
@@ -119,4 +112,4 @@ Instructors can find additional materials and solutions in the instructor-only b
 
 ---
 
-**Important:** By participating in this course and submitting work to this repository, you acknowledge that you have read and agree to the terms in [CONTRIBUTING.md](CONTRIBUTING.md) and the [Apache License 2.0](LICENSE).
+**Ready to start?** Begin with [Lab 0: Development Environment Setup](labs/lab0.md)

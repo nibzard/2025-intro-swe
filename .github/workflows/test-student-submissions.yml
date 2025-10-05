@@ -1,0 +1,46 @@
+name: Test Student Submissions
+
+on:
+  pull_request:
+    paths:
+      - 'students/**'
+  push:
+    branches: [ main ]
+    paths:
+      - 'students/**'
+
+jobs:
+  test-python-code:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Find and test Python files
+      run: |
+        # Find all Python files in students directory
+        find students -name "*.py" -type f | while read file; do
+          echo "Testing $file"
+          # Check syntax
+          python -m py_compile "$file"
+          # Run basic tests if __main__ block exists
+          if grep -q "if __name__ == .__main__.:" "$file"; then
+            timeout 10s python "$file" || echo "Warning: $file failed to run or timed out"
+          fi
+        done
+    
+    - name: Check code style
+      run: |
+        # Check code style for Python files
+        find students -name "*.py" -type f -exec flake8 --max-line-length=88 --extend-ignore=E203,W503 {} \;
+      continue-on-error: true

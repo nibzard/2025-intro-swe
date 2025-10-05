@@ -1,0 +1,16 @@
+# Introduction to Software Engineering Labs - Python Dependencies
+
+# Testing framework
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# Code quality tools
+black>=23.0.0
+flake8>=6.0.0
+mypy>=1.0.0
+
+# Development tools
+pre-commit>=3.0.0
+
+# Common utilities for labs
+requests>=2.28.0

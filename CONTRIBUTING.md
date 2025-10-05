@@ -1,43 +1,22 @@
 # Contributing to Introduction to Software Engineering Labs
 
-Thank you for your interest in contributing to this educational repository! This document outlines the guidelines and requirements for all contributors, including students, instructors, and external contributors.
+Thank you for contributing to this educational repository! This document provides simple guidelines for students, instructors, and contributors.
 
-## Contributor License Agreement (CLA)
+## Educational Use Notice
 
-### IMPORTANT: Rights Waiver Required
+This repository is for educational purposes. By contributing, you understand that:
 
-By contributing to this repository, you agree to the following terms:
+- Your work will be used for learning and teaching
+- Code may be reviewed, discussed, and used as examples
+- Contributions are shared under the Apache License 2.0
+- All work should be your own or properly attributed
 
-#### 1. **Copyright Assignment**
-- You hereby assign all rights, title, and interest in and to your contributions to the course instructor and institution
-- This includes all past, present, and future contributions
-- The assignment applies to all intellectual property rights in your contributions
+## Academic Integrity
 
-#### 2. **Waiver of Moral Rights**
-- You irrevocably waive all moral rights you may have in your contributions
-- This includes the right to be identified as the author and the right to object to derogatory treatment
-- This waiver applies worldwide and in perpetuity
-
-#### 3. **License Grant**
-- You grant a perpetual, worldwide, non-exclusive, royalty-free license to use, reproduce, modify, and distribute your contributions
-- This license is granted under the Apache License 2.0
-- You agree that your contributions may be used for educational purposes, research, and institutional promotion
-
-#### 4. **Warranty and Indemnity**
-- You warrant that you have the legal right to make these contributions
-- You agree to indemnify and hold harmless the institution against any claims arising from your contributions
-- You confirm that your contributions do not infringe on any third-party rights
-
-#### 5. **Educational Use**
-- You understand that your contributions will be used for educational purposes
-- Your work may be displayed, analyzed, and discussed in classroom settings
-- Your contributions may be used as examples in future course materials
-
-### How to Accept These Terms
-
-By submitting any contribution (including code, documentation, comments, or other materials), you are automatically agreeing to these terms. No separate signature is required, but your submission constitutes legal acceptance.
-
-If you do not agree to these terms, **do not submit any contributions** to this repository.
+- Submit only your own work unless collaboration is explicitly allowed
+- Properly cite any external sources or references
+- Follow your institution's academic integrity policies
+- Ask questions if you're unsure about collaboration rules
 
 ## Types of Contributions
 
