@@ -1,10 +1,11 @@
 {
   "name": "Intro SE 2025 Labs",
   "image": "mcr.microsoft.com/devcontainers/python:3.11",
-  
+
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
-    "ghcr.io/devcontainers/features/github-cli:1": {}
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {}
   },
 
   "customizations": {
@@ -15,7 +16,9 @@
         "ms-python.flake8",
         "ms-python.mypy-type-checker",
         "eamodio.gitlens",
-        "GitHub.vscode-pull-request-github"
+        "GitHub.vscode-pull-request-github",
+        "GoogleCloudTools.cloudcode",
+        "anthropic.claude-code"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",
@@ -28,7 +31,7 @@
     }
   },
 
-  "postCreateCommand": "pip install -r requirements.txt && pre-commit install",
-  
+  "postCreateCommand": "pip install -r requirements.txt && pre-commit install && npm install -g opencode-ai @openai/codex @google/gemini-cli @anthropic-ai/claude-code",
+
   "remoteUser": "vscode"
 }
