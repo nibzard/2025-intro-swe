@@ -35,8 +35,8 @@ By the end of this lab, you will be able to:
 
 2. **Clone Your Fork**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/intro-se-2025-labs.git
-   cd intro-se-2025-labs
+   git clone https://github.com/YOUR_USERNAME/2025-intro-swe.git
+   cd 2025-intro-swe
    ```
    Replace `YOUR_USERNAME` with your actual GitHub username.
 
@@ -126,7 +126,7 @@ By the end of this lab, you will be able to:
 ### Step 5: Open Pull Request (15 min)
 
 1. **Go to your fork on GitHub**
-   - Navigate to `https://github.com/YOUR_USERNAME/intro-se-2025-labs`
+   - Navigate to `https://github.com/YOUR_USERNAME/2025-intro-swe`
 
 2. **Create a Pull Request**
    - Click the "Contribute" button or "New Pull Request"
@@ -184,7 +184,7 @@ error: src refspec main does not match any
 ### Issue: Git Push Fails
 **Solution**:
 - Check your remote URL: `git remote -v`
-- Update remote if needed: `git remote set-url origin https://github.com/YOUR_USERNAME/intro-se-2025-labs.git`
+- Update remote if needed: `git remote set-url origin https://github.com/YOUR_USERNAME/2025-intro-swe.git`
 
 ## Next Steps
 

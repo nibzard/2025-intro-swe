@@ -1,6 +1,6 @@
 # Lab 0: Development Environment Setup
 
-**Duration:** 30 minutes  
+**Duration:** 30 minutes
 **Goal:** Set up a consistent development environment for the course
 
 ## Learning Objectives
@@ -21,7 +21,7 @@ By the end of this lab, you will have:
 Choose **ONE** of the following setup methods:
 
 ### Option A: GitHub Codespaces (Recommended for beginners)
-**Pros:** No local setup needed, consistent environment  
+**Pros:** No local setup needed, consistent environment
 **Cons:** Requires internet connection, limited free hours
 
 1. **Open in Codespaces**
@@ -41,7 +41,7 @@ Choose **ONE** of the following setup methods:
    ```
 
 ### Option B: Local Development
-**Pros:** Works offline, full control  
+**Pros:** Works offline, full control
 **Cons:** More setup required, potential compatibility issues
 
 #### Step 1: Install Python (15 min)
@@ -76,8 +76,8 @@ git config --global user.email "your.email@example.com"
 
 #### Step 4: Clone Repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/intro-se-2025-labs.git
-cd intro-se-2025-labs
+git clone https://github.com/YOUR_USERNAME/2025-intro-swe.git
+cd 2025-intro-swe
 ```
 
 #### Step 5: Set up Python Environment
@@ -195,5 +195,5 @@ You've successfully completed Lab 0 when:
 
 ---
 
-**Estimated time:** 30 minutes  
+**Estimated time:** 30 minutes
 **Need help?** Check troubleshooting section or ask in course forum

@@ -26,7 +26,7 @@ All work submitted must follow academic integrity guidelines outlined in [CONTRI
 ### Quick Start
 
 1. **Complete [Lab 0: Development Environment Setup](labs/lab0.md)** first
-2. **Fork this repository** to your GitHub account  
+2. **Fork this repository** to your GitHub account
 3. **Open in GitHub Codespaces** (recommended) or clone locally
 4. **Start with Lab 1** after environment is ready
 
@@ -41,7 +41,7 @@ For each lab:
 ## Lab Structure
 
 ```
-intro-se-2025-labs/
+2025-intro-swe/
 ├── README.md                 # This file - general course info
 ├── requirements.txt          # Python dependencies
 ├── .devcontainer/           # Codespaces configuration
