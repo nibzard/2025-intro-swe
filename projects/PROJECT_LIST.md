@@ -31,6 +31,12 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** Analyzing temperature trends using Python libraries.
 
+### Cooksy - Iva Majić & Iva Dežmalj
+* **Project:** Cooksy - recipe web application
+* **Folder:** cooksy-imajic-idezmalj/
+* **Status:** In Progress
+* **Description:** This is a web application for recipes that allows users to browse, search and save their favorite recipes.
+
 ---
 
 ## Instructions for Teams
