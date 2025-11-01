@@ -14,14 +14,6 @@ CalorieTracker is an application that allows users to track their daily calorie 
 - Data privacy for user accounts
 - Scalable for multiple users
 
-## System Architecture
-```mermaid
-graph TD
-    User -->|Interacts| Frontend
-    Frontend -->|API Requests| Backend
-    Backend --> Database
-
-
 graph TD
     User --> (Register/Login)
     User --> (Log Meal)
