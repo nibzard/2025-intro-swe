@@ -1,6 +1,5 @@
 # Lab 1: GitHub Fork, Branch, and Pull Request
 
-**Duration:** 90 minutes
 **Goal:** Every student demonstrates that they can:
 - Fork the repo
 - Create their own folder

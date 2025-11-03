@@ -4,7 +4,7 @@ Ovaj handout sažima sadržaj s vježbi – od prvog **kloniranja repozitorija**
 
 ---
 
-## 1) Ciljevi učenja
+## 1) Ciljevi učenjaa
 
 * Razlikovati **Git** (sustav verzioniranja) i **GitHub** (platforma/usluga).
 * Instalirati i koristiti **Git** i **GitHub CLI** (gh).
