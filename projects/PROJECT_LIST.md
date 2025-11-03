@@ -31,6 +31,12 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** Analyzing temperature trends using Python libraries.
 
+### [Paradižot] - [Karlo Ćurčija] & [Ela Kević] & [Lucija Tomić] & [Jere Vitaljić]
+* **Project:** [Promet aplikacija]
+* **Folder:** `PrometApp-kcurcija-ekevic-ltomic-jvitaljic/`
+* **Status:** [In Progress]
+* **Description:** [Popravak i poboljšanje već postojeće aplikacije Promet Split]
+
 ---
 
 ## Instructions for Teams
