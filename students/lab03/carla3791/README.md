@@ -1,4 +1,4 @@
-# Lab 03 – Carla Marić
+# Lab 03 – Carla Bajić
 
 Project: BookSeeker
 Folder: students/lab03/carla3791/
