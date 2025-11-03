@@ -17,3 +17,5 @@ graph TD
     A --> D[Database (baza knjiga)]
     A --> E[Private Library (favorites, wishlist, genres)]
     A --> F[Output (predložene knjige)]
+```
+
