@@ -44,8 +44,6 @@ Using technologies to track the position of the body and/or head, the app provid
 
 - WORK IN PROGRESS
 
-- WORK IN PROGRESS
-
 ## 📝 Project Workflow Diagram
 
 ```mermaid
