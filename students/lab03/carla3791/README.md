@@ -7,5 +7,8 @@ Description: BookSeeker je osobna digitalna knjižnica i inteligentna tražilica
 Korisnik može pretraživati knjige prema sjećanju na radnju, likove ili detalje, 
 dok aplikacija organizira i prati sve odabrane knjige u privatnoj biblioteci.
 
+## Project Diagram
+
+![BookSeeker Project Diagram](BookSeeker_dijagram.png)
 
 
