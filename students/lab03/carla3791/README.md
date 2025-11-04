@@ -13,8 +13,7 @@
 ![BookSeeker Project Diagram](BookSeeker_dijagram.png)
 
 ## Technologies Used
--draw.io za dijagram
--
--
+- [draw.io](https://www.draw.io/) za dijagram
+
 
 
