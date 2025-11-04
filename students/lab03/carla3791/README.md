@@ -1,6 +1,6 @@
 # Lab 03 – Carla Bajić
 
-🎯 Project Overview 
+**🎯 Project Overview**
 **Project:** BookSeeker  
 **Autor:** Carla Bajić
 **Folder:** students/lab03/carla3791/  
