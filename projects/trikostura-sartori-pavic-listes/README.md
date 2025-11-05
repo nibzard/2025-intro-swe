@@ -6,4 +6,4 @@
 * ** Stack **
     - Supabase(Postgres) 
     - shadcn/ui library
-    -Ostalo TBD
+    -Ostalo je TBD
