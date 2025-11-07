@@ -37,6 +37,12 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** This is a web application for recipes that allows users to browse, search and save their favorite recipes.
 
+### Rezerviraj.me - David Siroglavić & Marijan Budimir
+* **Project:** Rezerviraj.me
+* **Folder:** rezerviraj.me-dsiroglavic-mbudimir/
+* **Status:** In Progress
+* **Description:** Rezerviraj.me is a website that allows users to easily and quickly book various appointments and services online.
+
 ---
 
 ## Instructions for Teams
