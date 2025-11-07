@@ -47,7 +47,8 @@ class Team {
     +int maxPlayers
 }
 User --> Team : belongsTo
-
+```
+```mermaid
 graph TD
     A[Korisnik] -->|Registracija/Login| B[Autentikacija]
     B --> C[Odabir sporta i lokacije]
@@ -55,8 +56,8 @@ graph TD
     D --> E[Prikaz dostupnih timova]
     E --> F[Spajanje u tim]
     F --> G[Upravljanje profilom]
-
-
+```
+```mermaid
 sequenceDiagram
     participant U as User
     participant A as App
@@ -66,3 +67,4 @@ sequenceDiagram
     A->>U: Prikaz dostupnih timova
     U->>A: Pridruživanje timu
     A->>U: Potvrda pridruživanja
+```
