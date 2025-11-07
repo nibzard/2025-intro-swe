@@ -24,10 +24,10 @@ Omogućimo li semantičko (značenjsko) pretraživanje koristeći AI embedding m
 - Automatsko popunjavanje osnovnih podataka o knjigama
 
 ## 🛠️Funkcionalnosti (MVP)
-- 🔍 Pretraživanje knjiga po slobodnom opisu (tekstualni upit)
-- 📚 Privatna biblioteka (favorites, wishlist, žanrovi)
-- 🧠 Embedding-based semantičko podudaranje
-- 🔁 Lako proširiv API (FastAPI)
+- Pretraživanje knjiga po slobodnom opisu (tekstualni upit)
+- Privatna biblioteka (favorites, wishlist, žanrovi)
+- Embedding-based semantičko podudaranje
+- Lako proširiv API (FastAPI)
 
 ## Project Diagram - Arhitektura sustava
 
