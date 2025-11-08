@@ -7,7 +7,11 @@
 ## 🎯 Pregled projekta
 
 **TeamConnect** je web aplikacija koja povezuje sportaše i rekreativce po **lokaciji i sportu**.  
+Rješavanje problema poput npr.Ljudi često žele igrati nogomet, ali ne mogu pronaći dovoljno suigrača.
 Cilj je omogućiti korisnicima da se jednostavno registriraju, odaberu sport te pronađu tim ili suigrače u **blizini svog kvarta (npr. Split, kvartovi)**.  
+Ako korisnici imaju mogućnost pretraživanja timova po sportu i lokaciji, lakše će pronaći suigrače i povećati broj sportskih aktivnosti.
+
+**Logika aplikacije**: registracija → odabir sporta → prikaz timova → spajanje u tim
 
 Aplikacija pomaže svima koji:
 - žele igrati, ali nemaju dovoljno ljudi za ekipu,  
@@ -29,7 +33,24 @@ Aplikacija pomaže svima koji:
 - Git & GitHub (verzioniranje koda)  
 - Visual Studio Code  
 
-## 🚀 Početak rada
+## 📋 Funkcionalnosti
+
+- Registracija i login korisnika
+- Odabir sporta i lokacije
+- Pregled dostupnih timova
+- Automatsko spajanje u timove
+- Upravljanje korisničkim profilom
+
+
+## 🚀 Dijagram
+```mermaid
+
+graph TD
+    A[User] --> B[Login/Register]
+    B --> C[Choose Sport]
+    C --> D[Find Team]
+    D --> E[Join Game]
+```
 
 ### Za članove tima
 
@@ -37,3 +58,4 @@ Aplikacija pomaže svima koji:
    ```bash
    git clone [URL-repozitorija]
    cd 2025-intro-swe/projects/teamconnect-danrog101-Karoll47
+
