@@ -20,7 +20,6 @@ Nakon prepoznavanja, koristi se baza podataka (npr. [USDA FoodData Central](http
 
 ## 🖼️ Dijagram rada sustava
 
-```mermaid
 flowchart TD
     A[📸 Korisnik uslika obrok] --> B[🤖 AI model prepoznaje hranu]
     B --> C[📊 Baza nutritivnih podataka]
