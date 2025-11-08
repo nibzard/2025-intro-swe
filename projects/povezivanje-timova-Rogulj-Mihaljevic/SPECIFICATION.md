@@ -7,6 +7,13 @@
 
 ---
 
+## 🧩 Uvod
+
+Ovaj dokument opisuje tehničku specifikaciju projekta **TeamConnect**, web aplikacije koja omogućuje korisnicima da pronađu i formiraju sportske timove prema lokaciji i sportu.  
+Dokument definira korisničke i sustavske zahtjeve, arhitekturu, podatkovni model i tijek rada aplikacije.
+
+---
+
 ## 1️⃣ User Requirements (Korisnički zahtjevi)
 
 - Korisnici se mogu registrirati i prijaviti  
