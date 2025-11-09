@@ -7,7 +7,7 @@ Cilj projekta je popravak i razvoj mobilne aplikacije koja omogućuje korisnicim
 
 | Ime i prezime | Mail |
 | --------------- | -------------------------------- |
-| **Karlo Ćurčija** | ... |
+| **Karlo Ćurčija** | kcurcija@pmfst.hr |
 | **Ela Kević** | ... |
 | **Lucija Tomić** | ltomic@pmfst.hr |
 | **Jere Vitaljić** | ... |
