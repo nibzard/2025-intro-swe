@@ -1,0 +1,37 @@
++-----------------------------------------------------------+
+|                     SEAT REVIEW SUSTAV                    |
++-----------------------------------------------------------+
+
+     |                          |                           |
+     v                          v                           v
++------------+          +-----------------+          +----------------+
+| POSJETITELJ|  --->    |  OCJENA SJEDALA |  --->    |  BAZA PODATAKA |
+|  stadiona  |           | (udobnost,      |           |  (recenzije,   |
+| (korisnik) |           | čistoća, vidljivost) |     |  ocjene, slike) |
++------------+          +-----------------+          +----------------+
+                                                            |
+                                                            v
+                                                +------------------------+
+                                                |  ANALITIČKI MODUL       |
+                                                |  (statistika, usporedbe,|
+                                                |   izvještaji po stadionu)|
+                                                +------------------------+
+                                                            |
+                                                            v
+                                                +------------------------+
+                                                |  ADMINISTRATOR STADIONA |
+                                                |  (uvid u povratne info, |
+                                                |   planiranje poboljšanja)|
+                                                +------------------------+
+                                                            |
+                                                            v
+                                                +------------------------+
+                                                |   UNAPREĐENJE ISKUSTVA  |
+                                                |   (nova sjedala, bolja  |
+                                                |    ergonomija, čistoća)  |
+                                                +------------------------+
+                                                            |
+                                                            v
+                                                 +----------------------+
+                                                 |   ZADOVOLJNI GLEDATELJI |
+                                                 +----------------------+
