@@ -1,8 +1,8 @@
 # Aplikacija za rad u garderobi - Marijan Ević 
-**Projekt:** Aplikacija za rad u garderobi 
-**Autor i izvođač:** Marijan Ević 
-**Status:** In Progress 
-**Kolegij:** Uvod u programsko inženjerstvo (PMFST) 
+**Projekt:** Aplikacija za rad u garderobi  
+**Autor i izvođač:** Marijan Ević  
+**Status:** In Progress   
+**Kolegij:** Uvod u programsko inženjerstvo (PMFST)   
 
 ## 🎯 Pregled projekta 
 Ova aplikacija pomaže garderobijerima folklornih ansambala u organizaciji i raspodjeli nošnji. 
