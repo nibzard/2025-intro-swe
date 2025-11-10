@@ -11,7 +11,7 @@ This is a web application for Build a PC with your available budget.
 ## 👥 Team Information
 
 - **Stipe Barišić** - GitHub: [@stipzard](https://github.com/stipzard)
-- **Iva Dežmalj** - GitHub: [@cirquaza](https://github.com/cirquaza)
+- **Luka Ćirković** - GitHub: [@cirquaza](https://github.com/cirquaza)
 - **Team Name**: 1950
 
 ## 🛠 Technologies Used
