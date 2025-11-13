@@ -215,6 +215,32 @@ These are self-notes documenting the exact steps used to generate this analysis,
 
 ---
 
+### **Step 0: Sync with Main Branch (CRITICAL - Do This First!)**
+
+```bash
+# ALWAYS sync with main branch before analyzing to get latest student activity
+git fetch origin main
+
+# Merge main into your analysis branch
+git merge origin/main -m "Merge main branch to sync with latest student activity"
+
+# If merge successful, push the merge
+git push origin <your-branch-name>
+
+# Verify you have latest commits
+git log --oneline -10
+```
+
+**Why this is critical:**
+- Student activity happens on the main branch via PRs
+- Your analysis branch may be behind main
+- Without syncing, you'll miss all new commits, PRs, and student work
+- This was demonstrated when initial analysis showed "no new activity" but after sync found 16 new commits!
+
+**⚠️ IMPORTANT:** Always do this step first, before running any analysis commands below.
+
+---
+
 ### Step 1: Gather Basic Git History
 
 ```bash
@@ -426,6 +452,7 @@ When regenerating:
 ### Update Checklist
 
 When updating this document:
+- [ ] **FIRST: Sync with main branch** (Step 0 - fetch and merge origin/main)
 - [ ] Run all git commands from Step 1-6
 - [ ] Check for new student folders in lab03
 - [ ] Verify new Lab 01 submissions in students/*/lab1/
@@ -474,6 +501,7 @@ When updating this document:
 
 | Date | Updates Made | Student Activity | Notes |
 |------|--------------|------------------|-------|
+| 2025-11-13 (3rd) | Added Step 0 to maintenance instructions | N/A | **Documentation fix:** Added critical "Step 0: Sync with Main Branch" to maintenance instructions. This step must be done FIRST before any analysis to capture latest student activity. |
 | 2025-11-13 (2nd) | Synced with main branch, comprehensive update | ✅ **16 new commits** | **Major update:** Added 4 new students (Karolina Mihaljević, Emma Salopek, Jere Vitaljić, Danijela Busić). New TeamConnect project with full specs. Updated Karlo & Lucija activity. Added 5 new PRs (#42, #47, #48, #49, #51). |
 | 2025-11-13 (1st) | Re-analyzed repository per maintenance instructions | ❌ None | No new student commits detected at that time. Updated analysis date and status notes. |
 | 2025-11-10 | Initial analysis created | ✅ 53 commits analyzed | Generated comprehensive analysis covering all student activity from Oct 5 - Nov 7. |
