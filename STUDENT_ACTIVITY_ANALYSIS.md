@@ -1,9 +1,9 @@
 # Student Activity Analysis - 2025 Intro SWE Course
 
-**Analysis Date:** 2025-11-13 *(Updated)*
+**Analysis Date:** 2025-11-13 *(Updated with new activity)*
 **Repository:** 2025-intro-swe
-**Analysis Period:** 2025-10-05 to 2025-11-07
-**Last Student Activity:** 2025-11-07 (No new student commits since last update)
+**Analysis Period:** 2025-10-05 to 2025-11-10
+**Last Student Activity:** 2025-11-10 (4 new students, 16 new commits since last update)
 
 ---
 
@@ -18,17 +18,17 @@
 
 ## Overview Statistics
 
-| Metric | Count |
-|--------|-------|
-| **Total Students** | 18 |
-| **Total Student Commits** | 53 |
-| **Total Pull Requests Merged** | 17 |
-| **Lab03 Folders Created** | 12 |
-| **Lab01 Intro.py Submitted** | 2 |
-| **Project Teams** | 3 |
-| **Active Projects** | 3 |
+| Metric | Count | Change |
+|--------|-------|--------|
+| **Total Students** | 22 | +4 🆕 |
+| **Total Student Commits** | 69 | +16 📈 |
+| **Total Pull Requests Merged** | 22 | +5 📈 |
+| **Lab03 Folders Created** | 16 | +4 📈 |
+| **Lab01 Intro.py Submitted** | 2 | - |
+| **Project Teams** | 4 | +1 🆕 |
+| **Active Projects** | 4 | +1 🆕 |
 
-> **📊 Update Status (2025-11-13):** Re-analyzed repository - no new student activity detected since 2025-11-07. All statistics remain unchanged. Repository has received 2 new commits related to this analysis document itself.
+> **📊 Update Status (2025-11-13):** ✅ **Significant new activity detected!** Synced with main branch and found 16 new commits from 4 new students. New project "TeamConnect" added. Karolina Mihaljević emerged as very active contributor with 10 commits.
 
 ---
 
@@ -46,14 +46,18 @@
 | 8 | Toni Visic | TV134 | tvisic@pmfst.hr | 2 | #4 | 1 file | +1/-0 | ❌ | ✅ tvisic | ❌ | 2025-10-24 | 2025-10-24 | 🟡 Low Activity |
 | 9 | Marino Listes | marinoL98 | 62379689+marinoL98@users.noreply.github.com | 1 | #1 | 1 file | +5/-0 | ❌ | ✅ mlistes | ✅ Trikoštura (Member) | 2025-10-24 | 2025-10-24 | 🟡 Low Activity |
 | 10 | Marin Boban | ma31n | 79663595+ma31n@users.noreply.github.com | 2 | #5 | 1 file | +0/-0 | ❌ | ✅ mboban | ❌ | 2025-10-28 | 2025-11-03 | 🟡 Minimal Activity |
-| 11 | Lucija Tomić | luceKomits | lucijatomic456@gmail.com | 2 | #22 | 2 files | +11/-5 | ❌ | ❌ | ✅ Paradižot (Member) | 2025-11-03 | 2025-11-03 | 🟢 Active |
-| 12 | Karlo Ćurčija | notKarlo | kcurcija@pmfst.hr | 1 | #19 | 1 file | +1/-0 | ❌ | ✅ KarloCurcija | ✅ Paradižot (Member) | 2025-11-03 | 2025-11-03 | 🟢 Active |
+| 11 | Lucija Tomić | luceKomits | lucijatomic456@gmail.com | 3 | #22, #47 | 4 files | +66/-6 | ❌ | ❌ | ✅ Paradižot (Member) | 2025-11-03 | 2025-11-09 | 🟢 Very Active |
+| 12 | Karlo Ćurčija | notKarlo/KarloCurcija | kcurcija@pmfst.hr | 4 | #19, #47 | 4 files | +6/-4 | ❌ | ✅ KarloCurcija | ✅ Paradižot (Lead) | 2025-11-03 | 2025-11-09 | 🟢 Very Active |
 | 13 | Luka Borović | lucinho17 | 124844612+lucinho17@users.noreply.github.com | 1 | #18 | 1 file | +1/-0 | ❌ | ✅ lborovic | ❌ | 2025-11-03 | 2025-11-03 | 🟡 Minimal Activity |
 | 14 | Nikola Marjanović | nxi2005 | nikolamarjanovic7421@gmail.com | 1 | #17 | 1 file | +1/-0 | ❌ | ✅ nmarjanovic | ❌ | 2025-11-03 | 2025-11-03 | 🟡 Minimal Activity |
 | 15 | Ante Sučur | Suki122 | a.sucur2@gmail.com | 2 | #16 | 1 file | +1/-0 | ❌ | ✅ asucur | ❌ | 2025-11-03 | 2025-11-03 | 🟡 Minimal Activity |
 | 16 | Marić Duje/Marijan | dbanmar | uc.maric@gmail.com | 2 | #23 | 1 file | +1/-0 | ❌ | ✅ dmaricban | ❌ | 2025-11-03 | 2025-11-03 | 🟡 Minimal Activity |
 | 17 | Barbara Jezidzic | barbjez | bjezidzic@pmfst.hr | 1 | #30 | 1 file | +0/-0 | ❌ | ✅ bjezidzic | ❌ | 2025-11-06 | 2025-11-06 | 🟡 Minimal Activity |
 | 18 | Iva Dežmalj | - | - | 0 | - | 0 | +0/-0 | ❌ | ❌ | ✅ Cooksy (Member) | - | - | 🔴 No Git Activity |
+| 19 | Karolina Mihaljević | Karoll47 | kmihaljev@pmfst.hr | 10 | #42 | 9 files | +195/-56 | ❌ | ✅ kmihaljevic | ✅ TeamConnect (Lead) | 2025-11-07 | 2025-11-08 | 🟢 Very Active |
+| 20 | Emma Salopek | emmasalopek | emma.salopek7@gmail.com | 1 | #48 | 1 file | +1/-0 | ❌ | ✅ esalopek | ❌ | 2025-11-09 | 2025-11-09 | 🟡 Minimal Activity |
+| 21 | Jere Vitaljić | JerryBebe | jerevitaljic123@gmail.com | 1 | #49 | 1 file | +1/-0 | ❌ | ✅ jvitaljic | ✅ Paradižot (Member) | 2025-11-10 | 2025-11-10 | 🟡 Minimal Activity |
+| 22 | Danijela Busić | busicdanijela | busicdanijela81@gmail.com | 1 | #51 | 1 file | +1/-0 | ❌ | ✅ dbusic | ❌ | 2025-11-10 | 2025-11-10 | 🟡 Minimal Activity |
 
 **Legend:**
 - 🟢 Very Active: Multiple commits, project work, labs completed
@@ -73,12 +77,8 @@
 | **Cooksy** | Iva Majić (Lead), Iva Dežmalj | maiva667, - | `cooksy-imajic-idezmalj/` | 🟢 Active | ✅ | ✅ | 2025-11-05 |
 | **TeamUp Sports** | Đana Rogulj (Lead), Team TBD | danrog101 | `teamup-sports/` | 🟢 Active | ✅ | ❌ | 2025-11-02 |
 | **Trikoštura** | Jere Pavić (Lead), Marino Listes, Damjan Sartori | -, marinoL98, aeldarian1 | `trikostura-jpavic-mlistes-djsartori/` | 🟢 Active | ✅ | ✅ | 2025-11-05 |
-
-### Project Registry Entry
-
-| Project | Team Name | Members | Status | Folder |
-|---------|-----------|---------|--------|--------|
-| Promet App | Paradižot | Karlo Ćurčija, Ela Kević, Lucija Tomić, Jere Vitaljić | 📋 Registered | `PrometApp-kcurcija-ekevic-ltomic-jvitaljic/` (pending) |
+| **Paradižot** | Karlo Ćurčija (Lead), Ela Kević, Lucija Tomić, Jere Vitaljić | KarloCurcija, -, luceKomits, JerryBebe | `paradizot-kcurcija-ekevic-ltomic-jvitaljic/` | 🟢 Active | ❌ | ✅ | 2025-11-09 |
+| **TeamConnect** 🆕 | Karolina Mihaljević (Lead), Đana Rogulj | Karoll47, danrog101 | `povezivanje-timova-Rogulj-Mihaljevic/` | 🟢 Very Active | ✅ | ✅ | 2025-11-08 |
 
 ---
 
@@ -104,6 +104,11 @@
 | #23 | Marić D/M | dbanmar | from dbanmar/main | 2025-11-03 | ✅ Merged |
 | #27 | Damjan Sartori | aeldarian1 | from aeldarian1/main | 2025-11-07 | ✅ Merged |
 | #30 | Barbara Jezidzic | barbjez | from barbjez/main | 2025-11-07 | ✅ Merged |
+| #42 | Karolina Mihaljević | Karoll47 | from danrog101/main | 2025-11-10 | ✅ Merged |
+| #47 | Karlo & Lucija | luceKomits | from luceKomits/main | 2025-11-10 | ✅ Merged |
+| #48 | Emma Salopek | emmasalopek | from emmasalopek/main | 2025-11-10 | ✅ Merged |
+| #49 | Jere Vitaljić | JerryBebe | from jerevitaljic123-prog/main | 2025-11-10 | ✅ Merged |
+| #51 | Danijela Busić | busicdanijela | from busicdanijela/lab03-readme | 2025-11-10 | ✅ Merged |
 
 ---
 
@@ -136,30 +141,36 @@
 | Iva Majić | `maiva667` | 1 (README.md) | ✅ Complete | 2025-10-30 |
 | Marino Listes | `mlistes` | 1 (readme.md) | ✅ Complete | 2025-10-24 |
 | Marijan Evic | `mevic` | 1 (file) | ✅ Complete | 2025-10-24 |
+| Karolina Mihaljević | `kmihaljevic` | 1 (README.md) | ✅ Complete | 2025-11-08 |
+| Emma Salopek | `esalopek` | 1 (Readme.md) | ✅ Complete | 2025-11-09 |
+| Jere Vitaljić | `jvitaljic` | 1 (README.md) | ✅ Complete | 2025-11-10 |
+| Danijela Busić | `dbusic` | 1 (Readme.md) | ✅ Complete | 2025-11-10 |
 
-**Completion Rate: 13/18 (72%)**
-**Meaningful Content: 7/13 (54%)**
-**Placeholder Only: 6/13 (46%)**
+**Completion Rate: 17/22 (77%)** *(+4 new students)*
+**Meaningful Content: 11/17 (65%)**
+**Placeholder Only: 6/17 (35%)**
 
 ---
 
 ## Activity Patterns
 
 ### Most Active Students (by commits)
-1. 🥇 **Iva Majić** (maiva667) - 8 commits, project lead, comprehensive work
-2. 🥈 **Marijan Evic** (evian126) - 4 commits
-3. 🥉 **Damjan Sartori** (aeldarian1) - 3 commits, project contributor
-4. 🥉 **Stipe Ćubelić** - 3 commits
+1. 🥇 **Karolina Mihaljević** (Karoll47) - 10 commits 🆕 - TeamConnect project lead
+2. 🥈 **Iva Majić** (maiva667) - 8 commits - Cooksy project lead
+3. 🥉 **Marijan Evic** (evian126) - 4 commits
+4. 🏅 **Karlo Ćurčija** - 4 commits (↑ from 1) - Paradižot lead
+5. 🏅 **Lucija Tomić** - 3 commits (↑ from 2) - Paradižot member
 
 ### Most Productive Contributors (by lines changed)
 1. 🥇 **Iva Majić** - +209 lines (Cooksy project work)
-2. 🥈 **Damjan Sartori** - +156 lines (Trikoštura project)
-3. 🥉 **Đana Rogulj** - +86 lines (TeamUp Sports specs)
+2. 🥈 **Karolina Mihaljević** 🆕 - +195/-56 lines (TeamConnect project)
+3. 🥉 **Damjan Sartori** - +156 lines (Trikoštura project)
+4. 🏅 **Đana Rogulj** - +86 lines (TeamUp Sports specs)
+5. 🏅 **Lucija Tomić** - +66/-6 lines (↑ Paradižot project)
 
 ### Students with Zero Activity
 - **Iva Dežmalj** - Listed in Cooksy project but no Git commits found
-- **Ela Kević** - Listed in Paradižot project registration but no Git activity yet
-- **Jere Vitaljić** - Listed in multiple projects but no direct commits (may be using different username)
+- **Ela Kević** - Listed in Paradižot project but no Git activity yet
 - **Jere Pavić** - Listed as Trikoštura lead but no direct commits (may be using different username)
 
 ### Activity Timeline
@@ -167,28 +178,33 @@
 - **Week 2-3 (Oct 28-Nov 2):** Project work period, 4 students active
 - **Week 4 (Nov 3):** Peak activity - 8 PRs merged in one day
 - **Week 5 (Nov 7):** 6 PRs merged, project submissions
+- **Week 6 (Nov 7-10):** 🆕 **Major surge** - 5 PRs merged, 4 new students, TeamConnect project created with extensive documentation
 
 ---
 
 ## Recommendations
 
 ### For Students Needing Follow-up:
-1. **No Lab Work:** ~11 students missing both lab01 and meaningful lab03 content
-2. **Project Teams:** Several project team members not yet visible in Git history
-3. **Documentation:** Some students submitted only `.gitkeep` placeholder files
+1. **No Lab Work:** ~7 students missing both lab01 and meaningful lab03 content (improved from 11)
+2. **Project Teams:** 3 students listed in projects with no Git commits (Iva Dežmalj, Ela Kević, Jere Pavić)
+3. **Documentation:** 6 students submitted only `.gitkeep` placeholder files (down from initial count)
+4. **Lab01:** Still only 2/22 students (9%) have completed Lab01 intro.py
 
 ### Positive Observations:
-- ✅ Strong project leadership from Iva Majić, Đana Rogulj, and Damjan Sartori
-- ✅ All projects have proper folder structure and documentation
-- ✅ Good PR submission rate in recent weeks
-- ✅ Clear improvement in activity from Week 1 to Week 5
+- ✅ **Outstanding new contribution** from Karolina Mihaljević - 10 commits, comprehensive TeamConnect project
+- ✅ Strong project leadership from Iva Majić, Karolina Mihaljević, Đana Rogulj, and Damjan Sartori
+- ✅ All 4 active projects now have proper folder structure and documentation
+- ✅ Excellent PR submission rate - 5 new PRs in just 3 days (Nov 7-10)
+- ✅ Lab03 completion rate improved from 72% to 77%
+- ✅ Paradižot team activated with Karlo and Lucija's contributions
+- ✅ Meaningful content in Lab03 improved from 54% to 65%
 
 ---
 
-**Report Generated:** 2025-11-13 *(Updated - No new student activity detected)*
+**Report Generated:** 2025-11-13 *(Updated with significant new activity)*
 **Data Sources:** Git commit history, PR merges, file system analysis
 **Analysis Tool:** Claude Code
-**Repository Commits Since Last Update:** 2 (Analysis documentation only)
+**New Activity Since Last Update:** 16 student commits, 5 PRs, 4 new students, 1 new project
 
 ---
 
@@ -458,5 +474,6 @@ When updating this document:
 
 | Date | Updates Made | Student Activity | Notes |
 |------|--------------|------------------|-------|
-| 2025-11-13 | Re-analyzed repository per maintenance instructions | ❌ None | No new student commits detected. Updated analysis date and status notes. |
+| 2025-11-13 (2nd) | Synced with main branch, comprehensive update | ✅ **16 new commits** | **Major update:** Added 4 new students (Karolina Mihaljević, Emma Salopek, Jere Vitaljić, Danijela Busić). New TeamConnect project with full specs. Updated Karlo & Lucija activity. Added 5 new PRs (#42, #47, #48, #49, #51). |
+| 2025-11-13 (1st) | Re-analyzed repository per maintenance instructions | ❌ None | No new student commits detected at that time. Updated analysis date and status notes. |
 | 2025-11-10 | Initial analysis created | ✅ 53 commits analyzed | Generated comprehensive analysis covering all student activity from Oct 5 - Nov 7. |
