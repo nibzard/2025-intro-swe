@@ -37,6 +37,12 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** This is a web application for recipes that allows users to browse, search and save their favorite recipes.
 
+### 404 - Andrea Težak & Tamara Višić
+* **Project:** Matemagija
+* **Folder:** `404-atezak-tvisic/`
+* **Status:** In Progress
+* **Description:** Aplikacija za djecu od 6 do 12 s diskalkulijom koja kroz igru razvija matematičke i kognitivne vještine
+
 ### LANS - Stipe Ćubelić & Ante Šućur & Luka Borović & Nikola Marjanović
 * **Project:** LLM Answer Watcher UI
 * **Folder:** `LANS-scubelic-asucur-lborovic-nmarjanovic/`
