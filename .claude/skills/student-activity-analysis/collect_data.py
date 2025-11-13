@@ -17,6 +17,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+# Get repository root dynamically
+REPO_ROOT = subprocess.run(
+    ["git", "rev-parse", "--show-toplevel"],
+    capture_output=True,
+    text=True
+).stdout.strip()
+
 
 def run_command(cmd: str) -> str:
     """Run a shell command and return output."""
@@ -26,7 +33,7 @@ def run_command(cmd: str) -> str:
             shell=True,
             capture_output=True,
             text=True,
-            cwd="/home/user/2025-intro-swe"
+            cwd=REPO_ROOT
         )
         return result.stdout.strip()
     except Exception as e:
@@ -100,7 +107,7 @@ def check_lab01(student_name: str, github_username: str) -> bool:
     """
     # First try expected location
     expected_path = f"students/{github_username}/intro.py"
-    if os.path.exists(f"/home/user/2025-intro-swe/{expected_path}"):
+    if os.path.exists(f"{REPO_ROOT}/{expected_path}"):
         return True
 
     # Search entire students/ directory
@@ -126,7 +133,7 @@ def check_lab03(github_username: str, student_name: str) -> bool:
     Uses fuzzy matching on folder names to handle diacritics and variations.
     """
     # List all lab03 folders
-    lab03_dir = "/home/user/2025-intro-swe/students/lab03/"
+    lab03_dir = f"{REPO_ROOT}/students/lab03/"
     if not os.path.exists(lab03_dir):
         return False
 
@@ -186,7 +193,7 @@ def get_project_stats(project_folder: str) -> Dict:
 
 def find_all_project_folders() -> List[str]:
     """Find all project folders in the repository."""
-    projects_dir = "/home/user/2025-intro-swe/projects/"
+    projects_dir = f"{REPO_ROOT}/projects/"
     if not os.path.exists(projects_dir):
         return []
 
@@ -204,7 +211,7 @@ def main():
     print("=" * 60)
 
     # Load official roster
-    roster_path = "/home/user/2025-intro-swe/OFFICIAL_STUDENT_ROSTER.json"
+    roster_path = f"{REPO_ROOT}/OFFICIAL_STUDENT_ROSTER.json"
     print(f"\n1. Loading roster from {roster_path}")
 
     with open(roster_path, 'r', encoding='utf-8') as f:
@@ -369,7 +376,7 @@ def main():
     }
 
     # Write to JSON file
-    output_path = "/home/user/2025-intro-swe/STUDENT_ACTIVITY_DATA.json"
+    output_path = f"{REPO_ROOT}/STUDENT_ACTIVITY_DATA.json"
     print(f"\n4. Writing data to {output_path}")
 
     with open(output_path, 'w', encoding='utf-8') as f:
