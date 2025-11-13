@@ -13,8 +13,16 @@ Output: STUDENT_ACTIVITY_ANALYSIS.md
 """
 
 import json
+import subprocess
 from datetime import datetime
 from typing import List, Dict
+
+# Get repository root dynamically
+REPO_ROOT = subprocess.run(
+    ["git", "rev-parse", "--show-toplevel"],
+    capture_output=True,
+    text=True
+).stdout.strip()
 
 
 def format_date(date_str: str) -> str:
@@ -258,7 +266,7 @@ def main():
     print("=" * 60)
 
     # Load activity data
-    data_path = "/home/user/2025-intro-swe/STUDENT_ACTIVITY_DATA.json"
+    data_path = f"{REPO_ROOT}/STUDENT_ACTIVITY_DATA.json"
     print(f"\n1. Loading activity data from {data_path}")
 
     try:
@@ -279,7 +287,7 @@ def main():
     print(f"   ✓ Report generated ({len(report_content)} characters)")
 
     # Write to file
-    output_path = "/home/user/2025-intro-swe/STUDENT_ACTIVITY_ANALYSIS.md"
+    output_path = f"{REPO_ROOT}/STUDENT_ACTIVITY_ANALYSIS.md"
     print(f"\n3. Writing report to {output_path}")
 
     with open(output_path, 'w', encoding='utf-8') as f:
