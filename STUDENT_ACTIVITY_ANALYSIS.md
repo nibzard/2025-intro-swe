@@ -185,3 +185,265 @@
 **Report Generated:** 2025-11-10
 **Data Sources:** Git commit history, PR merges, file system analysis
 **Analysis Tool:** Claude Code
+
+---
+
+## MAINTENANCE NOTES: How to Update This Document
+
+### Purpose
+These are self-notes documenting the exact steps used to generate this analysis, enabling future updates and consistency.
+
+---
+
+### Step 1: Gather Basic Git History
+
+```bash
+# Get comprehensive commit log with metadata (pipe, format: hash, author, email, date, subject)
+git log --all --pretty=format:"%H|%an|%ae|%ad|%s" --date=iso | head -100
+
+# Get only merge commits with parent information
+git log --all --merges --pretty=format:"%H|%an|%ae|%ad|%s|%P" --date=iso
+
+# List all remote branches
+git branch -r
+```
+
+**What this provides:**
+- Complete commit history with author attribution
+- PR merge information
+- Timeline of repository activity
+
+---
+
+### Step 2: Count Commits Per Author
+
+```bash
+# Count commits by author (excluding instructors)
+git log --all --pretty=format:"%an|%ae" | sort | uniq -c | sort -rn
+
+# Get detailed commit summary
+git shortlog --all -sne
+```
+
+**What this provides:**
+- Total commits per student
+- Email addresses for identification
+- Ranking of most active contributors
+
+---
+
+### Step 3: Analyze File Changes Per Student
+
+```bash
+# Get detailed file changes with numstat (additions/deletions)
+git log --all --numstat --pretty=format:"COMMIT:%H|%an|%ae|%ad|%s" --date=iso | head -300
+
+# Calculate total lines changed per author (requires awk processing)
+git log --all --numstat --format="COMMIT:%an|%ae" | \
+  awk '/^COMMIT:/ {author=$0; next} NF==3 {files[author]++; add[author]+=$1; del[author]+=$2} \
+  END {for (a in files) print a "|" files[a] "|" add[a] "|" del[a]}' | \
+  grep -v "Nikola Balic\|nkkko\|nibzard" | sort -t'|' -k2 -rn
+```
+
+**What this provides:**
+- Files modified per commit
+- Lines added (+) and deleted (-) per student
+- Productivity metrics
+
+---
+
+### Step 4: Extract Student-Specific Commits
+
+```bash
+# Filter commits by student authors (excluding instructors)
+git log --all --pretty=format:"%an|%ae|%s" \
+  --author="barbjez\|aeldarian\|lucinho\|nxi2005\|Suki\|Đana\|Ivan Bobanac\|Stipe\|maiva\|evian\|marinoL\|TV134\|Marin Boban\|Zlicone\|dbanmar\|Lucija\|Josip\|Karlo" | \
+  grep -v "^Nikola Balic"
+```
+
+**What this provides:**
+- All student commit messages
+- Activity descriptions
+- Individual contribution details
+
+---
+
+### Step 5: Analyze Pull Requests
+
+```bash
+# Get PR merge timeline
+git log --all --merges --pretty=format:"%s|%ad" --date=short | \
+  grep "pull request" | sort -t'|' -k2
+
+# Get unique author list from specific commits
+git log --all --pretty=format:"%H|%an|%ae" | \
+  grep -E "(barbjez|aeldarian|lucinho|nxi2005|Suki122|danrog|ivanbobanac|Stipe|maiva|evian|marinoL|TV134|ma31n|Zlicone|dbanmar|luceKomits|Karlo)" | \
+  sort | uniq
+```
+
+**What this provides:**
+- PR numbers and merge dates
+- PR submission patterns
+- Temporal activity distribution
+
+---
+
+### Step 6: Determine First and Last Activity Dates
+
+```bash
+# Get last activity date per author
+git log --all --format="%an|%ae|%ad|%H" --date=short | \
+  awk -F'|' '{latest[$2]=$3; name[$2]=$1} END {for (email in latest) print name[email] "|" email "|" latest[email]}' | \
+  sort -t'|' -k3 -r | head -30
+```
+
+**What this provides:**
+- Most recent commit date per student
+- Activity recency for status classification
+
+---
+
+### Step 7: Examine Repository Structure
+
+```bash
+# Find all student files
+find students -type f -name "*.md" -o -name "*.py" -o -name ".gitkeep" | head -50
+
+# Use glob pattern for comprehensive view
+# (Use Glob tool with pattern: students/**/*)
+
+# List lab03 directories
+ls -la students/lab03/ | grep "^d" | awk '{print $NF}' | grep -v "^\." | sort
+
+# Count files per lab03 folder
+find students/lab03 -mindepth 1 -maxdepth 1 -type d -exec sh -c 'echo "{}|$(find {} -type f | wc -l)"' \;
+```
+
+**What this provides:**
+- Lab folder existence
+- File submission counts
+- Structure compliance
+
+---
+
+### Step 8: Analyze Project Submissions
+
+```bash
+# List project directories
+ls -la projects/
+
+# Find all project documentation
+find projects -name "*.md" -type f
+
+# Read PROJECT_LIST.md for team registrations
+# (Use Read tool: /home/user/2025-intro-swe/projects/PROJECT_LIST.md)
+```
+
+**What this provides:**
+- Active projects
+- Team compositions
+- Documentation status
+
+---
+
+### Step 9: Cross-Reference and Build Tables
+
+**Manual Analysis Steps:**
+1. Match git usernames to real names using email addresses and commit messages
+2. Cross-reference PROJECT_LIST.md entries with actual git contributions
+3. Identify students listed in projects but with zero git activity
+4. Check for existence of:
+   - `students/{username}/lab1/intro.py` (Lab 01)
+   - `students/lab03/{username}/` folders (Lab 03)
+5. Classify activity levels:
+   - 🟢 Very Active: 5+ commits OR project lead with substantial work
+   - 🟢 Active: 2-4 commits with meaningful content
+   - 🟡 Low Activity: 1-2 commits, minimal changes
+   - 🟡 Minimal Activity: Only .gitkeep or single placeholder
+   - 🔴 No Activity: Listed but no commits found
+
+---
+
+### Step 10: Calculate Statistics
+
+**Formulas Used:**
+- Total Students: Count unique student authors + listed team members without commits
+- Total Commits: Sum of all non-instructor commits
+- Lab Completion Rate: (Students with lab work / Total students) × 100
+- Files Changed: Count from numstat analysis
+- Lines +/-: Sum additions and deletions per student
+
+---
+
+### Step 11: Update Date Fields
+
+When regenerating:
+1. Update "Analysis Date" to current date
+2. Update "Analysis Period" to span first commit → most recent commit
+3. Update "Last Activity" column with newest commit dates
+4. Update "Last Update" in Project Teams table
+
+---
+
+### Key Files Referenced
+
+**Repository Structure:**
+- `students/lab03/*/` - Lab 03 student folders
+- `students/{username}/lab1/intro.py` - Lab 01 Python submissions
+- `students/jcuzic/lab1/intro.py` - Example Lab 01 submission
+- `students/ivanbobanac/lab1/intro.py` - Example Lab 01 submission
+- `projects/PROJECT_LIST.md` - Official project registry
+- `projects/*/README.md` - Project documentation
+- `projects/*/SPECIFICATION.md` - Project specifications
+
+**Git References:**
+- Main branch: (typically `main` or `master`)
+- Student forks: PRs come from `{username}:main`
+- Merge pattern: "Merge pull request #{num} from {username}/main"
+
+---
+
+### Update Checklist
+
+When updating this document:
+- [ ] Run all git commands from Step 1-6
+- [ ] Check for new student folders in lab03
+- [ ] Verify new Lab 01 submissions in students/*/lab1/
+- [ ] Read projects/PROJECT_LIST.md for new team registrations
+- [ ] Check projects/ directory for new folders
+- [ ] Update Overview Statistics counts
+- [ ] Add new students to Detailed Student Activity Table
+- [ ] Update commit counts, dates, and status indicators
+- [ ] Recalculate completion rates
+- [ ] Update PR Timeline with new merges
+- [ ] Refresh Activity Patterns rankings
+- [ ] Update "Analysis Date" and "Report Generated" timestamps
+- [ ] Review Recommendations section for current relevance
+
+---
+
+### Notes on Data Quality
+
+**Known Issues:**
+- Some students may have multiple GitHub usernames
+- Email addresses may vary between commits
+- Students listed in PROJECT_LIST.md may not have pushed yet
+- .gitkeep files count as "completion" but indicate minimal effort
+- Merge commits may inflate instructor commit counts
+- Some project leads listed may be using alternate usernames
+
+**Filtering Strategy:**
+- Exclude instructor accounts: "Nikola Balic", "nkkko", "nibzard"
+- Include only student-facing branches and PRs
+- Count .gitkeep as placeholder, not meaningful content
+- Distinguish between authored commits and merged PRs
+
+---
+
+**Maintenance Frequency Recommendation:**
+- Update after each major deadline (weekly during active periods)
+- Generate new analysis after batch PR merges
+- Review monthly for semester progress tracking
+
+**Last Updated By:** Claude Code (AI Analysis)
+**Maintenance Method:** Re-run commands above, update tables, recalculate metrics
