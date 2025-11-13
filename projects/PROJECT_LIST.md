@@ -37,6 +37,12 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** This is a web application for recipes that allows users to browse, search and save their favorite recipes.
 
+### DDA - Domina Marić Banje,Domagoj Čaleta,Antonio Grubišić Ćabo
+* **Project:** SmartSchedule
+* **Folder:** SmartSchedule-dmaric-dcaleta-agrubsic/
+* **Status:** In Progress
+* **Description:** Aplikacija za izradu rasporeda
+
 ---
 
 ## Instructions for Teams
