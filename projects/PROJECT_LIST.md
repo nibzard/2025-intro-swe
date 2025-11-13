@@ -43,6 +43,24 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** Rezerviraj.me is a website that allows users to easily and quickly book various appointments and services online.
 
+### 404 - Andrea Težak & Tamara Višić
+* **Project:** Matemagija
+* **Folder:** `404-atezak-tvisic/`
+* **Status:** In Progress
+* **Description:** Aplikacija za djecu od 6 do 12 s diskalkulijom koja kroz igru razvija matematičke i kognitivne vještine
+
+### LANS - Stipe Ćubelić & Ante Šućur & Luka Borović & Nikola Marjanović
+* **Project:** LLM Answer Watcher UI
+* **Folder:** `LANS-scubelic-asucur-lborovic-nmarjanovic/`
+* **Status:** In Progress
+* **Description:** Korisničko sučelje za LLM Answer Watcher
+
+### DDA - Domina Marić Banje,Domagoj Čaleta,Antonio Grubišić Ćabo
+* **Project:** SmartSchedule
+* **Folder:** SmartSchedule-dmaric-dcaleta-agrubsic/
+* **Status:** In Progress
+* **Description:** Aplikacija za izradu rasporeda
+
 ---
 
 ## Instructions for Teams
