@@ -43,6 +43,12 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** Korisničko sučelje za LLM Answer Watcher
 
+### DDA - Domina Marić Banje,Domagoj Čaleta,Antonio Grubišić Ćabo
+* **Project:** SmartSchedule
+* **Folder:** SmartSchedule-dmaric-dcaleta-agrubsic/
+* **Status:** In Progress
+* **Description:** Aplikacija za izradu rasporeda
+
 ---
 
 ## Instructions for Teams
