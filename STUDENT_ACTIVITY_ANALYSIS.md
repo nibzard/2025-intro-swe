@@ -58,6 +58,19 @@
 | 20 | Emma Salopek | emmasalopek | emma.salopek7@gmail.com | 1 | #48 | 1 file | +1/-0 | ❌ | ✅ esalopek | ❌ | 2025-11-09 | 2025-11-09 | 🟡 Minimal Activity |
 | 21 | Jere Vitaljić | JerryBebe | jerevitaljic123@gmail.com | 1 | #49 | 1 file | +1/-0 | ❌ | ✅ jvitaljic | ✅ Paradižot (Member) | 2025-11-10 | 2025-11-10 | 🟡 Minimal Activity |
 | 22 | Danijela Busić | busicdanijela | busicdanijela81@gmail.com | 1 | #51 | 1 file | +1/-0 | ❌ | ✅ dbusic | ❌ | 2025-11-10 | 2025-11-10 | 🟡 Minimal Activity |
+| 23 | Carla Bajić | carla3791 | carla.bajic@gmail.com | 25 | #24 | 18 files | +214/-137 | ❌ | ❌ | ✅ BookSeeker (Lead) | 2025-11-03 | 2025-11-12 | 🟢 Very Active |
+| 24 | Katarina Pilić | makalu28 | katarinapilic2@gmail.com | 11 | #41 | 8 files | +115/-39 | ❌ | ✅ kpilić | ✅ CalorieTracker (Lead) | 2025-11-08 | 2025-11-08 | 🟢 Very Active |
+| 25 | Gianna | - | gianna.sapienti.sat@gmail.com | 10 | #38 | 6 files | +663/-171 | ❌ | ❌ | ✅ KSKS (Member) | 2025-11-02 | 2025-11-12 | 🟢 Very Active |
+| 26 | Stipe Barišić | stipzard | stipemreze@gmail.com | 7 | #40 | 5 files | +212/-2 | ✅ | ❌ | ✅ 1950/PC Builder (Lead) | 2025-10-29 | 2025-11-10 | 🟢 Very Active |
+| 27 | Nikša Kuzmanić | Niksa-1 | nike.kuzmanic@hotmail.com | 5 | #15 | 3 files | +88/-0 | ✅ | ✅ Niksa-1 | ❌ | 2025-11-03 | 2025-11-10 | 🟢 Very Active |
+| 28 | Jana Novaković | jananovakovic | novakovicjana40@gmail.com | 4 | #45 | 4 files | +59/-0 | ✅ | ❌ | ✅ JNIP (Lead) | 2025-11-09 | 2025-11-09 | 🟢 Very Active |
+| 29 | Domagoj Čaleta | domocal | domagojcaleta5@gmail.com | 3 | #11 | 2 files | +54/-0 | ❌ | ✅ dcaleta | ✅ SmartSchedule (Member) | 2025-11-02 | 2025-11-07 | 🟢 Active |
+| 30 | Karmen Grubić | kagela58 | karmengrubic@gmail.com | 3 | #28, #52 | 5 files | +165/-0 | ❌ | ✅ kgrubic | ✅ KMB (Lead) | 2025-11-06 | 2025-11-10 | 🟢 Very Active |
+| 31 | David Siroglavić | davids2510 | david.siroglavic24@gmail.com | 3 | #32 | 3 files | +63/-0 | ❌ | ❌ | ✅ Rezerviraj.me (Lead) | 2025-11-07 | 2025-11-07 | 🟢 Active |
+| 32 | Glukić | - | - | 0 | - | 0 files | +0/-0 | ❌ | ✅ glukic | ❌ | - | - | 🟡 Minimal Activity |
+| 33 | Marino Bendra | - | - | 0 | - | 0 files | +0/-0 | ❌ | ❌ | ✅ CalorieTracker (Member) | - | - | 🔴 No Git Activity |
+| 34 | Begonja | - | - | 0 | - | 0 files | +0/-0 | ❌ | ✅ mbegonja | ❌ | - | - | 🟡 Minimal Activity |
+| 35 | Antonio Grubišić Ćabo | - | - | 0 | - | 0 files | +0/-0 | ❌ | ✅ agrubcabo | ✅ SmartSchedule (Member) | - | - | 🟡 Minimal Activity |
 
 **Legend:**
 - 🟢 Very Active: Multiple commits, project work, labs completed
@@ -120,9 +133,12 @@
 |---------|--------|--------|-------------|
 | Ivan Bobanac | `students/ivanbobanac/lab1/` | ✅ Complete | 2025-11-02 |
 | Josip Čužić | `students/jcuzic/lab1/` | ✅ Complete | 2025-11-02 |
+| Nikša Kuzmanić | `students/lab03/Niksa-1/` | ✅ Complete | 2025-11-03 |
+| Jana Novaković | `students/jananovakovic/lab1/` | ✅ Complete | 2025-11-09 |
+| Stipe Barišić | `students/stipebarisic/` | ✅ Complete | 2025-10-29 |
 | **Others** | - | ❌ Not Submitted | - |
 
-**Completion Rate: 2/18 (11%)**
+**Completion Rate: 5/35 (14%)**
 
 ### Lab 03 - Student Folders
 
@@ -145,10 +161,17 @@
 | Emma Salopek | `esalopek` | 1 (Readme.md) | ✅ Complete | 2025-11-09 |
 | Jere Vitaljić | `jvitaljic` | 1 (README.md) | ✅ Complete | 2025-11-10 |
 | Danijela Busić | `dbusic` | 1 (Readme.md) | ✅ Complete | 2025-11-10 |
+| Antonio Grubišić Ćabo | `agrubcabo` | 1 (.gitkeep) | 🟡 Placeholder | 2025-11-07 |
+| Domagoj Čaleta | `dcaleta` | 1 (README.md) | ✅ Complete | 2025-11-02 |
+| Glukić | `glukic` | 1 (README.md) | ✅ Complete | 2025-11-08 |
+| Karmen Grubić | `kgrubic` | 1 (README.md) | ✅ Complete | 2025-11-06 |
+| Katarina Pilić | `kpilić` | 1 (README.md) | ✅ Complete | 2025-11-08 |
+| Begonja | `mbegonja` | 1 (.gitkeep) | 🟡 Placeholder | 2025-11-08 |
+| Nikša Kuzmanić | `Niksa-1` | 2 (README.md + intro.py) | ✅ Complete | 2025-11-03 |
 
-**Completion Rate: 17/22 (77%)** *(+4 new students)*
-**Meaningful Content: 11/17 (65%)**
-**Placeholder Only: 6/17 (35%)**
+**Completion Rate: 23/35 (66%)**
+**Meaningful Content: 16/23 (70%)**
+**Placeholder Only: 7/23 (30%)**
 
 ---
 
@@ -211,11 +234,13 @@
 ---
 
 **Report Generated:** 2025-11-13 *(MAJOR UPDATE - Explosive Growth Period)*
+**Last Table Update:** 2025-11-13 *(✅ COMPLETED - All 35 students now in Detailed Activity Table)*
 **Data Sources:** Git commit history, PR merges, file system analysis, project documentation
 **Analysis Tool:** Claude Code
 **New Activity Since Last Update:** 76 student commits (+110%), 17 PRs (+77%), 13 new students (+59%), 16 new projects (+400%)
 
 📄 **Detailed Analysis:** See `ANALYSIS_UPDATE_2025-11-13.md` for comprehensive breakdown of all 35 students and 20 projects
+✅ **Table Status:** All 35 students (rows 1-35) now included in Detailed Student Activity Table with complete data
 
 > **⚠️ CRITICAL LESSON LEARNED:** This update demonstrates the absolute necessity of Step 0 (Sync with Main Branch). Without syncing, we would have completely missed 76 commits, 13 students, and 16 projects - representing 76% of all repository activity!
 
@@ -514,6 +539,7 @@ When updating this document:
 
 | Date | Updates Made | Student Activity | Notes |
 |------|--------------|------------------|-------|
+| 2025-11-13 (5th) | ✅ **COMPLETED DETAILED TABLE** | ✅ **All 35 students now in table** | **Table completion:** Added rows 23-35 to Detailed Student Activity Table with all 13 new students: Carla Bajić (25 commits, BookSeeker lead), Katarina Pilić (11 commits, CalorieTracker), Gianna (10 commits, KSKS), Stipe Barišić (7 commits, 1950 lead, Lab01 ✅), Nikša Kuzmanić (5 commits, Lab01 ✅), Jana Novaković (4 commits, JNIP, Lab01 ✅), Domagoj Čaleta, Karmen Grubić (KMB lead), David Siroglavić (Rezerviraj.me lead), and 4 minimal activity students. Updated Lab01 completion (5/35 = 14%) and Lab03 completion (23/35 = 66%). **Now includes davids2510 as requested!** |
 | 2025-11-13 (4th) | 🚀 **EXPLOSIVE GROWTH UPDATE** | ✅ **+76 commits, +13 students, +16 projects** | **MASSIVE update:** Discovered 110% commit growth after syncing with main! New #1 contributor: Carla Bajić (25 commits). Added 13 new students including highly active Gianna (+663 lines), Katarina Pilić (11 commits), Stipe Mrežo (7 commits). 16 NEW project folders: BookSeeker, KSKS, KMB, LANS, CalorieTracker, SmartSchedule, Rezerviraj.me, 1950, and 8 more. Record-breaking day: 14 PRs merged on Nov 13. Created detailed supplementary document: ANALYSIS_UPDATE_2025-11-13.md. **Proves critical importance of Step 0!** |
 | 2025-11-13 (3rd) | Added Step 0 to maintenance instructions | N/A | **Documentation fix:** Added critical "Step 0: Sync with Main Branch" to maintenance instructions. This step must be done FIRST before any analysis to capture latest student activity. |
 | 2025-11-13 (2nd) | Synced with main branch, comprehensive update | ✅ **16 new commits** | **Major update:** Added 4 new students (Karolina Mihaljević, Emma Salopek, Jere Vitaljić, Danijela Busić). New TeamConnect project with full specs. Updated Karlo & Lucija activity. Added 5 new PRs (#42, #47, #48, #49, #51). |
