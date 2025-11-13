@@ -37,6 +37,12 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** This is a web application for recipes that allows users to browse, search and save their favorite recipes.
 
+### LANS - Stipe Ćubelić & Ante Šućur & Luka Borović & Nikola Marjanović
+* **Project:** LLM Answer Watcher UI
+* **Folder:** `LANS-scubelic-asucur-lborovic-nmarjanovic/`
+* **Status:** In Progress
+* **Description:** Korisničko sučelje za LLM Answer Watcher
+
 ### DDA - Domina Marić Banje,Domagoj Čaleta,Antonio Grubišić Ćabo
 * **Project:** SmartSchedule
 * **Folder:** SmartSchedule-dmaric-dcaleta-agrubsic/
