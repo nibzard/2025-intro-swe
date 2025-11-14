@@ -143,12 +143,24 @@ def check_lab03(github_username: str, student_name: str) -> bool:
     username_norm = normalize_name(github_username)
     name_norm = normalize_name(student_name.replace(' ', ''))
 
+    # Extract first and last name for common patterns like "kmihaljevic"
+    name_parts = student_name.split()
+    if len(name_parts) >= 2:
+        first_name = normalize_name(name_parts[0])
+        last_name = normalize_name(name_parts[-1])
+        first_initial_last = first_name[0] + last_name if first_name and last_name else ""
+    else:
+        first_initial_last = ""
+
     for folder in folders:
         folder_norm = normalize_name(folder)
-        # Check for exact match or partial match
-        if folder_norm == username_norm or folder_norm in username_norm:
+        # Check for exact match or partial match (bidirectional)
+        if folder_norm == username_norm or folder_norm in username_norm or username_norm in folder_norm:
             return True
-        if folder_norm == name_norm or name_norm in folder_norm:
+        if folder_norm == name_norm or name_norm in folder_norm or folder_norm in name_norm:
+            return True
+        # Check for first initial + last name pattern (e.g., "kmihaljevic")
+        if first_initial_last and folder_norm == first_initial_last:
             return True
 
     return False
