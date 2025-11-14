@@ -1,6 +1,6 @@
 # Student Activity Analysis - 2025 Intro SWE
 
-**Last Updated:** 2025-11-13
+**Last Updated:** 2025-11-14
 
 ---
 
@@ -9,11 +9,11 @@
 - **Total Enrolled Students:** 52
 - **Students with Git Activity:** 26 (50.0%)
 - **Students with No Activity:** 26 (50.0%)
-- **Lab01 Completion:** 4 (7.7%)
-- **Lab03 Folders:** 4 (7.7%)
-- **Total Projects:** 20
+- **Lab01 Completion:** 5 (9.6%)
+- **Lab03 Folders:** 20 (38.5%)
+- **Total Projects:** 21
 - **Projects in Roster:** 12
-- **Orphaned Projects:** 8
+- **Orphaned Projects:** 9
 
 ### Status Legend
 
@@ -31,9 +31,9 @@ All enrolled students sorted by activity level (most active first).
 | Name | GitHub | Commits | Status | Lab01 | Lab03 | Project Role |
 |------|--------|---------|--------|-------|-------|-------------|
 | Carla Bajić | carla3791 | 25 | 🔥 Very Active | — | — | — |
-| Katarina Pilić | makalu28 | 11 | ✅ Active | — | — | Lead (calorieTracker-kpilic-mbendra) |
-| Gianna Lukić | Gianna | 10 | ✅ Active | — | — | — |
-| Karolina Mihaljević | Karoll47 | 10 | ✅ Active | — | — | Lead (povezivanje-timova-Rogulj-Mihaljevic) |
+| Karolina Mihaljević | Karoll47 | 11 | ✅ Active | ✓ | ✓ | Lead (povezivanje-timova-Rogulj-Mihaljevic) |
+| Katarina Pilić | makalu28 | 11 | ✅ Active | — | ✓ | Lead (calorieTracker-kpilic-mbendra) |
+| Gianna Lukić | Gianna | 10 | ✅ Active | — | ✓ | — |
 | Iva Majić | maiva667 | 8 | ✅ Active | — | ✓ | Lead (cooksy-imajic-idezmalj) |
 | Stipe Barišić | stipzard | 7 | ✅ Active | ✓ | — | Lead (1950-stipebarisic-lukacirkovic) |
 | Marijan Ević | evian126 | 5 | ✅ Active | — | — | Lead (None) |
@@ -41,27 +41,27 @@ All enrolled students sorted by activity level (most active first).
 | Tamara Višić | tvisic | 5 | ✅ Active | — | ✓ | Member (404-atezak-tvisic) |
 | Jana Novaković | jananovakovic | 4 | ⚠️ Low Activity | ✓ | — | Lead (JNIP-jananovakovic-ivapuljic) |
 | Damjan Sartori | aeldarian1 | 3 | ⚠️ Low Activity | — | — | — |
-| Domagoj Čaleta | domocal | 3 | ⚠️ Low Activity | — | — | Member (SmartSchedule-dmaric-dcaleta-agrubsic) |
+| Domagoj Čaleta | domocal | 3 | ⚠️ Low Activity | — | ✓ | Member (SmartSchedule-dmaric-dcaleta-agrubsic) |
 | Ivan Bobanac | ivanbobanac | 3 | ⚠️ Low Activity | ✓ | — | Lead (BB-ibobanac-mblazevic) |
 | Karlo Ćurčija | notKarlo/KarloCurcija | 3 | ⚠️ Low Activity | — | ✓ | Lead (paradizot-kcurcija-ekevic-ltomic-jvitaljic) |
-| Karmen Grubić | kagela58 | 3 | ⚠️ Low Activity | — | — | Lead (KMB-kgrubic-mbegonja-bjezidzic) |
-| Ante Šućur | Suki122 | 2 | ⚠️ Low Activity | — | — | Member (LANS-scubelic-asucur-lborovic-nmarjanovic) |
+| Karmen Grubić | kagela58 | 3 | ⚠️ Low Activity | — | ✓ | Lead (KMB-kgrubic-mbegonja-bjezidzic) |
+| Ante Šućur | Suki122 | 2 | ⚠️ Low Activity | — | ✓ | Member (LANS-scubelic-asucur-lborovic-nmarjanovic) |
 | Josip Ćužić | Zlicone/jcuzic | 2 | ⚠️ Low Activity | — | — | Lead (KSKS-jcuzic-aolujic-lpericic-mdogas) |
-| Marin Boban | ma31n | 2 | ⚠️ Low Activity | — | — | Member (BobanKuzmanic-nkuzmanic-mboban) |
-| Barbara Jezidžić | barbjez | 1 | ⚡ Minimal Activity | — | — | Member (KMB-kgrubic-mbegonja-bjezidzic) |
-| Danijela Bušić | busicdanijela | 1 | ⚡ Minimal Activity | — | — | — |
+| Marin Boban | ma31n | 2 | ⚠️ Low Activity | — | ✓ | Member (BobanKuzmanic-nkuzmanic-mboban) |
+| Barbara Jezidžić | barbjez | 1 | ⚡ Minimal Activity | — | ✓ | Member (KMB-kgrubic-mbegonja-bjezidzic) |
+| Danijela Bušić | busicdanijela | 1 | ⚡ Minimal Activity | — | ✓ | — |
 | David Siroglavić | davids2510 | 1 | ⚡ Minimal Activity | — | — | Lead (rezerviraj.me-dsiroglavic-mbudimir) |
-| Emma Salopek | emmasalopek | 1 | ⚡ Minimal Activity | — | — | Lead (None) |
-| Jere Vitaljić | JerryBebe | 1 | ⚡ Minimal Activity | — | — | Member (paradizot-kcurcija-ekevic-ltomic-jvitaljic) |
-| Luka Borović | lucinho17 | 1 | ⚡ Minimal Activity | — | — | Member (LANS-scubelic-asucur-lborovic-nmarjanovic) |
-| Marino Listeš | marinoL98 | 1 | ⚡ Minimal Activity | — | — | Member (trikostura-jpavic-mlistes-djsartori) |
-| Nikola Marjanović | nxi2005 | 1 | ⚡ Minimal Activity | — | — | Member (LANS-scubelic-asucur-lborovic-nmarjanovic) |
+| Emma Salopek | emmasalopek | 1 | ⚡ Minimal Activity | — | ✓ | Lead (None) |
+| Jere Vitaljić | JerryBebe | 1 | ⚡ Minimal Activity | — | ✓ | Member (paradizot-kcurcija-ekevic-ltomic-jvitaljic) |
+| Luka Borović | lucinho17 | 1 | ⚡ Minimal Activity | — | ✓ | Member (LANS-scubelic-asucur-lborovic-nmarjanovic) |
+| Marino Listeš | marinoL98 | 1 | ⚡ Minimal Activity | — | ✓ | Member (trikostura-jpavic-mlistes-djsartori) |
+| Nikola Marjanović | nxi2005 | 1 | ⚡ Minimal Activity | — | ✓ | Member (LANS-scubelic-asucur-lborovic-nmarjanovic) |
 | Andrea Težak | atezak | 0 | 🔍 Lead Only - Verify | — | — | Lead (404-atezak-tvisic) |
 | Ante Šušnjar | None | 0 | ❌ No Git Activity | — | — | — |
 | Antonio Grubišić Ćabo | None | 0 | ❌ No Git Activity | — | — | — |
 | Augustin Olujić | aolujic | 0 | ❌ No Git Activity | — | — | Member (KSKS-jcuzic-aolujic-lpericic-mdogas) |
 | Blago Vukšić | None | 0 | ❌ No Git Activity | — | — | — |
-| Domina Marić Banje | dmaric | 0 | 🔍 Lead Only - Verify | — | — | Lead (SmartSchedule-dmaric-dcaleta-agrubsic) |
+| Domina Marić Banje | dmaric | 0 | 🔍 Lead Only - Verify | — | ✓ | Lead (SmartSchedule-dmaric-dcaleta-agrubsic) |
 | Ela Kević | ekevic | 0 | ❌ No Git Activity | — | — | Member (paradizot-kcurcija-ekevic-ltomic-jvitaljic) |
 | Iva Dežmalj | None | 0 | ❌ No Git Activity | — | — | — |
 | Iva Puljić | ivapuljic | 0 | ❌ No Git Activity | — | — | Member (JNIP-jananovakovic-ivapuljic) |
@@ -80,7 +80,7 @@ All enrolled students sorted by activity level (most active first).
 | Mateo Blažević | mblazevic | 0 | ❌ No Git Activity | — | — | Member (BB-ibobanac-mblazevic) |
 | Mirta Đogaš | mdogas | 0 | ❌ No Git Activity | — | — | Member (KSKS-jcuzic-aolujic-lpericic-mdogas) |
 | Nikolina Plazibat | None | 0 | ❌ No Git Activity | — | — | — |
-| Stipe Ćubelić | Stipe15 | 0 | 🔍 Lead Only - Verify | — | — | Lead (LANS-scubelic-asucur-lborovic-nmarjanovic) |
+| Stipe Ćubelić | Stipe15 | 0 | 🔍 Lead Only - Verify | — | ✓ | Lead (LANS-scubelic-asucur-lborovic-nmarjanovic) |
 | Đana Rogulj | danrog101 | 0 | ❌ No Git Activity | — | — | Member (povezivanje-timova-Rogulj-Mihaljevic) |
 
 
@@ -104,6 +104,7 @@ All project folders with commit activity and team information.
 | BB-ibobanac-mblazevic | 1 | 1 | ivanbobanac | Minimal Activity |
 | BookSeeker-carla3791 | 1 | 1 | Unknown | Unknown Team |
 | KSKS-jcuzic-aolujic-lpericic-mdogas | 1 | 1 | Zlicone/jcuzic | Minimal Activity |
+| SeatReview-itavic-asusnjar-ltesic-jcesljar | 1 | 1 | Unknown | Unknown Team |
 | SmartSchedule-dmaric-dcaleta-agrubisic | 1 | 1 | Unknown | Unknown Team |
 | climate-analyzers-asmith-bjohnson | 1 | 1 | Unknown | Unknown Team |
 | garderoba | 1 | 1 | Unknown | Unknown Team |
@@ -138,15 +139,15 @@ All project folders with commit activity and team information.
 
 ### 📝 Lab01 Status
 
-**48 students (92.3%) have not completed Lab01 (intro.py)**
+**47 students (90.4%) have not completed Lab01 (intro.py)**
 
 ### 📂 Lab03 Status
 
-**48 students (92.3%) do not have a Lab03 folder**
+**32 students (61.5%) do not have a Lab03 folder**
 
 ### ⚠️ Orphaned Projects
 
-**8 project folders are not linked to any team in the roster.** These may be demo projects or need manual review.
+**9 project folders are not linked to any team in the roster.** These may be demo projects or need manual review.
 
 
 ---
