@@ -197,54 +197,60 @@ GET /stats/most-influential
 hiphop-api/
 │
 ├── app/
-│   ├── __init__.py
-│   ├── main.py                 # FastAPI app initialization
-│   ├── config.py               # Konfiguracija (env variables)
+│   ├── main.py              # FastAPI aplikacija
+│   ├── config.py            # Konfiguracija
+│   ├── database.py          # Database setup
 │   │
-│   ├── models/                 # SQLAlchemy modeli
-│   │   ├── __init__.py
-│   │   ├── album.py
+│   ├── models/              # SQLAlchemy modeli
 │   │   ├── user.py
+│   │   ├── album.py
 │   │   ├── rating.py
-│   │   └── playlist.py
+│   │   ├── artist.py        # ✨ NOVO
+│   │   └── producer.py      # ✨ NOVO
 │   │
-│   ├── schemas/                # Pydantic schemas
-│   │   ├── __init__.py
-│   │   ├── album.py
+│   ├── schemas/             # Pydantic schemas
 │   │   ├── user.py
-│   │   └── rating.py
-│   │
-│   ├── api/                    # API endpoints
-│   │   ├── __init__.py
-│   │   ├── albums.py
-│   │   ├── auth.py
-│   │   ├── recommendations.py
-│   │   ├── playlists.py
-│   │   └── stats.py
-│   │
-│   ├── crud/                   # Database operations
-│   │   ├── __init__.py
 │   │   ├── album.py
-│   │   └── user.py
+│   │   ├── rating.py
+│   │   ├── artist.py        # ✨ NOVO
+│   │   └── producer.py      # ✨ NOVO
 │   │
-│   ├── core/                   # Core functionality
-│   │   ├── __init__.py
-│   │   ├── security.py         # JWT, password hashing
-│   │   └── recommendation.py   # Recommendation algoritam
+│   ├── api/                 # API endpoints
+│   │   ├── auth.py
+│   │   ├── albums.py
+│   │   ├── ratings.py
+│   │   ├── recommendations.py
+│   │   ├── artists.py       # ✨ NOVO
+│   │   └── producers.py     # ✨ NOVO
 │   │
-│   └── database.py             # DB connection setup
+│   ├── crud/                # Database operacije
+│   │   ├── user.py
+│   │   ├── album.py
+│   │   ├── artist.py        # ✨ NOVO
+│   │   └── producer.py      # ✨ NOVO
+│   │
+│   └── core/
+│       ├── security.py
+│       ├── dependencies.py
+│       └── recommendation.py
 │
-├── tests/
-│   ├── test_albums.py
-│   ├── test_auth.py
-│   └── test_recommendations.py
+├── frontend/
+│   ├── index.html           # Homepage s albumima
+│   ├── artists.html         # ✨ NOVO - Stranica izvođača
+│   ├── producers.html       # ✨ NOVO - Stranica producenata
+│   ├── styles.css
+│   ├── app.js
+│   ├── artists.js           # ✨ NOVO
+│   ├── producers.js         # ✨ NOVO
+│   └── images/
+│       ├── albums/          # Album cover slike
+│       ├── artists/         # ✨ NOVO - Slike izvođača
+│       └── producers/       # ✨ NOVO - Slike producenata
 │
-├── alembic/                    # Database migrations
-├── .env.example
-├── requirements.txt
-├── Dockerfile
-├── docker-compose.yml
-└── README.md
+├── scripts/
+│   └── seed_data.py         # Seed (albumi, izvođači, producenti)
+│
+└── requirements.txt
 ```
 
 ### Database Schema
@@ -255,22 +261,35 @@ hiphop-api/
 ├─────────────┤       ├──────────────┤       ├─────────────┤
 │ id (PK)     │───┐   │ id (PK)      │   ┌───│ id (PK)     │
 │ title       │   └──<│ album_id(FK) │   │   │ username    │
-│ artist      │       │ user_id (FK) │>──┘   │ email       │
-│ year        │       │ rating       │       │ password    │
-│ region      │       │ review       │       │ created_at  │
-│ cover_url   │       │ created_at   │       └─────────────┘
-│ description │       └──────────────┘              │
-└─────────────┘                                     │
-                                                    │
-┌──────────────────┐       ┌──────────────────┐   │
-│    playlists     │       │ playlist_albums  │   │
-├──────────────────┤       ├──────────────────┤   │
-│ id (PK)          │───┐   │ playlist_id (FK) │   │
-│ user_id (FK)     │>──┼───│ album_id (FK)    │   │
-│ name             │   │   └──────────────────┘   │
-│ is_public        │   │                          │
-│ created_at       │<──┘──────────────────────────┘
-└──────────────────┘
+│ artist_id   │──┐    │ user_id (FK) │>──┘   │ email       │
+│ year        │  │    │ rating       │       │ password    │
+│ region      │  │    │ review       │       └─────────────┘
+│ producer_id │─┐│    └──────────────┘
+│ cover_url   │ ││
+│ story       │ ││    ┌──────────────┐
+│ impact      │ ││    │   artists    │
+│ trivia      │ │└───>├──────────────┤
+└─────────────┘ │     │ id (PK)      │
+                │     │ name         │
+                │     │ region       │
+                │     │ era          │
+                │     │ image_url    │
+                │     │ biography    │
+                │     │ fun_facts    │
+                │     │ influence    │
+                │     └──────────────┘
+                │
+                │     ┌──────────────┐
+                │     │  producers   │
+                └────>├──────────────┤
+                      │ id (PK)      │
+                      │ name         │
+                      │ signature    │
+                      │ image_url    │
+                      │ biography    │
+                      │ fun_facts    │
+                      │ techniques   │
+                      └──────────────┘
 ```
 
 ### API Architecture
