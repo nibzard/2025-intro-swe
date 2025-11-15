@@ -62,6 +62,7 @@ This file lists all team projects for the SWE course. Students add their project
 * **Description:** Aplikacija za izradu rasporeda
 
 ### BookSeeker - Carla Bajić
+* **Team Leader:** Carla Bajić
 * **Project:** BookSeeker — Inteligentna pretraga knjiga i digitalna knjižnica
 * **Folder:** students/lab03/carla3791/
 * **Status:** In Progress
