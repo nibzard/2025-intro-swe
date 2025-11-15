@@ -3,7 +3,7 @@
 ## 📚 BookSeeker — Inteligentna pretraga knjiga
 
 - **Project name:** BookSeeker
-- **Autor:** Carla Bajić
+- **Autor / Team Leader:** Carla Bajić
 - **Kolegij:** Uvod u programsko inženjerstvo
 - **Folder:** students/lab03/carla3791/
 - **Status:** In Progress
