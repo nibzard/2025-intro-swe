@@ -63,6 +63,12 @@ This file lists all team projects for the SWE course. Students add their project
 
 ---
 
+### KMB - Karmen Grubić & Matea Begonja & Barbara Jezidžić
+* **Project:** TuneBuddy
+* **Folder:** `KMB-kgrubic-mbegonja-bjezidzic`
+* **Status:** In Progress
+* **Description:** Connect through music
+
 ## Instructions for Teams
 
 1. **Create your project folder** with proper naming convention
