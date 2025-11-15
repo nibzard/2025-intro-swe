@@ -1,6 +1,4 @@
-# Lab 03 – Carla Bajić
-
-## 📚 BookSeeker — Inteligentna pretraga knjiga
+# 📚 BookSeeker — Inteligentna pretraga knjiga  - Carla Bajić
 
 - **Project name:** BookSeeker
 - **Autor / Team Leader:** Carla Bajić
