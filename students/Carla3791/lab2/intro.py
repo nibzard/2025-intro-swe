@@ -9,4 +9,5 @@ class Student:
 # Example usage
 if __name__ == "__main__":
     student = Student("Carla", "1st year")
+    student2 = Student("", "")
     student.greet()
