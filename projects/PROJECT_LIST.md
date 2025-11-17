@@ -60,6 +60,12 @@ This file lists all team projects for the SWE course. Students add their project
 * **Folder:** SmartSchedule-dmaric-dcaleta-agrubsic/
 * **Status:** In Progress
 * **Description:** Aplikacija za izradu rasporeda
+* 
+* ### HERChat - Emma Salopek & Danijela Bušić
+* **Project:** HERChat
+* **Folder:** `HERChat-esalopek-dbusic/`
+* **Status:** In Progress
+* **Description:** A web app designed to help women connect and understand each other.
 
 ---
 
