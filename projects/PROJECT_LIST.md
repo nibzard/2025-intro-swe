@@ -67,6 +67,14 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** A web app designed to help women connect and understand each other.
 
+### BookSeeker - Carla Bajić
+* **Team Leader:** Carla Bajić
+* **Project:** BookSeeker — Inteligentna pretraga knjiga i digitalna knjižnica
+* **Folder:** students/lab03/carla3791/
+* **Status:** In Progress
+* **Description:** BookSeeker je osobna digitalna knjižnica i inteligentna tražilica knjiga. Korisnik može pretraživati knjige prema sjećanju na radnju, likove ili detalje, dok aplikacija organizira i prati sve odabrane knjige u privatnoj biblioteci.
+
+
 ---
 
 ### KMB - Karmen Grubić & Matea Begonja & Barbara Jezidžić
