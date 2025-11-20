@@ -38,9 +38,40 @@ Cilj projekta je stvoriti digitalno okruženje gdje glazba postaje način upozna
 Sloj - Tehnologije
 Frontend - React.js
 Backend - Node.js (Express)
-API integracije - Spotify API (za izvođače), Ticketmaster API (za koncerte)
+API integracije - RESTful API (za izvođače), Entrio API (za koncerte)
 Kontrola verzija - Git & GitHub
 Razvojno okruženje - Visual Studio Code
+
+
+### React.js (Frontend)
+
+- Za izradu korisničkog sučelja: prikaz korisnika, njihovih glazbenih preferencija, liste koncerata i chat.
+- Komponente (npr. UserCard, EventList, ChatBox) će se koristiti za modularno i responzivno UI rješenje.
+
+### Node.js + Express (Backend)
+
+- Za logiku aplikacije koja se odvija na serveru: registracija/prijava korisnika, spremanje i dohvat podataka o preferencijama, korisnicima i događajima.
+- Express će služiti za kreiranje RESTful API-ja kojim frontend komunicira s bazom podataka i vanjskim servisima.
+
+### RESTful API (za izvođače)
+
+- Omogućuje dohvat informacija o izvođačima, npr. popularnih pjesama, albuma ili sličnih izvođača.
+- Backend će pozivati API i slati podatke frontend komponentama.
+
+### Entrio API (za koncerte)
+
+- Za prikaz događaja i koncerata u blizini korisnika.
+- Backend dohvaća podatke preko API-ja i šalje ih frontend-u za prikaz.
+
+### Git & GitHub (kontrola verzija)
+
+- Za praćenje promjena u kodu, rad na različitim značajkama preko feature branch-eva i suradnju s timom.
+- PR-ovi (Pull Requests) omogućuju pregled i odobrenje promjena prije spajanja u main branch.
+
+### Visual Studio Code (razvojno okruženje)
+
+- Glavni alat za pisanje koda, debugging i testiranje.
+- Može se koristiti s dodatcima za React, Node.js, Git i API testiranje (npr. Postman).
 
 ---
 
