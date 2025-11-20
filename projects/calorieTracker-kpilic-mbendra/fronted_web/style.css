@@ -1,0 +1,95 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20px 30px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.summary {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.status-ok {
+    color: green;
+    font-weight: bold;
+}
+
+.status-warning {
+    color: orange;
+    font-weight: bold;
+}
+
+.status-over {
+    color: red;
+    font-weight: bold;
+}
+
+form label, form input, form button {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+form input[type="text"], form input[type="number"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+form button, #analyze-btn {
+    padding: 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+form button:hover, #analyze-btn:hover {
+    background-color: #0056b3;
+}
+
+#meal-list {
+    list-style: none;
+    padding: 0;
+}
+
+#meal-list li {
+    background: #f0f0f0;
+    padding: 10px;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#meal-list .remove-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.result-box {
+    margin-top: 15px;
+    padding: 15px;
+    border: 1px dashed #007bff;
+    background-color: #e9f7ff;
+}
+
+.result-box h3 {
+    margin-top: 0;
+}
