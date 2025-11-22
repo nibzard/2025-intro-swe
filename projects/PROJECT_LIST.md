@@ -67,6 +67,12 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** A web app designed to help women connect and understand each other.
 
+### BobanKuzmanic - Nikša Kuzmanić & Marin Boban
+* **Project:** Posture Optimization App for Sitting Position
+* **Folder:** `BobanKuzmanic-MarinBoban-NikšaKuzmanić/`
+* **Status:** In Progress
+* **Description:** Using technologies to track the position of the body and/or head, the app provides real-time alerts to users about incorrect or unhealthy posture during sitting.
+
 ---
 
 ### KMB - Karmen Grubić & Matea Begonja & Barbara Jezidžić
