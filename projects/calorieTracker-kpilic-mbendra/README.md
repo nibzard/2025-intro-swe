@@ -19,7 +19,7 @@ Projekt koristi **strojno učenje** i **računalni vid** (computer vision) za de
 Nakon prepoznavanja, koristi se baza podataka (npr. [USDA FoodData Central](https://fdc.nal.usda.gov/)) za dohvat nutritivnih vrijednosti.
 
 ## 🖼️ Dijagram rada sustava
-![DIAGRAM] <img width="1414" height="2000" alt="POČETAK" src="https://github.com/user-attachments/assets/423ab520-a339-468f-99f6-37917c3a658b" />
+<img width="1414" height="2000" alt="POČETAK" src="https://github.com/user-attachments/assets/423ab520-a339-468f-99f6-37917c3a658b" />
 
 
 
