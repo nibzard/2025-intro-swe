@@ -7,6 +7,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   return (
+    
     <SafeAreaView style={{ flex: 1 }}>
       {loading ? (
         <SplashScreen onFinish={() => setLoading(false)} />
