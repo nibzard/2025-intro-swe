@@ -7,7 +7,7 @@ type SplashScreenProps = {
   onFinish: () => void; // Callback when animation ends
 };
 
-const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
+const SplashScreen= ({ onFinish }: SplashScreenProps) => {
   const translateX = useRef(new Animated.Value(-150)).current;
 
   useEffect(() => {

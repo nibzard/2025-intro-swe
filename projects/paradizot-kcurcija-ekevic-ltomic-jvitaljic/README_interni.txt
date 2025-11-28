@@ -21,3 +21,8 @@ ono šta ste radili u aplikaciji
 
 NAPOMENA: da bi vam radilo, vaš laptop/PC i mob sa kojim ste skenirali apk, 
  moraju biti na istoj WIFI mreži
+
+(28.11.2025)(Karlo)
+	-Tribalo bi izbaciti footer u aplikaciji, jer nam ne triba realno, 
+	 jer sve funkcionalnosti imamo u ovim kvadratima. tako da nam je navigation footer nepotreban
+	-Maknut footer, kvadrat i pravokutnik na HomePage-u prebacen u novi component
