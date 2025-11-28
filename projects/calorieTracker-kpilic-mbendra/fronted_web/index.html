@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calorie Tracker AI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Dnevni Calorie Tracker</h1>
+
+        <div class="summary">
+            <p>Dnevni cilj: 2000 kcal</p>
+            <p>Trenutno uneseno: <span id="current-calories">0</span> kcal</p>
+            <p id="status-message" class="status-ok">Ostalo: 2000 kcal. Dobro je!</p>
+        </div>
+
+        <hr>
+
+        <h2>1. Ručni unos (ili pretraživanje)</h2>
+        <form id="meal-form">
+            <label for="meal-name">Naziv Obroka:</label>
+            <input type="text" id="meal-name" placeholder="Npr. Piletina, Riža, Jabuka..." required>
+
+            <label for="calorie-amount">Kalorije (kcal / 100g) - *Ostavite prazno za automatsko pretraživanje!*</label>
+            <input type="number" id="calorie-amount" placeholder="Npr. 350">
+
+            <button type="submit">Dodaj Obrok / Pretraži Kalorije</button>
+        </form>
+        
+        <hr>
+
+        <h2>2. Analiza Obroka Putem Slike</h2>
+        <form id="analyze-form">
+            <label for="meal-photo">Odaberite sliku obroka:</label>
+            <input type="file" id="meal-photo" accept="image/*">
+            <button type="button" id="analyze-btn">Analiziraj Sliku</button>
+        </form>
+        
+        <div id="analysis-result" class="result-box">
+            </div>
+
+        <hr>
+
+        <h2>Dnevnik Obroka</h2>
+        <ul id="meal-list">
+            </ul>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
