@@ -25,12 +25,18 @@ This file lists all team projects for the SWE course. Students add their project
 
 *(Teams will add their projects here as they get started)*
 
+
 ### Example Team - Alice Smith & Bob Johnson
 * **Project:** Climate Data Analysis
 * **Folder:** `climate-analyzers-asmith-bjohnson/`
 * **Status:** In Progress
 * **Description:** Analyzing temperature trends using Python libraries.
 
+### [R M] - [Karolina Mihaljević] & [Đana Rogulj]
+* **Project:** [Team connect]
+* **Folder:** `povezivanje-timova-Rogulj-Mihaljevics/`
+* **Status:** [In Progress]
+* **Description:** [Povezivanje timova na određenoj lokaciji]
 ---
 
 ## Instructions for Teams
