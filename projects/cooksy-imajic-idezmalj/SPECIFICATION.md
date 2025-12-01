@@ -132,7 +132,6 @@ Frontend <-> API <-> Database (Supabase)
 *   **Schema / Data Structure:**
     * JSON Schema for recipes
     ```text
-    {
     "id": 1,
     "name": "Classic Margherita Pizza",
     "ingredients": [
@@ -168,8 +167,7 @@ Frontend <-> API <-> Database (Supabase)
     "mealType": [
       "Dinner"
     ]
-  }
-    ```
+
     
 ## 5. Interface Specifications
 ### API / Web App:
