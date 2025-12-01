@@ -17,6 +17,8 @@ This is a web application for recipes that allows users to browse, search and sa
 ## 🛠 Technologies Used
 
 - React 
+- Next.js
+- Tailwind CSS
 
 ## 🚀 Getting Started
 
