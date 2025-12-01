@@ -81,6 +81,13 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** Connect through music
 
+---
+### JNIP - Jana Novaković & Iva Puljić
+* **Project:** Budgetly
+* **Folder:** `JNIP-jananovakovic-ivapuljic/`
+* **Status:** In Progress
+* **Description:** Aplikacija za praćenje potrošnje i analizu financija
+
 ## Instructions for Teams
 
 1. **Create your project folder** with proper naming convention
