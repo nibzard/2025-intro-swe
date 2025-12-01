@@ -131,7 +131,7 @@ Frontend <-> API <-> Database (Supabase)
 *   **Core Entities:** Recipes, User
 *   **Schema / Data Structure:**
     * JSON Schema for recipes
-    ```json
+    ```text
     {
     "id": 1,
     "name": "Classic Margherita Pizza",
@@ -169,7 +169,8 @@ Frontend <-> API <-> Database (Supabase)
       "Dinner"
     ]
   },
-  ```
+```
+
 
 ## 5. Interface Specifications
 ### API / Web App:
