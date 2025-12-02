@@ -77,13 +77,8 @@ BookSeeker/
 - **Input:** Text query describing a book.  
 - **Output:** List of top-k books with metadata (title, author, description).  
 - **Endpoints:**  
-  - `POST /search` – JSON body:  
-```json
-{
-  "q": "text query",
-  "k": 3
-}
-User Workflows
+
+##User Workflows
 1.User enters a description.
 2.Backend converts description to embedding.
 3.FAISS searches nearest book embeddings.
