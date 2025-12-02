@@ -127,6 +127,9 @@ Frontend <-> API <-> Database (Supabase)
       ├── SPECIFICATION.md
       └── README.md
     ```
+### 3.4 Application Structure Diagram
+![Application Structure](https://github.com/maiva667/2025-intro-swe/blob/f879cfea803744f7f1082ee48a345e04c402f468/projects/cooksy-imajic-idezmalj/sitemap.png)
+
 ## 4. Data Design (The Domain Model)
 *   **Core Entities:** Recipes, User
 *   **Schema / Data Structure:**
