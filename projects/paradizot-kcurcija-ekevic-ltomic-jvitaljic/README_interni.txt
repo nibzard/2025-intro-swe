@@ -26,3 +26,6 @@ NAPOMENA: da bi vam radilo, vaš laptop/PC i mob sa kojim ste skenirali apk,
 	-Tribalo bi izbaciti footer u aplikaciji, jer nam ne triba realno, 
 	 jer sve funkcionalnosti imamo u ovim kvadratima. tako da nam je navigation footer nepotreban
 	-Maknut footer, kvadrat i pravokutnik na HomePage-u prebacen u novi component
+
+(2.12.2025.)(Lucija)
+	-Polušaj implementacije Vercela za hostanje umjesto Expo-a
