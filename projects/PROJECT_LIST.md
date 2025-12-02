@@ -81,6 +81,14 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** Connect through music
 
+---
+### Carla Bajić
+* **Project:** BookSeeker
+* **Folder:** BookSeeker-carla3791/
+* **Status:** In Progress
+* **Description:** BookSeeker is a personal digital library and an intelligent book search engine. Users can search for books based on remembering the plot, characters, or details, while the app organizes and keeps track of all selected books in a private library.
+
+
 ## Instructions for Teams
 
 1. **Create your project folder** with proper naming convention
