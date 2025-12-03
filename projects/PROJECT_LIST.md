@@ -98,3 +98,9 @@ This file lists all team projects for the SWE course. Students add their project
 5. **Submit a Pull Request** to have your project added to the official list
 
 **Remember**: Your project folder should contain all your code, documentation, and a detailed README.md with project-specific information.
+
+### Melodia - B. Vuksicc
+* **Projekt:** Melodia - Music Matcher
+* **Folder:** `Melodia-bvuksicc/`
+* **Status:** In Progress
+* **Description:** Aplikacija za pronalazenje ljudi na temelju njihovih glazbenih ukusa i interesa.
