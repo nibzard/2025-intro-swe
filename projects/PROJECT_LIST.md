@@ -25,10 +25,6 @@ This file lists all team projects for the SWE course. Students add their project
 
 *(Teams will add their projects here as they get started)*
 
-
-### Example Team - Alice Smith & Bob Johnson
-* **Project:** Climate Data Analysis
-* **Folder:** `climate-analyzers-asmith-bjohnson/`
 ### Paradižot - Karlo Ćurčija & Ela Kević & Lucija Tomić & Jere Vitaljić
 * **Project:** Promet aplikacija
 * **Folder:** `PrometApp-kcurcija-ekevic-ltomic-jvitaljic/`
@@ -64,7 +60,7 @@ This file lists all team projects for the SWE course. Students add their project
 * **Folder:** SmartSchedule-dmaric-dcaleta-agrubsic/
 * **Status:** In Progress
 * **Description:** Aplikacija za izradu rasporeda
-* 
+
 * ### HERChat - Emma Salopek & Danijela Bušić
 * **Project:** HERChat
 * **Folder:** `HERChat-esalopek-dbusic/`
@@ -77,20 +73,24 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** Using technologies to track the position of the body and/or head, the app provides real-time alerts to users about incorrect or unhealthy posture during sitting.
 
----
-
 ### KMB - Karmen Grubić & Matea Begonja & Barbara Jezidžić
 * **Project:** TuneBuddy
 * **Folder:** `KMB-kgrubic-mbegonja-bjezidzic`
 * **Status:** In Progress
 * **Description:** Connect through music
 
+### JNIP - Jana Novaković & Iva Puljić
+* **Project:** Budgetly
+* **Folder:** `JNIP-jananovakovic-ivapuljic/`
+* **Status:** In Progress
+* **Description:** Aplikacija za praćenje potrošnje i analizu financija
+
 ### [R M] - [Karolina Mihaljević] & [Đana Rogulj]
 * **Project:** [Team connect]
 * **Folder:** `povezivanje-timova-Rogulj-Mihaljevics/`
 * **Status:** [In Progress]
 * **Description:** [Povezivanje timova na određenoj lokaciji]
----
+
 ### Carla Bajić
 * **Project:** BookSeeker
 * **Folder:** BookSeeker-carla3791/
