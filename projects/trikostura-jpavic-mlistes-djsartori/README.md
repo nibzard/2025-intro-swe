@@ -18,14 +18,15 @@ Online forum za studente svih sveučilišta u Hrvatskoj. Korisnici mogu stvarati
 - ✅ **Admin panel** - Upravljanje korisnicima, temama, odgovorima i kategorijama
 - ✅ **Admin Analytics** - Statistike, top korisnici, najčitanije teme
 - ✅ **Markdown podrška** - Rich text formatiranje sa live preview i syntax highlighting
+- ✅ **Real-time notifikacije** - Live obavijesti za odgovore, upvote-ove i admin akcije
 - ✅ **Responsive dizajn** - Prilagođeno za mobilne uređaje
 - ✅ **Dark mode podrška** - Svijetla i tamna tema
 - ✅ **Loading states** - Skeleton screens za bolji UX
 - ✅ **Performance optimizacije** - ISR caching, image optimization
 
 ### Za implementaciju 🔨
-- ⏳ **Notifikacije** - Real-time obavijesti za odgovore i glasove
 - ⏳ **Upload slika** - Dodavanje slika u teme i odgovore
+- ⏳ **Mention sistem** - @username mentions u odgovorima
 
 ## 🛠 Tech Stack
 
@@ -82,10 +83,14 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=tvoj-anon-key
 1. Idi u Supabase dashboard > **SQL Editor**
 2. Kopiraj cijeli sadržaj iz `supabase/schema.sql`
 3. Zalijepi u SQL Editor i pokreni
+4. Nakon toga, kopiraj sadržaj iz `supabase/notifications.sql`
+5. Zalijepi u SQL Editor i pokreni
 
-Ovo će kreirati sve tablice, politike, triggere i default kategorije.
+Ovo će kreirati sve tablice, politike, triggere, default kategorije i notifikacijski sistem.
 
 **⚠️ Važno:** Idi na **Authentication > Providers > Email** i **isključi** "Confirm email" ako želiš testirati registraciju bez email potvrde.
+
+**⚠️ Realtime:** Idi na **Database > Replication** i omogući Realtime za tablicu `notifications` kako bi real-time notifikacije radile.
 
 ### 6. Pokreni development server
 
@@ -148,6 +153,15 @@ Nakon registracije:
 - **Glasanje**: Upvote/downvote sistem
 - **Pretraga**: Full-text pretraga po naslovu i sadržaju
 - **Markdown Editor**: Live preview, syntax highlighting, built-in pomoć
+
+### Notifikacijski Sistem
+- **Real-time obavijesti**: Instant notifikacije putem Supabase Realtime
+- **Tipovi notifikacija**: Odgovori na teme, odgovori na komentare, upvote-ovi, prikvačene teme
+- **Notification bell**: Ikona sa brojačem nepročitanih notifikacija
+- **Mark as read**: Automatsko označavanje kao pročitano pri kliku
+- **Bulk actions**: Označi sve kao pročitano, obriši notifikacije
+- **Dedicated page**: Potpuna stranica sa svim notifikacijama
+- **Database triggers**: Automatsko kreiranje notifikacija
 
 ### User Profile
 - Statistike korisnika (teme, odgovori, reputacija)

@@ -3,6 +3,8 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/app/auth/actions';
 import { MessageSquare, User, LogOut, Search, Settings } from 'lucide-react';
+import { NotificationBell } from '@/components/notifications/notification-bell';
+import { getNotifications } from '@/app/notifications/actions';
 
 export async function Navbar() {
   const supabase = await createServerSupabaseClient();
@@ -11,6 +13,8 @@ export async function Navbar() {
   } = await supabase.auth.getUser();
 
   let profile = null;
+  let notificationsData = { notifications: [], unreadCount: 0 };
+
   if (user) {
     const { data } = await supabase
       .from('profiles')
@@ -18,6 +22,9 @@ export async function Navbar() {
       .eq('id', user.id)
       .single();
     profile = data;
+
+    // Fetch notifications
+    notificationsData = await getNotifications();
   }
 
   return (
@@ -57,6 +64,10 @@ export async function Navbar() {
           <div className="flex items-center gap-4">
             {user && profile ? (
               <>
+                <NotificationBell
+                  initialNotifications={notificationsData.notifications}
+                  initialUnreadCount={notificationsData.unreadCount}
+                />
                 <Link href="/forum/new">
                   <Button size="sm">Nova tema</Button>
                 </Link>
