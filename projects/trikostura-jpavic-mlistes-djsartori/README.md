@@ -14,20 +14,24 @@ Online forum za studente svih sveučilišta u Hrvatskoj. Korisnici mogu stvarati
 - ✅ **Glasanje** - Upvote/downvote sistem za odgovore
 - ✅ **Pretraga** - Full-text pretraga kroz teme po naslovu i sadržaju
 - ✅ **User profili** - Kompletni profili sa statistikama i aktivnostima
+- ✅ **Editiranje profila** - Uređivanje biografije, sveučilišta i studija
+- ✅ **Admin panel** - Upravljanje korisnicima, temama, odgovorima i kategorijama
+- ✅ **Admin Analytics** - Statistike, top korisnici, najčitanije teme
+- ✅ **Markdown podrška** - Rich text formatiranje sa live preview i syntax highlighting
 - ✅ **Responsive dizajn** - Prilagođeno za mobilne uređaje
 - ✅ **Dark mode podrška** - Svijetla i tamna tema
 - ✅ **Loading states** - Skeleton screens za bolji UX
 - ✅ **Performance optimizacije** - ISR caching, image optimization
 
 ### Za implementaciju 🔨
-- ⏳ **Editiranje profila** - Mogućnost uređivanja korisničkih podataka
-- ⏳ **Admin panel** - Upravljanje korisnicima i sadržajem
 - ⏳ **Notifikacije** - Real-time obavijesti za odgovore i glasove
+- ⏳ **Upload slika** - Dodavanje slika u teme i odgovore
 
 ## 🛠 Tech Stack
 
 - **Frontend:** Next.js 16.0.7 (App Router), TypeScript, React 19.2.1
 - **Styling:** Tailwind CSS 3.4.18, shadcn/ui komponente
+- **Markdown:** react-markdown, remark-gfm, react-syntax-highlighter
 - **Validation:** Zod 4.1.13
 - **Backend:** Supabase (PostgreSQL) sa Row-Level Security
 - **Authentication:** Supabase Auth sa SSR (@supabase/ssr)
@@ -143,6 +147,7 @@ Nakon registracije:
 - **Odgovori**: Komentiranje sa threaded replies
 - **Glasanje**: Upvote/downvote sistem
 - **Pretraga**: Full-text pretraga po naslovu i sadržaju
+- **Markdown Editor**: Live preview, syntax highlighting, built-in pomoć
 
 ### User Profile
 - Statistike korisnika (teme, odgovori, reputacija)

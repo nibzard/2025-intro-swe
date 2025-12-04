@@ -2,7 +2,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare, Calendar, User as UserIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { MessageSquare, Calendar, User as UserIcon, Edit } from 'lucide-react';
 
 interface PageProps {
   params: Promise<{ username: string }>;
@@ -20,6 +21,11 @@ export default async function Page({ params }: PageProps) {
   const { username } = await params;
   const supabase = await createServerSupabaseClient();
 
+  // Get current user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   // Get user profile
   const { data: profile } = await supabase
     .from('profiles')
@@ -30,6 +36,9 @@ export default async function Page({ params }: PageProps) {
   if (!profile) {
     notFound();
   }
+
+  // Check if viewing own profile
+  const isOwnProfile = user?.id === profile.id;
 
   // Get user's topics
   const { data: topics } = await (supabase as any)
@@ -67,7 +76,17 @@ export default async function Page({ params }: PageProps) {
               {profile.username.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">{profile.username}</h1>
+              <div className="flex items-start justify-between mb-2">
+                <h1 className="text-3xl font-bold">{profile.username}</h1>
+                {isOwnProfile && (
+                  <Link href={`/forum/user/${username}/edit`}>
+                    <Button variant="outline" size="sm">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Uredi Profil
+                    </Button>
+                  </Link>
+                )}
+              </div>
               {profile.full_name && (
                 <p className="text-lg text-gray-600 dark:text-gray-400 mb-3">
                   {profile.full_name}
