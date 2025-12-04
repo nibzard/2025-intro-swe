@@ -21,10 +21,10 @@ export default function NewTopicPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
-  const supabase = createClient();
 
   useEffect(() => {
     async function loadCategories() {
+      const supabase = createClient();
       const { data } = await (supabase as any)
         .from('categories')
         .select('*')
@@ -61,6 +61,7 @@ export default function NewTopicPage() {
     setIsSubmitting(true);
     setError('');
 
+    const supabase = createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
