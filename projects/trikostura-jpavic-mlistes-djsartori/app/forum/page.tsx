@@ -18,7 +18,7 @@ export default async function ForumPage() {
 
   // Get topic counts for each category
   const categoryData = await Promise.all(
-    (categories || []).map(async (category: any) => {
+    (categories || []).map(async (category) => {
       const { count: topicCount } = await supabase
         .from('topics')
         .select('*', { count: 'exact', head: true })
@@ -116,7 +116,7 @@ export default async function ForumPage() {
           <h2 className="text-2xl font-bold">Nedavne Teme</h2>
         </div>
         <div className="space-y-3">
-          {recentTopics?.map((topic: any) => (
+          {recentTopics?.map((topic) => (
             <Card key={topic.id} className="hover:shadow-sm transition-shadow">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between gap-4">

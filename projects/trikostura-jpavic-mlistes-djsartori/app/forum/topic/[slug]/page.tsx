@@ -5,7 +5,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ReplyForm } from '@/components/forum/reply-form';
 import { ReplyCard } from '@/components/forum/reply-card';
-import { MarkdownRenderer } from '@/components/forum/markdown-renderer';
 import { MessageSquare, ArrowLeft } from 'lucide-react';
 
 export default async function TopicPage({
@@ -36,19 +35,17 @@ export default async function TopicPage({
   }
 
   // Increment view count
-  try {
-    await (supabase as any).rpc('increment', {
-      table_name: 'topics',
-      row_id: (topic as any).id,
-      column_name: 'view_count',
-    });
-  } catch (error) {
+  await supabase.rpc('increment', {
+    table_name: 'topics',
+    row_id: topic.id,
+    column_name: 'view_count',
+  }).catch(() => {
     // Fallback if function doesn't exist
-    await (supabase as any)
+    supabase
       .from('topics')
-      .update({ view_count: (topic as any).view_count + 1 })
-      .eq('id', (topic as any).id);
-  }
+      .update({ view_count: topic.view_count + 1 })
+      .eq('id', topic.id);
+  });
 
   // Get replies with user vote info
   const { data: replies } = await supabase
@@ -57,7 +54,7 @@ export default async function TopicPage({
       *,
       author:profiles!replies_author_id_fkey(username, avatar_url, reputation)
     `)
-    .eq('topic_id', (topic as any).id)
+    .eq('topic_id', topic.id)
     .order('created_at', { ascending: true });
 
   // Get user votes for replies if user is logged in
@@ -69,10 +66,10 @@ export default async function TopicPage({
       .eq('user_id', user.id)
       .in(
         'reply_id',
-        replies.map((r: any) => r.id)
+        replies.map((r) => r.id)
       );
 
-    votes?.forEach((vote: any) => {
+    votes?.forEach((vote) => {
       userVotes[vote.reply_id] = vote.vote_type;
     });
   }
@@ -80,10 +77,10 @@ export default async function TopicPage({
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Link href={`/forum/category/${(topic as any).category?.slug}`}>
+        <Link href={`/forum/category/${(topic.category as any)?.slug}`}>
           <Button variant="ghost" size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Natrag na {(topic as any).category?.name}
+            Natrag na {(topic.category as any)?.name}
           </Button>
         </Link>
       </div>
@@ -94,28 +91,28 @@ export default async function TopicPage({
             <span
               className="px-3 py-1 text-sm font-semibold rounded-full"
               style={{
-                backgroundColor: (topic as any).category?.color + '20',
-                color: (topic as any).category?.color,
+                backgroundColor: (topic.category as any)?.color + '20',
+                color: (topic.category as any)?.color,
               }}
             >
-              {(topic as any).category?.icon} {(topic as any).category?.name}
+              {(topic.category as any)?.icon} {(topic.category as any)?.name}
             </span>
-            {(topic as any).is_pinned && (
+            {topic.is_pinned && (
               <span className="text-yellow-500">📌 Prikvačeno</span>
             )}
-            {(topic as any).is_locked && (
+            {topic.is_locked && (
               <span className="text-gray-500">🔒 Zaključano</span>
             )}
           </div>
 
-          <h1 className="text-3xl font-bold mb-4">{(topic as any).title}</h1>
+          <h1 className="text-3xl font-bold mb-4">{topic.title}</h1>
 
           <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
             <div className="flex items-center gap-4">
               <span>
-                Autor: <strong>{(topic as any).author?.username}</strong>
+                Autor: <strong>{(topic.author as any)?.username}</strong>
               </span>
-              <span>{new Date((topic as any).created_at).toLocaleDateString('hr-HR', {
+              <span>{new Date(topic.created_at).toLocaleDateString('hr-HR', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
@@ -126,13 +123,15 @@ export default async function TopicPage({
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
                 <MessageSquare className="w-4 h-4" />
-                {(topic as any).reply_count} odgovora
+                {topic.reply_count} odgovora
               </span>
-              <span>{(topic as any).view_count} pregleda</span>
+              <span>{topic.view_count} pregleda</span>
             </div>
           </div>
 
-          <MarkdownRenderer content={(topic as any).content} />
+          <div className="prose dark:prose-invert max-w-none">
+            <p className="whitespace-pre-wrap">{topic.content}</p>
+          </div>
         </CardContent>
       </Card>
 
@@ -142,7 +141,7 @@ export default async function TopicPage({
             <MessageSquare className="w-6 h-6" />
             Odgovori ({replies.length})
           </h2>
-          {replies.map((reply: any) => (
+          {replies.map((reply) => (
             <ReplyCard
               key={reply.id}
               reply={reply}
@@ -153,14 +152,14 @@ export default async function TopicPage({
         </div>
       )}
 
-      {user && !(topic as any).is_locked ? (
+      {user && !topic.is_locked ? (
         <Card>
           <CardContent className="p-6">
             <h3 className="text-xl font-semibold mb-4">Dodaj odgovor</h3>
-            <ReplyForm topicId={(topic as any).id} />
+            <ReplyForm topicId={topic.id} />
           </CardContent>
         </Card>
-      ) : (topic as any).is_locked ? (
+      ) : topic.is_locked ? (
         <Card>
           <CardContent className="p-6 text-center text-gray-500">
             <p>Ova tema je zaključana i ne možete dodati nove odgovore.</p>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { MarkdownEditor } from '@/components/forum/markdown-editor';
+import { Textarea } from '@/components/ui/textarea';
 import { createClient } from '@/lib/supabase/client';
 
 export function ReplyForm({ topicId }: { topicId: string }) {
@@ -59,12 +59,13 @@ export function ReplyForm({ topicId }: { topicId: string }) {
         </div>
       )}
 
-      <MarkdownEditor
+      <Textarea
         value={content}
-        onChange={setContent}
-        placeholder="Napiši svoj odgovor... Markdown je podržan!"
+        onChange={(e) => setContent(e.target.value)}
+        placeholder="Napiši svoj odgovor..."
         rows={6}
-        name="content"
+        disabled={isSubmitting}
+        className="resize-none"
       />
 
       <div className="flex justify-end">
