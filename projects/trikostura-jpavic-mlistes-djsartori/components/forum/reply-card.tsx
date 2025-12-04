@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MarkdownRenderer } from '@/components/forum/markdown-renderer';
+import { AttachmentList } from '@/components/forum/attachment-list';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -135,6 +136,7 @@ export function ReplyCard({ reply, userVote, isLoggedIn }: ReplyCardProps) {
             </div>
 
             <MarkdownRenderer content={reply.content} />
+            <AttachmentList attachments={reply.attachments || []} />
 
             {reply.is_solution && (
               <div className="mt-3 inline-flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded text-sm font-medium">
