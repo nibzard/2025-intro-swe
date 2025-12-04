@@ -1,0 +1,129 @@
+{
+  "name": "Scientific Programming 2025/26",
+  "image": "mcr.microsoft.com/devcontainers/python:3.13",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": false,
+      "upgradePackages": true,
+      "username": "vscode",
+      "userUid": "automatic",
+      "userGid": "automatic"
+    }
+  },
+  "containerEnv": {
+    "SHELL": "/bin/bash",
+    "PYTHONUNBUFFERED": "1",
+    "UV_CACHE_DIR": "/tmp/uv-cache",
+    "OPENAI_API_KEY": "${localEnv:OPENAI_API_KEY}",
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+    "GOOGLE_API_KEY": "${localEnv:GOOGLE_API_KEY}",
+    "GROQ_API_KEY": "${localEnv:GROQ_API_KEY}"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.jupyter",
+        "ms-toolsai.jupyter-renderers",
+        "ms-toolsai.jupyter-keymap",
+        "marimo-team.vscode-marimo",
+        "ms-python.black-formatter",
+        "ms-python.flake8",
+        "ms-python.mypy-type-checker",
+        "ms-vscode.vscode-json",
+        "eamodio.gitlens",
+        "GitHub.vscode-pull-request-github",
+        "anthropic.claude-code",
+        "google.gemini-cli-vscode-ide-companion",
+        "openai.chatgpt",
+        "sst-dev.opencode",
+        "njpwerner.autodocstring",
+        "ms-vscode.vscode-markdown",
+        "hbenl.vscode-test-explorer",
+        "formulahendry.code-runner",
+        "ms-vscode.live-server",
+        "redhat.vscode-yaml"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.formatting.provider": "black",
+        "python.linting.enabled": true,
+        "python.linting.flake8Enabled": true,
+        "python.linting.mypyEnabled": true,
+        "python.analysis.autoImportCompletions": true,
+        "python.analysis.typeCheckingMode": "basic",
+        "jupyter.askForKernelRestart": false,
+        "jupyter.askForLargeDataFrames": false,
+        "jupyter.interactiveWindowMode": "perFile",
+        "jupyter.experimental.askForKernelRestart": false,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": true
+        },
+        "files.associations": {
+          "*.ipynb": "jupyter"
+        },
+        "notebook.lineNumbers": "on",
+        "notebook.output.scrolling": true,
+        "notebook.formatOnSave.enabled": true,
+        "notebook.cellToolbarLocation": {
+          "default": "right",
+          "jupyter-notebook": "left"
+        },
+        "python.terminal.activateEnvironment": true,
+        "terminal.integrated.defaultProfile.linux": "zsh"
+      }
+    }
+  },
+  "forwardPorts": [
+    8888,
+    8000,
+    3000,
+    5000,
+    8050,
+    7860,
+    2818
+  ],
+  "portsAttributes": {
+    "8888": {
+      "label": "Jupyter Lab",
+      "onAutoForward": "notify"
+    },
+    "8000": {
+      "label": "FastAPI/Streamlit",
+      "onAutoForward": "silent"
+    },
+    "3000": {
+      "label": "React/Frontend",
+      "onAutoForward": "silent"
+    },
+    "5000": {
+      "label": "Flask/Dash",
+      "onAutoForward": "silent"
+    },
+    "8050": {
+      "label": "Dash App",
+      "onAutoForward": "silent"
+    },
+    "7860": {
+      "label": "Gradio App",
+      "onAutoForward": "silent"
+    },
+    "2818": {
+      "label": "Marimo",
+      "onAutoForward": "notify"
+    }
+  },
+  "mounts": [
+    "source=${localWorkspaceFolder}/data,target=/workspaces/data,type=bind",
+    "source=${localWorkspaceFolder}/notebooks,target=/workspaces/notebooks,type=bind"
+  ],
+  "postCreateCommand": "bash .devcontainer/setup.sh || echo 'Setup completed with warnings'; python -m pip install --upgrade pip; python -m pip install fastapi==0.104.1 uvicorn[standard]==0.24.0 sqlalchemy==2.0.23 pydantic==2.5.0 pydantic-settings==2.1.0 python-jose[cryptography]==3.3.0 passlib[bcrypt]==1.7.4 python-multipart==0.0.6 alembic==1.12.1 psycopg2-binary==2.9.9",
+  "remoteUser": "vscode",
+  "postStartCommand": "sudo chown -R vscode:vscode /workspaces/ || true"
+}
