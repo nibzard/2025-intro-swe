@@ -1,7 +1,7 @@
-import { createBrowserSupabaseClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 export async function uploadAvatar(file: File, userId: string): Promise<string> {
-  const supabase = createBrowserSupabaseClient();
+  const supabase = createClient();
 
   // Create unique filename
   const fileExt = file.name.split('.').pop();
@@ -29,7 +29,7 @@ export async function uploadAvatar(file: File, userId: string): Promise<string> 
 }
 
 export async function uploadBanner(file: File, userId: string): Promise<string> {
-  const supabase = createBrowserSupabaseClient();
+  const supabase = createClient();
 
   // Create unique filename
   const fileExt = file.name.split('.').pop();
@@ -57,7 +57,7 @@ export async function uploadBanner(file: File, userId: string): Promise<string> 
 }
 
 export async function deleteImage(url: string): Promise<void> {
-  const supabase = createBrowserSupabaseClient();
+  const supabase = createClient();
 
   // Extract file path from URL
   const urlParts = url.split('/profile-images/');

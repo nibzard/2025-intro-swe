@@ -52,7 +52,7 @@ export function ReplyCard({ reply, userVote, isLoggedIn }: ReplyCardProps) {
     }
     // If user is changing vote
     else if (currentVote) {
-      await supabase
+      await (supabase as any)
         .from('votes')
         .update({ vote_type: voteType })
         .eq('user_id', user.id)
@@ -69,7 +69,7 @@ export function ReplyCard({ reply, userVote, isLoggedIn }: ReplyCardProps) {
     }
     // New vote
     else {
-      await supabase.from('votes').insert({
+      await (supabase as any).from('votes').insert({
         user_id: user.id,
         reply_id: reply.id,
         vote_type: voteType,

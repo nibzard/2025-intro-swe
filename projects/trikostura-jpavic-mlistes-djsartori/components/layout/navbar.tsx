@@ -12,7 +12,7 @@ export async function Navbar() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let profile = null;
+  let profile: any = null;
   let notifications: Notification[] = [];
   let unreadCount = 0;
 

@@ -53,7 +53,7 @@ export async function updateProfile(formData: FormData) {
   const validationResult = profileUpdateSchema.safeParse(rawData);
 
   if (!validationResult.success) {
-    const errorMessage = validationResult.error.errors?.[0]?.message || 'Nevažeći podaci';
+    const errorMessage = (validationResult.error as any).errors?.[0]?.message || 'Nevažeći podaci';
     return {
       success: false,
       error: errorMessage,

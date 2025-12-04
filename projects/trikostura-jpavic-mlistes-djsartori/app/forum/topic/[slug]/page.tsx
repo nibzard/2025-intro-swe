@@ -21,7 +21,7 @@ export default async function TopicPage({
   } = await supabase.auth.getUser();
 
   // Get topic
-  const { data: topic } = await supabase
+  const { data: topic }: { data: any } = await supabase
     .from('topics')
     .select(`
       *,
@@ -37,21 +37,21 @@ export default async function TopicPage({
 
   // Increment view count
   try {
-    await supabase.rpc('increment', {
+    await (supabase as any).rpc('increment', {
       table_name: 'topics',
       row_id: topic.id,
       column_name: 'view_count',
     });
   } catch {
     // Fallback if function doesn't exist
-    await supabase
+    await (supabase as any)
       .from('topics')
       .update({ view_count: topic.view_count + 1 })
       .eq('id', topic.id);
   }
 
   // Get replies with user vote info
-  const { data: replies } = await supabase
+  const { data: replies }: { data: any } = await supabase
     .from('replies')
     .select(`
       *,
@@ -69,10 +69,10 @@ export default async function TopicPage({
       .eq('user_id', user.id)
       .in(
         'reply_id',
-        replies.map((r) => r.id)
+        replies.map((r: any) => r.id)
       );
 
-    votes?.forEach((vote) => {
+    votes?.forEach((vote: any) => {
       userVotes[vote.reply_id] = vote.vote_type;
     });
   }
@@ -142,7 +142,7 @@ export default async function TopicPage({
             <MessageSquare className="w-6 h-6" />
             Odgovori ({replies.length})
           </h2>
-          {replies.map((reply) => (
+          {replies.map((reply: any) => (
             <ReplyCard
               key={reply.id}
               reply={reply}

@@ -28,7 +28,7 @@ export default async function Page({ params }: PageProps) {
   } = await supabase.auth.getUser();
 
   // Get user profile
-  const { data: profile } = await supabase
+  const { data: profile }: { data: any } = await supabase
     .from('profiles')
     .select('*')
     .eq('username', username)
@@ -328,7 +328,7 @@ export default async function Page({ params }: PageProps) {
           <CardContent>
             {topics && topics.length > 0 ? (
               <div className="space-y-4">
-                {topics.map((topic) => (
+                {topics.map((topic: any) => (
                   <div key={topic.id} className="border-b last:border-0 pb-3 last:pb-0">
                     <Link
                       href={`/forum/topic/${topic.slug}`}
@@ -375,7 +375,7 @@ export default async function Page({ params }: PageProps) {
           <CardContent>
             {replies && replies.length > 0 ? (
               <div className="space-y-4">
-                {replies.map((reply) => (
+                {replies.map((reply: any) => (
                   <div key={reply.id} className="border-b last:border-0 pb-3 last:pb-0">
                     <Link
                       href={`/forum/topic/${reply.topic.slug}`}

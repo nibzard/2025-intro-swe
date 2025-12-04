@@ -21,7 +21,7 @@ export default async function EditProfilePage({
   }
 
   // Get profile being edited
-  const { data: profile } = await supabase
+  const { data: profile }: { data: any } = await supabase
     .from('profiles')
     .select('*')
     .eq('username', username)
