@@ -23,6 +23,7 @@ const nextConfig = {
         '*.app.github.dev',
         '*.githubpreview.dev',
       ],
+      bodySizeLimit: '15mb', // Increase limit for image uploads (default is 1mb)
     },
   },
 };
