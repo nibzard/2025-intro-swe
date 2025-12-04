@@ -19,10 +19,10 @@ interface NotificationPageClientProps {
 export function NotificationPageClient({ initialNotifications }: NotificationPageClientProps) {
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const router = useRouter();
-  const supabase = createClient();
 
   useEffect(() => {
     const setupRealtimeSubscription = async () => {
+      const supabase = createClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -82,13 +82,20 @@ export function NotificationPageClient({ initialNotifications }: NotificationPag
         )
         .subscribe();
 
-      return () => {
-        supabase.removeChannel(channel);
-      };
+      return { supabase, channel };
     };
 
-    setupRealtimeSubscription();
-  }, [supabase]);
+    let cleanup: { supabase: any; channel: any } | null | undefined = null;
+    setupRealtimeSubscription().then((result) => {
+      cleanup = result;
+    });
+
+    return () => {
+      if (cleanup) {
+        cleanup.supabase.removeChannel(cleanup.channel);
+      }
+    };
+  }, []);
 
   const getIcon = (type: string) => {
     switch (type) {
