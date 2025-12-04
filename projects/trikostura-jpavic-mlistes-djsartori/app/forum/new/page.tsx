@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { MarkdownEditor } from '@/components/forum/markdown-editor';
 import { createClient } from '@/lib/supabase/client';
 import { ArrowLeft } from 'lucide-react';
 
@@ -155,14 +155,12 @@ export default function NewTopicPage() {
 
             <div className="space-y-2">
               <Label htmlFor="content">Sadržaj</Label>
-              <Textarea
-                id="content"
+              <MarkdownEditor
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Opiši svoju temu detaljno..."
+                onChange={setContent}
+                placeholder="Opiši svoju temu detaljno... (Markdown podržan)"
                 rows={12}
-                disabled={isSubmitting}
-                className="resize-none"
+                name="content"
               />
             </div>
 

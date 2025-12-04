@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
+import { NotificationBell } from '@/components/notifications/notification-bell';
 import { logout } from '@/app/auth/actions';
 import { MessageSquare, User, LogOut, Search, Settings } from 'lucide-react';
+import type { Notification } from '@/types/notifications';
 
 export async function Navbar() {
   const supabase = await createServerSupabaseClient();
@@ -11,6 +13,9 @@ export async function Navbar() {
   } = await supabase.auth.getUser();
 
   let profile = null;
+  let notifications: Notification[] = [];
+  let unreadCount = 0;
+
   if (user) {
     const { data } = await supabase
       .from('profiles')
@@ -18,6 +23,22 @@ export async function Navbar() {
       .eq('id', user.id)
       .single();
     profile = data;
+
+    // Fetch notifications
+    const { data: notificationData } = await supabase
+      .from('notifications')
+      .select(`
+        *,
+        actor:actor_id(username, avatar_url)
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (notificationData) {
+      notifications = notificationData as Notification[];
+      unreadCount = notificationData.filter((n: any) => !n.is_read).length;
+    }
   }
 
   return (
@@ -60,6 +81,10 @@ export async function Navbar() {
                 <Link href="/forum/new">
                   <Button size="sm">Nova tema</Button>
                 </Link>
+                <NotificationBell
+                  initialNotifications={notifications}
+                  initialUnreadCount={unreadCount}
+                />
                 <Link
                   href={`/forum/user/${profile.username}`}
                   className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
