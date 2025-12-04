@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { Calendar, MessageSquare, User as UserIcon } from 'lucide-react';
+import { Calendar, MessageSquare, User as UserIcon, Github, Linkedin, Globe, Twitter, Edit } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 
 interface PageProps {
   params: Promise<{ username: string }>;
@@ -20,6 +22,11 @@ export default async function Page({ params }: PageProps) {
   const { username } = await params;
   const supabase = await createServerSupabaseClient();
 
+  // Get current user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   // Get user profile
   const { data: profile } = await supabase
     .from('profiles')
@@ -30,6 +37,8 @@ export default async function Page({ params }: PageProps) {
   if (!profile) {
     notFound();
   }
+
+  const isOwnProfile = user?.id === profile.id;
 
   // Get user's topics
   const { data: topics } = await (supabase as any)
@@ -57,23 +66,82 @@ export default async function Page({ params }: PageProps) {
   const topicCount = topics?.length || 0;
   const replyCount = replies?.length || 0;
 
+  const profileColor = profile.profile_color || '#3B82F6';
+  const skills = profile.skills ? profile.skills.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
+      {/* Profile Banner */}
+      {profile.profile_banner_url ? (
+        <div className="relative w-full h-64 rounded-lg overflow-hidden">
+          <Image
+            src={profile.profile_banner_url}
+            alt="Profile Banner"
+            fill
+            className="object-cover"
+          />
+        </div>
+      ) : (
+        <div
+          className="w-full h-64 rounded-lg"
+          style={{
+            background: `linear-gradient(135deg, ${profileColor} 0%, ${profileColor}dd 100%)`,
+          }}
+        />
+      )}
+
       {/* Profile Header */}
-      <Card>
+      <Card className="relative -mt-16">
         <CardContent className="p-8">
           <div className="flex items-start gap-6">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-4xl font-bold">
-              {profile.username.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">{profile.username}</h1>
-              {profile.full_name && (
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-3">
-                  {profile.full_name}
-                </p>
+            <div className="relative">
+              {profile.avatar_url ? (
+                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 bg-white">
+                  <Image
+                    src={profile.avatar_url}
+                    alt={profile.username}
+                    width={128}
+                    height={128}
+                    className="object-cover"
+                  />
+                </div>
+              ) : (
+                <div
+                  className="w-32 h-32 rounded-full flex items-center justify-center text-white text-4xl font-bold border-4 border-white dark:border-gray-800"
+                  style={{
+                    background: `linear-gradient(135deg, ${profileColor} 0%, ${profileColor}dd 100%)`,
+                  }}
+                >
+                  {profile.username.charAt(0).toUpperCase()}
+                </div>
               )}
-              <div className="flex items-center gap-6 text-sm text-gray-500">
+            </div>
+
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold mb-2">{profile.username}</h1>
+                  {profile.full_name && (
+                    <p className="text-lg text-gray-600 dark:text-gray-400 mb-3">
+                      {profile.full_name}
+                    </p>
+                  )}
+                </div>
+                {isOwnProfile && (
+                  <Link href={`/forum/user/${username}/edit`}>
+                    <Button variant="outline">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Uredi Profil
+                    </Button>
+                  </Link>
+                )}
+              </div>
+
+              {profile.bio && (
+                <p className="text-gray-700 dark:text-gray-300 mb-4">{profile.bio}</p>
+              )}
+
+              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   <span>
@@ -91,27 +159,155 @@ export default async function Page({ params }: PageProps) {
                   </span>
                 )}
               </div>
+
+              {/* Social Links */}
+              {(profile.github_url || profile.linkedin_url || profile.website_url || profile.twitter_url) && (
+                <div className="flex gap-3 mb-4">
+                  {profile.github_url && (
+                    <a
+                      href={profile.github_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      title="GitHub"
+                    >
+                      <Github className="w-5 h-5" />
+                    </a>
+                  )}
+                  {profile.linkedin_url && (
+                    <a
+                      href={profile.linkedin_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      title="LinkedIn"
+                    >
+                      <Linkedin className="w-5 h-5" />
+                    </a>
+                  )}
+                  {profile.website_url && (
+                    <a
+                      href={profile.website_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      title="Website"
+                    >
+                      <Globe className="w-5 h-5" />
+                    </a>
+                  )}
+                  {profile.twitter_url && (
+                    <a
+                      href={profile.twitter_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      title="Twitter/X"
+                    >
+                      <Twitter className="w-5 h-5" />
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           </div>
+
+          {/* Academic Info */}
+          {(profile.university || profile.study_program || profile.year_of_study || profile.graduation_year) && (
+            <div className="mt-6 pt-6 border-t">
+              <h3 className="text-lg font-semibold mb-3">Akademske Informacije</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                {profile.university && (
+                  <div>
+                    <span className="text-gray-500 dark:text-gray-400">Sveučilište</span>
+                    <p className="font-medium">{profile.university}</p>
+                  </div>
+                )}
+                {profile.study_program && (
+                  <div>
+                    <span className="text-gray-500 dark:text-gray-400">Program</span>
+                    <p className="font-medium">{profile.study_program}</p>
+                  </div>
+                )}
+                {profile.year_of_study && (
+                  <div>
+                    <span className="text-gray-500 dark:text-gray-400">Godina</span>
+                    <p className="font-medium">{profile.year_of_study}. godina</p>
+                  </div>
+                )}
+                {profile.graduation_year && (
+                  <div>
+                    <span className="text-gray-500 dark:text-gray-400">Završetak</span>
+                    <p className="font-medium">{profile.graduation_year}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Academic Interests */}
+          {profile.academic_interests && (
+            <div className="mt-6 pt-6 border-t">
+              <h3 className="text-lg font-semibold mb-3">Akademski Interesi</h3>
+              <p className="text-gray-700 dark:text-gray-300">{profile.academic_interests}</p>
+            </div>
+          )}
+
+          {/* Skills */}
+          {skills.length > 0 && (
+            <div className="mt-6 pt-6 border-t">
+              <h3 className="text-lg font-semibold mb-3">Vještine i Tehnologije</h3>
+              <div className="flex flex-wrap gap-2">
+                {skills.map((skill: string, index: number) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 rounded-full text-sm font-medium"
+                    style={{
+                      backgroundColor: `${profileColor}20`,
+                      color: profileColor,
+                    }}
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Statistics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{topicCount}</div>
+              <div
+                className="text-2xl font-bold"
+                style={{ color: profileColor }}
+              >
+                {topicCount}
+              </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Teme</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{replyCount}</div>
+              <div
+                className="text-2xl font-bold"
+                style={{ color: profileColor }}
+              >
+                {replyCount}
+              </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Odgovori</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">
+              <div
+                className="text-2xl font-bold"
+                style={{ color: profileColor }}
+              >
                 {profile.reputation || 0}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Reputacija</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">
+              <div
+                className="text-2xl font-bold"
+                style={{ color: profileColor }}
+              >
                 {topicCount + replyCount}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Ukupno aktivnosti</div>

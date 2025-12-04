@@ -25,6 +25,17 @@ export interface Database {
           reputation: number
           created_at: string
           updated_at: string
+          github_url: string | null
+          linkedin_url: string | null
+          website_url: string | null
+          twitter_url: string | null
+          year_of_study: number | null
+          graduation_year: number | null
+          courses: string | null
+          academic_interests: string | null
+          skills: string | null
+          profile_color: string
+          profile_banner_url: string | null
         }
         Insert: {
           id: string
@@ -39,6 +50,17 @@ export interface Database {
           reputation?: number
           created_at?: string
           updated_at?: string
+          github_url?: string | null
+          linkedin_url?: string | null
+          website_url?: string | null
+          twitter_url?: string | null
+          year_of_study?: number | null
+          graduation_year?: number | null
+          courses?: string | null
+          academic_interests?: string | null
+          skills?: string | null
+          profile_color?: string
+          profile_banner_url?: string | null
         }
         Update: {
           id?: string
@@ -53,6 +75,17 @@ export interface Database {
           reputation?: number
           created_at?: string
           updated_at?: string
+          github_url?: string | null
+          linkedin_url?: string | null
+          website_url?: string | null
+          twitter_url?: string | null
+          year_of_study?: number | null
+          graduation_year?: number | null
+          courses?: string | null
+          academic_interests?: string | null
+          skills?: string | null
+          profile_color?: string
+          profile_banner_url?: string | null
         }
       }
       categories: {
