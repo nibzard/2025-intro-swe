@@ -41,30 +41,33 @@ CREATE POLICY "Users can delete their own attachments"
   ON attachments FOR DELETE
   USING (auth.uid() = uploaded_by);
 
--- Storage bucket setup instructions:
+-- ============================================
+-- STORAGE BUCKET SETUP (Do this in Supabase Dashboard)
+-- ============================================
+--
 -- 1. Go to Supabase Dashboard > Storage
--- 2. Create a new bucket called 'attachments'
--- 3. Set it to Public (for easy file access)
--- 4. Add these policies:
-
--- Storage Policies (run in SQL Editor):
--- Allow authenticated users to upload files
-INSERT INTO storage.policies (name, bucket_id, definition)
-VALUES (
-  'Authenticated users can upload attachments',
-  'attachments',
-  '{
-    "with_check": "(auth.role() = ''authenticated'')",
-    "using": "(auth.role() = ''authenticated'')"
-  }'::jsonb
-);
-
--- Allow everyone to download files
-INSERT INTO storage.policies (name, bucket_id, definition)
-VALUES (
-  'Anyone can download attachments',
-  'attachments',
-  '{
-    "using": "true"
-  }'::jsonb
-);
+-- 2. Click "New bucket"
+-- 3. Name: attachments
+-- 4. Make it Public: YES (toggle ON)
+-- 5. Click "Create bucket"
+--
+-- 6. After creating bucket, click on "attachments" bucket
+-- 7. Go to "Policies" tab
+-- 8. Click "New Policy"
+--
+-- Policy 1: Allow authenticated users to upload
+--   - Policy name: Authenticated users can upload
+--   - Allowed operation: INSERT
+--   - Target roles: authenticated
+--   - USING expression: true
+--   - WITH CHECK expression: (bucket_id = 'attachments')
+--
+-- Policy 2: Allow everyone to read/download
+--   - Policy name: Anyone can download
+--   - Allowed operation: SELECT
+--   - Target roles: public
+--   - USING expression: true
+--
+-- OR use the "Simple" policy template:
+-- - "Allow public read access" (for downloads)
+-- - "Allow authenticated uploads" (for uploads)
