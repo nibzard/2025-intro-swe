@@ -34,7 +34,7 @@ export function ReplyForm({ topicId }: { topicId: string }) {
       return;
     }
 
-    const { error: insertError } = await supabase.from('replies').insert({
+    const { error: insertError } = await (supabase as any).from('replies').insert({
       content: content.trim(),
       topic_id: topicId,
       author_id: user.id,

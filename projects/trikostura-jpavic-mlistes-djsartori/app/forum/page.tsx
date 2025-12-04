@@ -116,7 +116,7 @@ export default async function ForumPage() {
           <h2 className="text-2xl font-bold">Nedavne Teme</h2>
         </div>
         <div className="space-y-3">
-          {recentTopics?.map((topic) => (
+          {recentTopics?.map((topic: any) => (
             <Card key={topic.id} className="hover:shadow-sm transition-shadow">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between gap-4">
