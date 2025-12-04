@@ -8,12 +8,13 @@ import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
 import { Search, MessageSquare } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const supabase = createClient();
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -24,6 +25,7 @@ export default function SearchPage() {
     setHasSearched(true);
 
     try {
+      const supabase = createClient();
       // Search in topics
       const { data: topics } = await (supabase as any)
         .from('topics')
