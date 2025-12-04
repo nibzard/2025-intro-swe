@@ -8,7 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MarkdownEditor } from '@/components/forum/markdown-editor';
+import { FileUpload } from '@/components/forum/file-upload';
 import { createClient } from '@/lib/supabase/client';
+import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 import { ArrowLeft } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -18,6 +20,7 @@ export default function NewTopicPage() {
   const [content, setContent] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [categories, setCategories] = useState<any[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -101,6 +104,29 @@ export default function NewTopicPage() {
       return;
     }
 
+    // Upload attachments if any
+    if (selectedFiles.length > 0) {
+      for (const file of selectedFiles) {
+        const { url, error: uploadError } = await uploadAttachment(file, user.id);
+
+        if (uploadError || !url) {
+          console.error('Failed to upload file:', file.name, uploadError);
+          continue;
+        }
+
+        // Save attachment metadata
+        await saveAttachmentMetadata(
+          url,
+          file.name,
+          file.size,
+          file.type,
+          user.id,
+          newTopic.id,
+          'topic'
+        );
+      }
+    }
+
     router.push(`/forum/topic/${slug}`);
   }
 
@@ -165,6 +191,11 @@ export default function NewTopicPage() {
                 rows={12}
                 name="content"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Datoteke</Label>
+              <FileUpload onFilesChange={setSelectedFiles} maxFiles={5} />
             </div>
 
             <div className="flex justify-end gap-3">

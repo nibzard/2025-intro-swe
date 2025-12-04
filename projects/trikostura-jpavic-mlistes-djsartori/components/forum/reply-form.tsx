@@ -4,10 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { MarkdownEditor } from '@/components/forum/markdown-editor';
+import { FileUpload } from '@/components/forum/file-upload';
 import { createClient } from '@/lib/supabase/client';
+import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 
 export function ReplyForm({ topicId }: { topicId: string }) {
   const [content, setContent] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -34,11 +37,15 @@ export function ReplyForm({ topicId }: { topicId: string }) {
       return;
     }
 
-    const { error: insertError } = await (supabase as any).from('replies').insert({
-      content: content.trim(),
-      topic_id: topicId,
-      author_id: user.id,
-    });
+    const { error: insertError, data: newReply } = await (supabase as any)
+      .from('replies')
+      .insert({
+        content: content.trim(),
+        topic_id: topicId,
+        author_id: user.id,
+      })
+      .select()
+      .single();
 
     if (insertError) {
       setError('Greška pri dodavanju odgovora');
@@ -46,7 +53,31 @@ export function ReplyForm({ topicId }: { topicId: string }) {
       return;
     }
 
+    // Upload attachments if any
+    if (selectedFiles.length > 0) {
+      for (const file of selectedFiles) {
+        const { url, error: uploadError } = await uploadAttachment(file, user.id);
+
+        if (uploadError || !url) {
+          console.error('Failed to upload file:', file.name, uploadError);
+          continue;
+        }
+
+        // Save attachment metadata
+        await saveAttachmentMetadata(
+          url,
+          file.name,
+          file.size,
+          file.type,
+          user.id,
+          newReply.id,
+          'reply'
+        );
+      }
+    }
+
     setContent('');
+    setSelectedFiles([]);
     setIsSubmitting(false);
     router.refresh();
   }
@@ -65,6 +96,8 @@ export function ReplyForm({ topicId }: { topicId: string }) {
         placeholder="Napiši svoj odgovor... (Markdown podržan)"
         rows={6}
       />
+
+      <FileUpload onFilesChange={setSelectedFiles} maxFiles={3} />
 
       <div className="flex justify-end">
         <Button type="submit" disabled={isSubmitting}>

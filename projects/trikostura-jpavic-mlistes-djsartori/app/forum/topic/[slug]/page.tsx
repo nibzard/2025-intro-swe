@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ReplyForm } from '@/components/forum/reply-form';
 import { ReplyCard } from '@/components/forum/reply-card';
 import { MarkdownRenderer } from '@/components/forum/markdown-renderer';
+import { AttachmentList } from '@/components/forum/attachment-list';
 import { MessageSquare, ArrowLeft } from 'lucide-react';
 
 export default async function TopicPage({
@@ -50,6 +51,12 @@ export default async function TopicPage({
       .eq('id', topic.id);
   }
 
+  // Get topic attachments
+  const { data: topicAttachments } = await supabase
+    .from('attachments')
+    .select('*')
+    .eq('topic_id', topic.id);
+
   // Get replies with user vote info
   const { data: replies }: { data: any } = await supabase
     .from('replies')
@@ -59,6 +66,18 @@ export default async function TopicPage({
     `)
     .eq('topic_id', topic.id)
     .order('created_at', { ascending: true });
+
+  // Get reply attachments
+  const { data: replyAttachments } = await supabase
+    .from('attachments')
+    .select('*')
+    .in('reply_id', replies?.map((r: any) => r.id) || []);
+
+  // Map attachments to replies
+  const repliesWithAttachments = replies?.map((reply: any) => ({
+    ...reply,
+    attachments: replyAttachments?.filter((att: any) => att.reply_id === reply.id) || [],
+  }));
 
   // Get user votes for replies if user is logged in
   let userVotes: any = {};
@@ -133,16 +152,17 @@ export default async function TopicPage({
           </div>
 
           <MarkdownRenderer content={topic.content} />
+          <AttachmentList attachments={topicAttachments || []} />
         </CardContent>
       </Card>
 
-      {replies && replies.length > 0 && (
+      {repliesWithAttachments && repliesWithAttachments.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <MessageSquare className="w-6 h-6" />
-            Odgovori ({replies.length})
+            Odgovori ({repliesWithAttachments.length})
           </h2>
-          {replies.map((reply: any) => (
+          {repliesWithAttachments.map((reply: any) => (
             <ReplyCard
               key={reply.id}
               reply={reply}
