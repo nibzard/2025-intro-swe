@@ -129,6 +129,8 @@ Frontend <-> API <-> Database (Supabase)
     ```
 ### 3.4 Application Structure Diagram
 ![Application Structure](https://github.com/maiva667/2025-intro-swe/blob/f879cfea803744f7f1082ee48a345e04c402f468/projects/cooksy-imajic-idezmalj/sitemap.png)
+### 3.5 High-Fidelity
+![High-Fidelity](https://github.com/maiva667/2025-intro-swe/blob/2b24526207720bd28a2eeeb86b71a31363a1b865/projects/cooksy-imajic-idezmalj/high%20fidelity.jpg)
 
 ## 4. Data Design (The Domain Model)
 *   **Core Entities:** Recipes, User
