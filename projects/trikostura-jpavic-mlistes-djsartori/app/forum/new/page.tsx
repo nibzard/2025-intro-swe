@@ -11,6 +11,8 @@ import { MarkdownEditor } from '@/components/forum/markdown-editor';
 import { createClient } from '@/lib/supabase/client';
 import { ArrowLeft } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default function NewTopicPage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
