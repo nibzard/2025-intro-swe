@@ -18,7 +18,7 @@ export default async function ForumPage() {
 
   // Get topic counts for each category
   const categoryData = await Promise.all(
-    (categories || []).map(async (category) => {
+    (categories || []).map(async (category: any) => {
       const { count: topicCount } = await supabase
         .from('topics')
         .select('*', { count: 'exact', head: true })
