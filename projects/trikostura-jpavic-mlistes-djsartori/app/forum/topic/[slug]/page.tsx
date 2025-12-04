@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ReplyForm } from '@/components/forum/reply-form';
 import { ReplyCard } from '@/components/forum/reply-card';
+import { MarkdownRenderer } from '@/components/forum/markdown-renderer';
 import { MessageSquare, ArrowLeft } from 'lucide-react';
 
 export default async function TopicPage({
@@ -35,17 +36,19 @@ export default async function TopicPage({
   }
 
   // Increment view count
-  await supabase.rpc('increment', {
-    table_name: 'topics',
-    row_id: topic.id,
-    column_name: 'view_count',
-  }).catch(() => {
+  try {
+    await supabase.rpc('increment', {
+      table_name: 'topics',
+      row_id: topic.id,
+      column_name: 'view_count',
+    });
+  } catch {
     // Fallback if function doesn't exist
-    supabase
+    await supabase
       .from('topics')
       .update({ view_count: topic.view_count + 1 })
       .eq('id', topic.id);
-  });
+  }
 
   // Get replies with user vote info
   const { data: replies } = await supabase
@@ -129,9 +132,7 @@ export default async function TopicPage({
             </div>
           </div>
 
-          <div className="prose dark:prose-invert max-w-none">
-            <p className="whitespace-pre-wrap">{topic.content}</p>
-          </div>
+          <MarkdownRenderer content={topic.content} />
         </CardContent>
       </Card>
 
