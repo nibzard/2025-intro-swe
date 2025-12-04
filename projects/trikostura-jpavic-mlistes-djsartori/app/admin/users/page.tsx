@@ -1,0 +1,28 @@
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { UserManagementClient } from './user-management-client';
+
+export const dynamic = 'force-dynamic';
+
+export default async function UsersPage() {
+  const supabase = await createServerSupabaseClient();
+
+  const { data: users } = await supabase
+    .from('profiles')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          User Management
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
+          Manage user roles and accounts
+        </p>
+      </div>
+
+      <UserManagementClient users={users || []} />
+    </div>
+  );
+}

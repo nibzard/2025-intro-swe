@@ -35,7 +35,7 @@ export default async function CategoryPage({
       author:profiles!topics_author_id_fkey(username, avatar_url),
       category:categories(name, slug, color)
     `)
-    .eq('category_id', category.id)
+    .eq('category_id', (category as any).id)
     .order('is_pinned', { ascending: false })
     .order('created_at', { ascending: false });
 
