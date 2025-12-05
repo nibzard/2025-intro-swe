@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ReplyForm } from '@/components/forum/reply-form';
 import { ReplyCard } from '@/components/forum/reply-card';
 import { MarkdownRenderer } from '@/components/forum/markdown-renderer';
-import { AttachmentList } from '@/components/forum/attachment-list';
+import { AdvancedAttachmentList } from '@/components/forum/advanced-attachment-list';
 import { MessageSquare, ArrowLeft } from 'lucide-react';
 
 export default async function TopicPage({
@@ -152,7 +152,7 @@ export default async function TopicPage({
           </div>
 
           <MarkdownRenderer content={topic.content} />
-          <AttachmentList attachments={topicAttachments || []} />
+          <AdvancedAttachmentList attachments={topicAttachments || []} />
         </CardContent>
       </Card>
 

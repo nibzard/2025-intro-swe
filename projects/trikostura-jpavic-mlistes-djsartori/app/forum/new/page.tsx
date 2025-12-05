@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MarkdownEditor } from '@/components/forum/markdown-editor';
-import { FileUpload } from '@/components/forum/file-upload';
+import { AdvancedFileUpload } from '@/components/forum/advanced-file-upload';
 import { createClient } from '@/lib/supabase/client';
 import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 import { ArrowLeft } from 'lucide-react';
@@ -195,7 +195,7 @@ export default function NewTopicPage() {
 
             <div className="space-y-2">
               <Label>Datoteke</Label>
-              <FileUpload onFilesChange={setSelectedFiles} maxFiles={5} />
+              <AdvancedFileUpload onFilesChange={setSelectedFiles} maxFiles={5} />
             </div>
 
             <div className="flex justify-end gap-3">

@@ -17,6 +17,18 @@ export const ALLOWED_FILE_TYPES = {
   'image/png': '.png',
   'image/gif': '.gif',
   'image/webp': '.webp',
+  'image/svg+xml': '.svg',
+
+  // Videos
+  'video/mp4': '.mp4',
+  'video/webm': '.webm',
+  'video/ogg': '.ogv',
+
+  // Audio
+  'audio/mpeg': '.mp3',
+  'audio/ogg': '.ogg',
+  'audio/wav': '.wav',
+  'audio/webm': '.weba',
 
   // Archives
   'application/zip': '.zip',
@@ -186,6 +198,8 @@ export function formatFileSize(bytes: number): string {
  */
 export function getFileIcon(fileType: string): string {
   if (fileType.startsWith('image/')) return '🖼️';
+  if (fileType.startsWith('video/')) return '🎥';
+  if (fileType.startsWith('audio/')) return '🎵';
   if (fileType === 'application/pdf') return '📄';
   if (fileType.includes('word') || fileType.includes('document')) return '📝';
   if (fileType.includes('excel') || fileType.includes('spreadsheet')) return '📊';
@@ -193,4 +207,32 @@ export function getFileIcon(fileType: string): string {
   if (fileType.includes('zip') || fileType.includes('rar') || fileType.includes('7z')) return '📦';
   if (fileType === 'text/plain') return '📃';
   return '📎';
+}
+
+/**
+ * Check if file is an image
+ */
+export function isImage(fileType: string): boolean {
+  return fileType.startsWith('image/');
+}
+
+/**
+ * Check if file is a video
+ */
+export function isVideo(fileType: string): boolean {
+  return fileType.startsWith('video/');
+}
+
+/**
+ * Check if file is audio
+ */
+export function isAudio(fileType: string): boolean {
+  return fileType.startsWith('audio/');
+}
+
+/**
+ * Check if file is PDF
+ */
+export function isPDF(fileType: string): boolean {
+  return fileType === 'application/pdf';
 }
