@@ -118,24 +118,21 @@ export default async function TopicPage({
 
   return (
     <div className="space-y-6">
-      {/* Back button */}
       <div className="flex items-center gap-4">
         <Link href={`/forum/category/${(topic.category as any)?.slug}`}>
-          <Button variant="ghost" size="lg" className="hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl">
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            <span className="font-semibold">Natrag na {(topic.category as any)?.name}</span>
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Natrag na {(topic.category as any)?.name}
           </Button>
         </Link>
       </div>
 
-      {/* Main topic card */}
-      <div className="bg-white dark:bg-gray-800 rounded-3xl border-2 border-gray-200 dark:border-gray-700 shadow-xl overflow-hidden">
-        <div className="p-8">
-          {/* Topic header */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3 flex-wrap">
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
               <span
-                className="inline-flex items-center gap-2 px-4 py-2 text-base font-bold rounded-xl shadow-lg"
+                className="px-3 py-1 text-sm font-semibold rounded-full"
                 style={{
                   backgroundColor: (topic.category as any)?.color + '20',
                   color: (topic.category as any)?.color,
@@ -144,14 +141,10 @@ export default async function TopicPage({
                 {(topic.category as any)?.icon} {(topic.category as any)?.name}
               </span>
               {topic.is_pinned && (
-                <span className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-xl text-sm font-bold">
-                  📌 Prikvačeno
-                </span>
+                <span className="text-yellow-500">📌 Prikvačeno</span>
               )}
               {topic.is_locked && (
-                <span className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-bold">
-                  🔒 Zaključano
-                </span>
+                <span className="text-gray-500">🔒 Zaključano</span>
               )}
             </div>
 
@@ -163,49 +156,34 @@ export default async function TopicPage({
             />
           </div>
 
-          {/* Topic title */}
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-6 text-gray-900 dark:text-white leading-tight">
-            {topic.title}
-          </h1>
+          <h1 className="text-3xl font-bold mb-4">{topic.title}</h1>
 
-          {/* Topic meta info */}
-          <div className="flex items-center justify-between text-sm mb-8 pb-6 border-b-2 border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-2">
-                <span className="text-gray-600 dark:text-gray-400">Autor:</span>
-                <span className="font-bold text-lg text-gray-900 dark:text-white">
-                  {(topic.author as any)?.username}
-                </span>
-              </div>
-              <span className="text-gray-400">•</span>
-              <span className="text-gray-600 dark:text-gray-400">
-                {new Date(topic.created_at).toLocaleDateString('hr-HR', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
+          <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
+            <div className="flex items-center gap-4">
+              <span>
+                Autor: <strong>{(topic.author as any)?.username}</strong>
               </span>
+              <span>{new Date(topic.created_at).toLocaleDateString('hr-HR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}</span>
             </div>
-            <div className="flex items-center gap-6">
-              <span className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-xl font-semibold">
-                <MessageSquare className="w-5 h-5" />
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1">
+                <MessageSquare className="w-4 h-4" />
                 {topic.reply_count} odgovora
               </span>
-              <span className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-xl font-semibold">
-                👁 {topic.view_count} pregleda
-              </span>
+              <span>{topic.view_count} pregleda</span>
             </div>
           </div>
 
-          {/* Topic content */}
-          <div className="prose prose-lg max-w-none dark:prose-invert mb-6">
-            <MarkdownRenderer content={topic.content} />
-          </div>
+          <MarkdownRenderer content={topic.content} />
           <AdvancedAttachmentList attachments={topicAttachments || []} />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       <TopicContent
         topic={topic}
@@ -214,39 +192,25 @@ export default async function TopicPage({
         currentUserId={user?.id}
       />
 
-      {/* Locked topic message */}
       {topic.is_locked && (
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-12 text-center border-2 border-gray-300 dark:border-gray-700">
-          <div className="relative">
-            <div className="text-6xl mb-4">🔒</div>
-            <p className="text-2xl font-semibold text-gray-700 dark:text-gray-300">
-              Ova tema je zaključana
-            </p>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mt-2">
-              Ne možete dodati nove odgovore.
-            </p>
-          </div>
-        </div>
+        <Card>
+          <CardContent className="p-6 text-center text-gray-500">
+            <p>Ova tema je zaključana i ne možete dodati nove odgovore.</p>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Login prompt */}
       {!user && !topic.is_locked && (
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-12 text-center border-2 border-blue-300 dark:border-blue-700">
-          <div className="relative">
-            <div className="text-6xl mb-4">👋</div>
-            <p className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
               Morate biti prijavljeni da biste mogli odgovoriti
             </p>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
-              Pridruži se zajednici i sudjeluj u diskusiji
-            </p>
             <Link href="/auth/login">
-              <Button className="px-8 py-6 text-lg font-semibold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200">
-                Prijavi se
-              </Button>
+              <Button>Prijavi se</Button>
             </Link>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
