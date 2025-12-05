@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { MarkdownEditor } from '@/components/forum/markdown-editor';
-import { FileUpload } from '@/components/forum/file-upload';
+import { AdvancedFileUpload } from '@/components/forum/advanced-file-upload';
 import { createClient } from '@/lib/supabase/client';
 import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 
@@ -97,7 +97,7 @@ export function ReplyForm({ topicId }: { topicId: string }) {
         rows={6}
       />
 
-      <FileUpload onFilesChange={setSelectedFiles} maxFiles={3} />
+      <AdvancedFileUpload onFilesChange={setSelectedFiles} maxFiles={3} />
 
       <div className="flex justify-end">
         <Button type="submit" disabled={isSubmitting}>
