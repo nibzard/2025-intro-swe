@@ -213,9 +213,37 @@ export function ReplyCard({ reply, userVote, isLoggedIn, currentUserId, isTopicA
 
   return (
     <Card id={`reply-${reply.id}`}>
-      <CardContent className="p-6">
-        <div className="flex gap-4">
-          <div className="flex flex-col items-center gap-2">
+      <CardContent className="p-3 sm:p-6">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          {/* Mobile: Horizontal voting bar */}
+          <div className="flex sm:hidden items-center gap-3 pb-3 border-b border-gray-200 dark:border-gray-800">
+            <Button
+              variant={currentVote === 1 ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleVote(1)}
+              disabled={!isLoggedIn || isVoting}
+              className="h-8 px-3"
+            >
+              <ThumbsUp className="w-3.5 h-3.5 mr-1" />
+              <span className="text-sm">{upvotes}</span>
+            </Button>
+            <span className="text-base font-semibold">
+              {upvotes - downvotes}
+            </span>
+            <Button
+              variant={currentVote === -1 ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleVote(-1)}
+              disabled={!isLoggedIn || isVoting}
+              className="h-8 px-3"
+            >
+              <ThumbsDown className="w-3.5 h-3.5 mr-1" />
+              <span className="text-sm">{downvotes}</span>
+            </Button>
+          </div>
+
+          {/* Desktop: Vertical voting bar */}
+          <div className="hidden sm:flex flex-col items-center gap-2">
             <Button
               variant={currentVote === 1 ? 'default' : 'outline'}
               size="sm"
@@ -239,14 +267,16 @@ export function ReplyCard({ reply, userVote, isLoggedIn, currentUserId, isTopicA
             </Button>
           </div>
 
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <span className="font-semibold">{reply.author?.username}</span>
-                <span className="text-sm text-gray-500">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 flex-1 min-w-0">
+                <span className="font-semibold text-sm sm:text-base truncate">
+                  {reply.author?.username}
+                </span>
+                <span className="text-xs sm:text-sm text-gray-500">
                   {new Date(reply.created_at).toLocaleDateString('hr-HR', {
                     year: 'numeric',
-                    month: 'long',
+                    month: 'short',
                     day: 'numeric',
                     hour: '2-digit',
                     minute: '2-digit',
@@ -258,18 +288,19 @@ export function ReplyCard({ reply, userVote, isLoggedIn, currentUserId, isTopicA
                   </span>
                 )}
                 {reply.author?.reputation > 0 && (
-                  <span className="text-xs px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded">
+                  <span className="text-xs px-2 py-0.5 sm:py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded">
                     {reply.author.reputation} rep
                   </span>
                 )}
               </div>
 
               {isLoggedIn && (
-                <div className="relative">
+                <div className="relative flex-shrink-0">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowActions(!showActions)}
+                    className="h-8 w-8 p-0"
                   >
                     <MoreVertical className="w-4 h-4" />
                   </Button>
@@ -343,17 +374,19 @@ export function ReplyCard({ reply, userVote, isLoggedIn, currentUserId, isTopicA
               )}
             </div>
 
-            <MarkdownRenderer content={reply.content} />
+            <div className="text-sm sm:text-base">
+              <MarkdownRenderer content={reply.content} />
+            </div>
             <AdvancedAttachmentList attachments={reply.attachments || []} />
 
             {isSolution && (
-              <div className="mt-3 inline-flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded text-sm font-medium">
+              <div className="mt-2 sm:mt-3 inline-flex items-center gap-1 px-2 sm:px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded text-xs sm:text-sm font-medium">
                 ✓ Označeno kao rješenje
               </div>
             )}
 
             {showDeleteConfirm && (
-              <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+              <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
                 <p className="text-sm text-red-800 dark:text-red-200 mb-3">
                   Jeste li sigurni da želite obrisati ovaj odgovor?
                 </p>
