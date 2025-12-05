@@ -37,12 +37,12 @@ export default async function EditProfilePage({
   }
 
   return (
-    <div className="max-w-2xl mx-auto py-8 px-4">
+    <div className="max-w-2xl mx-auto py-4 sm:py-6 md:py-8 px-3 sm:px-4">
       <Card>
-        <CardHeader>
-          <CardTitle>Uredi Profil</CardTitle>
+        <CardHeader className="px-4 sm:px-6 pt-5 sm:pt-6">
+          <CardTitle className="text-xl sm:text-2xl">Uredi Profil</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6 pb-5 sm:pb-6">
           <ProfileEditForm profile={profile} />
         </CardContent>
       </Card>

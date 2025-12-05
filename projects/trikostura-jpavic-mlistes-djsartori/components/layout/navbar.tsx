@@ -62,6 +62,12 @@ export async function Navbar() {
                 Forum
               </Link>
               <Link
+                href="/forum/users"
+                className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+              >
+                Korisnici
+              </Link>
+              <Link
                 href="/forum/search"
                 className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
               >
