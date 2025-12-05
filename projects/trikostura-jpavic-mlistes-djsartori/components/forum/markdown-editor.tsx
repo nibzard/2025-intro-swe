@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import { MarkdownRenderer } from './markdown-renderer';
 import { Button } from '@/components/ui/button';
 import { Eye, Edit, HelpCircle } from 'lucide-react';
@@ -14,16 +14,17 @@ interface MarkdownEditorProps {
   required?: boolean;
 }
 
-export function MarkdownEditor({
-  value,
-  onChange,
-  placeholder = 'Piši ovdje...',
-  rows = 6,
-  name,
-  required = false,
-}: MarkdownEditorProps) {
-  const [activeTab, setActiveTab] = useState<'write' | 'preview'>('write');
-  const [showHelp, setShowHelp] = useState(false);
+export const MarkdownEditor = forwardRef<HTMLTextAreaElement, MarkdownEditorProps>(
+  function MarkdownEditor({
+    value,
+    onChange,
+    placeholder = 'Piši ovdje...',
+    rows = 6,
+    name,
+    required = false,
+  }, ref) {
+    const [activeTab, setActiveTab] = useState<'write' | 'preview'>('write');
+    const [showHelp, setShowHelp] = useState(false);
 
   return (
     <div className="space-y-2">
@@ -105,6 +106,7 @@ export function MarkdownEditor({
       {/* Editor/Preview Area */}
       {activeTab === 'write' ? (
         <textarea
+          ref={ref}
           name={name}
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -126,4 +128,4 @@ export function MarkdownEditor({
       )}
     </div>
   );
-}
+});
