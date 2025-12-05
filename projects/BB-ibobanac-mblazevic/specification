@@ -1,0 +1,233 @@
+# Specifikacija: Web aplikacija Student Planner
+
+## 1. **Pregled projekta (Project Overview)**
+
+**Naziv projekta:** Student Planner – Mjesečni planer za studente
+
+
+**Kratki opis:**
+Student Planner je web aplikacija koja studentima pruža centralizirano mjesto za praćenje mjesečnih obveza poput ispita, zadataka, rokova predaje i osobnih podsjetnika. Sustav na početku svakog mjeseca generira pregled nadolazećih obveza, pomažući studentima organizirati vrijeme i prioritete.
+
+**Zašto je koristan:**
+Studenti često koriste različite alate (bilješke, papiriće, kalendare). Student Planner objedinjue sve obveze na jednom mjestu i pruža lagano, brzo i intuitivno iskustvo.
+
+---
+
+## 2. **Scope & Requirements**
+
+### 2.1. **Ciljevi – In-Scope (MVP)**
+
+* Omogućiti dodavanje novih obveza (naziv, datum, kategorija).
+* Omogućiti pregled obveza po mjesecu.
+* Automatski prikaz mjesečnog pregleda pri otvaranju aplikacije.
+* Omogućiti uređivanje i brisanje postojećih obveza.
+* LocalStorage spremanje podataka.
+* Responzivan dizajn.
+
+### 2.2. **Non-goals – Out-of-Scope (što se *ne radi* u ovoj verziji)**
+
+* Nema user login/auth sustava.
+* Nema sinkronizacije u oblaku.
+* Nema timskog rada ili više korisnika.
+* Nema povezivanja s Google Calendarom.
+* Nema server-side backend logike (aplikacija je 100% frontend).
+* Nema real-time notifikacija.
+* Nema tamne teme (dark mode) u MVP-u.
+
+### 2.3. **User Personas / Scenariji korištenja**
+
+**Persona: Marko, student 3. godine informatike**
+
+* Ima 6 kolegija i stalno zaboravlja rokove predaje.
+* Na početku mjeseca želi brz pregled svih ispita i zadataka.
+* Svaki dan otvara Planner da označi što je završio.
+
+**Scenarij korištenja:**
+
+1. Marko otvara aplikaciju.
+2. Aplikacija prikazuje mjesečni pregled: ispiti, rokovi, zadaće.
+3. Dodaje novu obvezu (Projekt iz Mrežnih aplikacija – 14.3.).
+4. Nakon što preda zadatak, označi ga kao završen.
+5. Podaci su spremljeni i ostaju vidljivi i nakon ponovnog otvaranja preglednika.
+
+
+## 3. **Tehnička arhitektura (Technical Architecture)**
+
+### 3.1. **Tech Stack & Rationale**
+
+* **HTML5** – jednostavno za implementaciju i široko podržano.
+* **CSS3** – omogućuje responzivan dizajn i vizualno ugodno sučelje.
+* **JavaScript (Vanilla)** – dovoljno za aplikaciju ovog opsega; nema potrebe za frameworkom.
+* **localStorage** – jednostavno pohranjivanje korisničkih podataka bez backend servera.
+
+*Razlog odabira tehnologija:* Aplikacija je mala, jednostavna i treba raditi lokalno, bez registracija ili servera.
+
+### 3.2. **High-Level Architecture**
+
+```
+Frontend (UI) → JS logika → LocalStorage → Prikaz obveza
+```
+
+### 3.3. **Arhitektura komponenti – Mermaid dijagram**
+
+```mermaid
+graph TD
+UI[UI Sučelje] --> JS[JavaScript Logika]
+JS --> LS[localStorage]
+LS --> JS
+JS --> UI
+```
+
+---
+
+## 4. **Struktura projekta (Directory Structure)**
+
+```
+student-planner/
+│── index.html        # Struktura aplikacije
+│── style.css         # Stilovi i layout
+│── script.js         # Logika upravljanja obvezama
+│── README.md         # Osnovni opis projekta
+└── specification.md  # Ovaj dokument
+```
+
+---
+
+## 5. **Data Design (Model podataka)**
+
+### 5.1. **Core Entities**
+
+* **Task (Obveza)**
+
+  * id: string
+  * title: string
+  * date: string (YYYY-MM-DD)
+  * category: string ("Ispit", "Projekt", "Zadaća", "Osobno")
+  * completed: boolean
+
+### 5.2. **Primjer JSON objekta**
+
+```json
+{
+  "id": "task_001",
+  "title": "Kolokvij iz Matematike",
+  "date": "2025-03-12",
+  "category": "Ispit",
+  "completed": false
+}
+```
+
+### 5.3. **Strategija pohrane**
+
+* Svi taskovi se spremaju u localStorage pod ključem: `tasks`
+* Format: Array JSON objekata
+
+---
+
+## 6. **Interface Specifications**
+
+### 6.1. **GUI (Web App)**
+
+**UI Komponente:**
+
+* Glavni pregled (lista obveza)
+* Forma za dodavanje obveze
+* Kategorijski filteri
+* Mjesečni pregled na vrhu
+
+**Interakcije:**
+
+* Klik na obvezu → označi kao završeno
+* Klik na X → obriši obvezu
+* Submit forme → dodaj obvezu u listu
+
+
+
+## 7. **Functional Specifications (Module Breakdown)**
+
+### **Modul A – Storage Manager**
+
+* Dohvat i spremanje taskova u localStorage
+* Validacija zapisa
+* Error handling za nepostojeći storage
+
+### **Modul B – Task Manager**
+
+* Dodavanje novih obveza
+* Brisanje obveza
+* Ažuriranje statusa (completed)
+* Filtriranje po mjesecu
+
+### **Modul C – UI Renderer**
+
+* Render HTML liste obveza
+* Render mjesečnog pregleda
+* Dinamičko osvježavanje UI-a nakon promjena
+
+
+
+## 8. **Plan razvoja i milestonovi**
+
+### **Milestone 1 – Skeleton**
+
+* Kreiran projekt, prazni HTML/CSS/JS
+* Prikaz "Hello Student Planner"
+
+### **Milestone 2 – Core Logika**
+
+* Dodavanje i brisanje obveza
+* Spremanje u localStorage
+
+### **Milestone 3 – UI & UX**
+
+* Stilizacija aplikacije
+* Responzivan dizajn
+* Mjesečni pregled
+
+### **Milestone 4 – Završni detalji**
+
+* Bug fix
+* Dokumentacija
+* Finalne provjere
+
+### **Definition of Done**
+
+* Sve obveze se mogu dodati / obrisati / označiti.
+* Podaci se spremaju nakon refreshanja.
+* Aplikacija radi na mobitelu.
+* UI je vizualno jasan i uredan.
+* README i Specifikacija završeni.
+
+
+
+## 9. **Testing & Quality Strategy**
+
+### **Unit testovi (ručni):**
+
+* Dodavanje obveze → prikazuje se u listi.
+* Brisanje obveze → nestaje iz liste.
+* Početak mjeseca → prikazuje se ispravan pregled.
+
+### **Integration testovi:**
+
+* Dodaj 10+ obveza i provjeri stabilnost.
+* Testiraj na mobilnim ekranima.
+
+### **Performance target:**
+
+* Učitavanje aplikacije < 1 sekunda.
+
+
+
+## 10. **Roadmap – buduća poboljšanja**
+
+* Dark/Light mode
+* Sinkronizacija u oblaku
+* User account sustav
+* Podsjetnici (push notifikacije)
+* Integracija s Google Calendarom
+* Napredna statistika obveza
+
+
+
+
