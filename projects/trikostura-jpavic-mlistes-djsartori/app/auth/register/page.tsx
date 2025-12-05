@@ -22,18 +22,18 @@ export default function RegisterPage() {
   const [state, formAction] = useActionState(register, undefined);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-3 sm:p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
+        <CardHeader className="space-y-1 px-4 sm:px-6 pt-5 sm:pt-6">
+          <CardTitle className="text-xl sm:text-2xl font-bold text-center">
             Registracija
           </CardTitle>
-          <CardDescription className="text-center">
+          <CardDescription className="text-center text-sm">
             Pridruži se zajednici studenata
           </CardDescription>
         </CardHeader>
         <form action={formAction}>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6">
             {state?.error && (
               <div className={`p-3 text-sm ${
                 (state as any)?.success
@@ -45,62 +45,73 @@ export default function RegisterPage() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-sm">Email</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
                 placeholder="ime.prezime@example.com"
+                className="h-11 text-base"
+                autoComplete="email"
+                inputMode="email"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="username">Korisničko ime</Label>
+              <Label htmlFor="username" className="text-sm">Korisničko ime</Label>
               <Input
                 id="username"
                 name="username"
                 type="text"
                 placeholder="korisnik123"
+                className="h-11 text-base"
+                autoComplete="username"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="full_name">Puno ime</Label>
+              <Label htmlFor="full_name" className="text-sm">Puno ime</Label>
               <Input
                 id="full_name"
                 name="full_name"
                 type="text"
                 placeholder="Ime Prezime"
+                className="h-11 text-base"
+                autoComplete="name"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Lozinka</Label>
+              <Label htmlFor="password" className="text-sm">Lozinka</Label>
               <Input
                 id="password"
                 name="password"
                 type="password"
                 placeholder="••••••••"
+                className="h-11 text-base"
+                autoComplete="new-password"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Potvrdi lozinku</Label>
+              <Label htmlFor="confirmPassword" className="text-sm">Potvrdi lozinku</Label>
               <Input
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
                 placeholder="••••••••"
+                className="h-11 text-base"
+                autoComplete="new-password"
                 required
               />
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col space-y-4">
+          <CardFooter className="flex flex-col space-y-4 px-4 sm:px-6 pb-5 sm:pb-6">
             <SubmitButton />
 
             <div className="text-sm text-center text-muted-foreground">
@@ -116,7 +127,7 @@ export default function RegisterPage() {
             <div className="text-center">
               <Link
                 href="/"
-                className="text-sm text-muted-foreground hover:text-primary"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
               >
                 ← Nazad na početnu
               </Link>

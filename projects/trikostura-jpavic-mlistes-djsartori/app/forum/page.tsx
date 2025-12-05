@@ -52,57 +52,58 @@ export default async function ForumPage() {
     .limit(10);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Forum Kategorije</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold">Forum Kategorije</h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
             Pridruži se diskusijama i postavi svoja pitanja
           </p>
         </div>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-3 sm:gap-4">
         {categoryData.map((category) => (
           <Card key={category.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-4 flex-1">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
                   <div
-                    className="text-4xl flex items-center justify-center w-16 h-16 rounded-lg"
+                    className="text-3xl sm:text-4xl flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-lg flex-shrink-0"
                     style={{ backgroundColor: category.color + '20' }}
                   >
                     {category.icon}
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <Link href={`/forum/category/${category.slug}`}>
-                      <h3 className="text-xl font-semibold hover:text-blue-600 transition-colors">
+                      <h3 className="text-lg sm:text-xl font-semibold hover:text-blue-600 transition-colors truncate">
                         {category.name}
                       </h3>
                     </Link>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
                       {category.description}
                     </p>
                     {category.latest_topic && (
-                      <div className="mt-3 text-sm text-gray-500">
-                        Zadnja tema:{' '}
+                      <div className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-500 line-clamp-1">
+                        Zadnja:{' '}
                         <Link
                           href={`/forum/topic/${category.latest_topic.slug}`}
                           className="text-blue-600 hover:underline"
                         >
                           {category.latest_topic.title}
                         </Link>
-                        {' od '}
-                        {(category.latest_topic.author as any)?.username}
+                        <span className="hidden sm:inline">
+                          {' od '}{(category.latest_topic.author as any)?.username}
+                        </span>
                       </div>
                     )}
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="text-right flex-shrink-0">
+                  <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                     {category.topic_count}
                   </div>
-                  <div className="text-sm text-gray-500">tema</div>
+                  <div className="text-xs sm:text-sm text-gray-500">tema</div>
                 </div>
               </div>
             </CardContent>
@@ -110,47 +111,47 @@ export default async function ForumPage() {
         ))}
       </div>
 
-      <div className="mt-12">
-        <div className="flex items-center gap-2 mb-6">
-          <TrendingUp className="w-5 h-5" />
-          <h2 className="text-2xl font-bold">Nedavne Teme</h2>
+      <div className="mt-8 sm:mt-12">
+        <div className="flex items-center gap-2 mb-4 sm:mb-6">
+          <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
+          <h2 className="text-xl sm:text-2xl font-bold">Nedavne Teme</h2>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {recentTopics?.map((topic: any) => (
             <Card key={topic.id} className="hover:shadow-sm transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="px-2 py-1 text-xs font-semibold rounded"
-                        style={{
-                          backgroundColor: (topic.category as any)?.color + '20',
-                          color: (topic.category as any)?.color,
-                        }}
-                      >
-                        {(topic.category as any)?.name}
-                      </span>
-                      {topic.is_pinned && (
-                        <span className="text-yellow-500 text-sm">📌</span>
-                      )}
-                    </div>
-                    <Link
-                      href={`/forum/topic/${topic.slug}`}
-                      className="text-lg font-semibold hover:text-blue-600 transition-colors mt-1 block"
+              <CardContent className="p-3 sm:p-4">
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2 flex-wrap">
+                    <span
+                      className="px-2 py-0.5 sm:py-1 text-xs font-semibold rounded flex-shrink-0"
+                      style={{
+                        backgroundColor: (topic.category as any)?.color + '20',
+                        color: (topic.category as any)?.color,
+                      }}
                     >
-                      {topic.title}
-                    </Link>
-                    <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
-                      <span>
-                        od {(topic.author as any)?.username}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MessageSquare className="w-4 h-4" />
-                        {topic.reply_count}
-                      </span>
-                      <span>{new Date(topic.created_at).toLocaleDateString('hr-HR')}</span>
-                    </div>
+                      {(topic.category as any)?.name}
+                    </span>
+                    {topic.is_pinned && (
+                      <span className="text-sm">📌</span>
+                    )}
+                  </div>
+                  <Link
+                    href={`/forum/topic/${topic.slug}`}
+                    className="text-base sm:text-lg font-semibold hover:text-blue-600 transition-colors block line-clamp-2"
+                  >
+                    {topic.title}
+                  </Link>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-gray-500">
+                    <span className="truncate max-w-[120px] sm:max-w-none">
+                      {(topic.author as any)?.username}
+                    </span>
+                    <span className="flex items-center gap-1 flex-shrink-0">
+                      <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
+                      {topic.reply_count}
+                    </span>
+                    <span className="hidden xs:inline flex-shrink-0">
+                      {new Date(topic.created_at).toLocaleDateString('hr-HR')}
+                    </span>
                   </div>
                 </div>
               </CardContent>
