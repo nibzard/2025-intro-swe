@@ -86,16 +86,16 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
   }
 
   return (
-    <form action={handleSubmit} className="space-y-8">
+    <form action={handleSubmit} className="space-y-6 sm:space-y-8">
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-3 sm:px-4 py-2 sm:py-3 rounded text-sm">
           {error}
         </div>
       )}
 
       {/* Avatar Upload */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Profilna Slika</h3>
+        <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Profilna Slika</h3>
         <AvatarUpload
           currentAvatarUrl={avatarUrl}
           onUpload={handleAvatarUpload}
@@ -105,7 +105,7 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
 
       {/* Banner Upload */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Banner</h3>
+        <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Banner</h3>
         <BannerUpload
           currentBannerUrl={bannerUrl}
           onUpload={handleBannerUpload}
@@ -115,36 +115,36 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
 
       {/* Profile Color */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Tema Profila</h3>
+        <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Tema Profila</h3>
         <label
           htmlFor="profile_color"
           className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
         >
           Boja Profila
         </label>
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-3 sm:gap-4 items-center">
           <input
             type="color"
             id="profile_color"
             name="profile_color"
             value={profileColor}
             onChange={(e) => setProfileColor(e.target.value)}
-            className="h-12 w-20 rounded cursor-pointer"
+            className="h-11 sm:h-12 w-16 sm:w-20 rounded cursor-pointer flex-shrink-0"
           />
           <input
             type="text"
             value={profileColor}
             onChange={(e) => setProfileColor(e.target.value)}
             placeholder="#3B82F6"
-            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            className="flex-1 min-w-0 px-3 py-2 h-11 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
           />
         </div>
       </div>
 
       {/* Basic Info */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Osnovne Informacije</h3>
-        <div className="space-y-4">
+        <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Osnovne Informacije</h3>
+        <div className="space-y-3 sm:space-y-4">
           <div>
             <label
               htmlFor="full_name"
@@ -158,7 +158,8 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
               name="full_name"
               defaultValue={profile.full_name || ''}
               required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              autoComplete="name"
+              className="w-full px-3 py-2 h-11 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -176,7 +177,7 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
               defaultValue={profile.bio || ''}
               maxLength={500}
               placeholder="Reci nam nešto o sebi..."
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none"
+              className="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none"
             />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Maksimalno 500 znakova
@@ -187,8 +188,8 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
 
       {/* Academic Info */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Akademske Informacije</h3>
-        <div className="space-y-4">
+        <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Akademske Informacije</h3>
+        <div className="space-y-3 sm:space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label
@@ -203,7 +204,7 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
                 name="university"
                 defaultValue={profile.university || ''}
                 placeholder="npr. Sveučilište u Zagrebu"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 h-11 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               />
             </div>
 
@@ -220,7 +221,7 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
                 name="study_program"
                 defaultValue={profile.study_program || ''}
                 placeholder="npr. Računarstvo"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 h-11 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               />
             </div>
           </div>
@@ -241,7 +242,8 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
                 min="1"
                 max="10"
                 placeholder="1-10"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                inputMode="numeric"
+                className="w-full px-3 py-2 h-11 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               />
             </div>
 
@@ -260,7 +262,8 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
                 min="1900"
                 max="2100"
                 placeholder="2024"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                inputMode="numeric"
+                className="w-full px-3 py-2 h-11 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               />
             </div>
           </div>
@@ -279,7 +282,7 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
               defaultValue={profile.academic_interests || ''}
               maxLength={500}
               placeholder="Područja koja te zanimaju..."
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none"
+              className="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none"
             />
           </div>
 
@@ -297,7 +300,7 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
               defaultValue={profile.skills || ''}
               maxLength={1000}
               placeholder="JavaScript, Python, React, Node.js..."
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none"
+              className="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none"
             />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Odvojeno zarezima
@@ -308,8 +311,8 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
 
       {/* Social Media Links */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Društvene Mreže & Portfolio</h3>
-        <div className="space-y-4">
+        <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Društvene Mreže & Portfolio</h3>
+        <div className="space-y-3 sm:space-y-4">
           <div>
             <label
               htmlFor="github_url"
@@ -324,7 +327,8 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
               name="github_url"
               defaultValue={profile.github_url || ''}
               placeholder="https://github.com/username"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              inputMode="url"
+              className="w-full px-3 py-2 h-11 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -342,7 +346,8 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
               name="linkedin_url"
               defaultValue={profile.linkedin_url || ''}
               placeholder="https://linkedin.com/in/username"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              inputMode="url"
+              className="w-full px-3 py-2 h-11 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -360,7 +365,8 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
               name="website_url"
               defaultValue={profile.website_url || ''}
               placeholder="https://yourwebsite.com"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              inputMode="url"
+              className="w-full px-3 py-2 h-11 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -378,14 +384,15 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
               name="twitter_url"
               defaultValue={profile.twitter_url || ''}
               placeholder="https://twitter.com/username"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              inputMode="url"
+              className="w-full px-3 py-2 h-11 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>
         </div>
       </div>
 
-      <div className="flex gap-4 pt-6 border-t">
-        <Button type="submit" disabled={loading}>
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6 border-t">
+        <Button type="submit" disabled={loading} className="w-full sm:w-auto">
           {loading ? 'Spremanje...' : 'Spremi Promjene'}
         </Button>
         <Button
@@ -393,6 +400,7 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
           variant="outline"
           onClick={() => router.back()}
           disabled={loading}
+          className="w-full sm:w-auto"
         >
           Odustani
         </Button>

@@ -95,30 +95,30 @@ export default async function AdminDashboard() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
           Admin Dashboard
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-2">
           Welcome to the admin panel. Manage your forum from here.
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {statCards.map((stat, index) => (
           <div
             key={index}
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+            className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">
                   {stat.title}
                 </p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
+                <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mt-2">
                   {stat.value}
                 </p>
                 {stat.change && (
@@ -127,21 +127,21 @@ export default async function AdminDashboard() {
                   </p>
                 )}
               </div>
-              <div className={`${stat.color} p-3 rounded-lg`}>
-                <stat.icon className="h-6 w-6 text-white" />
+              <div className={`${stat.color} p-2 sm:p-3 rounded-lg flex-shrink-0`}>
+                <stat.icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Recent Topics */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
             Recent Topics
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {stats.recentTopics.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-sm">
                 No topics yet
@@ -190,11 +190,11 @@ export default async function AdminDashboard() {
         </div>
 
         {/* Top Users */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
             Top Users by Reputation
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {stats.activeUsers.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-sm">
                 No users yet
@@ -236,44 +236,44 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
           Quick Actions
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           <Link
             href="/admin/users"
-            className="flex flex-col items-center gap-2 p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-colors"
+            className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-colors"
           >
-            <Users className="h-8 w-8 text-blue-600" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white">
+            <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+            <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white text-center">
               Manage Users
             </span>
           </Link>
           <Link
             href="/admin/topics"
-            className="flex flex-col items-center gap-2 p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-green-500 dark:hover:border-green-500 transition-colors"
+            className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-green-500 dark:hover:border-green-500 transition-colors"
           >
-            <MessageSquare className="h-8 w-8 text-green-600" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white">
+            <MessageSquare className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
+            <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white text-center">
               Moderate Topics
             </span>
           </Link>
           <Link
             href="/admin/categories"
-            className="flex flex-col items-center gap-2 p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 transition-colors"
+            className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 transition-colors"
           >
-            <MessagesSquare className="h-8 w-8 text-purple-600" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white">
+            <MessagesSquare className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
+            <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white text-center">
               Edit Categories
             </span>
           </Link>
           <Link
             href="/admin/analytics"
-            className="flex flex-col items-center gap-2 p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-orange-500 dark:hover:border-orange-500 transition-colors"
+            className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-orange-500 dark:hover:border-orange-500 transition-colors"
           >
-            <TrendingUp className="h-8 w-8 text-orange-600" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white">
+            <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
+            <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white text-center">
               View Analytics
             </span>
           </Link>
