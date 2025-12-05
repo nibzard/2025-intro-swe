@@ -33,4 +33,5 @@ NAPOMENA: da bi vam radilo, vaš laptop/PC i mob sa kojim ste skenirali apk,
 	-Expo nije program za hostanje, nego za development mobilnih aplikacija (Android/IOS) uz pomoć React-Native-a. 
 	Tako da zamjena baš nema smisla. Ja sam generalno za da koristimo Vercel za server kasnije. Prestat
 	upotrebljavat Expo mi ima smisla jedino ako ćemo ispočetka počet raditi samo web aplikaciju, onda 
-	nam on ne triba. 
+	nam on ne triba.
+	-Možda preporuka da koristimo Firebase, jer Vercel nije baš pogodan za mobile. 
