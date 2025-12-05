@@ -8,8 +8,14 @@ import { AdvancedFileUpload } from '@/components/forum/advanced-file-upload';
 import { createClient } from '@/lib/supabase/client';
 import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 
-export function ReplyForm({ topicId }: { topicId: string }) {
-  const [content, setContent] = useState('');
+interface ReplyFormProps {
+  topicId: string;
+  quotedText?: string;
+  quotedAuthor?: string;
+}
+
+export function ReplyForm({ topicId, quotedText, quotedAuthor }: ReplyFormProps) {
+  const [content, setContent] = useState(quotedText ? `> ${quotedText.split('\n').join('\n> ')}\n\n@${quotedAuthor} ` : '');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');

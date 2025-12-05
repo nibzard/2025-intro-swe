@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ReplyForm } from '@/components/forum/reply-form';
-import { ReplyCard } from '@/components/forum/reply-card';
+import { TopicContent } from '@/components/forum/topic-content';
+import { TopicControlMenu } from '@/components/forum/topic-control-menu';
 import { MarkdownRenderer } from '@/components/forum/markdown-renderer';
 import { AdvancedAttachmentList } from '@/components/forum/advanced-attachment-list';
 import { MessageSquare, ArrowLeft } from 'lucide-react';
@@ -96,6 +96,26 @@ export default async function TopicPage({
     });
   }
 
+  // Get user profile for permissions
+  let userProfile: any = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    userProfile = profile;
+  }
+
+  // Get all categories for move function
+  const { data: categories } = await (supabase as any)
+    .from('categories')
+    .select('*')
+    .order('order_index', { ascending: true });
+
+  const isAuthor = user?.id === topic.author_id;
+  const isAdmin = userProfile?.role === 'admin';
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -109,22 +129,31 @@ export default async function TopicPage({
 
       <Card>
         <CardContent className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <span
-              className="px-3 py-1 text-sm font-semibold rounded-full"
-              style={{
-                backgroundColor: (topic.category as any)?.color + '20',
-                color: (topic.category as any)?.color,
-              }}
-            >
-              {(topic.category as any)?.icon} {(topic.category as any)?.name}
-            </span>
-            {topic.is_pinned && (
-              <span className="text-yellow-500">📌 Prikvačeno</span>
-            )}
-            {topic.is_locked && (
-              <span className="text-gray-500">🔒 Zaključano</span>
-            )}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <span
+                className="px-3 py-1 text-sm font-semibold rounded-full"
+                style={{
+                  backgroundColor: (topic.category as any)?.color + '20',
+                  color: (topic.category as any)?.color,
+                }}
+              >
+                {(topic.category as any)?.icon} {(topic.category as any)?.name}
+              </span>
+              {topic.is_pinned && (
+                <span className="text-yellow-500">📌 Prikvačeno</span>
+              )}
+              {topic.is_locked && (
+                <span className="text-gray-500">🔒 Zaključano</span>
+              )}
+            </div>
+
+            <TopicControlMenu
+              topic={topic}
+              isAuthor={isAuthor}
+              isAdmin={isAdmin}
+              categories={categories || []}
+            />
           </div>
 
           <h1 className="text-3xl font-bold mb-4">{topic.title}</h1>
@@ -156,37 +185,22 @@ export default async function TopicPage({
         </CardContent>
       </Card>
 
-      {repliesWithAttachments && repliesWithAttachments.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <MessageSquare className="w-6 h-6" />
-            Odgovori ({repliesWithAttachments.length})
-          </h2>
-          {repliesWithAttachments.map((reply: any) => (
-            <ReplyCard
-              key={reply.id}
-              reply={reply}
-              userVote={userVotes[reply.id]}
-              isLoggedIn={!!user}
-            />
-          ))}
-        </div>
-      )}
+      <TopicContent
+        topic={topic}
+        replies={repliesWithAttachments || []}
+        userVotes={userVotes}
+        currentUserId={user?.id}
+      />
 
-      {user && !topic.is_locked ? (
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-xl font-semibold mb-4">Dodaj odgovor</h3>
-            <ReplyForm topicId={topic.id} />
-          </CardContent>
-        </Card>
-      ) : topic.is_locked ? (
+      {topic.is_locked && (
         <Card>
           <CardContent className="p-6 text-center text-gray-500">
             <p>Ova tema je zaključana i ne možete dodati nove odgovore.</p>
           </CardContent>
         </Card>
-      ) : (
+      )}
+
+      {!user && !topic.is_locked && (
         <Card>
           <CardContent className="p-6 text-center">
             <p className="text-gray-600 dark:text-gray-400 mb-4">
