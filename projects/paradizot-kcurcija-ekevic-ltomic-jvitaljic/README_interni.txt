@@ -34,4 +34,7 @@ NAPOMENA: da bi vam radilo, vaš laptop/PC i mob sa kojim ste skenirali apk,
 	Tako da zamjena baš nema smisla. Ja sam generalno za da koristimo Vercel za server kasnije. Prestat
 	upotrebljavat Expo mi ima smisla jedino ako ćemo ispočetka počet raditi samo web aplikaciju, onda 
 	nam on ne triba.
-	-Možda preporuka da koristimo Firebase, jer Vercel nije baš pogodan za mobile. 
+	-Možda preporuka da koristimo Firebase, jer Vercel nije baš pogodan za mobile.
+**(Reply)(Lucija)
+	-Pokušala sam koristiti Firebase, nije se pokazao najoptimalnijim
+	-Uspjela sam hostati s Vercelom
