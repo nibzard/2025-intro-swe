@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Avatar } from '@/components/ui/avatar';
 import { TopicContent } from '@/components/forum/topic-content';
 import { TopicControlMenu } from '@/components/forum/topic-control-menu';
 import { MarkdownRenderer } from '@/components/forum/markdown-renderer';
@@ -156,20 +157,38 @@ export default async function TopicPage({
             />
           </div>
 
-          <h1 className="text-3xl font-bold mb-4">{topic.title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-4">{topic.title}</h1>
 
-          <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
-            <div className="flex items-center gap-4">
-              <span>
-                Autor: <strong>{(topic.author as any)?.username}</strong>
-              </span>
-              <span>{new Date(topic.created_at).toLocaleDateString('hr-HR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}</span>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-gray-500 mb-6">
+            <div className="flex items-center gap-3">
+              <Link href={`/forum/user/${(topic.author as any)?.username}`}>
+                <Avatar
+                  src={(topic.author as any)?.avatar_url}
+                  alt={(topic.author as any)?.username || 'User'}
+                  fallback={(topic.author as any)?.username}
+                  size="md"
+                />
+              </Link>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                <span>
+                  Autor:{' '}
+                  <Link
+                    href={`/forum/user/${(topic.author as any)?.username}`}
+                    className="font-semibold hover:underline"
+                  >
+                    {(topic.author as any)?.username}
+                  </Link>
+                </span>
+                <span className="text-xs sm:text-sm">
+                  {new Date(topic.created_at).toLocaleDateString('hr-HR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              </div>
             </div>
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">

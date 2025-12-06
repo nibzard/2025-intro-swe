@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Avatar } from '@/components/ui/avatar';
 import { MarkdownRenderer } from '@/components/forum/markdown-renderer';
 import { MarkdownEditor } from '@/components/forum/markdown-editor';
 import { AdvancedAttachmentList } from '@/components/forum/advanced-attachment-list';
@@ -269,29 +271,42 @@ export function ReplyCard({ reply, userVote, isLoggedIn, currentUserId, isTopicA
 
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 flex-1 min-w-0">
-                <span className="font-semibold text-sm sm:text-base truncate">
-                  {reply.author?.username}
-                </span>
-                <span className="text-xs sm:text-sm text-gray-500">
-                  {new Date(reply.created_at).toLocaleDateString('hr-HR', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </span>
-                {reply.updated_at && reply.created_at !== reply.updated_at && (
-                  <span className="text-xs text-gray-400 italic">
-                    (uređeno)
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                <Link href={`/forum/user/${reply.author?.username}`} className="flex-shrink-0">
+                  <Avatar
+                    src={reply.author?.avatar_url}
+                    alt={reply.author?.username || 'User'}
+                    fallback={reply.author?.username}
+                    size="sm"
+                  />
+                </Link>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 flex-1 min-w-0">
+                  <Link
+                    href={`/forum/user/${reply.author?.username}`}
+                    className="font-semibold text-sm sm:text-base truncate hover:underline"
+                  >
+                    {reply.author?.username}
+                  </Link>
+                  <span className="text-xs sm:text-sm text-gray-500">
+                    {new Date(reply.created_at).toLocaleDateString('hr-HR', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
                   </span>
-                )}
-                {reply.author?.reputation > 0 && (
-                  <span className="text-xs px-2 py-0.5 sm:py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded">
-                    {reply.author.reputation} rep
-                  </span>
-                )}
+                  {reply.updated_at && reply.created_at !== reply.updated_at && (
+                    <span className="text-xs text-gray-400 italic">
+                      (uređeno)
+                    </span>
+                  )}
+                  {reply.author?.reputation > 0 && (
+                    <span className="text-xs px-2 py-0.5 sm:py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded">
+                      {reply.author.reputation} rep
+                    </span>
+                  )}
+                </div>
               </div>
 
               {isLoggedIn && (
