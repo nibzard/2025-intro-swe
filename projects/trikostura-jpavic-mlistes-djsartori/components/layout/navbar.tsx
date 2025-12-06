@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { SkriptaLogo } from '@/components/branding/skripta-logo';
 import { NotificationBell } from '@/components/notifications/notification-bell';
 import { MobileNav } from './mobile-nav';
@@ -101,6 +102,7 @@ export async function Navbar() {
                   initialNotifications={notifications}
                   initialUnreadCount={unreadCount}
                 />
+                <ThemeToggle />
                 <Link
                   href={`/forum/user/${profile.username}`}
                   className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
@@ -121,6 +123,7 @@ export async function Navbar() {
               </>
             ) : (
               <>
+                <ThemeToggle />
                 <Link href="/auth/login">
                   <Button variant="outline" size="sm">
                     Prijava
@@ -135,6 +138,7 @@ export async function Navbar() {
 
           {/* Mobile Actions */}
           <div className="flex md:hidden items-center gap-2">
+            <ThemeToggle />
             {user && profile && (
               <NotificationBell
                 initialNotifications={notifications}
