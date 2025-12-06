@@ -46,7 +46,7 @@ export async function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 border-b bg-white dark:bg-gray-900">
+    <nav className="sticky top-0 z-50 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
         <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Logo and Desktop Navigation */}
@@ -96,7 +96,7 @@ export async function Navbar() {
             {user && profile ? (
               <>
                 <Link href="/forum/new">
-                  <Button size="sm">Nova tema</Button>
+                  <Button variant="gradient" size="sm">Nova tema</Button>
                 </Link>
                 <NotificationBell
                   initialNotifications={notifications}
@@ -130,7 +130,7 @@ export async function Navbar() {
                   </Button>
                 </Link>
                 <Link href="/auth/register">
-                  <Button size="sm">Registracija</Button>
+                  <Button variant="gradient" size="sm">Registracija</Button>
                 </Link>
               </>
             )}

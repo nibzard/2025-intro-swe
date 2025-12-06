@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { SkriptaLogo } from "@/components/branding/skripta-logo";
-import { MessageSquare, Users, BookOpen, Lightbulb, TrendingUp, Award } from "lucide-react";
+import { MessageSquare, Users, BookOpen, Lightbulb, TrendingUp, Award, ArrowRight, Sparkles } from "lucide-react";
 
 export default function Home() {
   return (
@@ -17,28 +18,30 @@ export default function Home() {
 
           {/* Main Heading */}
           <div className="space-y-4">
-            <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-red-600 via-red-500 to-blue-600 bg-clip-text text-transparent">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-skripta text-white rounded-full text-sm font-medium mb-4 animate-slide-up shadow-lg">
+              <Sparkles className="w-4 h-4" />
+              Najbolja studentska zajednica u Hrvatskoj
+            </div>
+            <h1 className="text-6xl md:text-8xl font-bold text-gradient animate-slide-up">
               Skripta
             </h1>
-            <p className="text-2xl md:text-3xl text-gray-700 dark:text-gray-300 font-medium">
+            <p className="text-2xl md:text-3xl text-gray-700 dark:text-gray-300 font-semibold animate-slide-up">
               Tvoja Digitalna Skripta
             </p>
-            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto animate-slide-up">
               Spoji se s kolegama, dijeli znanje, pronađi odgovore na pitanja iz faksa.
               Zajednica hrvatskih studenata na jednom mjestu.
             </p>
           </div>
 
           {/* CTA Button */}
-          <div className="flex justify-center pt-4">
-            <Link
-              href="/forum"
-              className="group px-10 py-5 bg-gradient-to-r from-red-600 to-blue-600 text-white rounded-2xl font-bold text-lg hover:from-red-700 hover:to-blue-700 transition-all shadow-2xl hover:shadow-3xl transform hover:scale-105"
-            >
-              <span className="flex items-center gap-3">
-                <MessageSquare className="w-6 h-6" />
+          <div className="flex justify-center gap-4 pt-4 flex-wrap">
+            <Link href="/forum">
+              <Button variant="gradient" size="xl" className="group shadow-xl">
+                <MessageSquare className="w-5 h-5" />
                 Pokreni Skriptu
-              </span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
             </Link>
           </div>
 
@@ -68,9 +71,9 @@ export default function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Feature 1 */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-100 dark:border-gray-700">
-            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-xl flex items-center justify-center mb-4">
-              <Users className="w-6 h-6 text-red-600" />
+          <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover-lift cursor-pointer">
+            <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <Users className="w-7 h-7 text-white" />
             </div>
             <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
               Studentska Zajednica
@@ -81,9 +84,9 @@ export default function Home() {
           </div>
 
           {/* Feature 2 */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-100 dark:border-gray-700">
-            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center mb-4">
-              <BookOpen className="w-6 h-6 text-blue-600" />
+          <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover-lift cursor-pointer">
+            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <BookOpen className="w-7 h-7 text-white" />
             </div>
             <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
               Skripta i Materijali
@@ -94,9 +97,9 @@ export default function Home() {
           </div>
 
           {/* Feature 3 */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-100 dark:border-gray-700">
-            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-xl flex items-center justify-center mb-4">
-              <Lightbulb className="w-6 h-6 text-red-600" />
+          <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover-lift cursor-pointer">
+            <div className="w-14 h-14 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <Lightbulb className="w-7 h-7 text-white" />
             </div>
             <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
               Pitaj i Odgovori
@@ -107,9 +110,9 @@ export default function Home() {
           </div>
 
           {/* Feature 4 */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-100 dark:border-gray-700">
-            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center mb-4">
-              <TrendingUp className="w-6 h-6 text-blue-600" />
+          <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover-lift cursor-pointer">
+            <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <TrendingUp className="w-7 h-7 text-white" />
             </div>
             <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
               Priprema za Ispite
@@ -120,9 +123,9 @@ export default function Home() {
           </div>
 
           {/* Feature 5 */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-100 dark:border-gray-700">
-            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-xl flex items-center justify-center mb-4">
-              <Award className="w-6 h-6 text-red-600" />
+          <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover-lift cursor-pointer">
+            <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <Award className="w-7 h-7 text-white" />
             </div>
             <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
               Reputacijski Sustav
@@ -133,9 +136,9 @@ export default function Home() {
           </div>
 
           {/* Feature 6 */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-100 dark:border-gray-700">
-            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center mb-4">
-              <MessageSquare className="w-6 h-6 text-blue-600" />
+          <div className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700 hover-lift cursor-pointer">
+            <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <MessageSquare className="w-7 h-7 text-white" />
             </div>
             <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
               Diskusije u Realnom Vremenu
