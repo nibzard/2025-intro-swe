@@ -22,10 +22,17 @@ export default function AuthCallbackPage() {
       const errorDescription = searchParams.get('error_description');
 
       if (errorParam) {
+        console.error('Auth error from URL:', errorParam, errorDescription);
         setError(errorDescription || errorParam);
         setTimeout(() => router.push('/auth/login'), 3000);
         return;
       }
+
+      console.log('Auth callback initiated:', {
+        hasCode: !!searchParams.get('code'),
+        hasHash: !!window.location.hash,
+        next: searchParams.get('next')
+      });
 
       // Handle hash fragment for password recovery
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -58,26 +65,37 @@ export default function AuthCallbackPage() {
         // No tokens in hash, might be using PKCE flow
         const code = searchParams.get('code');
         if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          console.log('Attempting PKCE code exchange...');
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
           if (error) {
-            console.error('Code exchange error:', error);
+            console.error('Code exchange error:', {
+              message: error.message,
+              status: error.status,
+              code: error.code
+            });
 
-            // If code exchange fails, it might be a password reset link that expired
-            // Check if this is a password reset flow
+            // Provide specific error messages based on the error
             const next = searchParams.get('next');
-            if (next === '/auth/update-password') {
-              setError('Link za resetiranje lozinke je istekao. Molimo zatražite novi link.');
+            if (error.message?.includes('already been used') || error.message?.includes('expired')) {
+              setError('Link je već iskorišten ili je istekao. Molimo zatražite novi link za resetiranje lozinke.');
+            } else if (next === '/auth/update-password') {
+              setError('Link za resetiranje lozinke nije valjan. Molimo zatražite novi link.');
             } else {
-              setError('Greška pri autentifikaciji. Pokušajte ponovno.');
+              setError(`Greška pri autentifikaciji: ${error.message}`);
             }
-            setTimeout(() => router.push('/auth/reset-password'), 3000);
+
+            setTimeout(() => {
+              router.push(next === '/auth/update-password' ? '/auth/reset-password' : '/auth/login');
+            }, 4000);
             return;
           }
 
+          console.log('Code exchange successful, redirecting...');
           const next = searchParams.get('next');
           router.push(next || '/forum');
         } else {
+          console.error('No authentication data found');
           setError('Nedostaju podaci za autentifikaciju');
           setTimeout(() => router.push('/auth/login'), 3000);
         }
