@@ -21,10 +21,10 @@ export default async function TopicsPage() {
     <div className="space-y-4 sm:space-y-6">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-          Topic Moderation
+          Moderiranje Tema
         </h1>
         <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-2">
-          Pin, lock, or delete topics
+          Zakači, zaključaj ili obriši teme
         </p>
       </div>
 

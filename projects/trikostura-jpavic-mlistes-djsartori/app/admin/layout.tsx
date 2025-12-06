@@ -40,32 +40,32 @@ export default async function AdminLayout({
 
   const navItems = [
     {
-      name: 'Dashboard',
+      name: 'Nadzorna Ploča',
       href: '/admin',
       icon: LayoutDashboard,
     },
     {
-      name: 'Users',
+      name: 'Korisnici',
       href: '/admin/users',
       icon: Users,
     },
     {
-      name: 'Topics',
+      name: 'Teme',
       href: '/admin/topics',
       icon: MessageSquare,
     },
     {
-      name: 'Replies',
+      name: 'Odgovori',
       href: '/admin/replies',
       icon: MessageSquare,
     },
     {
-      name: 'Categories',
+      name: 'Kategorije',
       href: '/admin/categories',
       icon: FolderOpen,
     },
     {
-      name: 'Analytics',
+      name: 'Analitika',
       href: '/admin/analytics',
       icon: BarChart3,
     },
@@ -80,7 +80,7 @@ export default async function AdminLayout({
             <div className="flex items-center gap-2 mb-6 sm:mb-8">
               <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
               <div>
-                <h1 className="text-lg sm:text-xl font-bold">Admin Panel</h1>
+                <h1 className="text-lg sm:text-xl font-bold">Administratorska Ploča</h1>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Studentski Forum
                 </p>
@@ -106,7 +106,7 @@ export default async function AdminLayout({
                 className="flex items-center gap-3 px-3 py-2 text-sm sm:text-base text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span>Back to Forum</span>
+                <span>Natrag na Forum</span>
               </Link>
             </div>
           </div>
@@ -115,7 +115,7 @@ export default async function AdminLayout({
         {/* Mobile Header */}
         <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10 flex items-center px-4">
           <Shield className="h-6 w-6 text-blue-600 mr-2" />
-          <h1 className="text-lg font-bold">Admin Panel</h1>
+          <h1 className="text-lg font-bold">Admin Ploča</h1>
         </div>
 
         {/* Mobile Bottom Nav */}

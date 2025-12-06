@@ -65,7 +65,7 @@ export function UserManagementClient({ users }: { users: User[] }) {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Search users..."
+            placeholder="Pretraži korisnike..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 h-11 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
@@ -79,22 +79,22 @@ export function UserManagementClient({ users }: { users: User[] }) {
           <thead className="bg-gray-50 dark:bg-gray-900">
             <tr>
               <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                User
+                Korisnik
               </th>
               <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Email
               </th>
               <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Role
+                Uloga
               </th>
               <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Reputation
+                Reputacija
               </th>
               <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Joined
+                Pridružio se
               </th>
               <th className="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Actions
+                Akcije
               </th>
             </tr>
           </thead>
@@ -105,7 +105,7 @@ export function UserManagementClient({ users }: { users: User[] }) {
                   colSpan={6}
                   className="px-3 sm:px-6 py-6 sm:py-8 text-center text-sm text-gray-500 dark:text-gray-400"
                 >
-                  No users found
+                  Nema pronađenih korisnika
                 </td>
               </tr>
             ) : (
@@ -161,8 +161,8 @@ export function UserManagementClient({ users }: { users: User[] }) {
                         className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 text-xs sm:text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         <Shield className="h-3 w-3" />
-                        <span className="hidden sm:inline">{user.role === 'admin' ? 'Remove Admin' : 'Make Admin'}</span>
-                        <span className="sm:hidden">{user.role === 'admin' ? 'Remove' : 'Admin'}</span>
+                        <span className="hidden sm:inline">{user.role === 'admin' ? 'Ukloni Admina' : 'Postavi Adminom'}</span>
+                        <span className="sm:hidden">{user.role === 'admin' ? 'Ukloni' : 'Admin'}</span>
                       </button>
                       <button
                         onClick={() => handleDeleteUser(user.id, user.username)}
@@ -170,7 +170,7 @@ export function UserManagementClient({ users }: { users: User[] }) {
                         className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 text-xs sm:text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         <UserX className="h-3 w-3" />
-                        <span className="hidden sm:inline">Delete</span>
+                        <span className="hidden sm:inline">Obriši</span>
                       </button>
                     </div>
                   </td>

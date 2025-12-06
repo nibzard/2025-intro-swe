@@ -58,7 +58,7 @@ export function ReplyModerationClient({ replies }: { replies: Reply[] }) {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Search replies..."
+            placeholder="Pretraži odgovore..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 h-11 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
@@ -70,7 +70,7 @@ export function ReplyModerationClient({ replies }: { replies: Reply[] }) {
       <div className="divide-y divide-gray-200 dark:divide-gray-700">
         {filteredReplies.length === 0 ? (
           <div className="p-6 sm:p-8 text-center text-sm text-gray-500 dark:text-gray-400">
-            No replies found
+            Nema pronađenih odgovora
           </div>
         ) : (
           filteredReplies.map((reply) => (
@@ -105,7 +105,7 @@ export function ReplyModerationClient({ replies }: { replies: Reply[] }) {
                         href={`/forum/topic/${reply.topic.slug}`}
                         className="text-blue-600 dark:text-blue-400 hover:underline line-clamp-1"
                       >
-                        <span className="hidden sm:inline">View topic: </span>
+                        <span className="hidden sm:inline">Pogledaj temu: </span>
                         {reply.topic.title}
                       </Link>
                     )}
