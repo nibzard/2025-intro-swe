@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { MarkdownEditor } from '@/components/forum/markdown-editor';
@@ -201,8 +201,8 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess }: Repl
     }
   }
 
-  const charactersLeft = MAX_CONTENT_LENGTH - content.length;
-  const isOverLimit = charactersLeft < 0;
+  const charactersLeft = useMemo(() => MAX_CONTENT_LENGTH - content.length, [content]);
+  const isOverLimit = useMemo(() => charactersLeft < 0, [charactersLeft]);
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
