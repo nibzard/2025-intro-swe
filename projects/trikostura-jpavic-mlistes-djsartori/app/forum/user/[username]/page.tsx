@@ -96,13 +96,13 @@ export default async function Page({ params }: PageProps) {
           <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
             <div className="relative mx-auto sm:mx-0">
               {profile.avatar_url ? (
-                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 bg-white">
+                <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-800">
                   <Image
                     src={profile.avatar_url}
                     alt={profile.username}
-                    width={128}
-                    height={128}
-                    className="object-cover"
+                    fill
+                    className="object-cover object-center"
+                    sizes="(max-width: 640px) 96px, 128px"
                   />
                 </div>
               ) : (
