@@ -126,7 +126,7 @@ export default async function Page({ params }: PageProps) {
               </div>
 
               {profile.bio && (
-                <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-4 text-center sm:text-left">{profile.bio}</p>
+                <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-4 text-center sm:text-left break-words whitespace-pre-wrap">{profile.bio}</p>
               )}
 
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-4 text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4">
@@ -237,7 +237,7 @@ export default async function Page({ params }: PageProps) {
           {profile.academic_interests && (
             <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t">
               <h3 className="text-base sm:text-lg font-semibold mb-3">Akademski Interesi</h3>
-              <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300">{profile.academic_interests}</p>
+              <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 break-words whitespace-pre-wrap">{profile.academic_interests}</p>
             </div>
           )}
 
@@ -249,7 +249,7 @@ export default async function Page({ params }: PageProps) {
                 {skills.map((skill: string, index: number) => (
                   <span
                     key={index}
-                    className="px-3 py-1 rounded-full text-sm font-medium"
+                    className="px-3 py-1 rounded-full text-sm font-medium break-words"
                     style={{
                       backgroundColor: `${profileColor}20`,
                       color: profileColor,
