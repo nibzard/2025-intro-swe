@@ -69,7 +69,7 @@ export default async function ForumPage() {
     <div className="space-y-6 sm:space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Forum Kategorije</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Forum Kategorije</h1>
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">
             Pridruži se diskusijama i postavi svoja pitanja
           </p>
@@ -78,7 +78,7 @@ export default async function ForumPage() {
 
       <div className="grid gap-3 sm:gap-4">
         {categoryData.map((category) => (
-          <Card key={category.id} className="hover:shadow-md transition-shadow">
+          <Card key={category.id} className="hover-lift cursor-pointer border-gray-200 dark:border-gray-700">
             <CardContent className="p-4 sm:p-6">
               <div className="flex items-start gap-3 sm:gap-4">
                 <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
@@ -90,7 +90,7 @@ export default async function ForumPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <Link href={`/forum/category/${category.slug}`}>
-                      <h3 className="text-lg sm:text-xl font-semibold hover:text-blue-600 transition-colors truncate">
+                      <h3 className="text-lg sm:text-xl font-bold hover:text-primary transition-colors truncate text-gray-900 dark:text-white">
                         {category.name}
                       </h3>
                     </Link>
@@ -102,7 +102,7 @@ export default async function ForumPage() {
                         Zadnja:{' '}
                         <Link
                           href={`/forum/topic/${category.latest_topic.slug}`}
-                          className="text-blue-600 hover:underline"
+                          className="text-primary hover:underline font-medium"
                         >
                           {category.latest_topic.title}
                         </Link>
@@ -127,12 +127,12 @@ export default async function ForumPage() {
 
       <div className="mt-8 sm:mt-12">
         <div className="flex items-center gap-2 mb-4 sm:mb-6">
-          <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
-          <h2 className="text-xl sm:text-2xl font-bold">Nedavne Teme</h2>
+          <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Nedavne Teme</h2>
         </div>
         <div className="space-y-2 sm:space-y-3">
           {recentTopics?.map((topic: any) => (
-            <Card key={topic.id} className="hover:shadow-sm transition-shadow">
+            <Card key={topic.id} className="hover-lift cursor-pointer border-gray-200 dark:border-gray-700">
               <CardContent className="p-3 sm:p-4">
                 <div className="space-y-2">
                   <div className="flex items-start gap-2 flex-wrap">
@@ -151,7 +151,7 @@ export default async function ForumPage() {
                   </div>
                   <Link
                     href={`/forum/topic/${topic.slug}`}
-                    className="text-base sm:text-lg font-semibold hover:text-blue-600 transition-colors block line-clamp-2"
+                    className="text-base sm:text-lg font-bold hover:text-primary transition-colors block line-clamp-2 text-gray-900 dark:text-white"
                   >
                     {topic.title}
                   </Link>
