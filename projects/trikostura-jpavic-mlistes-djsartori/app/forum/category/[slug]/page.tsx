@@ -40,71 +40,71 @@ export default async function CategoryPage({
     .order('created_at', { ascending: false });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+    <div className="space-y-4 sm:space-y-6 px-3 sm:px-0">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex-1 w-full sm:w-auto">
           <div className="flex items-center gap-3">
             <div
-              className="text-4xl flex items-center justify-center w-16 h-16 rounded-lg"
+              className="text-3xl sm:text-4xl flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-lg flex-shrink-0"
               style={{ backgroundColor: category.color + '20' }}
             >
               {category.icon}
             </div>
-            <div>
-              <h1 className="text-3xl font-bold">{category.name}</h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold truncate">{category.name}</h1>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
                 {category.description}
               </p>
             </div>
           </div>
         </div>
-        <Link href="/forum/new">
-          <Button>Nova tema</Button>
+        <Link href="/forum/new" className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto">Nova tema</Button>
         </Link>
       </div>
 
       {topics && topics.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {topics.map((topic: any) => (
             <Card key={topic.id} className="hover:shadow-sm transition-shadow">
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
+              <CardContent className="p-3 sm:p-5">
+                <div className="flex items-start justify-between gap-3 sm:gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 sm:mb-2">
                       {topic.is_pinned && (
-                        <Pin className="w-4 h-4 text-yellow-500" />
+                        <Pin className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500 flex-shrink-0" />
                       )}
                       {topic.is_locked && (
-                        <span className="text-gray-400">🔒</span>
+                        <span className="text-sm sm:text-base text-gray-400 dark:text-gray-500">🔒</span>
                       )}
                     </div>
                     <Link
                       href={`/forum/topic/${topic.slug}`}
-                      className="text-xl font-semibold hover:text-blue-600 transition-colors block"
+                      className="text-base sm:text-xl font-semibold hover:text-blue-600 dark:hover:text-blue-400 transition-colors block line-clamp-2"
                     >
                       {topic.title}
                     </Link>
-                    <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
-                      <span>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 sm:mt-2">
+                      <span className="truncate max-w-[120px] sm:max-w-none">
                         od {(topic.author as any)?.username}
                       </span>
-                      <span className="flex items-center gap-1">
-                        <MessageSquare className="w-4 h-4" />
-                        {topic.reply_count} odgovora
+                      <span className="flex items-center gap-1 flex-shrink-0">
+                        <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
+                        {topic.reply_count}
                       </span>
-                      <span>
+                      <span className="hidden sm:inline">
                         {new Date(topic.created_at).toLocaleDateString('hr-HR')}
                       </span>
                       {topic.last_reply_at && (
-                        <span className="text-gray-400">
-                          zadnji odgovor {new Date(topic.last_reply_at).toLocaleDateString('hr-HR')}
+                        <span className="hidden md:inline text-gray-400 dark:text-gray-500">
+                          zadnji: {new Date(topic.last_reply_at).toLocaleDateString('hr-HR')}
                         </span>
                       )}
                     </div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-lg font-semibold">{topic.view_count}</div>
-                    <div className="text-xs text-gray-500">pregleda</div>
+                  <div className="text-center flex-shrink-0">
+                    <div className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">{topic.view_count}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">pregleda</div>
                   </div>
                 </div>
               </CardContent>

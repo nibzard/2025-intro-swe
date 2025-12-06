@@ -13,6 +13,7 @@ import { FormattingToolbar } from '@/components/forum/formatting-toolbar';
 import { TopicPreviewModal } from '@/components/forum/topic-preview-modal';
 import { createClient } from '@/lib/supabase/client';
 import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
+import { toast } from 'sonner';
 import { ArrowLeft, Eye, Save, Send } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -28,9 +29,9 @@ export default function NewTopicPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const [error, setError] = useState('');
   const [draftId, setDraftId] = useState<string | null>(null);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [error, setError] = useState('');
   const router = useRouter();
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
