@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
+import { sanitizeSearchQuery } from '@/lib/utils/sanitize';
 import { Search, MessageSquare } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -25,6 +26,15 @@ export default function SearchPage() {
     setHasSearched(true);
 
     try {
+      // Sanitize the search query to prevent injection attacks
+      const sanitizedQuery = sanitizeSearchQuery(query);
+
+      if (!sanitizedQuery) {
+        setResults([]);
+        setIsSearching(false);
+        return;
+      }
+
       const supabase = createClient();
       // Search in topics
       const { data: topics } = await (supabase as any)
@@ -34,7 +44,7 @@ export default function SearchPage() {
           author:profiles!topics_author_id_fkey(username),
           category:categories(name, slug, color)
         `)
-        .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
+        .or(`title.ilike.%${sanitizedQuery}%,content.ilike.%${sanitizedQuery}%`)
         .order('created_at', { ascending: false })
         .limit(20);
 
