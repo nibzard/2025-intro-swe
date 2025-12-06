@@ -7,17 +7,16 @@ import Image from 'next/image';
 
 interface BannerUploadProps {
   currentBannerUrl?: string | null;
-  onUpload: (file: File) => Promise<string>;
+  onFileSelect: (file: File | null) => void;
   profileColor: string;
 }
 
-export function BannerUpload({ currentBannerUrl, onUpload, profileColor }: BannerUploadProps) {
+export function BannerUpload({ currentBannerUrl, onFileSelect, profileColor }: BannerUploadProps) {
   const [preview, setPreview] = useState<string | null>(currentBannerUrl || null);
-  const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       // Validate file type
@@ -33,6 +32,7 @@ export function BannerUpload({ currentBannerUrl, onUpload, profileColor }: Banne
       }
 
       setFile(selectedFile);
+      onFileSelect(selectedFile);
 
       // Create preview
       const reader = new FileReader();
@@ -40,25 +40,13 @@ export function BannerUpload({ currentBannerUrl, onUpload, profileColor }: Banne
         setPreview(reader.result as string);
       };
       reader.readAsDataURL(selectedFile);
-
-      // Automatically upload the file
-      setUploading(true);
-      try {
-        const url = await onUpload(selectedFile);
-        setPreview(url);
-        setFile(null);
-      } catch (error) {
-        alert('Greška pri učitavanju bannera');
-        console.error(error);
-      } finally {
-        setUploading(false);
-      }
     }
   };
 
   const handleRemove = () => {
-    setPreview(null);
+    setPreview(currentBannerUrl);
     setFile(null);
+    onFileSelect(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -101,13 +89,12 @@ export function BannerUpload({ currentBannerUrl, onUpload, profileColor }: Banne
             type="button"
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
           >
             <Upload className="w-4 h-4 mr-2" />
-            {uploading ? 'Učitavanje...' : 'Odaberi Banner'}
+            Odaberi Banner
           </Button>
 
-          {preview && !uploading && (
+          {file && (
             <Button
               type="button"
               variant="outline"
@@ -120,7 +107,7 @@ export function BannerUpload({ currentBannerUrl, onUpload, profileColor }: Banne
         </div>
 
         <p className="text-xs text-gray-500">
-          PNG, JPG ili GIF. Max 15MB. Banner se automatski učitava nakon odabira.
+          PNG, JPG ili GIF. Max 15MB. Banner će se spremiti nakon što kliknete "Spremi Promjene".
         </p>
       </div>
     </div>

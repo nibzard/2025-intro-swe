@@ -7,17 +7,16 @@ import Image from 'next/image';
 
 interface AvatarUploadProps {
   currentAvatarUrl?: string | null;
-  onUpload: (file: File) => Promise<string>;
+  onFileSelect: (file: File | null) => void;
   username: string;
 }
 
-export function AvatarUpload({ currentAvatarUrl, onUpload, username }: AvatarUploadProps) {
+export function AvatarUpload({ currentAvatarUrl, onFileSelect, username }: AvatarUploadProps) {
   const [preview, setPreview] = useState<string | null>(currentAvatarUrl || null);
-  const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       // Validate file type
@@ -33,6 +32,7 @@ export function AvatarUpload({ currentAvatarUrl, onUpload, username }: AvatarUpl
       }
 
       setFile(selectedFile);
+      onFileSelect(selectedFile);
 
       // Create preview
       const reader = new FileReader();
@@ -40,27 +40,13 @@ export function AvatarUpload({ currentAvatarUrl, onUpload, username }: AvatarUpl
         setPreview(reader.result as string);
       };
       reader.readAsDataURL(selectedFile);
-
-      // Automatically upload the file
-      console.log('Starting automatic upload for file:', selectedFile.name, selectedFile.type, selectedFile.size);
-      setUploading(true);
-      try {
-        const url = await onUpload(selectedFile);
-        console.log('Upload successful! URL:', url);
-        setPreview(url);
-        setFile(null);
-      } catch (error) {
-        console.error('Upload error:', error);
-        alert('Greška pri učitavanju slike: ' + (error as Error).message);
-      } finally {
-        setUploading(false);
-      }
     }
   };
 
   const handleRemove = () => {
-    setPreview(null);
+    setPreview(currentAvatarUrl);
     setFile(null);
+    onFileSelect(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -102,13 +88,12 @@ export function AvatarUpload({ currentAvatarUrl, onUpload, username }: AvatarUpl
               type="button"
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
             >
               <Upload className="w-4 h-4 mr-2" />
-              {uploading ? 'Učitavanje...' : 'Odaberi Sliku'}
+              Odaberi Sliku
             </Button>
 
-            {preview && !uploading && (
+            {file && (
               <Button
                 type="button"
                 variant="outline"
@@ -121,7 +106,7 @@ export function AvatarUpload({ currentAvatarUrl, onUpload, username }: AvatarUpl
           </div>
 
           <p className="text-xs text-gray-500">
-            PNG, JPG ili GIF. Max 10MB. Slika se automatski učitava nakon odabira.
+            PNG, JPG ili GIF. Max 10MB. Slika će se spremiti nakon što kliknete "Spremi Promjene".
           </p>
         </div>
       </div>
