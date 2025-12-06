@@ -79,12 +79,12 @@ export async function updateProfile(formData: FormData) {
     profile_color: data.profile_color || '#3B82F6',
   };
 
-  // Only update image URLs if they're provided (to avoid overwriting with null)
-  if (avatar_url) {
-    updateData.avatar_url = avatar_url;
+  // Handle image URLs - update if provided, set to null if explicitly empty string
+  if (avatar_url !== undefined) {
+    updateData.avatar_url = avatar_url === '' ? null : avatar_url;
   }
-  if (profile_banner_url) {
-    updateData.profile_banner_url = profile_banner_url;
+  if (profile_banner_url !== undefined) {
+    updateData.profile_banner_url = profile_banner_url === '' ? null : profile_banner_url;
   }
 
   // Update profile
