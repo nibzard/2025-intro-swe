@@ -17,7 +17,7 @@ export function AvatarUpload({ currentAvatarUrl, onUpload, username }: AvatarUpl
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       // Validate file type
@@ -40,28 +40,22 @@ export function AvatarUpload({ currentAvatarUrl, onUpload, username }: AvatarUpl
         setPreview(reader.result as string);
       };
       reader.readAsDataURL(selectedFile);
-    }
-  };
 
-  const handleUpload = async () => {
-    if (!file) {
-      console.error('No file selected');
-      return;
-    }
-
-    console.log('Starting upload for file:', file.name, file.type, file.size);
-    setUploading(true);
-    try {
-      const url = await onUpload(file);
-      console.log('Upload successful! URL:', url);
-      setPreview(url);
-      setFile(null);
-      alert('Slika je uspješno učitana!');
-    } catch (error) {
-      console.error('Upload error:', error);
-      alert('Greška pri učitavanju slike: ' + (error as Error).message);
-    } finally {
-      setUploading(false);
+      // Automatically upload the file
+      console.log('Starting automatic upload for file:', selectedFile.name, selectedFile.type, selectedFile.size);
+      setUploading(true);
+      try {
+        const url = await onUpload(selectedFile);
+        console.log('Upload successful! URL:', url);
+        setPreview(url);
+        setFile(null);
+        alert('Slika je uspješno učitana!');
+      } catch (error) {
+        console.error('Upload error:', error);
+        alert('Greška pri učitavanju slike: ' + (error as Error).message);
+      } finally {
+        setUploading(false);
+      }
     }
   };
 
@@ -112,32 +106,23 @@ export function AvatarUpload({ currentAvatarUrl, onUpload, username }: AvatarUpl
               disabled={uploading}
             >
               <Upload className="w-4 h-4 mr-2" />
-              Odaberi Sliku
+              {uploading ? 'Učitavanje...' : 'Odaberi Sliku'}
             </Button>
 
-            {file && (
-              <>
-                <Button
-                  type="button"
-                  onClick={handleUpload}
-                  disabled={uploading}
-                >
-                  {uploading ? 'Učitavanje...' : 'Učitaj'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleRemove}
-                  disabled={uploading}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </>
+            {preview && !uploading && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleRemove}
+              >
+                <X className="w-4 h-4 mr-2" />
+                Ukloni
+              </Button>
             )}
           </div>
 
           <p className="text-xs text-gray-500">
-            PNG, JPG ili GIF. Max 10MB. Preporučena veličina 400x400px.
+            PNG, JPG ili GIF. Max 10MB. Slika se automatski učitava nakon odabira.
           </p>
         </div>
       </div>
