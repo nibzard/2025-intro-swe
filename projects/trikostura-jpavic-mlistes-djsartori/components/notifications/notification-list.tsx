@@ -77,54 +77,61 @@ export function NotificationList({
   };
 
   return (
-    <Card className="w-[95vw] sm:w-96 max-w-md max-h-[85vh] sm:max-h-[600px] overflow-hidden shadow-lg">
-      <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-        <h3 className="font-semibold text-base sm:text-lg">Obavijesti</h3>
-        <div className="flex items-center gap-1 sm:gap-2">
+    <Card className="w-full md:w-96 max-w-full md:max-w-md h-[100vh] md:h-auto max-h-[100vh] md:max-h-[600px] overflow-hidden shadow-lg">
+      <div className="p-4 md:p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <h3 className="font-semibold text-lg">Obavijesti</h3>
+        <div className="flex items-center gap-2">
           {notifications.some((n) => !n.is_read) && (
             <Button
               variant="ghost"
               size="sm"
               onClick={handleMarkAllAsRead}
               title="Označi sve kao pročitano"
-              className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-2"
+              className="h-9 px-3 md:h-auto md:px-2"
             >
               <CheckCheck className="w-4 h-4" />
+              <span className="ml-1.5 md:hidden text-xs">Sve</span>
             </Button>
           )}
-          <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-2">
-            <X className="w-4 h-4" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="h-9 w-9 p-0 md:h-auto md:w-auto md:px-2"
+            aria-label="Zatvori obavijesti"
+          >
+            <X className="w-5 h-5 md:w-4 md:h-4" />
           </Button>
         </div>
       </div>
 
-      <div className="overflow-y-auto max-h-[calc(85vh-120px)] sm:max-h-[500px]">
+      <div className="overflow-y-auto h-[calc(100vh-140px)] md:h-auto md:max-h-[500px]">
         {notifications.length === 0 ? (
-          <div className="p-6 sm:p-8 text-center text-gray-500">
-            <MessageSquare className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2 text-gray-400" />
-            <p className="text-sm sm:text-base">Nemaš novih obavijesti</p>
+          <div className="p-8 md:p-8 text-center text-gray-500">
+            <MessageSquare className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+            <p className="text-base">Nemaš novih obavijesti</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`p-3 sm:p-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors ${
+                className={`p-4 md:p-4 hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700 cursor-pointer transition-colors ${
                   !notification.is_read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                 }`}
                 onClick={() => handleNotificationClick(notification)}
               >
-                <div className="flex items-start gap-2 sm:gap-3">
-                  <div className="flex-shrink-0 mt-1">{getIcon(notification.type)}</div>
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-0.5">{getIcon(notification.type)}</div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-xs sm:text-sm line-clamp-2">{notification.title}</p>
-                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+                        <p className="font-semibold text-sm md:text-sm line-clamp-2">{notification.title}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
                           {notification.message}
                         </p>
-                        <p className="text-xs text-gray-500 mt-1 sm:mt-2">
+                        <p className="text-xs text-gray-500 mt-2">
                           {formatTimeAgo(notification.created_at)}
                         </p>
                       </div>
@@ -132,16 +139,18 @@ export function NotificationList({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="flex-shrink-0 h-6 w-6 p-0 sm:h-7 sm:w-7"
+                        className="flex-shrink-0 h-8 w-8 p-0 md:h-7 md:w-7 hover:bg-red-100 dark:hover:bg-red-900/30"
                         onClick={(e) => handleDelete(e, notification.id)}
+                        aria-label="Obriši obavijest"
                       >
-                        <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                        <X className="w-4 h-4 md:w-3.5 md:h-3.5 text-gray-500 dark:text-gray-400" />
                       </Button>
                     </div>
 
                     {!notification.is_read && (
-                      <div className="mt-1 sm:mt-2">
+                      <div className="mt-2 flex items-center gap-1.5">
                         <span className="inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
+                        <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Novo</span>
                       </div>
                     )}
                   </div>
@@ -153,9 +162,9 @@ export function NotificationList({
       </div>
 
       {notifications.length > 0 && (
-        <div className="p-2 sm:p-3 border-t border-gray-200 dark:border-gray-700 text-center">
+        <div className="p-3 md:p-3 border-t border-gray-200 dark:border-gray-700 text-center">
           <Link href="/notifications" onClick={onClose}>
-            <Button variant="ghost" size="sm" className="w-full text-xs sm:text-sm">
+            <Button variant="ghost" size="sm" className="w-full h-10 md:h-auto text-sm font-medium">
               Vidi sve obavijesti
             </Button>
           </Link>
