@@ -17,7 +17,7 @@ export function BannerUpload({ currentBannerUrl, onUpload, profileColor }: Banne
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       // Validate file type
@@ -40,22 +40,20 @@ export function BannerUpload({ currentBannerUrl, onUpload, profileColor }: Banne
         setPreview(reader.result as string);
       };
       reader.readAsDataURL(selectedFile);
-    }
-  };
 
-  const handleUpload = async () => {
-    if (!file) return;
-
-    setUploading(true);
-    try {
-      const url = await onUpload(file);
-      setPreview(url);
-      setFile(null);
-    } catch (error) {
-      alert('Greška pri učitavanju slike');
-      console.error(error);
-    } finally {
-      setUploading(false);
+      // Automatically upload the file
+      setUploading(true);
+      try {
+        const url = await onUpload(selectedFile);
+        setPreview(url);
+        setFile(null);
+        alert('Banner je uspješno učitan!');
+      } catch (error) {
+        alert('Greška pri učitavanju bannera');
+        console.error(error);
+      } finally {
+        setUploading(false);
+      }
     }
   };
 
@@ -107,32 +105,23 @@ export function BannerUpload({ currentBannerUrl, onUpload, profileColor }: Banne
             disabled={uploading}
           >
             <Upload className="w-4 h-4 mr-2" />
-            Odaberi Banner
+            {uploading ? 'Učitavanje...' : 'Odaberi Banner'}
           </Button>
 
-          {file && (
-            <>
-              <Button
-                type="button"
-                onClick={handleUpload}
-                disabled={uploading}
-              >
-                {uploading ? 'Učitavanje...' : 'Učitaj'}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleRemove}
-                disabled={uploading}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </>
+          {preview && !uploading && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleRemove}
+            >
+              <X className="w-4 h-4 mr-2" />
+              Ukloni
+            </Button>
           )}
         </div>
 
         <p className="text-xs text-gray-500">
-          PNG, JPG ili GIF. Max 15MB. Preporučena veličina 1200x400px.
+          PNG, JPG ili GIF. Max 15MB. Banner se automatski učitava nakon odabira.
         </p>
       </div>
     </div>
