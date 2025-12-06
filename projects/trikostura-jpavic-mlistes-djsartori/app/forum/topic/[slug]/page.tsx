@@ -3,8 +3,11 @@ import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ReplyForm } from '@/components/forum/reply-form';
-import { ReplyCard } from '@/components/forum/reply-card';
+import { Avatar } from '@/components/ui/avatar';
+import { TopicContent } from '@/components/forum/topic-content';
+import { TopicControlMenu } from '@/components/forum/topic-control-menu';
+import { MarkdownRenderer } from '@/components/forum/markdown-renderer';
+import { AdvancedAttachmentList } from '@/components/forum/advanced-attachment-list';
 import { MessageSquare, ArrowLeft } from 'lucide-react';
 
 export default async function TopicPage({
@@ -20,7 +23,7 @@ export default async function TopicPage({
   } = await supabase.auth.getUser();
 
   // Get topic
-  const { data: topic } = await supabase
+  const { data: topic }: { data: any } = await supabase
     .from('topics')
     .select(`
       *,
@@ -35,20 +38,28 @@ export default async function TopicPage({
   }
 
   // Increment view count
-  await supabase.rpc('increment', {
-    table_name: 'topics',
-    row_id: topic.id,
-    column_name: 'view_count',
-  }).catch(() => {
+  try {
+    await (supabase as any).rpc('increment', {
+      table_name: 'topics',
+      row_id: topic.id,
+      column_name: 'view_count',
+    });
+  } catch {
     // Fallback if function doesn't exist
-    supabase
+    await (supabase as any)
       .from('topics')
       .update({ view_count: topic.view_count + 1 })
       .eq('id', topic.id);
-  });
+  }
+
+  // Get topic attachments
+  const { data: topicAttachments } = await supabase
+    .from('attachments')
+    .select('*')
+    .eq('topic_id', topic.id);
 
   // Get replies with user vote info
-  const { data: replies } = await supabase
+  const { data: replies }: { data: any } = await supabase
     .from('replies')
     .select(`
       *,
@@ -56,6 +67,18 @@ export default async function TopicPage({
     `)
     .eq('topic_id', topic.id)
     .order('created_at', { ascending: true });
+
+  // Get reply attachments
+  const { data: replyAttachments } = await supabase
+    .from('attachments')
+    .select('*')
+    .in('reply_id', replies?.map((r: any) => r.id) || []);
+
+  // Map attachments to replies
+  const repliesWithAttachments = replies?.map((reply: any) => ({
+    ...reply,
+    attachments: replyAttachments?.filter((att: any) => att.reply_id === reply.id) || [],
+  }));
 
   // Get user votes for replies if user is logged in
   let userVotes: any = {};
@@ -66,13 +89,33 @@ export default async function TopicPage({
       .eq('user_id', user.id)
       .in(
         'reply_id',
-        replies.map((r) => r.id)
+        replies.map((r: any) => r.id)
       );
 
-    votes?.forEach((vote) => {
+    votes?.forEach((vote: any) => {
       userVotes[vote.reply_id] = vote.vote_type;
     });
   }
+
+  // Get user profile for permissions
+  let userProfile: any = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    userProfile = profile;
+  }
+
+  // Get all categories for move function
+  const { data: categories } = await (supabase as any)
+    .from('categories')
+    .select('*')
+    .order('order_index', { ascending: true });
+
+  const isAuthor = user?.id === topic.author_id;
+  const isAdmin = userProfile?.role === 'admin';
 
   return (
     <div className="space-y-6">
@@ -87,38 +130,65 @@ export default async function TopicPage({
 
       <Card>
         <CardContent className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <span
-              className="px-3 py-1 text-sm font-semibold rounded-full"
-              style={{
-                backgroundColor: (topic.category as any)?.color + '20',
-                color: (topic.category as any)?.color,
-              }}
-            >
-              {(topic.category as any)?.icon} {(topic.category as any)?.name}
-            </span>
-            {topic.is_pinned && (
-              <span className="text-yellow-500">📌 Prikvačeno</span>
-            )}
-            {topic.is_locked && (
-              <span className="text-gray-500">🔒 Zaključano</span>
-            )}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <span
+                className="px-3 py-1 text-sm font-semibold rounded-full"
+                style={{
+                  backgroundColor: (topic.category as any)?.color + '20',
+                  color: (topic.category as any)?.color,
+                }}
+              >
+                {(topic.category as any)?.icon} {(topic.category as any)?.name}
+              </span>
+              {topic.is_pinned && (
+                <span className="text-yellow-500">📌 Prikvačeno</span>
+              )}
+              {topic.is_locked && (
+                <span className="text-gray-500">🔒 Zaključano</span>
+              )}
+            </div>
+
+            <TopicControlMenu
+              topic={topic}
+              isAuthor={isAuthor}
+              isAdmin={isAdmin}
+              categories={categories || []}
+            />
           </div>
 
-          <h1 className="text-3xl font-bold mb-4">{topic.title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-4">{topic.title}</h1>
 
-          <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
-            <div className="flex items-center gap-4">
-              <span>
-                Autor: <strong>{(topic.author as any)?.username}</strong>
-              </span>
-              <span>{new Date(topic.created_at).toLocaleDateString('hr-HR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}</span>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-gray-500 mb-6">
+            <div className="flex items-center gap-3">
+              <Link href={`/forum/user/${(topic.author as any)?.username}`}>
+                <Avatar
+                  src={(topic.author as any)?.avatar_url}
+                  alt={(topic.author as any)?.username || 'User'}
+                  username={(topic.author as any)?.username}
+                  size="md"
+                />
+              </Link>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                <span>
+                  Autor:{' '}
+                  <Link
+                    href={`/forum/user/${(topic.author as any)?.username}`}
+                    className="font-semibold hover:underline"
+                  >
+                    {(topic.author as any)?.username}
+                  </Link>
+                </span>
+                <span className="text-xs sm:text-sm">
+                  {new Date(topic.created_at).toLocaleDateString('hr-HR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              </div>
             </div>
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
@@ -129,43 +199,27 @@ export default async function TopicPage({
             </div>
           </div>
 
-          <div className="prose dark:prose-invert max-w-none">
-            <p className="whitespace-pre-wrap">{topic.content}</p>
-          </div>
+          <MarkdownRenderer content={topic.content} />
+          <AdvancedAttachmentList attachments={topicAttachments || []} />
         </CardContent>
       </Card>
 
-      {replies && replies.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <MessageSquare className="w-6 h-6" />
-            Odgovori ({replies.length})
-          </h2>
-          {replies.map((reply) => (
-            <ReplyCard
-              key={reply.id}
-              reply={reply}
-              userVote={userVotes[reply.id]}
-              isLoggedIn={!!user}
-            />
-          ))}
-        </div>
-      )}
+      <TopicContent
+        topic={topic}
+        replies={repliesWithAttachments || []}
+        userVotes={userVotes}
+        currentUserId={user?.id}
+      />
 
-      {user && !topic.is_locked ? (
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-xl font-semibold mb-4">Dodaj odgovor</h3>
-            <ReplyForm topicId={topic.id} />
-          </CardContent>
-        </Card>
-      ) : topic.is_locked ? (
+      {topic.is_locked && (
         <Card>
           <CardContent className="p-6 text-center text-gray-500">
             <p>Ova tema je zaključana i ne možete dodati nove odgovore.</p>
           </CardContent>
         </Card>
-      ) : (
+      )}
+
+      {!user && !topic.is_locked && (
         <Card>
           <CardContent className="p-6 text-center">
             <p className="text-gray-600 dark:text-gray-400 mb-4">
