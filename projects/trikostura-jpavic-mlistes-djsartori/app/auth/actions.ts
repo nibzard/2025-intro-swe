@@ -154,12 +154,20 @@ export async function updatePassword(
 
   const supabase = await createServerSupabaseClient();
 
+  // Check if user is authenticated
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: 'Sesija je istekla. Molimo zatražite novi link za resetiranje lozinke.' };
+  }
+
   const { error } = await supabase.auth.updateUser({
     password: password,
   });
 
   if (error) {
-    return { error: 'Došlo je do greške prilikom ažuriranja lozinke' };
+    console.error('Password update error:', error);
+    return { error: `Greška: ${error.message || 'Došlo je do greške prilikom ažuriranja lozinke'}` };
   }
 
   revalidatePath('/', 'layout');
