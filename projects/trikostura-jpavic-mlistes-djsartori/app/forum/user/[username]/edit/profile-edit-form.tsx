@@ -35,58 +35,63 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url);
   const [bannerUrl, setBannerUrl] = useState(profile.profile_banner_url);
   const [profileColor, setProfileColor] = useState(profile.profile_color || '#3B82F6');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
 
-    // Add avatar and banner URLs to form data
-    if (avatarUrl) formData.set('avatar_url', avatarUrl);
-    if (bannerUrl) formData.set('profile_banner_url', bannerUrl);
+    try {
+      // Upload avatar if a new file was selected
+      if (avatarFile) {
+        const avatarFormData = new FormData();
+        avatarFormData.append('file', avatarFile);
+        avatarFormData.append('type', 'avatar');
+        const avatarResult = await uploadProfileImage(avatarFormData);
 
-    const result = await updateProfile(formData);
+        if (avatarResult.success && avatarResult.url) {
+          formData.set('avatar_url', avatarResult.url);
+        } else {
+          throw new Error(avatarResult.error || 'Avatar upload failed');
+        }
+      } else if (avatarUrl) {
+        formData.set('avatar_url', avatarUrl);
+      }
 
-    if (!result?.success) {
-      setError(result?.error || 'Došlo je do greške');
+      // Upload banner if a new file was selected
+      if (bannerFile) {
+        const bannerFormData = new FormData();
+        bannerFormData.append('file', bannerFile);
+        bannerFormData.append('type', 'banner');
+        const bannerResult = await uploadProfileImage(bannerFormData);
+
+        if (bannerResult.success && bannerResult.url) {
+          formData.set('profile_banner_url', bannerResult.url);
+        } else {
+          throw new Error(bannerResult.error || 'Banner upload failed');
+        }
+      } else if (bannerUrl) {
+        formData.set('profile_banner_url', bannerUrl);
+      }
+
+      // Update profile with new data
+      const result = await updateProfile(formData);
+
+      if (!result?.success) {
+        setError(result?.error || 'Došlo je do greške');
+        setLoading(false);
+      } else {
+        // Show success message before redirect
+        alert('Promjene su uspješno spremljene!');
+      }
+    } catch (err) {
+      setError((err as Error).message || 'Došlo je do greške');
       setLoading(false);
-    } else {
-      // Show success message before redirect
-      alert('Promjene su uspješno spremljene!');
     }
     // If successful, the action will redirect
   }
 
-  async function handleAvatarUpload(file: File): Promise<string> {
-    console.log('handleAvatarUpload called with file:', file.name);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', 'avatar');
-
-    console.log('Calling uploadProfileImage action...');
-    const result = await uploadProfileImage(formData);
-    console.log('uploadProfileImage result:', result);
-
-    if (result.success && result.url) {
-      console.log('Upload successful, setting avatar URL:', result.url);
-      setAvatarUrl(result.url);
-      return result.url;
-    }
-    console.error('Upload failed:', result.error);
-    throw new Error(result.error || 'Upload failed');
-  }
-
-  async function handleBannerUpload(file: File): Promise<string> {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', 'banner');
-
-    const result = await uploadProfileImage(formData);
-    if (result.success && result.url) {
-      setBannerUrl(result.url);
-      return result.url;
-    }
-    throw new Error(result.error || 'Upload failed');
-  }
 
   return (
     <form action={handleSubmit} className="space-y-6 sm:space-y-8">
@@ -101,7 +106,7 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
         <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Profilna Slika</h3>
         <AvatarUpload
           currentAvatarUrl={avatarUrl}
-          onUpload={handleAvatarUpload}
+          onFileSelect={setAvatarFile}
           username={profile.username}
         />
       </div>
@@ -111,7 +116,7 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
         <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Banner</h3>
         <BannerUpload
           currentBannerUrl={bannerUrl}
-          onUpload={handleBannerUpload}
+          onFileSelect={setBannerFile}
           profileColor={profileColor}
         />
       </div>
