@@ -129,7 +129,7 @@ export default async function Page({ params }: PageProps) {
                 <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-4 text-center sm:text-left">{profile.bio}</p>
               )}
 
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-4 text-xs sm:text-sm text-gray-500 mb-4">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-4 text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   <span>
@@ -208,25 +208,25 @@ export default async function Page({ params }: PageProps) {
                 {profile.university && (
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Sveučilište</span>
-                    <p className="font-medium">{profile.university}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{profile.university}</p>
                   </div>
                 )}
                 {profile.study_program && (
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Program</span>
-                    <p className="font-medium">{profile.study_program}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{profile.study_program}</p>
                   </div>
                 )}
                 {profile.year_of_study && (
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Godina</span>
-                    <p className="font-medium">{profile.year_of_study}. godina</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{profile.year_of_study}. godina</p>
                   </div>
                 )}
                 {profile.graduation_year && (
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Završetak</span>
-                    <p className="font-medium">{profile.graduation_year}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{profile.graduation_year}</p>
                   </div>
                 )}
               </div>
@@ -265,37 +265,25 @@ export default async function Page({ params }: PageProps) {
           {/* Statistics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t">
             <div className="text-center">
-              <div
-                className="text-2xl font-bold"
-                style={{ color: profileColor }}
-              >
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                 {topicCount}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Teme</div>
             </div>
             <div className="text-center">
-              <div
-                className="text-2xl font-bold"
-                style={{ color: profileColor }}
-              >
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                 {replyCount}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Odgovori</div>
             </div>
             <div className="text-center">
-              <div
-                className="text-2xl font-bold"
-                style={{ color: profileColor }}
-              >
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                 {profile.reputation || 0}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Reputacija</div>
             </div>
             <div className="text-center">
-              <div
-                className="text-2xl font-bold"
-                style={{ color: profileColor }}
-              >
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                 {topicCount + replyCount}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Ukupno aktivnosti</div>
@@ -324,7 +312,7 @@ export default async function Page({ params }: PageProps) {
                     >
                       {topic.title}
                     </Link>
-                    <div className="flex items-center gap-3 text-sm text-gray-500">
+                    <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
                       <span
                         className="px-2 py-0.5 text-xs font-semibold rounded"
                         style={{
@@ -344,8 +332,8 @@ export default async function Page({ params }: PageProps) {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <MessageSquare className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <MessageSquare className="w-12 h-12 mx-auto mb-2 text-gray-400 dark:text-gray-600" />
                 <p>Još nema tema</p>
               </div>
             )}
@@ -374,7 +362,7 @@ export default async function Page({ params }: PageProps) {
                     <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 mb-2">
                       {reply.content}
                     </p>
-                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                    <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
                       <span>{new Date(reply.created_at).toLocaleDateString('hr-HR')}</span>
                       <span className="flex items-center gap-1">
                         👍 {reply.upvotes || 0}
@@ -384,8 +372,8 @@ export default async function Page({ params }: PageProps) {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <UserIcon className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <UserIcon className="w-12 h-12 mx-auto mb-2 text-gray-400 dark:text-gray-600" />
                 <p>Još nema odgovora</p>
               </div>
             )}
