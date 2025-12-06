@@ -300,10 +300,11 @@ export function AdvancedBannerUpload({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className={`border-2 border-dashed rounded-lg p-4 transition-colors ${
+          onClick={() => fileInputRef.current?.click()}
+          className={`border-2 border-dashed rounded-lg p-4 transition-colors cursor-pointer ${
             isDragging
               ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-              : 'border-gray-300 dark:border-gray-600'
+              : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800'
           }`}
         >
           <div className="flex flex-col items-center gap-2 text-center">
