@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,7 +21,7 @@ interface ReplyCardProps {
   onQuote?: (content: string, author: string) => void;
 }
 
-export function ReplyCard({ reply, userVote, isLoggedIn, currentUserId, isTopicAuthor, onQuote }: ReplyCardProps) {
+export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, currentUserId, isTopicAuthor, onQuote }: ReplyCardProps) {
   const [currentVote, setCurrentVote] = useState(userVote);
   const [upvotes, setUpvotes] = useState(reply.upvotes);
   const [downvotes, setDownvotes] = useState(reply.downvotes);
@@ -430,4 +430,4 @@ export function ReplyCard({ reply, userVote, isLoggedIn, currentUserId, isTopicA
       </CardContent>
     </Card>
   );
-}
+});

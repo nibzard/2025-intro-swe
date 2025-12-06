@@ -27,7 +27,7 @@ export default async function CategoryPage({
     notFound();
   }
 
-  // Get topics in this category
+  // Get topics in this category (limited to 50 most recent)
   const { data: topics } = await (supabase as any)
     .from('topics')
     .select(`
@@ -37,7 +37,8 @@ export default async function CategoryPage({
     `)
     .eq('category_id', (category as any).id)
     .order('is_pinned', { ascending: false })
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(50);
 
   return (
     <div className="space-y-4 sm:space-y-6 px-3 sm:px-0">

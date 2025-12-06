@@ -80,6 +80,9 @@ export default async function Page({ params }: PageProps) {
             alt="Profile Banner"
             fill
             className="object-cover"
+            priority
+            quality={85}
+            sizes="(max-width: 1536px) 100vw, 1536px"
           />
         </div>
       ) : (

@@ -10,35 +10,49 @@ export const revalidate = 60;
 export default async function ForumPage() {
   const supabase = await createServerSupabaseClient();
 
-  // Get categories with topic count
+  // Get categories
   const { data: categories } = await supabase
     .from('categories')
     .select('*')
     .order('order_index', { ascending: true });
 
-  // Get topic counts for each category
-  const categoryData = await Promise.all(
-    (categories || []).map(async (category: any) => {
-      const { count: topicCount } = await supabase
-        .from('topics')
-        .select('*', { count: 'exact', head: true })
-        .eq('category_id', category.id);
+  // Get all topics with minimal data for counting (single query)
+  const { data: allTopics } = await supabase
+    .from('topics')
+    .select('id, category_id, created_at');
 
-      const { data: latestTopic } = await supabase
-        .from('topics')
-        .select('id, title, slug, created_at, author:profiles!topics_author_id_fkey(username)')
-        .eq('category_id', category.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+  // Get recent topics per category for "latest topic" display (single query)
+  const { data: recentTopicsByCategory } = await supabase
+    .from('topics')
+    .select('id, title, slug, created_at, category_id, author:profiles!topics_author_id_fkey(username)')
+    .order('created_at', { ascending: false })
+    .limit(100); // Get enough to ensure we have latest for each category
 
-      return {
-        ...category,
-        topic_count: topicCount || 0,
-        latest_topic: latestTopic,
-      };
-    })
-  );
+  // Build maps for efficient lookup
+  const topicCountByCategory = new Map<string, number>();
+  const latestTopicByCategory = new Map<string, any>();
+
+  // Count topics per category
+  allTopics?.forEach((topic: any) => {
+    topicCountByCategory.set(
+      topic.category_id,
+      (topicCountByCategory.get(topic.category_id) || 0) + 1
+    );
+  });
+
+  // Find latest topic per category
+  recentTopicsByCategory?.forEach((topic: any) => {
+    if (!latestTopicByCategory.has(topic.category_id)) {
+      latestTopicByCategory.set(topic.category_id, topic);
+    }
+  });
+
+  // Combine category data with counts and latest topics
+  const categoryData = (categories || []).map((category: any) => ({
+    ...category,
+    topic_count: topicCountByCategory.get(category.id) || 0,
+    latest_topic: latestTopicByCategory.get(category.id) || null,
+  }));
 
   // Get recent topics
   const { data: recentTopics } = await supabase
