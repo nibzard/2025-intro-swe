@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Menu, X, Home, Search, Settings, User, LogOut, Plus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Avatar } from '@/components/ui/avatar';
 import { logout } from '@/app/auth/actions';
 
 interface MobileNavProps {
@@ -50,12 +51,17 @@ export function MobileNav({ user, profile }: MobileNavProps) {
                       onClick={closeMenu}
                       className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
-                      <User className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                      <Avatar
+                        src={profile.avatar_url}
+                        alt={profile.username}
+                        username={profile.username}
+                        size="md"
+                      />
                       <div>
                         <div className="font-semibold text-gray-900 dark:text-white">
                           {profile.username}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           Pogledaj profil
                         </div>
                       </div>
