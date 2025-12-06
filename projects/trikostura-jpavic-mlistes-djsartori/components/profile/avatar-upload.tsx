@@ -49,7 +49,6 @@ export function AvatarUpload({ currentAvatarUrl, onUpload, username }: AvatarUpl
         console.log('Upload successful! URL:', url);
         setPreview(url);
         setFile(null);
-        alert('Slika je uspješno učitana!');
       } catch (error) {
         console.error('Upload error:', error);
         alert('Greška pri učitavanju slike: ' + (error as Error).message);

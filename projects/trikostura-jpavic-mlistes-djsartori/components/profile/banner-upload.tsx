@@ -47,7 +47,6 @@ export function BannerUpload({ currentBannerUrl, onUpload, profileColor }: Banne
         const url = await onUpload(selectedFile);
         setPreview(url);
         setFile(null);
-        alert('Banner je uspješno učitan!');
       } catch (error) {
         alert('Greška pri učitavanju bannera');
         console.error(error);
