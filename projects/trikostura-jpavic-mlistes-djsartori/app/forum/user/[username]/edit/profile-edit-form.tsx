@@ -37,14 +37,19 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
   const [profileColor, setProfileColor] = useState(profile.profile_color || '#3B82F6');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [removeAvatar, setRemoveAvatar] = useState(false);
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
 
     try {
+      // Handle avatar removal
+      if (removeAvatar) {
+        formData.set('avatar_url', '');
+      }
       // Upload avatar if a new file was selected
-      if (avatarFile) {
+      else if (avatarFile) {
         const avatarFormData = new FormData();
         avatarFormData.append('file', avatarFile);
         avatarFormData.append('type', 'avatar');
@@ -103,7 +108,15 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
         <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Profilna Slika</h3>
         <AvatarUpload
           currentAvatarUrl={avatarUrl}
-          onFileSelect={setAvatarFile}
+          onFileSelect={(file) => {
+            setAvatarFile(file);
+            setRemoveAvatar(false);
+          }}
+          onRemoveAvatar={() => {
+            setRemoveAvatar(true);
+            setAvatarFile(null);
+            setAvatarUrl(null);
+          }}
           username={profile.username}
         />
       </div>

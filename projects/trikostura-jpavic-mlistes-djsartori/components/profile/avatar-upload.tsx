@@ -8,10 +8,11 @@ import Image from 'next/image';
 interface AvatarUploadProps {
   currentAvatarUrl?: string | null;
   onFileSelect: (file: File | null) => void;
+  onRemoveAvatar: () => void;
   username: string;
 }
 
-export function AvatarUpload({ currentAvatarUrl, onFileSelect, username }: AvatarUploadProps) {
+export function AvatarUpload({ currentAvatarUrl, onFileSelect, onRemoveAvatar, username }: AvatarUploadProps) {
   const [preview, setPreview] = useState<string | null>(currentAvatarUrl || null);
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -43,10 +44,19 @@ export function AvatarUpload({ currentAvatarUrl, onFileSelect, username }: Avata
     }
   };
 
-  const handleRemove = () => {
+  const handleCancelSelection = () => {
     setPreview(currentAvatarUrl || null);
     setFile(null);
     onFileSelect(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemovePermanently = () => {
+    setPreview(null);
+    setFile(null);
+    onRemoveAvatar();
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -83,7 +93,7 @@ export function AvatarUpload({ currentAvatarUrl, onFileSelect, username }: Avata
             id="avatar-upload"
           />
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               type="button"
               variant="outline"
@@ -97,10 +107,22 @@ export function AvatarUpload({ currentAvatarUrl, onFileSelect, username }: Avata
               <Button
                 type="button"
                 variant="outline"
-                onClick={handleRemove}
+                onClick={handleCancelSelection}
               >
                 <X className="w-4 h-4 mr-2" />
-                Ukloni
+                Otkaži
+              </Button>
+            )}
+
+            {(currentAvatarUrl || preview) && !file && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleRemovePermanently}
+                className="text-red-600 hover:text-red-700"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Ukloni Sliku
               </Button>
             )}
           </div>
