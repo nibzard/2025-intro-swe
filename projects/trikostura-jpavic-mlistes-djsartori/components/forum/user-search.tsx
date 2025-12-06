@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { sanitizeSearchQuery } from '@/lib/utils/sanitize';
 import { Search, User, Star, MessageSquare, FileText } from 'lucide-react';
 
 interface UserSearchProps {
@@ -15,9 +16,10 @@ export function UserSearch({ users }: UserSearchProps) {
   const [sortBy, setSortBy] = useState<'username' | 'reputation' | 'activity'>('username');
 
   const filteredAndSortedUsers = useMemo(() => {
+    const sanitized = sanitizeSearchQuery(searchQuery);
     let filtered = users.filter((user) =>
-      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
+      user.username.toLowerCase().includes(sanitized.toLowerCase()) ||
+      user.full_name?.toLowerCase().includes(sanitized.toLowerCase())
     );
 
     filtered.sort((a, b) => {

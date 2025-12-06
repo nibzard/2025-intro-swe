@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Shield, UserX, Search } from 'lucide-react';
 import { updateUserRole, deleteUser } from '../actions';
+import { sanitizeSearchQuery } from '@/lib/utils/sanitize';
 
 type User = {
   id: string;
@@ -18,11 +19,12 @@ export function UserManagementClient({ users }: { users: User[] }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState<string | null>(null);
 
+  const sanitizedSearchTerm = sanitizeSearchQuery(searchTerm);
   const filteredUsers = users.filter(
     (user) =>
-      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
+      user.username.toLowerCase().includes(sanitizedSearchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(sanitizedSearchTerm.toLowerCase()) ||
+      user.full_name?.toLowerCase().includes(sanitizedSearchTerm.toLowerCase())
   );
 
   const handleRoleChange = async (userId: string, newRole: 'student' | 'admin') => {
