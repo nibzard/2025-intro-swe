@@ -168,7 +168,7 @@ CREATE TRIGGER reputation_on_reply_trigger
 -- =====================================================
 -- 7. FUNCTION: Recalculate reputation for a user (backfill)
 -- =====================================================
-CREATE OR REPLACE FUNCTION recalculate_user_reputation(user_id UUID)
+CREATE OR REPLACE FUNCTION recalculate_user_reputation(p_user_id UUID)
 RETURNS INTEGER AS $$
 DECLARE
   total_reputation INTEGER := 0;
@@ -182,28 +182,28 @@ BEGIN
   SELECT COUNT(*) INTO upvote_count
   FROM votes v
   INNER JOIN replies r ON v.reply_id = r.id
-  WHERE r.author_id = user_id AND v.vote_type = 1;
+  WHERE r.author_id = p_user_id AND v.vote_type = 1;
 
   -- Count downvotes received on user's replies
   SELECT COUNT(*) INTO downvote_count
   FROM votes v
   INNER JOIN replies r ON v.reply_id = r.id
-  WHERE r.author_id = user_id AND v.vote_type = -1;
+  WHERE r.author_id = p_user_id AND v.vote_type = -1;
 
   -- Count solutions by user
   SELECT COUNT(*) INTO solution_count
   FROM replies
-  WHERE author_id = user_id AND is_solution = TRUE;
+  WHERE author_id = p_user_id AND is_solution = TRUE;
 
   -- Count topics by user
   SELECT COUNT(*) INTO topic_count
   FROM topics
-  WHERE author_id = user_id;
+  WHERE author_id = p_user_id;
 
   -- Count replies by user
   SELECT COUNT(*) INTO reply_count
   FROM replies
-  WHERE author_id = user_id;
+  WHERE author_id = p_user_id;
 
   -- Calculate total reputation
   total_reputation :=
@@ -214,7 +214,7 @@ BEGIN
     (reply_count * 1);           -- +1 per reply
 
   -- Update user's reputation
-  UPDATE profiles SET reputation = total_reputation WHERE id = user_id;
+  UPDATE profiles SET reputation = total_reputation WHERE id = p_user_id;
 
   RETURN total_reputation;
 END;
