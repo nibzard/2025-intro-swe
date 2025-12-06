@@ -19,41 +19,99 @@ export function NotificationBell({
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
   const [isOpen, setIsOpen] = useState(false);
+  const [hasNewNotification, setHasNewNotification] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
-    // Polling fallback - checks for new notifications every 30 seconds
-    const setupPolling = async () => {
+    // Setup realtime subscription for instant notifications
+    const setupRealtimeSubscription = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
       if (!user) return;
 
-      const pollNotifications = async () => {
-        const { data: latestNotifications } = await (supabase as any)
-          .from('notifications')
-          .select(`
-            *,
-            actor:actor_id(username, avatar_url)
-          `)
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(20);
+      const channel = supabase
+        .channel('notifications-bell')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`,
+          },
+          async (payload) => {
+            const { data: newNotification } = await (supabase as any)
+              .from('notifications')
+              .select(`
+                *,
+                actor:actor_id(username, avatar_url)
+              `)
+              .eq('id', payload.new.id)
+              .single();
 
-        if (latestNotifications) {
-          setNotifications(latestNotifications);
-          setUnreadCount(latestNotifications.filter((n: any) => !n.is_read).length);
-        }
-      };
+            if (newNotification) {
+              setNotifications((prev) => [newNotification, ...prev.slice(0, 19)]);
+              setUnreadCount((prev) => prev + 1);
+              setHasNewNotification(true);
 
-      // Poll every 30 seconds
-      const interval = setInterval(pollNotifications, 30000);
+              // Reset animation after 3 seconds
+              setTimeout(() => setHasNewNotification(false), 3000);
+            }
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            setNotifications((prev) =>
+              prev.map((n) => (n.id === payload.new.id ? { ...n, ...payload.new } : n))
+            );
 
-      return () => clearInterval(interval);
+            // Update unread count
+            const wasRead = notifications.find((n) => n.id === payload.new.id)?.is_read;
+            if (!wasRead && payload.new.is_read) {
+              setUnreadCount((prev) => Math.max(0, prev - 1));
+            }
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'DELETE',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            const deletedNotification = notifications.find((n) => n.id === payload.old.id);
+            if (deletedNotification && !deletedNotification.is_read) {
+              setUnreadCount((prev) => Math.max(0, prev - 1));
+            }
+            setNotifications((prev) => prev.filter((n) => n.id !== payload.old.id));
+          }
+        )
+        .subscribe();
+
+      return { supabase, channel };
     };
 
-    setupPolling();
+    let cleanup: { supabase: any; channel: any } | null | undefined = null;
+    setupRealtimeSubscription().then((result) => {
+      cleanup = result;
+    });
+
+    return () => {
+      if (cleanup) {
+        cleanup.supabase.removeChannel(cleanup.channel);
+      }
+    };
   }, [supabase]);
 
   return (
@@ -64,9 +122,13 @@ export function NotificationBell({
         className="relative"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <Bell className="w-5 h-5" />
+        <Bell className={`w-5 h-5 ${hasNewNotification ? 'animate-bounce' : ''}`} />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+          <span
+            className={`absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center ${
+              hasNewNotification ? 'animate-pulse' : ''
+            }`}
+          >
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
