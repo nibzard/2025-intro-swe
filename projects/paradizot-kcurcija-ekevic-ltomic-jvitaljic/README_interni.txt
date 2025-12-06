@@ -38,3 +38,4 @@ NAPOMENA: da bi vam radilo, vaš laptop/PC i mob sa kojim ste skenirali apk,
 **(Reply)(Lucija)
 	-Pokušala sam koristiti Firebase, nije se pokazao najoptimalnijim
 	-Uspjela sam hostati s Vercelom
+	-Potrebno je prilagoditi neke elemente stranice
