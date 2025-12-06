@@ -11,7 +11,7 @@ export default async function RepliesPage() {
     .select(
       `
       *,
-      author:profiles!replies_author_id_fkey(username, full_name),
+      author:profiles!replies_author_id_fkey(username, full_name, avatar_url),
       topic:topics(title, slug)
     `
     )

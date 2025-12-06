@@ -323,17 +323,6 @@ export function AdvancedBannerUpload({
         </div>
 
         <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-          >
-            <Upload className="w-4 h-4 mr-2" />
-            Odaberi Banner
-          </Button>
-
           {file && (
             <Button
               type="button"

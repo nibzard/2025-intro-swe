@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Pin, Lock, Unlock, Trash2, Search, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { pinTopic, lockTopic, deleteTopic } from '../actions';
+import { Avatar } from '@/components/ui/avatar';
 
 type Topic = {
   id: string;
@@ -18,6 +19,7 @@ type Topic = {
   author: {
     username: string;
     full_name: string | null;
+    avatar_url: string | null;
   } | null;
   category: {
     name: string;
@@ -169,8 +171,16 @@ export function TopicModerationClient({ topics }: { topics: Topic[] }) {
                     >
                       {topic.category?.name}
                     </span>
-                    <span className="hidden sm:inline">by {topic.author?.username}</span>
-                    <span className="sm:hidden">@{topic.author?.username}</span>
+                    <div className="flex items-center gap-2">
+                      <Avatar
+                        src={topic.author?.avatar_url}
+                        alt={topic.author?.username || 'User'}
+                        username={topic.author?.username}
+                        size="xs"
+                      />
+                      <span className="hidden sm:inline">by {topic.author?.username}</span>
+                      <span className="sm:hidden">@{topic.author?.username}</span>
+                    </div>
                     <span className="flex items-center gap-1">
                       <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       {topic.view_count}

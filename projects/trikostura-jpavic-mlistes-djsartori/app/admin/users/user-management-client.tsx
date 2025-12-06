@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { Shield, UserX, Search } from 'lucide-react';
 import { updateUserRole, deleteUser } from '../actions';
 import { sanitizeSearchQuery } from '@/lib/utils/sanitize';
+import { Avatar } from '@/components/ui/avatar';
 
 type User = {
   id: string;
   email: string;
   username: string;
   full_name: string | null;
+  avatar_url: string | null;
   role: 'student' | 'admin';
   reputation: number;
   created_at: string;
@@ -114,12 +116,20 @@ export function UserManagementClient({ users }: { users: User[] }) {
               filteredUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        {user.full_name || user.username}
-                      </div>
-                      <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                        @{user.username}
+                    <div className="flex items-center gap-3">
+                      <Avatar
+                        src={user.avatar_url}
+                        alt={user.username}
+                        username={user.username}
+                        size="md"
+                      />
+                      <div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {user.full_name || user.username}
+                        </div>
+                        <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                          @{user.username}
+                        </div>
                       </div>
                     </div>
                   </td>

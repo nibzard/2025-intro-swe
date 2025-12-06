@@ -11,7 +11,7 @@ export default async function TopicsPage() {
     .select(
       `
       *,
-      author:profiles!topics_author_id_fkey(username, full_name),
+      author:profiles!topics_author_id_fkey(username, full_name, avatar_url),
       category:categories(name, color)
     `
     )

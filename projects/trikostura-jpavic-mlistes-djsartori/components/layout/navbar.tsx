@@ -110,7 +110,7 @@ export async function Navbar() {
                   <Avatar
                     src={profile.avatar_url}
                     alt={profile.username}
-                    fallback={profile.username}
+                    username={profile.username}
                     size="sm"
                   />
                   <span className="hidden lg:inline">{profile.username}</span>
