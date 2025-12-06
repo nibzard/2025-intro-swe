@@ -44,7 +44,7 @@ export function BannerUpload({ currentBannerUrl, onFileSelect, profileColor }: B
   };
 
   const handleRemove = () => {
-    setPreview(currentBannerUrl);
+    setPreview(currentBannerUrl || null);
     setFile(null);
     onFileSelect(null);
     if (fileInputRef.current) {

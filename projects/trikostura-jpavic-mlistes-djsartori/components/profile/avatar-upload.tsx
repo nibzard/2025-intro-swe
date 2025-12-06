@@ -44,7 +44,7 @@ export function AvatarUpload({ currentAvatarUrl, onFileSelect, username }: Avata
   };
 
   const handleRemove = () => {
-    setPreview(currentAvatarUrl);
+    setPreview(currentAvatarUrl || null);
     setFile(null);
     onFileSelect(null);
     if (fileInputRef.current) {
