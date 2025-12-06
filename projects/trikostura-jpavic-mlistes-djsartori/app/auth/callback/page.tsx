@@ -62,9 +62,21 @@ export default function AuthCallbackPage() {
           router.push(next || '/forum');
         }
       } else {
-        // No tokens in hash, might be using PKCE flow
+        // No tokens in hash, check for PKCE code
         const code = searchParams.get('code');
+        const next = searchParams.get('next');
+
         if (code) {
+          // Check if this is a password reset flow
+          // Password reset should not use PKCE, redirect to get hash-based token
+          if (next === '/auth/update-password') {
+            console.log('Password reset detected, but received PKCE code instead of recovery token');
+            setError('Konfiguracija resetiranja lozinke nije ispravna. Molimo kontaktirajte podršku.');
+            setTimeout(() => router.push('/auth/reset-password'), 4000);
+            return;
+          }
+
+          // For other flows (login), attempt PKCE code exchange
           console.log('Attempting PKCE code exchange...');
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
@@ -75,24 +87,17 @@ export default function AuthCallbackPage() {
               code: error.code
             });
 
-            // Provide specific error messages based on the error
-            const next = searchParams.get('next');
             if (error.message?.includes('already been used') || error.message?.includes('expired')) {
-              setError('Link je već iskorišten ili je istekao. Molimo zatražite novi link za resetiranje lozinke.');
-            } else if (next === '/auth/update-password') {
-              setError('Link za resetiranje lozinke nije valjan. Molimo zatražite novi link.');
+              setError('Link je već iskorišten ili je istekao. Molimo zatražite novi link.');
             } else {
               setError(`Greška pri autentifikaciji: ${error.message}`);
             }
 
-            setTimeout(() => {
-              router.push(next === '/auth/update-password' ? '/auth/reset-password' : '/auth/login');
-            }, 4000);
+            setTimeout(() => router.push('/auth/login'), 4000);
             return;
           }
 
           console.log('Code exchange successful, redirecting...');
-          const next = searchParams.get('next');
           router.push(next || '/forum');
         } else {
           console.error('No authentication data found');
