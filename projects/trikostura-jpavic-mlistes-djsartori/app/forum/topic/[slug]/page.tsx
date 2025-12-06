@@ -165,7 +165,7 @@ export default async function TopicPage({
                 <Avatar
                   src={(topic.author as any)?.avatar_url}
                   alt={(topic.author as any)?.username || 'User'}
-                  fallback={(topic.author as any)?.username}
+                  username={(topic.author as any)?.username}
                   size="md"
                 />
               </Link>

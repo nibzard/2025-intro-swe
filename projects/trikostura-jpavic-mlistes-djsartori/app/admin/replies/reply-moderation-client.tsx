@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Trash2, Search, ThumbsUp, ThumbsDown } from 'lucide-react';
 import Link from 'next/link';
 import { deleteReply } from '../actions';
+import { Avatar } from '@/components/ui/avatar';
 
 type Reply = {
   id: string;
@@ -14,6 +15,7 @@ type Reply = {
   author: {
     username: string;
     full_name: string | null;
+    avatar_url: string | null;
   } | null;
   topic: {
     title: string;
@@ -80,13 +82,21 @@ export function ReplyModerationClient({ replies }: { replies: Reply[] }) {
             >
               <div className="flex items-start justify-between gap-3 sm:gap-4">
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
-                      {reply.author?.full_name || reply.author?.username}
-                    </span>
-                    <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                      @{reply.author?.username}
-                    </span>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Avatar
+                      src={reply.author?.avatar_url}
+                      alt={reply.author?.username || 'User'}
+                      username={reply.author?.username}
+                      size="sm"
+                    />
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
+                        {reply.author?.full_name || reply.author?.username}
+                      </span>
+                      <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                        @{reply.author?.username}
+                      </span>
+                    </div>
                     <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                       •
                     </span>

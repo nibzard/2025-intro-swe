@@ -416,17 +416,6 @@ export function AdvancedAvatarUpload({
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Odaberi Sliku
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
               onClick={() => setShowWebcam(true)}
               disabled={isUploading}
             >

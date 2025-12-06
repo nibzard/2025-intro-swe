@@ -276,7 +276,7 @@ export function ReplyCard({ reply, userVote, isLoggedIn, currentUserId, isTopicA
                   <Avatar
                     src={reply.author?.avatar_url}
                     alt={reply.author?.username || 'User'}
-                    fallback={reply.author?.username}
+                    username={reply.author?.username}
                     size="sm"
                   />
                 </Link>
