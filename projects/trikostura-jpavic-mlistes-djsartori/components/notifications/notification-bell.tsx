@@ -137,10 +137,10 @@ export function NotificationBell({
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-40 bg-black/20 md:bg-transparent"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 z-50">
+          <div className="fixed md:absolute left-0 right-0 md:left-auto md:right-0 top-0 md:top-auto md:mt-2 z-50 p-4 md:p-0">
             <NotificationList
               notifications={notifications}
               onClose={() => setIsOpen(false)}

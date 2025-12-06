@@ -62,8 +62,16 @@ export default function AuthCallbackPage() {
 
           if (error) {
             console.error('Code exchange error:', error);
-            setError('Greška pri razmjeni koda');
-            setTimeout(() => router.push('/auth/login'), 3000);
+
+            // If code exchange fails, it might be a password reset link that expired
+            // Check if this is a password reset flow
+            const next = searchParams.get('next');
+            if (next === '/auth/update-password') {
+              setError('Link za resetiranje lozinke je istekao. Molimo zatražite novi link.');
+            } else {
+              setError('Greška pri autentifikaciji. Pokušajte ponovno.');
+            }
+            setTimeout(() => router.push('/auth/reset-password'), 3000);
             return;
           }
 
