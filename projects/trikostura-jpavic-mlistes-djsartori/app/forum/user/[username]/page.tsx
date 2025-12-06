@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { Avatar } from '@/components/ui/avatar';
 
 interface PageProps {
   params: Promise<{ username: string }>;
@@ -95,26 +96,13 @@ export default async function Page({ params }: PageProps) {
         <CardContent className="p-4 sm:p-8">
           <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
             <div className="relative mx-auto sm:mx-0">
-              {profile.avatar_url ? (
-                <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-800">
-                  <Image
-                    src={profile.avatar_url}
-                    alt={profile.username}
-                    fill
-                    className="object-cover object-center"
-                    sizes="(max-width: 640px) 96px, 128px"
-                  />
-                </div>
-              ) : (
-                <div
-                  className="w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center text-white text-3xl sm:text-4xl font-bold border-4 border-white dark:border-gray-800"
-                  style={{
-                    background: `linear-gradient(135deg, ${profileColor} 0%, ${profileColor}dd 100%)`,
-                  }}
-                >
-                  {profile.username.charAt(0).toUpperCase()}
-                </div>
-              )}
+              <Avatar
+                src={profile.avatar_url}
+                alt={profile.username}
+                username={profile.username}
+                size="2xl"
+                className="border-4 border-white dark:border-gray-800"
+              />
             </div>
 
             <div className="flex-1 w-full">

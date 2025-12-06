@@ -3,9 +3,10 @@ import Image from 'next/image';
 interface AvatarProps {
   src?: string | null;
   alt: string;
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   fallback?: string;
   className?: string;
+  username?: string;
 }
 
 const sizeClasses = {
@@ -14,6 +15,7 @@ const sizeClasses = {
   md: 'w-10 h-10 text-base',
   lg: 'w-12 h-12 text-lg',
   xl: 'w-16 h-16 text-2xl',
+  '2xl': 'w-24 h-24 text-3xl',
 };
 
 const sizePx = {
@@ -22,15 +24,43 @@ const sizePx = {
   md: 40,
   lg: 48,
   xl: 64,
+  '2xl': 96,
 };
 
-export function Avatar({ src, alt, size = 'md', fallback, className = '' }: AvatarProps) {
+// Generate a consistent color based on username
+function getAvatarColor(username?: string): string {
+  if (!username) return 'from-blue-500 to-indigo-600';
+
+  const gradients = [
+    'from-blue-500 to-indigo-600',
+    'from-purple-500 to-pink-600',
+    'from-green-500 to-teal-600',
+    'from-orange-500 to-red-600',
+    'from-cyan-500 to-blue-600',
+    'from-pink-500 to-rose-600',
+    'from-indigo-500 to-purple-600',
+    'from-teal-500 to-green-600',
+    'from-violet-500 to-purple-600',
+    'from-amber-500 to-orange-600',
+  ];
+
+  // Simple hash function to get consistent color for username
+  let hash = 0;
+  for (let i = 0; i < username.length; i++) {
+    hash = username.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % gradients.length;
+  return gradients[index];
+}
+
+export function Avatar({ src, alt, size = 'md', fallback, className = '', username }: AvatarProps) {
   const sizeClass = sizeClasses[size];
-  const fallbackText = fallback || alt.charAt(0).toUpperCase();
+  const fallbackText = fallback || (username || alt).charAt(0).toUpperCase();
+  const gradientColor = getAvatarColor(username || alt);
 
   return (
     <div
-      className={`relative ${sizeClass} rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0 ${className}`}
+      className={`relative ${sizeClass} rounded-full overflow-hidden bg-gradient-to-br ${gradientColor} flex items-center justify-center flex-shrink-0 shadow-sm ${className}`}
     >
       {src ? (
         <Image

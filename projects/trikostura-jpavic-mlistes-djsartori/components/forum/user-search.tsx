@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Avatar } from '@/components/ui/avatar';
 import { sanitizeSearchQuery } from '@/lib/utils/sanitize';
 import { Search, User, Star, MessageSquare, FileText } from 'lucide-react';
 
@@ -92,9 +93,12 @@ export function UserSearch({ users }: UserSearchProps) {
             href={`/forum/user/${user.username}`}
             className="flex items-start gap-3 p-3 sm:p-4 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-md transition-all"
           >
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0">
-              {user.username.charAt(0).toUpperCase()}
-            </div>
+            <Avatar
+              src={user.avatar_url}
+              alt={user.username}
+              username={user.username}
+              size="lg"
+            />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-sm sm:text-base font-semibold truncate">
