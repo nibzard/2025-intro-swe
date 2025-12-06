@@ -149,48 +149,48 @@ export function NotificationPageClient({ initialNotifications }: NotificationPag
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {unreadCount > 0 && (
-        <div className="flex justify-between items-center pb-4 border-b">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 sm:pb-4 border-b">
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
             {unreadCount} nepročitanih obavijesti
           </p>
-          <Button variant="outline" size="sm" onClick={handleMarkAllAsRead}>
-            <CheckCheck className="w-4 h-4 mr-2" />
+          <Button variant="outline" size="sm" onClick={handleMarkAllAsRead} className="w-full sm:w-auto text-xs sm:text-sm">
+            <CheckCheck className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
             Označi sve kao pročitano
           </Button>
         </div>
       )}
 
       {notifications.length === 0 ? (
-        <div className="py-12 text-center text-gray-500">
-          <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-          <p className="text-lg font-medium">Nemaš obavijesti</p>
-          <p className="text-sm mt-2">Dobit ćeš obavijest kada netko odgovori na tvoje objave</p>
+        <div className="py-8 sm:py-12 text-center text-gray-500">
+          <MessageSquare className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-gray-400" />
+          <p className="text-base sm:text-lg font-medium">Nemaš obavijesti</p>
+          <p className="text-xs sm:text-sm mt-2 px-4">Dobit ćeš obavijest kada netko odgovori na tvoje objave</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-2 sm:space-y-3">
           {notifications.map((notification) => (
             <div
               key={notification.id}
-              className={`p-4 rounded-lg border ${
+              className={`p-3 sm:p-4 rounded-lg border ${
                 !notification.is_read
                   ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
                   : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
               } hover:shadow-md transition-all cursor-pointer`}
               onClick={() => handleNotificationClick(notification)}
             >
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-2 sm:gap-4">
                 <div className="flex-shrink-0 mt-1">{getIcon(notification.type)}</div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-base">{notification.title}</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <div className="flex items-start justify-between gap-2 sm:gap-4">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-sm sm:text-base">{notification.title}</h4>
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
                         {notification.message}
                       </p>
-                      <p className="text-xs text-gray-500 mt-2">
+                      <p className="text-xs text-gray-500 mt-1 sm:mt-2">
                         {formatTimeAgo(notification.created_at)}
                       </p>
                     </div>
@@ -198,12 +198,13 @@ export function NotificationPageClient({ initialNotifications }: NotificationPag
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="h-8 w-8 p-0 sm:h-auto sm:w-auto sm:p-2 flex-shrink-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDelete(notification.id);
                       }}
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </Button>
                   </div>
                 </div>
