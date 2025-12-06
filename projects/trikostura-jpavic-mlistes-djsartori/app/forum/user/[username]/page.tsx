@@ -108,12 +108,12 @@ export default async function Page({ params }: PageProps) {
               />
             </div>
 
-            <div className="flex-1 w-full">
+            <div className="flex-1 w-full min-w-0">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-                <div className="text-center sm:text-left">
-                  <h1 className="text-2xl sm:text-3xl font-bold mb-2">{profile.username}</h1>
+                <div className="text-center sm:text-left min-w-0">
+                  <h1 className="text-2xl sm:text-3xl font-bold mb-2 break-words">{profile.username}</h1>
                   {profile.full_name && (
-                    <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 mb-3">
+                    <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 mb-3 break-words">
                       {profile.full_name}
                     </p>
                   )}
