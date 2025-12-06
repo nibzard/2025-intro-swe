@@ -16,15 +16,27 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Studentski Forum - Hrvatski Online Forum za Studente",
-  description: "Online forum za studente svih sveučilišta u Hrvatskoj",
-  keywords: ["forum", "studenti", "hrvatska", "sveučilište", "obrazovanje"],
-  authors: [{ name: "Studentski Forum Tim" }],
+  title: "Skripta - Hrvatski Studentski Forum",
+  description: "Tvoja digitalna skripta - forum za studente svih sveučilišta u Hrvatskoj. Dijeli znanje, postavljaj pitanja, pronađi odgovore.",
+  keywords: ["skripta", "forum", "studenti", "hrvatska", "sveučilište", "obrazovanje", "kolega", "faks", "predavanja", "ispiti"],
+  authors: [{ name: "Skripta Tim" }],
+  applicationName: "Skripta",
   openGraph: {
-    title: "Studentski Forum",
-    description: "Online forum za studente svih sveučilišta u Hrvatskoj",
+    title: "Skripta - Hrvatski Studentski Forum",
+    description: "Tvoja digitalna skripta - forum za studente svih sveučilišta u Hrvatskoj",
     type: "website",
     locale: "hr_HR",
+    siteName: "Skripta",
+  },
+  twitter: {
+    card: "summary",
+    title: "Skripta - Hrvatski Studentski Forum",
+    description: "Tvoja digitalna skripta - forum za studente svih sveučilišta u Hrvatskoj",
+  },
+  appleWebApp: {
+    capable: true,
+    title: "Skripta",
+    statusBarStyle: "default",
   },
 };
 
