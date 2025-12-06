@@ -70,10 +70,10 @@ export default async function Page({ params }: PageProps) {
   const skills = profile.skills ? profile.skills.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6 px-3 sm:px-4">
       {/* Profile Banner */}
       {profile.profile_banner_url ? (
-        <div className="relative w-full h-64 rounded-lg overflow-hidden">
+        <div className="relative w-full h-40 sm:h-64 rounded-lg overflow-hidden">
           <Image
             src={profile.profile_banner_url}
             alt="Profile Banner"
@@ -83,7 +83,7 @@ export default async function Page({ params }: PageProps) {
         </div>
       ) : (
         <div
-          className="w-full h-64 rounded-lg"
+          className="w-full h-40 sm:h-64 rounded-lg"
           style={{
             background: `linear-gradient(135deg, ${profileColor} 0%, ${profileColor}dd 100%)`,
           }}
@@ -91,12 +91,12 @@ export default async function Page({ params }: PageProps) {
       )}
 
       {/* Profile Header */}
-      <Card className="relative -mt-16">
-        <CardContent className="p-8">
-          <div className="flex items-start gap-6">
-            <div className="relative">
+      <Card className="relative -mt-12 sm:-mt-16">
+        <CardContent className="p-4 sm:p-8">
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+            <div className="relative mx-auto sm:mx-0">
               {profile.avatar_url ? (
-                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 bg-white">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 bg-white">
                   <Image
                     src={profile.avatar_url}
                     alt={profile.username}
@@ -107,7 +107,7 @@ export default async function Page({ params }: PageProps) {
                 </div>
               ) : (
                 <div
-                  className="w-32 h-32 rounded-full flex items-center justify-center text-white text-4xl font-bold border-4 border-white dark:border-gray-800"
+                  className="w-24 h-24 sm:w-32 sm:h-32 rounded-full flex items-center justify-center text-white text-3xl sm:text-4xl font-bold border-4 border-white dark:border-gray-800"
                   style={{
                     background: `linear-gradient(135deg, ${profileColor} 0%, ${profileColor}dd 100%)`,
                   }}
@@ -117,19 +117,19 @@ export default async function Page({ params }: PageProps) {
               )}
             </div>
 
-            <div className="flex-1">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold mb-2">{profile.username}</h1>
+            <div className="flex-1 w-full">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                <div className="text-center sm:text-left">
+                  <h1 className="text-2xl sm:text-3xl font-bold mb-2">{profile.username}</h1>
                   {profile.full_name && (
-                    <p className="text-lg text-gray-600 dark:text-gray-400 mb-3">
+                    <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 mb-3">
                       {profile.full_name}
                     </p>
                   )}
                 </div>
                 {isOwnProfile && (
-                  <Link href={`/forum/user/${username}/edit`}>
-                    <Button variant="outline">
+                  <Link href={`/forum/user/${username}/edit`} className="w-full sm:w-auto">
+                    <Button variant="outline" className="w-full sm:w-auto whitespace-nowrap">
                       <Edit className="w-4 h-4 mr-2" />
                       Uredi Profil
                     </Button>
@@ -138,10 +138,10 @@ export default async function Page({ params }: PageProps) {
               </div>
 
               {profile.bio && (
-                <p className="text-gray-700 dark:text-gray-300 mb-4">{profile.bio}</p>
+                <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-4 text-center sm:text-left">{profile.bio}</p>
               )}
 
-              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-4 text-xs sm:text-sm text-gray-500 mb-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   <span>
@@ -162,7 +162,7 @@ export default async function Page({ params }: PageProps) {
 
               {/* Social Links */}
               {(profile.github_url || profile.linkedin_url || profile.website_url || profile.twitter_url) && (
-                <div className="flex gap-3 mb-4">
+                <div className="flex justify-center sm:justify-start gap-3 mb-4">
                   {profile.github_url && (
                     <a
                       href={profile.github_url}
@@ -214,9 +214,9 @@ export default async function Page({ params }: PageProps) {
 
           {/* Academic Info */}
           {(profile.university || profile.study_program || profile.year_of_study || profile.graduation_year) && (
-            <div className="mt-6 pt-6 border-t">
-              <h3 className="text-lg font-semibold mb-3">Akademske Informacije</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t">
+              <h3 className="text-base sm:text-lg font-semibold mb-3">Akademske Informacije</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-sm">
                 {profile.university && (
                   <div>
                     <span className="text-gray-500 dark:text-gray-400">Sveučilište</span>
@@ -247,16 +247,16 @@ export default async function Page({ params }: PageProps) {
 
           {/* Academic Interests */}
           {profile.academic_interests && (
-            <div className="mt-6 pt-6 border-t">
-              <h3 className="text-lg font-semibold mb-3">Akademski Interesi</h3>
-              <p className="text-gray-700 dark:text-gray-300">{profile.academic_interests}</p>
+            <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t">
+              <h3 className="text-base sm:text-lg font-semibold mb-3">Akademski Interesi</h3>
+              <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300">{profile.academic_interests}</p>
             </div>
           )}
 
           {/* Skills */}
           {skills.length > 0 && (
-            <div className="mt-6 pt-6 border-t">
-              <h3 className="text-lg font-semibold mb-3">Vještine i Tehnologije</h3>
+            <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t">
+              <h3 className="text-base sm:text-lg font-semibold mb-3">Vještine i Tehnologije</h3>
               <div className="flex flex-wrap gap-2">
                 {skills.map((skill: string, index: number) => (
                   <span
@@ -275,7 +275,7 @@ export default async function Page({ params }: PageProps) {
           )}
 
           {/* Statistics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t">
             <div className="text-center">
               <div
                 className="text-2xl font-bold"
