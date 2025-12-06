@@ -75,18 +75,19 @@ export function AvatarUpload({ currentAvatarUrl, onUpload, username }: AvatarUpl
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-4 sm:gap-6">
         {/* Avatar Preview */}
-        <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+        <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
           {preview ? (
             <Image
               src={preview}
               alt="Avatar"
               fill
-              className="object-cover"
+              className="object-cover object-center"
+              sizes="(max-width: 640px) 96px, 128px"
             />
           ) : (
-            <span className="text-white text-5xl font-bold">
+            <span className="text-white text-4xl sm:text-5xl font-bold">
               {username.charAt(0).toUpperCase()}
             </span>
           )}

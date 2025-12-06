@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
+import { Avatar } from '@/components/ui/avatar';
 import { NotificationBell } from '@/components/notifications/notification-bell';
 import { MobileNav } from './mobile-nav';
 import { logout } from '@/app/auth/actions';
@@ -99,8 +100,13 @@ export async function Navbar() {
                   href={`/forum/user/${profile.username}`}
                   className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  <User className="w-4 h-4" />
-                  <span>{profile.username}</span>
+                  <Avatar
+                    src={profile.avatar_url}
+                    alt={profile.username}
+                    fallback={profile.username}
+                    size="sm"
+                  />
+                  <span className="hidden lg:inline">{profile.username}</span>
                 </Link>
                 <form action={logout}>
                   <Button variant="ghost" size="sm" type="submit">
