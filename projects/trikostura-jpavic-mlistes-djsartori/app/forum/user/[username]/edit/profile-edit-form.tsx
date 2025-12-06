@@ -49,6 +49,9 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
     if (!result?.success) {
       setError(result?.error || 'Došlo je do greške');
       setLoading(false);
+    } else {
+      // Show success message before redirect
+      alert('Promjene su uspješno spremljene!');
     }
     // If successful, the action will redirect
   }
