@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server';
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
+  const token_hash = requestUrl.searchParams.get('token_hash');
+  const type = requestUrl.searchParams.get('type');
   const next = requestUrl.searchParams.get('next') ?? '/';
 
   if (code) {
@@ -15,6 +17,21 @@ export async function GET(request: Request) {
     if (error) {
       console.error('Auth callback error:', error);
       return NextResponse.redirect(new URL('/auth/login?error=callback_error', requestUrl.origin));
+    }
+  }
+
+  // Handle password recovery
+  if (token_hash && type === 'recovery') {
+    const supabase = await createServerSupabaseClient();
+
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash,
+      type: 'recovery',
+    });
+
+    if (error) {
+      console.error('Recovery verification error:', error);
+      return NextResponse.redirect(new URL('/auth/login?error=recovery_error', requestUrl.origin));
     }
   }
 
