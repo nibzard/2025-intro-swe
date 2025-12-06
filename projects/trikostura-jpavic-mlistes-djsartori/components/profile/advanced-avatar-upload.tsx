@@ -30,6 +30,7 @@ export function AdvancedAvatarUpload({
   const [isUploading, setIsUploading] = useState(false);
   const [showCropper, setShowCropper] = useState(false);
   const [showWebcam, setShowWebcam] = useState(false);
+  const [webcamError, setWebcamError] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
@@ -183,16 +184,44 @@ export function AdvancedAvatarUpload({
   };
 
   const captureWebcam = useCallback(() => {
-    if (!webcamRef.current) return;
+    if (!webcamRef.current) {
+      toast.error('Kamera nije dostupna');
+      return;
+    }
 
     const imageSrc = webcamRef.current.getScreenshot();
     if (imageSrc) {
       setOriginalImage(imageSrc);
       setShowWebcam(false);
+      setWebcamError(null);
       setShowCropper(true);
       toast.success('Fotografija snimljena! Možete je obrezati.');
+    } else {
+      toast.error('Nije moguće snimiti fotografiju');
     }
   }, [webcamRef]);
+
+  const handleWebcamError = useCallback((error: string | DOMException) => {
+    console.error('Webcam error:', error);
+    let errorMessage = 'Greška pri pristupu kameri';
+
+    if (typeof error === 'string') {
+      errorMessage = error;
+    } else if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+      errorMessage = 'Pristup kameri je odbijen. Molimo dozvolite pristup kameri u postavkama preglednika.';
+    } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+      errorMessage = 'Kamera nije pronađena. Provjerite je li kamera povezana i dostupna.';
+    } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+      errorMessage = 'Kamera je zauzeta drugom aplikacijom.';
+    } else if (error.name === 'OverconstrainedError') {
+      errorMessage = 'Kamera ne podržava tražene postavke.';
+    } else if (error.name === 'TypeError') {
+      errorMessage = 'Greška pri inicijalizaciji kamere.';
+    }
+
+    setWebcamError(errorMessage);
+    toast.error(errorMessage);
+  }, []);
 
   // Cropper modal
   if (showCropper && originalImage) {
@@ -275,24 +304,33 @@ export function AdvancedAvatarUpload({
   if (showWebcam) {
     return (
       <div className="space-y-4">
-        <div className="relative w-full aspect-square bg-gray-900 rounded-lg overflow-hidden">
-          <Webcam
-            ref={webcamRef}
-            audio={false}
-            screenshotFormat="image/jpeg"
-            className="w-full h-full object-cover"
-            videoConstraints={{
-              facingMode: 'user',
-              aspectRatio: 1,
-            }}
-          />
-        </div>
+        {webcamError ? (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-4 py-3 rounded">
+            <p className="font-semibold mb-1">Greška kamere</p>
+            <p className="text-sm">{webcamError}</p>
+          </div>
+        ) : (
+          <div className="relative w-full aspect-square bg-gray-900 rounded-lg overflow-hidden">
+            <Webcam
+              ref={webcamRef}
+              audio={false}
+              screenshotFormat="image/jpeg"
+              className="w-full h-full object-cover"
+              videoConstraints={{
+                facingMode: 'user',
+                aspectRatio: 1,
+              }}
+              onUserMediaError={handleWebcamError}
+            />
+          </div>
+        )}
 
         <div className="flex gap-2">
           <Button
             type="button"
             onClick={captureWebcam}
             className="flex-1"
+            disabled={!!webcamError}
           >
             <Camera className="w-4 h-4 mr-2" />
             Snimi Fotografiju
@@ -300,7 +338,10 @@ export function AdvancedAvatarUpload({
           <Button
             type="button"
             variant="outline"
-            onClick={() => setShowWebcam(false)}
+            onClick={() => {
+              setShowWebcam(false);
+              setWebcamError(null);
+            }}
           >
             <X className="w-4 h-4 mr-2" />
             Odustani
@@ -348,10 +389,11 @@ export function AdvancedAvatarUpload({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-lg p-4 transition-colors ${
+            onClick={() => fileInputRef.current?.click()}
+            className={`border-2 border-dashed rounded-lg p-4 transition-colors cursor-pointer ${
               isDragging
                 ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                : 'border-gray-300 dark:border-gray-600'
+                : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800'
             }`}
           >
             <div className="flex flex-col items-center gap-2 text-center">

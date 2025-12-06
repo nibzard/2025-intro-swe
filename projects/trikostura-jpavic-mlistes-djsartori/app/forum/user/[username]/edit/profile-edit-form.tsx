@@ -45,76 +45,67 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
     setLoading(true);
     setError(null);
 
-    const uploadPromise = (async () => {
-      try {
-        // Handle avatar removal
-        if (removeAvatar) {
-          formData.set('avatar_url', '');
-        }
-        // Upload avatar if a new file was selected
-        else if (avatarFile) {
-          const avatarFormData = new FormData();
-          avatarFormData.append('file', avatarFile);
-          avatarFormData.append('type', 'avatar');
-          const avatarResult = await uploadProfileImage(avatarFormData);
-
-          if (avatarResult.success && avatarResult.url) {
-            formData.set('avatar_url', avatarResult.url);
-          } else {
-            throw new Error(avatarResult.error || 'Avatar upload failed');
-          }
-        } else if (avatarUrl) {
-          formData.set('avatar_url', avatarUrl);
-        }
-
-        // Handle banner removal
-        if (removeBanner) {
-          formData.set('profile_banner_url', '');
-        }
-        // Upload banner if a new file was selected
-        else if (bannerFile) {
-          const bannerFormData = new FormData();
-          bannerFormData.append('file', bannerFile);
-          bannerFormData.append('type', 'banner');
-          const bannerResult = await uploadProfileImage(bannerFormData);
-
-          if (bannerResult.success && bannerResult.url) {
-            formData.set('profile_banner_url', bannerResult.url);
-          } else {
-            throw new Error(bannerResult.error || 'Banner upload failed');
-          }
-        } else if (bannerUrl) {
-          formData.set('profile_banner_url', bannerUrl);
-        }
-
-        // Update profile with new data
-        const result = await updateProfile(formData);
-
-        if (!result?.success) {
-          throw new Error(result?.error || 'Došlo je do greške');
-        }
-
-        return result;
-      } catch (err) {
-        throw err;
-      }
-    })();
-
-    toast.promise(uploadPromise, {
-      loading: 'Spremanje profila...',
-      success: 'Profil uspješno ažuriran!',
-      error: (err) => {
-        setError((err as Error).message || 'Došlo je do greške');
-        setLoading(false);
-        return (err as Error).message || 'Greška pri spremanju profila';
-      }
-    });
-
     try {
-      await uploadPromise;
-      // If successful, the action will redirect automatically
-    } catch (err) {
-      // Error already handled in toast
+      toast.loading('Spremanje profila...', { id: 'profile-save' });
+
+      // Handle avatar removal
+      if (removeAvatar) {
+        formData.set('avatar_url', '');
+      }
+      // Upload avatar if a new file was selected
+      else if (avatarFile) {
+        const avatarFormData = new FormData();
+        avatarFormData.append('file', avatarFile);
+        avatarFormData.append('type', 'avatar');
+        const avatarResult = await uploadProfileImage(avatarFormData);
+
+        if (avatarResult.success && avatarResult.url) {
+          formData.set('avatar_url', avatarResult.url);
+        } else {
+          throw new Error(avatarResult.error || 'Avatar upload failed');
+        }
+      } else if (avatarUrl) {
+        formData.set('avatar_url', avatarUrl);
+      }
+
+      // Handle banner removal
+      if (removeBanner) {
+        formData.set('profile_banner_url', '');
+      }
+      // Upload banner if a new file was selected
+      else if (bannerFile) {
+        const bannerFormData = new FormData();
+        bannerFormData.append('file', bannerFile);
+        bannerFormData.append('type', 'banner');
+        const bannerResult = await uploadProfileImage(bannerFormData);
+
+        if (bannerResult.success && bannerResult.url) {
+          formData.set('profile_banner_url', bannerResult.url);
+        } else {
+          throw new Error(bannerResult.error || 'Banner upload failed');
+        }
+      } else if (bannerUrl) {
+        formData.set('profile_banner_url', bannerUrl);
+      }
+
+      // Update profile with new data - this will redirect on success
+      await updateProfile(formData);
+
+      // If we reach here without redirect, show success
+      toast.success('Profil uspješno ažuriran!', { id: 'profile-save' });
+    } catch (err: any) {
+      // Check if this is a Next.js redirect error (expected behavior)
+      if (err?.message?.includes('NEXT_REDIRECT')) {
+        // This is expected - the redirect is happening
+        toast.success('Profil uspješno ažuriran!', { id: 'profile-save' });
+        return;
+      }
+
+      // Handle actual errors
+      const errorMessage = err?.message || 'Došlo je do greške';
+      setError(errorMessage);
+      setLoading(false);
+      toast.error(errorMessage, { id: 'profile-save' });
     }
   }
 
