@@ -29,22 +29,16 @@ export default function Home() {
             </p>
           </div>
 
-          {/* CTA Buttons */}
-          <div className="flex gap-4 justify-center flex-wrap pt-4">
+          {/* CTA Button */}
+          <div className="flex justify-center pt-4">
             <Link
               href="/forum"
-              className="group px-8 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold hover:from-red-700 hover:to-red-800 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              className="group px-10 py-5 bg-gradient-to-r from-red-600 to-blue-600 text-white rounded-2xl font-bold text-lg hover:from-red-700 hover:to-blue-700 transition-all shadow-2xl hover:shadow-3xl transform hover:scale-105"
             >
-              <span className="flex items-center gap-2">
-                <MessageSquare className="w-5 h-5" />
-                Istraži Forum
+              <span className="flex items-center gap-3">
+                <MessageSquare className="w-6 h-6" />
+                Pokreni Skriptu
               </span>
-            </Link>
-            <Link
-              href="/auth/register"
-              className="px-8 py-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl font-semibold border-2 border-gray-200 dark:border-gray-700 hover:border-red-600 dark:hover:border-red-600 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-            >
-              Registriraj se besplatno
             </Link>
           </div>
 
