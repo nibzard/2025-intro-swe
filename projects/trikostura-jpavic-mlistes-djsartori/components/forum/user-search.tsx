@@ -81,7 +81,7 @@ export function UserSearch({ users }: UserSearchProps) {
       </div>
 
       {/* Results Count */}
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-gray-500 dark:text-gray-400">
         Pronađeno: {filteredAndSortedUsers.length} korisnik(a)
       </p>
 
@@ -111,9 +111,9 @@ export function UserSearch({ users }: UserSearchProps) {
                 )}
               </div>
               {user.full_name && (
-                <p className="text-xs text-gray-500 truncate mt-0.5">{user.full_name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{user.full_name}</p>
               )}
-              <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-500">
+              <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400">
                 <span className="flex items-center gap-1">
                   <Star className="w-3 h-3 text-yellow-500 fill-current" />
                   {user.reputation}
@@ -134,8 +134,8 @@ export function UserSearch({ users }: UserSearchProps) {
 
       {filteredAndSortedUsers.length === 0 && (
         <div className="text-center py-8 sm:py-12">
-          <User className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-3 sm:mb-4" />
-          <p className="text-sm sm:text-base text-gray-500">
+          <User className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 dark:text-gray-600 mx-auto mb-3 sm:mb-4" />
+          <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">
             Nema korisnika koji odgovaraju pretrazi
           </p>
         </div>

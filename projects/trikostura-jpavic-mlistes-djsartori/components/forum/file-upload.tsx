@@ -87,7 +87,7 @@ export function FileUpload({ onFilesChange, maxFiles = 5 }: FileUploadProps) {
             Priloži datoteku
           </Button>
         </label>
-        <span className="text-xs text-gray-500 ml-3">
+        <span className="text-xs text-gray-500 dark:text-gray-400 ml-3">
           Max {maxFiles} datoteka, do {MAX_FILE_SIZE / (1024 * 1024)}MB svaka
         </span>
       </div>

@@ -30,12 +30,12 @@ export default async function NotificationsPage() {
     .order('created_at', { ascending: false });
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4">
+    <div className="max-w-4xl mx-auto py-4 sm:py-8 px-3 sm:px-4">
       <Card>
-        <CardHeader>
-          <CardTitle>Sve obavijesti</CardTitle>
+        <CardHeader className="px-4 sm:px-6 py-4 sm:py-6">
+          <CardTitle className="text-xl sm:text-2xl">Sve obavijesti</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
           <NotificationPageClient initialNotifications={notifications || []} />
         </CardContent>
       </Card>

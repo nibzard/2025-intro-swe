@@ -221,7 +221,7 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
               className="w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none"
             />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Maksimalno 500 znakova
+              Minimalno 10 znakova, maksimalno 500 znakova
             </p>
           </div>
         </div>
@@ -368,9 +368,13 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
               name="github_url"
               defaultValue={profile.github_url || ''}
               placeholder="https://github.com/username"
+              pattern="https?://(www\.)?github\.com/[a-zA-Z0-9-]+/?"
               inputMode="url"
               className="w-full px-3 py-2 h-11 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Format: https://github.com/username
+            </p>
           </div>
 
           <div>
@@ -387,9 +391,13 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
               name="linkedin_url"
               defaultValue={profile.linkedin_url || ''}
               placeholder="https://linkedin.com/in/username"
+              pattern="https?://(www\.)?linkedin\.com/(in|pub)/[a-zA-Z0-9-]+/?"
               inputMode="url"
               className="w-full px-3 py-2 h-11 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Format: https://linkedin.com/in/username
+            </p>
           </div>
 
           <div>
@@ -409,6 +417,9 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
               inputMode="url"
               className="w-full px-3 py-2 h-11 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Potpuni URL s http:// ili https://
+            </p>
           </div>
 
           <div>
@@ -424,10 +435,14 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
               id="twitter_url"
               name="twitter_url"
               defaultValue={profile.twitter_url || ''}
-              placeholder="https://twitter.com/username"
+              placeholder="https://twitter.com/username ili https://x.com/username"
+              pattern="https?://(www\.)?(twitter\.com|x\.com)/[a-zA-Z0-9_]+/?"
               inputMode="url"
               className="w-full px-3 py-2 h-11 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Format: https://twitter.com/username ili https://x.com/username
+            </p>
           </div>
         </div>
       </div>

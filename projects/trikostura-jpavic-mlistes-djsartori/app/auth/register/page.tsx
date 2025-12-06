@@ -67,8 +67,14 @@ export default function RegisterPage() {
                 placeholder="korisnik123"
                 className="h-11 text-base"
                 autoComplete="username"
+                pattern="[a-zA-Z][a-zA-Z0-9_-]{2,19}"
+                minLength={3}
+                maxLength={20}
                 required
               />
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                3-20 znakova, počinje slovom, samo slova, brojevi, _ i -
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -80,8 +86,13 @@ export default function RegisterPage() {
                 placeholder="Ime Prezime"
                 className="h-11 text-base"
                 autoComplete="name"
+                minLength={2}
+                maxLength={100}
                 required
               />
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Unesite puno ime i prezime
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -93,8 +104,20 @@ export default function RegisterPage() {
                 placeholder="••••••••"
                 className="h-11 text-base"
                 autoComplete="new-password"
+                minLength={8}
+                maxLength={100}
                 required
               />
+              <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                <p className="font-medium">Lozinka mora sadržavati:</p>
+                <ul className="list-disc list-inside space-y-0.5 ml-2">
+                  <li>Najmanje 8 znakova</li>
+                  <li>Bar jedno veliko slovo (A-Z)</li>
+                  <li>Bar jedno malo slovo (a-z)</li>
+                  <li>Bar jednu brojku (0-9)</li>
+                  <li>Bar jedan poseban znak (!@#$%...)</li>
+                </ul>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -106,6 +129,8 @@ export default function RegisterPage() {
                 placeholder="••••••••"
                 className="h-11 text-base"
                 autoComplete="new-password"
+                minLength={8}
+                maxLength={100}
                 required
               />
             </div>
