@@ -94,17 +94,17 @@ export default async function AnalyticsPage() {
     <div className="space-y-6 sm:space-y-8">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-          Analytics
+          Analitika
         </h1>
         <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-2">
-          Detailed insights and statistics about your forum
+          Detaljni uvidi i statistike o vašem forumu
         </p>
       </div>
 
       {/* Last 30 Days Activity */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
         <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
-          Last 30 Days Activity
+          Aktivnost Zadnjih 30 Dana
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
           <div className="flex items-center gap-3 sm:gap-4">
@@ -112,7 +112,7 @@ export default async function AnalyticsPage() {
               <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">New Users</p>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Novi Korisnici</p>
               <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {analytics.recentActivity.users}
               </p>
@@ -124,7 +124,7 @@ export default async function AnalyticsPage() {
               <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">New Topics</p>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Nove Teme</p>
               <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {analytics.recentActivity.topics}
               </p>
@@ -136,7 +136,7 @@ export default async function AnalyticsPage() {
               <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">New Replies</p>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Novi Odgovori</p>
               <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                 {analytics.recentActivity.replies}
               </p>
@@ -148,12 +148,12 @@ export default async function AnalyticsPage() {
       {/* Topics by Category */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
         <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
-          Topics by Category
+          Teme po Kategorijama
         </h2>
         <div className="space-y-3">
           {analytics.categoryCounts.length === 0 ? (
             <p className="text-gray-500 dark:text-gray-400 text-sm">
-              No data available
+              Nema dostupnih podataka
             </p>
           ) : (
             analytics.categoryCounts.map((category: any) => (
@@ -189,12 +189,12 @@ export default async function AnalyticsPage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
           <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4 flex items-center gap-2">
             <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
-            Most Viewed Topics
+            Najgledanije Teme
           </h2>
           <div className="space-y-3">
             {analytics.topTopics.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-sm">
-                No topics yet
+                Nema tema još
               </p>
             ) : (
               analytics.topTopics.map((topic: any, index) => (
@@ -217,7 +217,7 @@ export default async function AnalyticsPage() {
                         <Eye className="h-3 w-3" />
                         {topic.view_count}
                       </span>
-                      <span>{topic.reply_count} replies</span>
+                      <span>{topic.reply_count} odgovora</span>
                     </div>
                   </div>
                 </div>
@@ -230,12 +230,12 @@ export default async function AnalyticsPage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
           <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4 flex items-center gap-2">
             <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />
-            Most Replied Topics
+            Teme s Najviše Odgovora
           </h2>
           <div className="space-y-3">
             {analytics.mostReplied.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-sm">
-                No topics yet
+                Nema tema još
               </p>
             ) : (
               analytics.mostReplied.map((topic: any, index) => (
@@ -254,7 +254,7 @@ export default async function AnalyticsPage() {
                       {topic.title}
                     </a>
                     <div className="flex items-center gap-2 sm:gap-3 mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      <span>{topic.reply_count} replies</span>
+                      <span>{topic.reply_count} odgovora</span>
                       <span className="flex items-center gap-1">
                         <Eye className="h-3 w-3" />
                         {topic.view_count}

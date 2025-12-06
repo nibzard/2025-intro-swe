@@ -66,26 +66,26 @@ export default async function AdminDashboard() {
 
   const statCards = [
     {
-      title: 'Total Users',
+      title: 'Ukupno Korisnika',
       value: stats.totalUsers,
       icon: Users,
       color: 'bg-blue-500',
-      change: `+${stats.newUsers} this week`,
+      change: `+${stats.newUsers} ovaj tjedan`,
     },
     {
-      title: 'Total Topics',
+      title: 'Ukupno Tema',
       value: stats.totalTopics,
       icon: MessageSquare,
       color: 'bg-green-500',
     },
     {
-      title: 'Total Replies',
+      title: 'Ukupno Odgovora',
       value: stats.totalReplies,
       icon: MessagesSquare,
       color: 'bg-purple-500',
     },
     {
-      title: 'Avg Replies/Topic',
+      title: 'Prosječno Odgovora/Temi',
       value: stats.totalTopics > 0
         ? (stats.totalReplies / stats.totalTopics).toFixed(1)
         : '0',
@@ -99,10 +99,10 @@ export default async function AdminDashboard() {
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-          Admin Dashboard
+          Administratorska Nadzorna Ploča
         </h1>
         <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-2">
-          Welcome to the admin panel. Manage your forum from here.
+          Dobrodošli na administratorsku ploču. Upravljajte svojim forumom odavde.
         </p>
       </div>
 
@@ -139,12 +139,12 @@ export default async function AdminDashboard() {
         {/* Recent Topics */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
           <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
-            Recent Topics
+            Nedavne Teme
           </h2>
           <div className="space-y-3 sm:space-y-4">
             {stats.recentTopics.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-sm">
-                No topics yet
+                Nema tema još
               </p>
             ) : (
               stats.recentTopics.map((topic: any) => (
@@ -175,7 +175,7 @@ export default async function AdminDashboard() {
                     </div>
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {topic.reply_count} replies
+                    {topic.reply_count} odgovora
                   </div>
                 </div>
               ))
@@ -185,19 +185,19 @@ export default async function AdminDashboard() {
             href="/admin/topics"
             className="block text-center mt-4 text-sm text-blue-600 dark:text-blue-400 hover:underline"
           >
-            View all topics →
+            Pogledaj sve teme →
           </Link>
         </div>
 
         {/* Top Users */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
           <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
-            Top Users by Reputation
+            Najbolji Korisnici po Reputaciji
           </h2>
           <div className="space-y-3 sm:space-y-4">
             {stats.activeUsers.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-sm">
-                No users yet
+                Nema korisnika još
               </p>
             ) : (
               stats.activeUsers.map((user: any, index) => (
@@ -230,7 +230,7 @@ export default async function AdminDashboard() {
             href="/admin/users"
             className="block text-center mt-4 text-sm text-blue-600 dark:text-blue-400 hover:underline"
           >
-            View all users →
+            Pogledaj sve korisnike →
           </Link>
         </div>
       </div>
@@ -238,7 +238,7 @@ export default async function AdminDashboard() {
       {/* Quick Actions */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
         <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
-          Quick Actions
+          Brze Akcije
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           <Link
@@ -247,7 +247,7 @@ export default async function AdminDashboard() {
           >
             <Users className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
             <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white text-center">
-              Manage Users
+              Upravljaj Korisnicima
             </span>
           </Link>
           <Link
@@ -256,7 +256,7 @@ export default async function AdminDashboard() {
           >
             <MessageSquare className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
             <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white text-center">
-              Moderate Topics
+              Moderiraj Teme
             </span>
           </Link>
           <Link
@@ -265,7 +265,7 @@ export default async function AdminDashboard() {
           >
             <MessagesSquare className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
             <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white text-center">
-              Edit Categories
+              Uredi Kategorije
             </span>
           </Link>
           <Link
@@ -274,7 +274,7 @@ export default async function AdminDashboard() {
           >
             <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
             <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white text-center">
-              View Analytics
+              Pregledaj Analitiku
             </span>
           </Link>
         </div>

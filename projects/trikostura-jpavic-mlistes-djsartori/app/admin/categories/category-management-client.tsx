@@ -114,7 +114,7 @@ export function CategoryManagementClient({
           className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
-          Create Category
+          Kreiraj Kategoriju
         </button>
       )}
 
@@ -122,13 +122,13 @@ export function CategoryManagementClient({
       {showForm && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
           <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
-            {editingCategory ? 'Edit Category' : 'Create Category'}
+            {editingCategory ? 'Uredi Kategoriju' : 'Kreiraj Kategoriju'}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Name
+                  Naziv
                 </label>
                 <input
                   type="text"
@@ -141,7 +141,7 @@ export function CategoryManagementClient({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Slug
+                  URL Oznaka
                 </label>
                 <input
                   type="text"
@@ -154,7 +154,7 @@ export function CategoryManagementClient({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Icon (Emoji)
+                  Ikona (Emoji)
                 </label>
                 <input
                   type="text"
@@ -167,7 +167,7 @@ export function CategoryManagementClient({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Color
+                  Boja
                 </label>
                 <div className="flex gap-2">
                   <input
@@ -192,7 +192,7 @@ export function CategoryManagementClient({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Description
+                Opis
               </label>
               <textarea
                 value={formData.description}
@@ -210,7 +210,7 @@ export function CategoryManagementClient({
                 disabled={loading}
                 className="px-4 py-2 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Saving...' : editingCategory ? 'Update' : 'Create'}
+                {loading ? 'Spremanje...' : editingCategory ? 'Ažuriraj' : 'Kreiraj'}
               </button>
               <button
                 type="button"
@@ -218,7 +218,7 @@ export function CategoryManagementClient({
                 disabled={loading}
                 className="px-4 py-2 text-sm sm:text-base bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Cancel
+                Odustani
               </button>
             </div>
           </form>
@@ -230,7 +230,7 @@ export function CategoryManagementClient({
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
           {categories.length === 0 ? (
             <div className="p-6 sm:p-8 text-center text-sm text-gray-500 dark:text-gray-400">
-              No categories yet
+              Nema kategorija još
             </div>
           ) : (
             categories.map((category) => (

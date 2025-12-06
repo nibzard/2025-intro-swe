@@ -15,10 +15,10 @@ export default async function CategoriesPage() {
     <div className="space-y-4 sm:space-y-6">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-          Category Management
+          Upravljanje Kategorijama
         </h1>
         <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-2">
-          Create, edit, and organize forum categories
+          Kreirajte, uređujte i organizujte kategorije foruma
         </p>
       </div>
 

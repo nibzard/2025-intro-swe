@@ -89,7 +89,7 @@ export function TopicModerationClient({ topics }: { topics: Topic[] }) {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Search topics..."
+            placeholder="Pretraži teme..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 h-11 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
@@ -105,7 +105,7 @@ export function TopicModerationClient({ topics }: { topics: Topic[] }) {
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
-            All Topics
+            Sve Teme
           </button>
           <button
             onClick={() => setFilterStatus('pinned')}
@@ -115,7 +115,7 @@ export function TopicModerationClient({ topics }: { topics: Topic[] }) {
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
-            Pinned
+            Zakačene
           </button>
           <button
             onClick={() => setFilterStatus('locked')}
@@ -125,7 +125,7 @@ export function TopicModerationClient({ topics }: { topics: Topic[] }) {
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
           >
-            Locked
+            Zaključane
           </button>
         </div>
       </div>
@@ -134,7 +134,7 @@ export function TopicModerationClient({ topics }: { topics: Topic[] }) {
       <div className="divide-y divide-gray-200 dark:divide-gray-700">
         {filteredTopics.length === 0 ? (
           <div className="p-6 sm:p-8 text-center text-sm text-gray-500 dark:text-gray-400">
-            No topics found
+            Nema pronađenih tema
           </div>
         ) : (
           filteredTopics.map((topic) => (
@@ -175,7 +175,7 @@ export function TopicModerationClient({ topics }: { topics: Topic[] }) {
                       <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       {topic.view_count}
                     </span>
-                    <span>{topic.reply_count} replies</span>
+                    <span>{topic.reply_count} odgovora</span>
                     <span className="hidden sm:inline">{new Date(topic.created_at).toLocaleDateString()}</span>
                   </div>
                 </div>
