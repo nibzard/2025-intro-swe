@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { updateProfile, uploadProfileImage } from './actions';
-import { AvatarUpload } from '@/components/profile/avatar-upload';
-import { BannerUpload } from '@/components/profile/banner-upload';
+import { AdvancedAvatarUpload } from '@/components/profile/advanced-avatar-upload';
+import { AdvancedBannerUpload } from '@/components/profile/advanced-banner-upload';
 import { Github, Linkedin, Globe, Twitter } from 'lucide-react';
+import { toast } from 'sonner';
 
 type Profile = {
   id: string;
@@ -38,59 +39,82 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [removeAvatar, setRemoveAvatar] = useState(false);
+  const [removeBanner, setRemoveBanner] = useState(false);
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
     setError(null);
 
-    try {
-      // Handle avatar removal
-      if (removeAvatar) {
-        formData.set('avatar_url', '');
-      }
-      // Upload avatar if a new file was selected
-      else if (avatarFile) {
-        const avatarFormData = new FormData();
-        avatarFormData.append('file', avatarFile);
-        avatarFormData.append('type', 'avatar');
-        const avatarResult = await uploadProfileImage(avatarFormData);
-
-        if (avatarResult.success && avatarResult.url) {
-          formData.set('avatar_url', avatarResult.url);
-        } else {
-          throw new Error(avatarResult.error || 'Avatar upload failed');
+    const uploadPromise = (async () => {
+      try {
+        // Handle avatar removal
+        if (removeAvatar) {
+          formData.set('avatar_url', '');
         }
-      } else if (avatarUrl) {
-        formData.set('avatar_url', avatarUrl);
-      }
+        // Upload avatar if a new file was selected
+        else if (avatarFile) {
+          const avatarFormData = new FormData();
+          avatarFormData.append('file', avatarFile);
+          avatarFormData.append('type', 'avatar');
+          const avatarResult = await uploadProfileImage(avatarFormData);
 
-      // Upload banner if a new file was selected
-      if (bannerFile) {
-        const bannerFormData = new FormData();
-        bannerFormData.append('file', bannerFile);
-        bannerFormData.append('type', 'banner');
-        const bannerResult = await uploadProfileImage(bannerFormData);
-
-        if (bannerResult.success && bannerResult.url) {
-          formData.set('profile_banner_url', bannerResult.url);
-        } else {
-          throw new Error(bannerResult.error || 'Banner upload failed');
+          if (avatarResult.success && avatarResult.url) {
+            formData.set('avatar_url', avatarResult.url);
+          } else {
+            throw new Error(avatarResult.error || 'Avatar upload failed');
+          }
+        } else if (avatarUrl) {
+          formData.set('avatar_url', avatarUrl);
         }
-      } else if (bannerUrl) {
-        formData.set('profile_banner_url', bannerUrl);
+
+        // Handle banner removal
+        if (removeBanner) {
+          formData.set('profile_banner_url', '');
+        }
+        // Upload banner if a new file was selected
+        else if (bannerFile) {
+          const bannerFormData = new FormData();
+          bannerFormData.append('file', bannerFile);
+          bannerFormData.append('type', 'banner');
+          const bannerResult = await uploadProfileImage(bannerFormData);
+
+          if (bannerResult.success && bannerResult.url) {
+            formData.set('profile_banner_url', bannerResult.url);
+          } else {
+            throw new Error(bannerResult.error || 'Banner upload failed');
+          }
+        } else if (bannerUrl) {
+          formData.set('profile_banner_url', bannerUrl);
+        }
+
+        // Update profile with new data
+        const result = await updateProfile(formData);
+
+        if (!result?.success) {
+          throw new Error(result?.error || 'Došlo je do greške');
+        }
+
+        return result;
+      } catch (err) {
+        throw err;
       }
+    })();
 
-      // Update profile with new data
-      const result = await updateProfile(formData);
-
-      if (!result?.success) {
-        setError(result?.error || 'Došlo je do greške');
+    toast.promise(uploadPromise, {
+      loading: 'Spremanje profila...',
+      success: 'Profil uspješno ažuriran!',
+      error: (err) => {
+        setError((err as Error).message || 'Došlo je do greške');
         setLoading(false);
+        return (err as Error).message || 'Greška pri spremanju profila';
       }
+    });
+
+    try {
+      await uploadPromise;
       // If successful, the action will redirect automatically
     } catch (err) {
-      setError((err as Error).message || 'Došlo je do greške');
-      setLoading(false);
+      // Error already handled in toast
     }
   }
 
@@ -106,7 +130,7 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
       {/* Avatar Upload */}
       <div>
         <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Profilna Slika</h3>
-        <AvatarUpload
+        <AdvancedAvatarUpload
           currentAvatarUrl={avatarUrl}
           onFileSelect={(file) => {
             setAvatarFile(file);
@@ -124,9 +148,17 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
       {/* Banner Upload */}
       <div>
         <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Banner</h3>
-        <BannerUpload
+        <AdvancedBannerUpload
           currentBannerUrl={bannerUrl}
-          onFileSelect={setBannerFile}
+          onFileSelect={(file) => {
+            setBannerFile(file);
+            setRemoveBanner(false);
+          }}
+          onRemoveBanner={() => {
+            setRemoveBanner(true);
+            setBannerFile(null);
+            setBannerUrl(null);
+          }}
           profileColor={profileColor}
         />
       </div>
