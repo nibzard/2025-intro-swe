@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
+import { SkriptaLogo } from '@/components/branding/skripta-logo';
 import { NotificationBell } from '@/components/notifications/notification-bell';
 import { MobileNav } from './mobile-nav';
 import { logout } from '@/app/auth/actions';
@@ -49,10 +50,14 @@ export async function Navbar() {
         <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Logo and Desktop Navigation */}
           <div className="flex items-center gap-4 sm:gap-8">
-            <Link href="/forum" className="flex items-center gap-1.5 sm:gap-2 font-bold text-lg sm:text-xl">
-              <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
-              <span className="hidden xs:inline">Studentski Forum</span>
-              <span className="xs:hidden">Forum</span>
+            <Link href="/forum" className="flex items-center gap-2 font-bold text-lg sm:text-xl hover:opacity-80 transition-opacity">
+              <SkriptaLogo size={28} className="sm:w-8 sm:h-8" />
+              <span className="hidden xs:inline bg-gradient-to-r from-red-600 to-blue-600 bg-clip-text text-transparent">
+                Skripta
+              </span>
+              <span className="xs:hidden bg-gradient-to-r from-red-600 to-blue-600 bg-clip-text text-transparent">
+                Skripta
+              </span>
             </Link>
 
             <div className="hidden md:flex items-center gap-4">

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { SkriptaLogo } from '@/components/branding/skripta-logo';
 import {
   LayoutDashboard,
   Users,
@@ -78,11 +79,11 @@ export default async function AdminLayout({
         <aside className="hidden lg:block w-64 min-h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 fixed left-0 top-0 bottom-0 overflow-y-auto">
           <div className="p-4 sm:p-6">
             <div className="flex items-center gap-2 mb-6 sm:mb-8">
-              <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+              <SkriptaLogo size={32} />
               <div>
-                <h1 className="text-lg sm:text-xl font-bold">Administratorska Ploča</h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Studentski Forum
+                <h1 className="text-lg sm:text-xl font-bold">Admin Panel</h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400 bg-gradient-to-r from-red-600 to-blue-600 bg-clip-text text-transparent font-semibold">
+                  Skripta
                 </p>
               </div>
             </div>
@@ -114,8 +115,8 @@ export default async function AdminLayout({
 
         {/* Mobile Header */}
         <div className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10 flex items-center px-4">
-          <Shield className="h-6 w-6 text-blue-600 mr-2" />
-          <h1 className="text-lg font-bold">Admin Ploča</h1>
+          <SkriptaLogo size={24} className="mr-2" />
+          <h1 className="text-lg font-bold">Admin</h1>
         </div>
 
         {/* Mobile Bottom Nav */}
