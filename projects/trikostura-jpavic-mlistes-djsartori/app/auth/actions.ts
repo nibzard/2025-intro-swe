@@ -114,7 +114,7 @@ export async function logout() {
 }
 
 export async function resetPassword(
-  prevState: { error?: string; success?: boolean } | undefined,
+  prevState: { error?: string; success?: boolean; resetCode?: string } | undefined,
   formData: FormData
 ) {
   const email = formData.get('email') as string;
@@ -124,30 +124,110 @@ export async function resetPassword(
   }
 
   const supabase = await createServerSupabaseClient();
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
 
-  // Try using magic link OTP which may bypass PKCE issues
-  const { error } = await supabase.auth.signInWithOtp({
-    email: email,
-    options: {
-      emailRedirectTo: `${siteUrl}/auth/callback?next=/auth/update-password`,
-      shouldCreateUser: false, // Don't create new users, only reset existing
-    },
-  });
+  // Check if user exists with this email
+  const { data: users, error: userError } = await supabase.auth.admin.listUsers();
 
-  if (error) {
-    console.error('Password reset error:', error);
-    // Don't reveal if user exists
+  if (userError) {
+    console.error('Error checking user:', userError);
+    return { error: 'Došlo je do greške. Pokušajte ponovno.' };
+  }
+
+  const user = users.users.find(u => u.email === email);
+
+  if (!user) {
+    // Don't reveal if user doesn't exist for security
     return {
       success: true,
-      error: undefined,
+      resetCode: 'USER_NOT_FOUND', // Won't be shown
     };
   }
 
+  // Generate a simple 6-digit code
+  const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = new Date();
+  expiresAt.setMinutes(expiresAt.getMinutes() + 15); // 15 minutes expiry
+
+  // Store the reset code
+  const { error: tokenError } = await (supabase as any)
+    .from('password_reset_tokens')
+    .insert({
+      user_id: user.id,
+      token: resetCode,
+      expires_at: expiresAt.toISOString(),
+      used: false,
+    });
+
+  if (tokenError) {
+    console.error('Token creation error:', tokenError);
+    return { error: 'Došlo je do greške. Pokušajte ponovno.' };
+  }
+
+  // For now, return the code (in production, send via email)
   return {
     success: true,
-    error: undefined,
+    resetCode: resetCode,
   };
+}
+
+export async function verifyResetCodeAndUpdatePassword(
+  prevState: { error?: string; success?: boolean } | undefined,
+  formData: FormData
+) {
+  const code = formData.get('code') as string;
+  const password = formData.get('password') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
+
+  if (!code || code.length !== 6) {
+    return { error: 'Unesite važeći 6-znamenkasti kod' };
+  }
+
+  if (!password || password.length < 6) {
+    return { error: 'Lozinka mora imati najmanje 6 znakova' };
+  }
+
+  if (password !== confirmPassword) {
+    return { error: 'Lozinke se ne podudaraju' };
+  }
+
+  const supabase = await createServerSupabaseClient();
+
+  // Verify the reset code
+  const { data: tokenData, error: tokenError } = await (supabase as any)
+    .from('password_reset_tokens')
+    .select('*')
+    .eq('token', code)
+    .eq('used', false)
+    .single();
+
+  if (tokenError || !tokenData) {
+    return { error: 'Nevažeći ili istekli kod' };
+  }
+
+  // Check if expired
+  if (new Date(tokenData.expires_at) < new Date()) {
+    return { error: 'Kod je istekao. Molimo zatražite novi.' };
+  }
+
+  // Update password using admin API
+  const { error: updateError } = await supabase.auth.admin.updateUserById(
+    tokenData.user_id,
+    { password: password }
+  );
+
+  if (updateError) {
+    console.error('Password update error:', updateError);
+    return { error: 'Greška pri ažuriranju lozinke' };
+  }
+
+  // Mark token as used
+  await (supabase as any)
+    .from('password_reset_tokens')
+    .update({ used: true })
+    .eq('id', tokenData.id);
+
+  revalidatePath('/', 'layout');
+  redirect('/auth/login?reset=success');
 }
 
 export async function updatePassword(
