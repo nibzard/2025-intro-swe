@@ -1,11 +1,25 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-const resend = new Resend(process.env.RESEND_API_KEY || 'dummy-key');
+// Create transporter using Gmail SMTP
+// For Gmail, you need to:
+// 1. Enable 2-Factor Authentication on your Google account
+// 2. Create an App Password at: https://myaccount.google.com/apppasswords
+// 3. Use that App Password as GMAIL_APP_PASSWORD
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+});
+
+const fromEmail = process.env.GMAIL_USER || 'noreply@example.com';
+const fromName = 'Skripta';
 
 export async function sendEmailVerification(email: string, verificationCode: string, username: string) {
   try {
-    await resend.emails.send({
-      from: 'Skripta <onboarding@resend.dev>', // Change this in production
+    const result = await transporter.sendMail({
+      from: `${fromName} <${fromEmail}>`,
       to: email,
       subject: 'Potvrdite svoj email - Skripta',
       html: `
@@ -262,7 +276,7 @@ export async function sendEmailVerification(email: string, verificationCode: str
                   <p class="greeting">Pozdrav, ${username}!</p>
 
                   <p class="message">
-                    Hvala što ste se pridružili Skripta zajednici! 🎉<br><br>
+                    Hvala što ste se pridružili Skripta zajednici!<br><br>
                     Kako biste mogli u potpunosti koristiti sve funkcionalnosti, molimo potvrdite svoju email adresu pomoću koda ispod.
                   </p>
 
@@ -270,7 +284,7 @@ export async function sendEmailVerification(email: string, verificationCode: str
                   <div class="code-box">
                     <div class="code-label">Verifikacijski kod</div>
                     <div class="code">${verificationCode}</div>
-                    <div class="expiry">⏱️ Vrijedi 15 minuta</div>
+                    <div class="expiry">Vrijedi 15 minuta</div>
                   </div>
 
                   <!-- Steps -->
@@ -285,7 +299,7 @@ export async function sendEmailVerification(email: string, verificationCode: str
 
                   <!-- Alert -->
                   <div class="alert">
-                    <div class="alert-title">⚠️ Niste se registrirali?</div>
+                    <div class="alert-title">Niste se registrirali?</div>
                     <div class="alert-text">
                       Ako niste kreirali račun na Skripta, ignorirajte ovaj email. Vaš email neće biti registriran.
                     </div>
@@ -306,16 +320,19 @@ export async function sendEmailVerification(email: string, verificationCode: str
         </html>
       `,
     });
-    return { success: true };
+
+    console.log('Email sent successfully:', result.messageId);
+    return { success: true, id: result.messageId };
   } catch (error) {
+    console.error('Email send error:', error);
     return { success: false, error };
   }
 }
 
 export async function sendPasswordResetEmail(email: string, resetCode: string) {
   try {
-    await resend.emails.send({
-      from: 'Skripta <onboarding@resend.dev>', // Change this in production
+    const result = await transporter.sendMail({
+      from: `${fromName} <${fromEmail}>`,
       to: email,
       subject: 'Resetiranje lozinke - Skripta',
       html: `
@@ -572,7 +589,7 @@ export async function sendPasswordResetEmail(email: string, resetCode: string) {
                   <div class="code-box">
                     <div class="code-label">Kod za resetiranje</div>
                     <div class="code">${resetCode}</div>
-                    <div class="expiry">⏱️ Vrijedi 15 minuta</div>
+                    <div class="expiry">Vrijedi 15 minuta</div>
                   </div>
 
                   <!-- Steps -->
@@ -587,7 +604,7 @@ export async function sendPasswordResetEmail(email: string, resetCode: string) {
 
                   <!-- Alert -->
                   <div class="alert">
-                    <div class="alert-title">⚠️ Niste zatražili resetiranje?</div>
+                    <div class="alert-title">Niste zatražili resetiranje?</div>
                     <div class="alert-text">
                       Ako niste zatražili resetiranje lozinke, ignorirajte ovaj email. Vaš račun je siguran.
                     </div>
@@ -608,8 +625,11 @@ export async function sendPasswordResetEmail(email: string, resetCode: string) {
         </html>
       `,
     });
-    return { success: true };
+
+    console.log('Password reset email sent:', result.messageId);
+    return { success: true, id: result.messageId };
   } catch (error) {
+    console.error('Password reset email error:', error);
     return { success: false, error };
   }
 }

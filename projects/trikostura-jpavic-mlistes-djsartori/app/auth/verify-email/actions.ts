@@ -96,7 +96,8 @@ export async function sendVerificationEmail(userId: string, skipAuthCheck: boole
 
     if (!emailResult.success) {
       console.error('Email send error:', emailResult.error);
-      return { success: false, error: 'Greška pri slanju emaila. Provjerite RESEND_API_KEY.' };
+      const errorMsg = (emailResult.error as any)?.message || 'Nepoznata greška';
+      return { success: false, error: `Greška pri slanju emaila: ${errorMsg}` };
     }
 
     // Update rate limiting
