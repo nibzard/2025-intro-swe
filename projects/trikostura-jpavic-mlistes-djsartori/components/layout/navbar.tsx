@@ -8,7 +8,7 @@ import { NotificationBell } from '@/components/notifications/notification-bell';
 import { MobileNav } from './mobile-nav';
 import { NavLink } from './nav-link';
 import { logout } from '@/app/auth/actions';
-import { MessageSquare, User, LogOut, Search, Settings } from 'lucide-react';
+import { MessageSquare, User, LogOut, Search, Settings, Bookmark } from 'lucide-react';
 import type { Notification } from '@/types/notifications';
 import type { Profile } from '@/types/database';
 
@@ -99,6 +99,11 @@ export async function Navbar() {
               <>
                 <Link href="/forum/new">
                   <Button variant="gradient" size="sm">Nova tema</Button>
+                </Link>
+                <Link href="/forum/bookmarks" title="Moje oznake">
+                  <Button variant="ghost" size="sm">
+                    <Bookmark className="w-4 h-4" />
+                  </Button>
                 </Link>
                 <NotificationBell
                   initialNotifications={notifications}

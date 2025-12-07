@@ -3,17 +3,24 @@ import { notFound } from 'next/navigation';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Pin } from 'lucide-react';
+import { Pagination } from '@/components/ui/pagination';
+import { MessageSquare, Pin, CheckCircle } from 'lucide-react';
 
 // Revalidate every 30 seconds
 export const revalidate = 30;
 
+const TOPICS_PER_PAGE = 20;
+
 export default async function CategoryPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string }>;
 }) {
   const { slug } = await params;
+  const { page } = await searchParams;
+  const currentPage = Math.max(1, parseInt(page || '1', 10));
   const supabase = await createServerSupabaseClient();
 
   // Get category
@@ -27,7 +34,16 @@ export default async function CategoryPage({
     notFound();
   }
 
-  // Get topics in this category (limited to 50 most recent)
+  // Get total count for pagination
+  const { count: totalCount } = await (supabase as any)
+    .from('topics')
+    .select('*', { count: 'exact', head: true })
+    .eq('category_id', (category as any).id);
+
+  const totalPages = Math.ceil((totalCount || 0) / TOPICS_PER_PAGE);
+  const offset = (currentPage - 1) * TOPICS_PER_PAGE;
+
+  // Get topics in this category with pagination
   const { data: topics } = await (supabase as any)
     .from('topics')
     .select(`
@@ -38,7 +54,7 @@ export default async function CategoryPage({
     .eq('category_id', (category as any).id)
     .order('is_pinned', { ascending: false })
     .order('created_at', { ascending: false })
-    .limit(50);
+    .range(offset, offset + TOPICS_PER_PAGE - 1);
 
   return (
     <div className="space-y-4 sm:space-y-6 px-3 sm:px-0">
@@ -64,6 +80,12 @@ export default async function CategoryPage({
         </Link>
       </div>
 
+      {/* Topic count */}
+      <div className="text-sm text-gray-500">
+        {totalCount} {totalCount === 1 ? 'tema' : 'tema'} ukupno
+        {totalPages > 1 && ` - Stranica ${currentPage} od ${totalPages}`}
+      </div>
+
       {topics && topics.length > 0 ? (
         <div className="space-y-2 sm:space-y-3">
           {topics.map((topic: any) => (
@@ -71,12 +93,18 @@ export default async function CategoryPage({
               <CardContent className="p-3 sm:p-5">
                 <div className="flex items-start justify-between gap-3 sm:gap-4">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 sm:mb-2">
+                    <div className="flex items-center gap-2 mb-1 sm:mb-2 flex-wrap">
                       {topic.is_pinned && (
                         <Pin className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500 flex-shrink-0" />
                       )}
                       {topic.is_locked && (
                         <span className="text-sm sm:text-base text-gray-400 dark:text-gray-500">🔒</span>
+                      )}
+                      {topic.has_solution && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded">
+                          <CheckCircle className="w-3 h-3" />
+                          Rijeseno
+                        </span>
                       )}
                     </div>
                     <Link
@@ -116,7 +144,7 @@ export default async function CategoryPage({
         <Card>
           <CardContent className="p-12 text-center">
             <p className="text-gray-500">
-              Nema još tema u ovoj kategoriji. Budi prvi i stvori novu!
+              Nema jos tema u ovoj kategoriji. Budi prvi i stvori novu!
             </p>
             <Link href="/forum/new">
               <Button className="mt-4">Stvori prvu temu</Button>
@@ -124,6 +152,13 @@ export default async function CategoryPage({
           </CardContent>
         </Card>
       )}
+
+      {/* Pagination */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        baseUrl={`/forum/category/${slug}`}
+      />
     </div>
   );
 }

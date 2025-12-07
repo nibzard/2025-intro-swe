@@ -9,7 +9,8 @@ import { Avatar } from '@/components/ui/avatar';
 import { MarkdownRenderer } from '@/components/forum/markdown-renderer';
 import { MarkdownEditor } from '@/components/forum/markdown-editor';
 import { AdvancedAttachmentList } from '@/components/forum/advanced-attachment-list';
-import { ThumbsUp, ThumbsDown, MoreVertical, Edit2, Trash2, Quote, Link2, CheckCircle } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, MoreVertical, Edit2, Trash2, Quote, Link2, CheckCircle, Flag } from 'lucide-react';
+import { ReportDialog } from './report-dialog';
 import { createClient } from '@/lib/supabase/client';
 import { editReply } from '@/app/forum/reply/actions';
 import { toast } from 'sonner';
@@ -34,6 +35,7 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
   const [isDeleting, setIsDeleting] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
   const [isSolution, setIsSolution] = useState(reply.is_solution);
   const router = useRouter();
 
@@ -393,6 +395,21 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
                             </button>
                           </>
                         )}
+                        {!isAuthor && (
+                          <>
+                            <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                            <button
+                              onClick={() => {
+                                setShowReportDialog(true);
+                                setShowActions(false);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-orange-600"
+                            >
+                              <Flag className="w-4 h-4" />
+                              Prijavi
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   )}
@@ -439,6 +456,13 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
           </div>
         </div>
       </CardContent>
+
+      {showReportDialog && (
+        <ReportDialog
+          replyId={reply.id}
+          onClose={() => setShowReportDialog(false)}
+        />
+      )}
     </Card>
   );
 });
