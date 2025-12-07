@@ -135,7 +135,6 @@ export async function resetPassword(
     .single();
 
   if (profileError || !profile) {
-    console.log('User not found for email:', email);
     // Don't reveal if user doesn't exist for security
     return {
       success: true,
@@ -159,7 +158,6 @@ export async function resetPassword(
 
   if (tokenError) {
     console.error('Token creation error:', tokenError);
-    console.error('Full error:', JSON.stringify(tokenError, null, 2));
     return { error: `Greška pri stvaranju tokena: ${tokenError.message || 'Nepoznata greška'}. Jeste li pokrenuli SQL skriptu?` };
   }
 

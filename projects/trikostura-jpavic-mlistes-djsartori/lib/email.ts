@@ -265,7 +265,6 @@ export async function sendPasswordResetEmail(email: string, resetCode: string) {
     });
     return { success: true };
   } catch (error) {
-    console.error('Email send error:', error);
     return { success: false, error };
   }
 }
