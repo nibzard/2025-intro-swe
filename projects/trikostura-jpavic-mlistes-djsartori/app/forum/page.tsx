@@ -3,6 +3,36 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageSquare, TrendingUp } from 'lucide-react';
 import { formatDistanceToNow } from '@/lib/utils';
+import type { Category, Topic, Profile } from '@/types/database';
+
+interface TopicWithAuthor extends Topic {
+  author: Profile | null;
+}
+
+interface TopicMinimal {
+  id: string;
+  category_id: string;
+  created_at: string;
+}
+
+interface LatestTopicData {
+  id: string;
+  title: string;
+  slug: string;
+  created_at: string;
+  category_id: string;
+  author: Pick<Profile, 'username'> | null;
+}
+
+interface CategoryWithStats extends Category {
+  topic_count: number;
+  latest_topic: LatestTopicData | null;
+}
+
+interface TopicWithCategoryAndAuthor extends Topic {
+  category: Pick<Category, 'name' | 'slug' | 'color'> | null;
+  author: Pick<Profile, 'username' | 'avatar_url'> | null;
+}
 
 // Revalidate every 60 seconds
 export const revalidate = 60;
@@ -30,10 +60,10 @@ export default async function ForumPage() {
 
   // Build maps for efficient lookup
   const topicCountByCategory = new Map<string, number>();
-  const latestTopicByCategory = new Map<string, any>();
+  const latestTopicByCategory = new Map<string, LatestTopicData>();
 
   // Count topics per category
-  allTopics?.forEach((topic: any) => {
+  allTopics?.forEach((topic: TopicMinimal) => {
     topicCountByCategory.set(
       topic.category_id,
       (topicCountByCategory.get(topic.category_id) || 0) + 1
@@ -41,14 +71,14 @@ export default async function ForumPage() {
   });
 
   // Find latest topic per category
-  recentTopicsByCategory?.forEach((topic: any) => {
+  (recentTopicsByCategory as unknown as LatestTopicData[])?.forEach((topic) => {
     if (!latestTopicByCategory.has(topic.category_id)) {
       latestTopicByCategory.set(topic.category_id, topic);
     }
   });
 
   // Combine category data with counts and latest topics
-  const categoryData = (categories || []).map((category: any) => ({
+  const categoryData: CategoryWithStats[] = (categories || []).map((category) => ({
     ...category,
     topic_count: topicCountByCategory.get(category.id) || 0,
     latest_topic: latestTopicByCategory.get(category.id) || null,
@@ -107,7 +137,7 @@ export default async function ForumPage() {
                           {category.latest_topic.title}
                         </Link>
                         <span className="hidden sm:inline">
-                          {' od '}{(category.latest_topic.author as any)?.username}
+                          {' od '}{category.latest_topic.author?.username}
                         </span>
                       </div>
                     )}
@@ -131,7 +161,7 @@ export default async function ForumPage() {
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Nedavne Teme</h2>
         </div>
         <div className="space-y-2 sm:space-y-3">
-          {recentTopics?.map((topic: any) => (
+          {(recentTopics as unknown as TopicWithCategoryAndAuthor[])?.map((topic) => (
             <Card key={topic.id} className="hover-lift cursor-pointer border-gray-200 dark:border-gray-700">
               <CardContent className="p-3 sm:p-4">
                 <div className="space-y-2">
@@ -139,11 +169,11 @@ export default async function ForumPage() {
                     <span
                       className="px-2 py-0.5 sm:py-1 text-xs font-semibold rounded flex-shrink-0"
                       style={{
-                        backgroundColor: (topic.category as any)?.color + '20',
-                        color: (topic.category as any)?.color,
+                        backgroundColor: topic.category?.color ? topic.category.color + '20' : undefined,
+                        color: topic.category?.color,
                       }}
                     >
-                      {(topic.category as any)?.name}
+                      {topic.category?.name}
                     </span>
                     {topic.is_pinned && (
                       <span className="text-sm">📌</span>
@@ -157,7 +187,7 @@ export default async function ForumPage() {
                   </Link>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-gray-500">
                     <span className="truncate max-w-[120px] sm:max-w-none">
-                      {(topic.author as any)?.username}
+                      {topic.author?.username}
                     </span>
                     <span className="flex items-center gap-1 flex-shrink-0">
                       <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
