@@ -95,4 +95,18 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Improved keyboard focus indicators for accessibility */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-blue-600 dark:outline-blue-400;
+  }
+
+  /* Better focus for interactive elements */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    @apply ring-2 ring-blue-600 dark:ring-blue-400 ring-offset-2 ring-offset-background;
+  }
 }
