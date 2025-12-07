@@ -20,6 +20,7 @@ export default function AuthCallbackPage() {
       // Check for error in URL
       const errorParam = searchParams.get('error');
       const errorDescription = searchParams.get('error_description');
+      const next = searchParams.get('next');
 
       if (errorParam) {
         console.error('Auth error from URL:', errorParam, errorDescription);
@@ -31,7 +32,8 @@ export default function AuthCallbackPage() {
       console.log('Auth callback initiated:', {
         hasCode: !!searchParams.get('code'),
         hasHash: !!window.location.hash,
-        next: searchParams.get('next')
+        next: next,
+        fullHash: window.location.hash
       });
 
       // Handle hash fragment for password recovery
@@ -40,7 +42,15 @@ export default function AuthCallbackPage() {
       const refreshToken = hashParams.get('refresh_token');
       const type = hashParams.get('type');
 
+      console.log('Hash params:', {
+        hasAccessToken: !!accessToken,
+        hasRefreshToken: !!refreshToken,
+        type: type
+      });
+
       if (accessToken && refreshToken) {
+        console.log('Setting session from hash tokens');
+
         // Set the session using the tokens from the hash
         const { error } = await supabase.auth.setSession({
           access_token: accessToken,
@@ -54,24 +64,42 @@ export default function AuthCallbackPage() {
           return;
         }
 
+        console.log('Session set successfully');
+
         // Redirect based on type
-        const next = searchParams.get('next');
         if (type === 'recovery' || next === '/auth/update-password') {
           router.push('/auth/update-password');
         } else {
           router.push(next || '/forum');
         }
       } else {
-        // No tokens in hash, check for PKCE code
+        // No tokens in hash
         const code = searchParams.get('code');
-        const next = searchParams.get('next');
+
+        // Check if this is a password reset flow
+        const isPasswordReset = next === '/auth/update-password';
+
+        if (isPasswordReset && !code) {
+          // Password reset but no tokens in hash and no code - link may be malformed
+          console.error('Password reset flow but no auth data found');
+          setError('Link za resetiranje lozinke nije valjan. Molimo zatražite novi link.');
+          setTimeout(() => router.push('/auth/reset-password'), 3000);
+          return;
+        }
+
+        if (isPasswordReset && code) {
+          // Password reset with PKCE code - this indicates configuration issue
+          console.error('Password reset should use hash tokens, not PKCE code');
+          setError('Konfiguracija resetiranja lozinke nije ispravna. Link treba sadržavati sigurnosne tokene u URL fragmentu. Molimo provjerite Supabase postavke - "Secure email change" opcija treba biti isključena za resetiranje lozinke.');
+          setTimeout(() => router.push('/auth/reset-password'), 4000);
+          return;
+        }
 
         if (code) {
-          console.log('Attempting code exchange for:', next || 'login');
+          // Regular PKCE flow (for login, not password reset)
+          console.log('Attempting PKCE code exchange for login');
 
-          // Try exchanging the code for a session
-          // Note: Server-initiated flows (like password reset) might not require code_verifier
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
 
           if (error) {
             console.error('Code exchange error:', {
@@ -83,20 +111,14 @@ export default function AuthCallbackPage() {
 
             // Handle specific error cases
             if (error.message?.includes('already been used')) {
-              setError('Link je već iskorišten. Molimo zatražite novi link za resetiranje lozinke.');
+              setError('Link je već iskorišten. Molimo pokušajte ponovno.');
             } else if (error.message?.includes('expired')) {
-              setError('Link je istekao. Molimo zatražite novi link za resetiranje lozinke.');
-            } else if (error.message?.includes('code verifier')) {
-              // PKCE verification failed - this shouldn't happen for password reset
-              console.error('PKCE verifier error - password reset should use magic links');
-              setError('Greška u konfiguraciji. Link nije valjan. Molimo zatražite novi link.');
+              setError('Link je istekao. Molimo pokušajte ponovno.');
             } else {
               setError(`Greška pri autentifikaciji: ${error.message}`);
             }
 
-            setTimeout(() => {
-              router.push(next === '/auth/update-password' ? '/auth/reset-password' : '/auth/login');
-            }, 4000);
+            setTimeout(() => router.push('/auth/login'), 4000);
             return;
           }
 

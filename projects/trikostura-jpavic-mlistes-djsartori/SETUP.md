@@ -27,7 +27,31 @@
 4. Paste it into the SQL Editor and run it
 5. This will create all tables, policies, functions, and default categories
 
-## 4. Install Dependencies and Run
+## 4. Authentication Configuration
+
+### Important: Password Reset Configuration
+
+For password reset to work correctly, you need to configure Supabase Auth settings:
+
+1. Go to your Supabase Dashboard
+2. Navigate to **Authentication > Email Templates**
+3. Select "Change Email Address" template
+4. Make sure **"Secure email change enabled (Recommended)"** is **DISABLED** for password reset
+
+**Why?** Password reset uses a recovery flow that sends tokens in the URL hash fragment (e.g., `#access_token=...&refresh_token=...&type=recovery`). If "Secure email change" is enabled, Supabase will use PKCE flow which sends a code instead, but this doesn't work for server-initiated password reset flows because there's no way to store the `code_verifier`.
+
+Alternatively, you can:
+- Go to **Authentication > URL Configuration**
+- Set the correct redirect URLs for your environment
+- For local development: `http://localhost:3000/auth/callback`
+- For production: `https://your-domain.com/auth/callback`
+
+### Optional: Disable Email Confirmation (for testing)
+
+- Go to **Authentication > Providers > Email**
+- **Disable** "Confirm email" if you want to test registration without email confirmation
+
+## 5. Install Dependencies and Run
 
 ```bash
 # Install dependencies
@@ -39,7 +63,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to see your forum!
 
-## 5. Create Admin User (Optional)
+## 6. Create Admin User (Optional)
 
 After registering your first user, you can make them an admin:
 
