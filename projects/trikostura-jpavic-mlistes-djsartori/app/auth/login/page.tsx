@@ -1,15 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { useActionState, useState } from 'react';
+import { useActionState, useState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
+import { useSearchParams } from 'next/navigation';
 import { login } from '../actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { SkriptaLogo } from '@/components/branding/skripta-logo';
-import { LogIn, AlertCircle, Mail } from 'lucide-react';
+import { LogIn, AlertCircle, Mail, CheckCircle } from 'lucide-react';
 import { PasswordInput } from '@/components/auth/password-input';
 
 function SubmitButton() {
@@ -41,6 +42,19 @@ export default function LoginPage() {
   const [state, formAction] = useActionState(login, undefined);
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('reset') === 'success') {
+      setShowSuccessMessage(true);
+      // Auto-hide after 10 seconds
+      const timer = setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
 
   const validateEmail = (value: string) => {
     if (!value) {
@@ -72,6 +86,30 @@ export default function LoginPage() {
 
         <form action={formAction}>
           <CardContent className="space-y-4 px-4 sm:px-6">
+            {showSuccessMessage && (
+              <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 animate-slide-up">
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-green-700 dark:text-green-300">
+                      Lozinka uspješno promijenjena!
+                    </p>
+                    <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">
+                      Sada se možete prijaviti s novom lozinkom.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowSuccessMessage(false)}
+                    className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+                    aria-label="Zatvori"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+
             {state?.error && (
               <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 animate-slide-up">
                 <div className="flex items-start gap-2">
