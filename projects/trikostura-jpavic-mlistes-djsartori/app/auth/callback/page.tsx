@@ -98,56 +98,56 @@ export default function AuthCallbackPage() {
         const code = searchParams.get('code');
         const isPasswordReset = next === '/auth/update-password';
 
-        // Password reset with code but no session - verification failed
-        if (isPasswordReset && code) {
-          console.error('Password reset has code but no session was established');
-          setError('Sesija nije uspostavljena nakon verifikacije. Za najbolje rezultate, isključi "Secure email change enabled" u Supabase postavkama i pokušaj ponovno.');
-          setTimeout(() => router.push('/auth/reset-password'), 4000);
+        if (!code) {
+          // No session, no tokens, no code
+          console.error('No authentication data found');
+          if (isPasswordReset) {
+            setError('Link za resetiranje lozinke nije valjan ili je istekao. Molimo zatražite novi link.');
+            setTimeout(() => router.push('/auth/reset-password'), 3000);
+          } else {
+            setError('Nedostaju podaci za autentifikaciju');
+            setTimeout(() => router.push('/auth/login'), 3000);
+          }
           return;
         }
 
-        if (isPasswordReset && !code) {
-          console.error('Password reset but no auth data');
-          setError('Link za resetiranje lozinke nije valjan ili je istekao. Molimo zatražite novi link.');
-          setTimeout(() => router.push('/auth/reset-password'), 3000);
-          return;
-        }
+        // Try to exchange the code for a session
+        // For password reset flows, Supabase may handle this differently
+        console.log('Attempting code exchange for:', isPasswordReset ? 'password reset' : 'login');
 
-        if (code) {
-          // PKCE code exchange (for login and email confirmation)
-          console.log('Attempting PKCE code exchange for login');
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
 
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          console.error('Code exchange error:', {
+            message: error.message,
+            status: error.status,
+            code: error.code,
+            name: error.name
+          });
 
-          if (error) {
-            console.error('Code exchange error:', {
-              message: error.message,
-              status: error.status,
-              code: error.code,
-              name: error.name
-            });
-
-            // Handle specific error cases
-            if (error.message?.includes('already been used')) {
-              setError('Link je već iskorišten. Molimo pokušajte ponovno.');
-            } else if (error.message?.includes('expired')) {
-              setError('Link je istekao. Molimo pokušajte ponovno.');
+          // Handle specific error cases
+          if (error.message?.includes('already been used')) {
+            setError('Link je već iskorišten. Molimo zatražite novi link za resetiranje lozinke.');
+          } else if (error.message?.includes('expired')) {
+            setError('Link je istekao. Molimo zatražite novi link za resetiranje lozinke.');
+          } else if (error.message?.includes('code verifier') || error.message?.includes('code_verifier')) {
+            // PKCE verifier missing - this is the PKCE issue
+            if (isPasswordReset) {
+              setError('PKCE konfiguracija ne radi za password reset. Kontaktiraj administratora da provjeri Supabase postavke ili koristi custom password reset implementaciju.');
             } else {
-              setError(`Greška pri autentifikaciji: ${error.message}`);
+              setError('Greška u PKCE autentifikaciji. Pokušaj se prijaviti ponovno.');
             }
-
-            setTimeout(() => router.push('/auth/login'), 4000);
-            return;
+          } else {
+            setError(`Greška pri autentifikaciji: ${error.message}`);
           }
 
-          console.log('Code exchange successful');
-          router.push(next || '/forum');
-        } else {
-          // No hash tokens, no code - authentication failed
-          console.error('No authentication data found');
-          setError('Nedostaju podaci za autentifikaciju');
-          setTimeout(() => router.push('/auth/login'), 3000);
+          const redirectPath = isPasswordReset ? '/auth/reset-password' : '/auth/login';
+          setTimeout(() => router.push(redirectPath), 4000);
+          return;
         }
+
+        console.log('Code exchange successful');
+        router.push(next || '/forum');
       }
     };
 
