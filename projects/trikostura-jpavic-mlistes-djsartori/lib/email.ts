@@ -1,8 +1,23 @@
 import { Resend } from 'resend';
+import fs from 'fs';
+import path from 'path';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Load and encode logo as base64 once
+const getLogoBase64 = () => {
+  try {
+    const logoPath = path.join(process.cwd(), 'public', 'logo-email.png');
+    const logoBuffer = fs.readFileSync(logoPath);
+    return `data:image/png;base64,${logoBuffer.toString('base64')}`;
+  } catch (error) {
+    // Fallback to a simple colored square if logo not found
+    return '';
+  }
+};
+
 export async function sendPasswordResetEmail(email: string, resetCode: string) {
+  const logoDataUri = getLogoBase64();
   try {
     await resend.emails.send({
       from: 'Studentski Forum <onboarding@resend.dev>', // Change this in production
@@ -200,8 +215,8 @@ export async function sendPasswordResetEmail(email: string, resetCode: string) {
                 <!-- Header -->
                 <div class="header">
                   <div class="logo-container">
-                    <!-- Skripta Logo PNG (email-compatible) -->
-                    <img src="${process.env.NEXT_PUBLIC_SITE_URL || 'https://2025-intro-swe-bice.vercel.app'}/logo-email.png" alt="Skripta Logo" width="64" height="64" style="display: block; margin: 0 auto; border-radius: 12px;" />
+                    <!-- Skripta Logo PNG (embedded as base64 for email compatibility) -->
+                    ${logoDataUri ? `<img src="${logoDataUri}" alt="Skripta Logo" width="64" height="64" style="display: block; margin: 0 auto; border-radius: 12px;" />` : `<div style="width: 64px; height: 64px; background: linear-gradient(135deg, #E03131 0%, #0066CC 100%); border-radius: 12px; display: flex; align-items: center; justify-center; margin: 0 auto;"><span style="color: white; font-size: 36px; font-weight: 800;">S</span></div>`}
                   </div>
                   <h1 class="title">Resetiraj lozinku</h1>
                   <p class="subtitle">Studentski Forum</p>

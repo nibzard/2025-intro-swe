@@ -31,7 +31,7 @@ export default function AboutPage() {
             Vjerujemo da učenje ne mora biti usamljeno i da je zajednica najmoćniji alat za uspjeh.
           </p>
           <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
-            Naša misija je spojiti studente iz cijele Hrvatske i stvoriti okruženje gdje svak0 može pronaći pomoć,
+            Naša misija je spojiti studente iz cijele Hrvatske i stvoriti okruženje gdje svatko može pronaći pomoć,
             podijeliti svoje znanje i izgraditi vrijedne veze koje će trajati cijeli život.
           </p>
         </div>
@@ -85,8 +85,8 @@ export default function AboutPage() {
               stvoriti mjesto gdje bi mogli spojiti snage i zajedno savladati fakultetske prepreke?
             </p>
             <p>
-              Danas, Skripta je dom za tisud'e studenata iz cijele Hrvatske. Od FER-a do PMF-a, od EFZG-a do FSB-a -
-              svi smo ovdje jednapravi, svi učimo jedni od drugih.
+              Danas, Skripta je dom za tisuće studenata iz cijele Hrvatske. Od FER-a do PMF-a, od EFZG-a do FSB-a -
+              svi smo ovdje jednaki, svi učimo jedni od drugih.
             </p>
             <p className="font-semibold">
               I ovo je tek početak naše priče. S tobom, možemo je učiniti još boljom! 🚀
