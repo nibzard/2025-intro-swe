@@ -1,21 +1,6 @@
 import { Resend } from 'resend';
-import fs from 'fs';
-import path from 'path';
 
 const resend = new Resend(process.env.RESEND_API_KEY || 'dummy-key');
-
-// Pre-load and encode logo as base64 at module initialization
-let LOGO_DATA_URI = '';
-
-try {
-  const logoPath = path.join(process.cwd(), 'public', 'logo-email.png');
-  if (fs.existsSync(logoPath)) {
-    const logoBuffer = fs.readFileSync(logoPath);
-    LOGO_DATA_URI = `data:image/png;base64,${logoBuffer.toString('base64')}`;
-  }
-} catch (error) {
-  // Logo loading failed - will use fallback gradient in email
-}
 
 export async function sendPasswordResetEmail(email: string, resetCode: string) {
   try {
@@ -59,26 +44,23 @@ export async function sendPasswordResetEmail(email: string, resetCode: string) {
               }
 
               .header {
-                padding: 24px 24px 12px;
+                background: linear-gradient(135deg, #E03131 0%, #0066CC 100%);
+                padding: 32px 24px;
                 text-align: center;
               }
 
-              .logo-container {
-                display: flex;
-                justify-content: center;
-                margin-bottom: 12px;
+              .brand {
+                font-size: 32px;
+                font-weight: 800;
+                color: #ffffff;
+                margin: 0 0 8px 0;
+                letter-spacing: -0.5px;
               }
 
               .title {
-                font-size: 24px;
-                font-weight: 700;
-                color: #1c1917;
-                margin: 0 0 6px 0;
-              }
-
-              .subtitle {
-                font-size: 14px;
-                color: #78716c;
+                font-size: 20px;
+                font-weight: 600;
+                color: rgba(255, 255, 255, 0.95);
                 margin: 0;
               }
 
@@ -94,81 +76,111 @@ export async function sendPasswordResetEmail(email: string, resetCode: string) {
               }
 
               .code-box {
-                background: #f9fafb;
-                border: 2px solid #e7e5e4;
-                border-radius: 8px;
-                padding: 24px;
-                margin: 24px 0;
+                background: linear-gradient(135deg, #fef2f2 0%, #eff6ff 100%);
+                border: 3px solid #E03131;
+                border-radius: 12px;
+                padding: 32px 24px;
+                margin: 32px 0;
                 text-align: center;
               }
 
               .code-label {
-                font-size: 13px;
-                font-weight: 600;
-                color: #78716c;
-                margin-bottom: 12px;
+                font-size: 14px;
+                font-weight: 700;
+                color: #1c1917;
+                margin-bottom: 16px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
               }
 
               .code {
-                font-size: 36px;
-                font-weight: 700;
-                letter-spacing: 10px;
-                color: #E03131;
+                font-size: 48px;
+                font-weight: 800;
+                letter-spacing: 12px;
+                background: linear-gradient(135deg, #E03131 0%, #0066CC 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
                 font-family: 'Courier New', Courier, monospace;
-                margin: 8px 0;
+                margin: 16px 0;
+                display: inline-block;
               }
 
               .expiry {
-                margin-top: 12px;
-                font-size: 13px;
-                color: #78716c;
+                margin-top: 16px;
+                font-size: 14px;
+                font-weight: 600;
+                color: #E03131;
               }
 
               .steps {
-                background: #f9fafb;
-                border-radius: 8px;
-                padding: 20px;
-                margin: 20px 0;
+                background: #ffffff;
+                border: 2px solid #e7e5e4;
+                border-radius: 12px;
+                padding: 24px;
+                margin: 24px 0;
               }
 
               .steps-title {
-                font-size: 14px;
-                font-weight: 600;
+                font-size: 15px;
+                font-weight: 700;
                 color: #1c1917;
-                margin-bottom: 12px;
+                margin-bottom: 16px;
               }
 
               .steps ol {
                 margin: 0;
-                padding-left: 20px;
+                padding-left: 24px;
+                counter-reset: step-counter;
+                list-style: none;
               }
 
               .steps li {
-                font-size: 14px;
+                font-size: 15px;
                 color: #44403c;
-                margin-bottom: 8px;
-                line-height: 1.6;
+                margin-bottom: 12px;
+                line-height: 1.7;
+                counter-increment: step-counter;
+                position: relative;
+                padding-left: 8px;
+              }
+
+              .steps li:before {
+                content: counter(step-counter);
+                position: absolute;
+                left: -24px;
+                top: 0;
+                width: 24px;
+                height: 24px;
+                background: linear-gradient(135deg, #E03131 0%, #0066CC 100%);
+                color: white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                font-weight: 700;
               }
 
               .alert {
                 background: #fef3c7;
-                border-left: 4px solid #f59e0b;
-                border-radius: 6px;
-                padding: 16px;
-                margin: 20px 0;
+                border: 2px solid #f59e0b;
+                border-radius: 12px;
+                padding: 20px;
+                margin: 24px 0;
               }
 
               .alert-title {
-                font-size: 14px;
+                font-size: 15px;
                 font-weight: 700;
                 color: #92400e;
-                margin-bottom: 4px;
+                margin-bottom: 8px;
               }
 
               .alert-text {
-                font-size: 13px;
+                font-size: 14px;
                 color: #78350f;
-                line-height: 1.5;
+                line-height: 1.6;
               }
 
               .footer {
@@ -187,24 +199,44 @@ export async function sendPasswordResetEmail(email: string, resetCode: string) {
 
               @media only screen and (max-width: 600px) {
                 body {
-                  padding: 8px;
+                  padding: 4px;
                 }
 
                 .card {
                   border-radius: 0;
                 }
 
-                .content, .header, .footer {
+                .header {
+                  padding: 24px 16px;
+                }
+
+                .brand {
+                  font-size: 28px;
+                }
+
+                .title {
+                  font-size: 18px;
+                }
+
+                .content, .footer {
                   padding: 20px 16px;
                 }
 
                 .code {
-                  font-size: 28px;
-                  letter-spacing: 6px;
+                  font-size: 32px;
+                  letter-spacing: 8px;
                 }
 
-                .title {
-                  font-size: 20px;
+                .code-box {
+                  padding: 24px 16px;
+                  margin: 24px 0;
+                }
+
+                .steps li:before {
+                  width: 20px;
+                  height: 20px;
+                  font-size: 11px;
+                  left: -20px;
                 }
               }
             </style>
@@ -214,26 +246,23 @@ export async function sendPasswordResetEmail(email: string, resetCode: string) {
               <div class="card">
                 <!-- Header -->
                 <div class="header">
-                  <div class="logo-container">
-                    <!-- Skripta Logo PNG (embedded as base64 for email compatibility) -->
-                    ${LOGO_DATA_URI ? `<img src="${LOGO_DATA_URI}" alt="Skripta Logo" width="64" height="64" style="display: block; margin: 0 auto; border-radius: 12px;" />` : `<div style="width: 64px; height: 64px; background: linear-gradient(135deg, #E03131 0%, #0066CC 100%); border-radius: 12px; display: flex; align-items: center; justify-center; margin: 0 auto;"><span style="color: white; font-size: 36px; font-weight: 800;">S</span></div>`}
-                  </div>
-                  <h1 class="title">Resetiraj lozinku</h1>
-                  <p class="subtitle">Skripta</p>
+                  <h1 class="brand">Skripta</h1>
+                  <p class="title">Resetiranje lozinke</p>
                 </div>
 
                 <!-- Content -->
                 <div class="content">
                   <p class="message">
-                    Pozdrav,<br><br>
-                    Zatražili ste resetiranje lozinke za vaš račun na Studentskom Forumu.
+                    <strong>Pozdrav!</strong><br><br>
+                    Primili smo zahtjev za resetiranje lozinke vašeg Skripta računa.
+                    Koristite kod ispod kako biste postavili novu lozinku.
                   </p>
 
                   <!-- Code Box -->
                   <div class="code-box">
-                    <div class="code-label">Vaš kod za resetiranje:</div>
+                    <div class="code-label">Kod za resetiranje</div>
                     <div class="code">${resetCode}</div>
-                    <div class="expiry">Kod vrijedi <strong>15 minuta</strong></div>
+                    <div class="expiry">⏱️ Vrijedi 15 minuta</div>
                   </div>
 
                   <!-- Steps -->
