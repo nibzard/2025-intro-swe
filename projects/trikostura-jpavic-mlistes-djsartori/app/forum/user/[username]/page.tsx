@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { Calendar, MessageSquare, User as UserIcon, Github, Linkedin, Globe, Twitter, Edit, TrendingUp, Award, Star, Sparkles, Trophy, Target, Zap, BookOpen } from 'lucide-react';
+import { Calendar, MessageSquare, User as UserIcon, Github, Linkedin, Globe, Twitter, Edit, TrendingUp, Award, Star, Sparkles, Trophy, Target, Zap, BookOpen, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -167,6 +167,12 @@ export default async function Page({ params }: PageProps) {
                       <span className="px-3 py-1 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg text-xs font-bold shadow-lg flex items-center gap-1">
                         <Star className="w-3 h-3" />
                         MODERATOR
+                      </span>
+                    )}
+                    {profile.email_verified && (
+                      <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-xs font-bold shadow-lg flex items-center gap-1" title="Verificirani email">
+                        <CheckCircle className="w-3 h-3" />
+                        VERIFICIRAN
                       </span>
                     )}
                   </div>

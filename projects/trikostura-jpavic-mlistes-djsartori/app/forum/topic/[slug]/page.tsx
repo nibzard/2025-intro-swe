@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
 import { TopicContent } from '@/components/forum/topic-content';
 import { TopicControlMenu } from '@/components/forum/topic-control-menu';
-import { MarkdownRenderer } from '@/components/forum/markdown-renderer';
+import { EditableTopic } from '@/components/forum/editable-topic';
 import { AdvancedAttachmentList } from '@/components/forum/advanced-attachment-list';
 import { MessageSquare, ArrowLeft } from 'lucide-react';
 
@@ -199,7 +199,16 @@ export default async function TopicPage({
             </div>
           </div>
 
-          <MarkdownRenderer content={topic.content} />
+          <EditableTopic
+            topicId={topic.id}
+            title={topic.title}
+            content={topic.content}
+            isAuthor={isAuthor}
+            isAdmin={isAdmin}
+            isLocked={topic.is_locked}
+            editedAt={topic.edited_at}
+            createdAt={topic.created_at}
+          />
           <AdvancedAttachmentList attachments={topicAttachments || []} />
         </CardContent>
       </Card>
