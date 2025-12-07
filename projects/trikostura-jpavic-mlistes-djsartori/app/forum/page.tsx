@@ -78,7 +78,7 @@ export default async function ForumPage() {
   });
 
   // Combine category data with counts and latest topics
-  const categoryData: CategoryWithStats[] = (categories || []).map((category) => ({
+  const categoryData: CategoryWithStats[] = (categories as Category[] || []).map((category) => ({
     ...category,
     topic_count: topicCountByCategory.get(category.id) || 0,
     latest_topic: latestTopicByCategory.get(category.id) || null,
@@ -170,7 +170,7 @@ export default async function ForumPage() {
                       className="px-2 py-0.5 sm:py-1 text-xs font-semibold rounded flex-shrink-0"
                       style={{
                         backgroundColor: topic.category?.color ? topic.category.color + '20' : undefined,
-                        color: topic.category?.color,
+                        color: topic.category?.color || undefined,
                       }}
                     >
                       {topic.category?.name}

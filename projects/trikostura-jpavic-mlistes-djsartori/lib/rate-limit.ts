@@ -69,9 +69,7 @@ export function rateLimit(config: RateLimitConfig) {
     if (store[key].count > maxRequests) {
       const retryAfter = Math.ceil((store[key].resetTime - now) / 1000);
       return NextResponse.json(
-        { error: 'Previše zahtjeva. Molimo pok
-
-ušajte ponovno kasnije.' },
+        { error: 'Previše zahtjeva. Molimo pokušajte ponovno kasnije.' },
         {
           status: 429,
           headers: {
