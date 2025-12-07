@@ -130,7 +130,7 @@ export async function resetPassword(
   const { error } = await supabase.auth.signInWithOtp({
     email: email,
     options: {
-      emailRedirectTo: `${siteUrl}/auth/update-password`,
+      emailRedirectTo: `${siteUrl}/auth/callback?next=/auth/update-password`,
       shouldCreateUser: false, // Don't create new users, only reset existing
     },
   });
