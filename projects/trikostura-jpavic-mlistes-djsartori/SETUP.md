@@ -29,22 +29,30 @@
 
 ## 4. Authentication Configuration
 
-### Important: Password Reset Configuration
+### Password Reset Configuration
 
-For password reset to work correctly, you need to configure Supabase Auth settings:
+Password reset now supports **both PKCE and implicit (hash-based) flows**:
 
+**Option 1: PKCE Flow (Recommended for Production)**
 1. Go to your Supabase Dashboard
-2. Navigate to **Authentication > Email Templates**
-3. Select "Change Email Address" template
-4. Make sure **"Secure email change enabled (Recommended)"** is **DISABLED** for password reset
+2. Navigate to **Authentication > Providers > Email**
+3. **Enable** "Secure email change enabled (Recommended)"
+4. The callback will automatically detect the session established by Supabase's verification endpoint
 
-**Why?** Password reset uses a recovery flow that sends tokens in the URL hash fragment (e.g., `#access_token=...&refresh_token=...&type=recovery`). If "Secure email change" is enabled, Supabase will use PKCE flow which sends a code instead, but this doesn't work for server-initiated password reset flows because there's no way to store the `code_verifier`.
+**Option 2: Implicit Flow (Hash-based tokens)**
+1. Go to your Supabase Dashboard
+2. Navigate to **Authentication > Providers > Email**
+3. **Disable** "Secure email change enabled"
+4. Password reset emails will contain tokens in the URL hash fragment
 
-Alternatively, you can:
+Both flows are fully supported and will work correctly.
+
+### URL Configuration
+
+Set the correct redirect URLs:
 - Go to **Authentication > URL Configuration**
-- Set the correct redirect URLs for your environment
 - For local development: `http://localhost:3000/auth/callback`
-- For production: `https://your-domain.com/auth/callback`
+- For production: `https://2025-intro-swe-bice.vercel.app/auth/callback`
 
 ### Optional: Disable Email Confirmation (for testing)
 
