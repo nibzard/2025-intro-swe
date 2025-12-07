@@ -1,47 +1,74 @@
-# SPECIFICATION.md
+# Trip Planner – Aplikacija za planiranje i organiziranje putovanja
 
-## Naziv projekta
-**Aplikacija za planiranje i organiziranje putovanja**
+## 📝 Opis projekta
+Trip Planner je interaktivna aplikacija koja korisnicima omogućuje jednostavno planiranje i organizaciju putovanja prema vlastitim željama i preferencijama. Korisnici mogu odabrati destinaciju i datume putovanja, odrediti budžet te odabrati aktivnosti, smještaj i prijevoz.
 
----
+Aplikacija uključuje **chat bota / agenta** koji:  
+• Daje preporuke aktivnosti i smještaja  
+• Optimizira raspored i troškove putovanja  
+• Predlaže popularne i zanimljive lokacije, uključujući trendove s TikToka  
 
-## Opis projekta
-Ovaj projekt predstavlja aplikaciju koja omogućuje korisnicima planiranje putovanja prema njihovim osobnim preferencijama.  
-Korisnici mogu odabrati destinaciju, odrediti budžet, odabrati aktivnosti, prijevoz i smještaj.  
-Aplikacija koristi **agenta** za davanje preporuka, analizu opcija i pomoć u optimizaciji putovanja prema korisničkim željama.  
-Prikazi itinerera, budžeta i aktivnosti omogućuju korisnicima bolju vizualizaciju i organizaciju putovanja.
-
----
-
-## Svrha i cilj projekta
-- Pomoći korisnicima da **organiziraju putovanja prema svojim preferencijama**.  
-- Omogućiti jednostavno odabiranje destinacija, aktivnosti, smještaja i prijevoza.  
-- Pomoći u planiranju budžeta i rasporeda putovanja.  
-- Implementirati **agenta** koji daje preporuke i prijedloge optimizacije.  
-- Vizualno prikazati plan putovanja, troškove i aktivnosti.
+Korisnik dobiva **vizualno prikazan itinerar, pregled troškova i raspored aktivnosti**, što olakšava planiranje i donošenje odluka.
 
 ---
 
-## Izrada projekta
-- HTML, CSS, JavaScript, Python (po potrebi za backend/agent funkcionalnosti)
+## 🧩 Struktura aplikacije
+
+### 🎨 Frontend
+• HTML, CSS i JavaScript  
+• Unos podataka: destinacije, datumi, budžet, aktivnosti  
+• Prikaz itinerera, aktivnosti i troškova kroz pregledno sučelje  
+
+### 🖥 Backend
+• Python (Flask ili FastAPI)  
+• Obrada korisničkih zahtjeva  
+• Komunikacija s chat botom i API servisima  
+• Pohrana podataka u datotekama ili bazi  
+
+### 🤖 Chat bot / agent
+• Analizira korisničke unose  
+• Generira preporuke aktivnosti i smještaja  
+• Predlaže optimiziran raspored putovanja  
+• Preporučuje na temelju trendova (npr. popularne TikTok lokacije)  
 
 ---
 
-## Funkcionalnosti
-1. **Registracija i prijava korisnika**  
-2. **Unos planiranih destinacija i datuma putovanja**  
-3. **Odabir aktivnosti i smještaja**  
-4. **Unos i praćenje budžeta putovanja**  
-5. **Prikaz itinerera i aktivnosti**  
-6. **Preporuke agenta** na temelju korisničkih preferencija  
-7. **Analiza i optimizacija putovanja**  
+## 🌐 Integracija API-ja
+• Skyscanner API – prikaz cijena letova, pretraživanje dostupnih ruta  
+• Google Places API – aktivnosti, muzeji, restorani, atrakcije, recenzije i radno vrijeme  
+• TikTok (RapidAPI) – popularne lokacije i aktivnosti (#londonthingstodo, #traveltrends)  
 
 ---
 
-## Funkcionalnost agenta
-Agent koristi jednostavne **pravila i analizu podataka** za generiranje preporuka:
-- Ako korisnik odabere destinaciju s visokim troškovima → predlaže alternativne opcije unutar budžeta.  
-- Ako korisnik planira više aktivnosti nego što je vremenski moguće → predlaže optimalan raspored.  
-- Na temelju povijesnih podataka i preferencija daje **predviđanje optimalnog itinerera i troškova**.  
+## ⚙ Funkcionalnosti
+• Registracija i prijava korisnika  
+• Unos destinacija i datuma putovanja  
+• Odabir aktivnosti, smještaja i prijevoza  
+• Praćenje i analiza budžeta  
+• Prikaz itinerara i dnevnih aktivnosti  
+• Preporuke chat bota temeljem preferencija  
+• Optimizacija putovanja (vrijeme, troškovi, aktivnosti)  
 
 ---
+
+## ⭐ Ključne značajke
+• Jasan prikaz cijelog plana putovanja  
+• Jednostavno biranje destinacija, aktivnosti, smještaja i prijevoza  
+• Interaktivna vizualizacija itinerara i troškova  
+• Inteligentne preporuke chat bota koje olakšavaju planiranje  
+
+---
+
+## 🗺 Mermaid dijagram arhitekture
+```mermaid
+flowchart TD
+    A[Korisnik] -->|Upit / unos preferencija| B[Chatbot UI]
+    B --> C[Backend server]
+    C --> D[Skyscanner API]
+    C --> E[Google Places API]
+    C --> F[TikTok API]
+    D --> C
+    E --> C
+    F --> C
+    C -->|Obrađeni rezultati| B
+    B -->|Prikaz rezultata| A
