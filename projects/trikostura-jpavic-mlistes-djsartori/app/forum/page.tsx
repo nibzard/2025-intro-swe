@@ -84,13 +84,14 @@ export default async function ForumPage() {
     latest_topic: latestTopicByCategory.get(category.id) || null,
   }));
 
-  // Get recent topics
+  // Get recent topics with tags
   const { data: recentTopics } = await supabase
     .from('topics')
     .select(`
       *,
       author:profiles!topics_author_id_fkey(username, avatar_url),
-      category:categories(name, slug, color)
+      category:categories(name, slug, color),
+      topic_tags(tags(id, name, slug, color))
     `)
     .order('created_at', { ascending: false })
     .limit(10);
@@ -178,6 +179,18 @@ export default async function ForumPage() {
                     {topic.is_pinned && (
                       <span className="text-sm">📌</span>
                     )}
+                    {(topic as any).topic_tags?.map((topicTag: any) => (
+                      <span
+                        key={topicTag.tags.id}
+                        className="px-2 py-0.5 text-xs font-medium rounded flex-shrink-0"
+                        style={{
+                          backgroundColor: topicTag.tags.color ? topicTag.tags.color + '15' : '#e5e7eb',
+                          color: topicTag.tags.color || '#6b7280',
+                        }}
+                      >
+                        {topicTag.tags.name}
+                      </span>
+                    ))}
                   </div>
                   <Link
                     href={`/forum/topic/${topic.slug}`}

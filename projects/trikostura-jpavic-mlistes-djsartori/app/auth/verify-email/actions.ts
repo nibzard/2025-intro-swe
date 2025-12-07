@@ -1,6 +1,7 @@
 'use server';
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { sendEmailVerification } from '@/lib/email';
 import { z } from 'zod';
 
@@ -13,26 +14,47 @@ const VerifyEmailSchema = z.object({
   code: z.string().length(6, 'Kod mora imati 6 znamenki'),
 });
 
-export async function sendVerificationEmail(userId: string) {
+// Rate limiting: track last email sent time per user
+const lastEmailSentMap = new Map<string, number>();
+const RESEND_COOLDOWN_MS = 60000; // 60 seconds cooldown
+
+export async function sendVerificationEmail(userId: string, skipAuthCheck: boolean = false) {
   try {
     const supabase = await createServerSupabaseClient();
 
-    // Get user data
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user || user.id !== userId) {
-      return { success: false, error: 'Unauthorized' };
+    // For normal calls, verify the user is authenticated
+    if (!skipAuthCheck) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || user.id !== userId) {
+        return { success: false, error: 'Neautorizirano' };
+      }
     }
 
-    // Get profile
-    const { data: profile } = await supabase
+    // Check rate limiting
+    const lastSent = lastEmailSentMap.get(userId);
+    if (lastSent) {
+      const timeSinceLastSent = Date.now() - lastSent;
+      if (timeSinceLastSent < RESEND_COOLDOWN_MS) {
+        const secondsRemaining = Math.ceil((RESEND_COOLDOWN_MS - timeSinceLastSent) / 1000);
+        return {
+          success: false,
+          error: `Pričekajte ${secondsRemaining} sekundi prije slanja novog koda`,
+          cooldownRemaining: secondsRemaining
+        };
+      }
+    }
+
+    // Get profile using admin client to ensure we can read it
+    const adminClient = createAdminClient();
+    const { data: profile, error: profileError } = await (adminClient as any)
       .from('profiles')
       .select('username, email, email_verified')
       .eq('id', userId)
       .single();
 
-    if (!profile) {
-      return { success: false, error: 'Profile not found' };
+    if (profileError || !profile) {
+      console.error('Profile fetch error:', profileError);
+      return { success: false, error: 'Profil nije pronađen' };
     }
 
     if ((profile as any).email_verified) {
@@ -40,7 +62,7 @@ export async function sendVerificationEmail(userId: string) {
     }
 
     // Delete any existing tokens for this user
-    await (supabase as any)
+    await (adminClient as any)
       .from('email_verification_tokens')
       .delete()
       .eq('user_id', userId);
@@ -51,7 +73,7 @@ export async function sendVerificationEmail(userId: string) {
     expiresAt.setMinutes(expiresAt.getMinutes() + 15); // 15 minutes expiry
 
     // Store the token
-    const { error: insertError } = await (supabase as any)
+    const { error: insertError } = await (adminClient as any)
       .from('email_verification_tokens')
       .insert({
         user_id: userId,
@@ -61,6 +83,7 @@ export async function sendVerificationEmail(userId: string) {
       });
 
     if (insertError) {
+      console.error('Token insert error:', insertError);
       return { success: false, error: 'Greška pri kreiranju verifikacijskog koda' };
     }
 
@@ -68,15 +91,20 @@ export async function sendVerificationEmail(userId: string) {
     const emailResult = await sendEmailVerification(
       (profile as any).email,
       code,
-      (profile as any).username
+      (profile as any).username || 'korisniče'
     );
 
     if (!emailResult.success) {
-      return { success: false, error: 'Greška pri slanju emaila' };
+      console.error('Email send error:', emailResult.error);
+      return { success: false, error: 'Greška pri slanju emaila. Provjerite RESEND_API_KEY.' };
     }
+
+    // Update rate limiting
+    lastEmailSentMap.set(userId, Date.now());
 
     return { success: true };
   } catch (error) {
+    console.error('sendVerificationEmail error:', error);
     return { success: false, error: 'Došlo je do greške' };
   }
 }

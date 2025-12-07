@@ -7,6 +7,7 @@ import { MarkdownEditor } from '@/components/forum/markdown-editor';
 import { AdvancedFileUpload } from '@/components/forum/advanced-file-upload';
 import { createClient } from '@/lib/supabase/client';
 import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
+import { processMentions } from '@/app/forum/actions';
 import { toast } from 'sonner';
 import { Send, Loader2, Smile } from 'lucide-react';
 
@@ -169,7 +170,10 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess }: Repl
         }
       }
 
-      toast.success('Odgovor uspješno objavljen! 🎉', { id: toastId });
+      // Process mentions and create notifications
+      await processMentions(content.trim(), user.id, topicId, newReply.id);
+
+      toast.success('Odgovor uspješno objavljen!', { id: toastId });
 
       // Reset form
       setContent('');

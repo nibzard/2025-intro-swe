@@ -43,3 +43,29 @@ export function debounce<T extends (...args: any[]) => any>(
     timeout = setTimeout(later, wait);
   };
 }
+
+export function generateSlug(title: string): string {
+  const croatianMap: Record<string, string> = {
+    'č': 'c', 'ć': 'c', 'đ': 'd', 'š': 's', 'ž': 'z',
+    'Č': 'c', 'Ć': 'c', 'Đ': 'd', 'Š': 's', 'Ž': 'z',
+  };
+
+  let slug = title.toLowerCase();
+
+  // Replace Croatian characters
+  for (const [char, replacement] of Object.entries(croatianMap)) {
+    slug = slug.replace(new RegExp(char, 'g'), replacement);
+  }
+
+  // Replace spaces and special chars with hyphens, remove non-alphanumeric
+  slug = slug
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  // Add timestamp for uniqueness
+  const timestamp = Date.now().toString(36);
+
+  return `${slug}-${timestamp}`;
+}

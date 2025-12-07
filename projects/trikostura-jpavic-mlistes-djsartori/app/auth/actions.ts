@@ -89,11 +89,18 @@ export async function register(
   if (data.user) {
     const { error: updateError } = await (supabase as any)
       .from('profiles')
-      .update({ username, full_name })
+      .update({ username, full_name, email })
       .eq('id', data.user.id);
 
-    // Send verification email
-    await sendVerificationEmail(data.user.id);
+    if (updateError) {
+      console.error('Profile update error:', updateError);
+    }
+
+    // Send verification email (skip auth check since user just registered)
+    const emailResult = await sendVerificationEmail(data.user.id, true);
+    if (!emailResult.success) {
+      console.error('Verification email error:', emailResult.error);
+    }
   }
 
   revalidatePath('/', 'layout');
