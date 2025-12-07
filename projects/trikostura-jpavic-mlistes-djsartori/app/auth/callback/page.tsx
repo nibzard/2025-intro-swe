@@ -36,28 +36,28 @@ export default function AuthCallbackPage() {
         fullHash: window.location.hash
       });
 
-      // Check if session already exists (PKCE password reset flow)
-      // When PKCE is enabled, Supabase's /auth/v1/verify endpoint handles the
-      // token exchange and sets the session cookie before redirecting here
+      // First check if session already exists (set by Supabase's /auth/v1/verify endpoint)
+      // This happens when user clicks password reset link with type=recovery
       const { data: { session } } = await supabase.auth.getSession();
 
       if (session) {
-        console.log('Session already exists (PKCE flow):', session.user.id);
+        console.log('Session already exists:', session.user.id);
 
         // If this is a password reset flow, redirect to update password
         if (next === '/auth/update-password') {
-          console.log('Redirecting to update-password (PKCE recovery flow)');
+          console.log('Redirecting to update-password');
           router.push('/auth/update-password');
           return;
         }
 
         // Otherwise, redirect to intended destination
-        console.log('Redirecting to:', next || '/forum');
         router.push(next || '/forum');
         return;
       }
 
-      // No existing session, check for hash fragment tokens (implicit flow)
+      console.log('No existing session, checking for tokens or code');
+
+      // Check for hash fragment tokens (implicit flow)
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const accessToken = hashParams.get('access_token');
       const refreshToken = hashParams.get('refresh_token');
@@ -96,10 +96,26 @@ export default function AuthCallbackPage() {
       } else {
         // No tokens in hash, check for PKCE code
         const code = searchParams.get('code');
+        const isPasswordReset = next === '/auth/update-password';
+
+        // Password reset with code but no session - verification failed
+        if (isPasswordReset && code) {
+          console.error('Password reset has code but no session was established');
+          setError('Sesija nije uspostavljena nakon verifikacije. Za najbolje rezultate, isključi "Secure email change enabled" u Supabase postavkama i pokušaj ponovno.');
+          setTimeout(() => router.push('/auth/reset-password'), 4000);
+          return;
+        }
+
+        if (isPasswordReset && !code) {
+          console.error('Password reset but no auth data');
+          setError('Link za resetiranje lozinke nije valjan ili je istekao. Molimo zatražite novi link.');
+          setTimeout(() => router.push('/auth/reset-password'), 3000);
+          return;
+        }
 
         if (code) {
           // PKCE code exchange (for login and email confirmation)
-          console.log('Attempting PKCE code exchange');
+          console.log('Attempting PKCE code exchange for login');
 
           const { error } = await supabase.auth.exchangeCodeForSession(code);
 
@@ -127,17 +143,10 @@ export default function AuthCallbackPage() {
           console.log('Code exchange successful');
           router.push(next || '/forum');
         } else {
-          // No session, no hash tokens, no code - authentication failed
+          // No hash tokens, no code - authentication failed
           console.error('No authentication data found');
-          const isPasswordReset = next === '/auth/update-password';
-
-          if (isPasswordReset) {
-            setError('Link za resetiranje lozinke nije valjan ili je istekao. Molimo zatražite novi link.');
-            setTimeout(() => router.push('/auth/reset-password'), 3000);
-          } else {
-            setError('Nedostaju podaci za autentifikaciju');
-            setTimeout(() => router.push('/auth/login'), 3000);
-          }
+          setError('Nedostaju podaci za autentifikaciju');
+          setTimeout(() => router.push('/auth/login'), 3000);
         }
       }
     };

@@ -31,21 +31,16 @@
 
 ### Password Reset Configuration
 
-Password reset now supports **both PKCE and implicit (hash-based) flows**:
+**IMPORTANT:** Password reset requires implicit flow (hash-based tokens). PKCE does not work for server-initiated password reset.
 
-**Option 1: PKCE Flow (Recommended for Production)**
 1. Go to your Supabase Dashboard
 2. Navigate to **Authentication > Providers > Email**
-3. **Enable** "Secure email change enabled (Recommended)"
-4. The callback will automatically detect the session established by Supabase's verification endpoint
+3. **DISABLE** "Secure email change enabled (Recommended)"
+4. Click **Save**
 
-**Option 2: Implicit Flow (Hash-based tokens)**
-1. Go to your Supabase Dashboard
-2. Navigate to **Authentication > Providers > Email**
-3. **Disable** "Secure email change enabled"
-4. Password reset emails will contain tokens in the URL hash fragment
+**Why?** Password reset is initiated via email (server-side), which means there's no client-side `code_verifier` for PKCE. The implicit flow sends tokens in the URL hash fragment which works correctly for password reset.
 
-Both flows are fully supported and will work correctly.
+**Note:** You can keep PKCE enabled for regular login/signup - only password reset needs the implicit flow.
 
 ### URL Configuration
 

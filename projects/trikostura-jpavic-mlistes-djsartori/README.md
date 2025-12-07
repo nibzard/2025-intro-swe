@@ -86,7 +86,7 @@ Ovo će kreirati sve tablice, politike, triggere, funkcije i default kategorije.
 **⚠️ Važno:**
 - Idi na **Authentication > Providers > Email** i **isključi** "Confirm email" ako želiš testirati registraciju bez email potvrde.
 - Notifications SQL mora biti pokrenut nakon schema.sql jer ovisi o tablicama iz schema.sql
-- **Resetiranje lozinke:** Podržava PKCE i implicit flow. Vidi [SETUP.md](SETUP.md) za konfiguraciju.
+- **Za resetiranje lozinke:** MORA biti isključeno "Secure email change enabled" u Supabase. Vidi [SETUP.md](SETUP.md) za detalje.
 
 ### 6. Pokreni development server
 
