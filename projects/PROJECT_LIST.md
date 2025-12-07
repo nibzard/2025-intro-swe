@@ -114,7 +114,7 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** Aplikacija za pronalazenje ljudi na temelju njihovih glazbenih ukusa i interesa.
 
-### Trip Planner - Klara Lana Vidak & Nikolina Plazibat
+### NK - Klara Lana Vidak & Nikolina Plazibat
 * **Project:** Trip Planner
 * **Folder:** `NK-Klara99-1nikolina23/`
 * **Status:** In Progress
