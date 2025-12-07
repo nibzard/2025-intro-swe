@@ -6,10 +6,12 @@ import { Menu, X, Home, Search, Settings, User, LogOut, Plus, Users } from 'luci
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
 import { logout } from '@/app/auth/actions';
+import type { Profile } from '@/types/database';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface MobileNavProps {
-  user: any;
-  profile: any;
+  user: SupabaseUser | null;
+  profile: Profile | null;
 }
 
 export function MobileNav({ user, profile }: MobileNavProps) {

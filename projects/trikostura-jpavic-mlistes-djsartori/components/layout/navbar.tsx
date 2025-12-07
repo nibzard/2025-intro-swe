@@ -10,6 +10,7 @@ import { NavLink } from './nav-link';
 import { logout } from '@/app/auth/actions';
 import { MessageSquare, User, LogOut, Search, Settings } from 'lucide-react';
 import type { Notification } from '@/types/notifications';
+import type { Profile } from '@/types/database';
 
 export async function Navbar() {
   const supabase = await createServerSupabaseClient();
@@ -17,7 +18,7 @@ export async function Navbar() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let profile: any = null;
+  let profile: Profile | null = null;
   let notifications: Notification[] = [];
   let unreadCount = 0;
 
@@ -42,7 +43,7 @@ export async function Navbar() {
 
     if (notificationData) {
       notifications = notificationData as Notification[];
-      unreadCount = notificationData.filter((n: any) => !n.is_read).length;
+      unreadCount = notificationData.filter((n) => !n.is_read).length;
     }
   }
 
