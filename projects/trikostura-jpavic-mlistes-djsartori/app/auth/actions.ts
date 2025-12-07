@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { loginSchema, registerSchema } from '@/lib/validations/auth';
+import { sendPasswordResetEmail } from '@/lib/email';
 
 export async function login(
   prevState: { error?: string } | undefined,
@@ -115,7 +116,7 @@ export async function logout() {
 }
 
 export async function resetPassword(
-  prevState: { error?: string; success?: boolean; resetCode?: string } | undefined,
+  prevState: { error?: string; success?: boolean } | undefined,
   formData: FormData
 ) {
   const email = formData.get('email') as string;
@@ -138,7 +139,6 @@ export async function resetPassword(
     // Don't reveal if user doesn't exist for security
     return {
       success: true,
-      resetCode: 'USER_NOT_FOUND',
     };
   }
 
@@ -163,10 +163,16 @@ export async function resetPassword(
     return { error: `Greška pri stvaranju tokena: ${tokenError.message || 'Nepoznata greška'}. Jeste li pokrenuli SQL skriptu?` };
   }
 
-  // For now, return the code (in production, send via email)
+  // Send the reset code via email
+  const emailResult = await sendPasswordResetEmail(email, resetCode);
+
+  if (!emailResult.success) {
+    console.error('Email send failed:', emailResult.error);
+    return { error: 'Greška pri slanju emaila. Molimo pokušajte ponovno.' };
+  }
+
   return {
     success: true,
-    resetCode: resetCode,
   };
 }
 
