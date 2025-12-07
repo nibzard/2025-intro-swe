@@ -200,17 +200,8 @@ export async function sendPasswordResetEmail(email: string, resetCode: string) {
                 <!-- Header -->
                 <div class="header">
                   <div class="logo-container">
-                    <!-- Skripta Logo SVG -->
-                    <svg width="64" height="64" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="50" cy="50" r="48" fill="#E03131" />
-                      <circle cx="50" cy="50" r="42" fill="white" />
-                      <path d="M 35 30 Q 28 30 28 37 Q 28 42 33 44 L 55 52 Q 62 54 62 60 Q 62 66 55 66 L 40 66 Q 35 66 35 61" stroke="#E03131" stroke-width="8" stroke-linecap="round" fill="none" />
-                      <circle cx="35" cy="30" r="4" fill="#0066CC" />
-                      <circle cx="35" cy="61" r="4" fill="#0066CC" />
-                      <circle cx="68" cy="35" r="2.5" fill="#0066CC" opacity="0.6" />
-                      <circle cx="72" cy="45" r="2.5" fill="#0066CC" opacity="0.6" />
-                      <circle cx="68" cy="55" r="2.5" fill="#0066CC" opacity="0.6" />
-                    </svg>
+                    <!-- Skripta Logo PNG (email-compatible) -->
+                    <img src="${process.env.NEXT_PUBLIC_SITE_URL || 'https://2025-intro-swe-bice.vercel.app'}/logo-email.png" alt="Skripta Logo" width="64" height="64" style="display: block; margin: 0 auto; border-radius: 12px;" />
                   </div>
                   <h1 class="title">Resetiraj lozinku</h1>
                   <p class="subtitle">Studentski Forum</p>
