@@ -34,7 +34,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protected routes
+  // Protected routes - require login
   if (
     !user &&
     (request.nextUrl.pathname.startsWith('/forum') ||
@@ -45,18 +45,32 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Admin only routes
-  if (request.nextUrl.pathname.startsWith('/admin') && user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+  // Check email verification for logged-in users accessing protected routes
+  if (user && (
+    request.nextUrl.pathname.startsWith('/forum') ||
+    request.nextUrl.pathname.startsWith('/admin')
+  )) {
+    // Don't redirect if already on verify-email page
+    if (!request.nextUrl.pathname.startsWith('/auth/verify-email')) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('email_verified, role')
+        .eq('id', user.id)
+        .single();
 
-    if (profile?.role !== 'admin') {
-      const url = request.nextUrl.clone();
-      url.pathname = '/forum';
-      return NextResponse.redirect(url);
+      // Redirect to verify-email if not verified
+      if (profile && !profile.email_verified) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/auth/verify-email';
+        return NextResponse.redirect(url);
+      }
+
+      // Admin only routes
+      if (request.nextUrl.pathname.startsWith('/admin') && profile?.role !== 'admin') {
+        const url = request.nextUrl.clone();
+        url.pathname = '/forum';
+        return NextResponse.redirect(url);
+      }
     }
   }
 
