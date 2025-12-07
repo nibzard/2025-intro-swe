@@ -6,6 +6,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { loginSchema, registerSchema } from '@/lib/validations/auth';
 import { sendPasswordResetEmail } from '@/lib/email';
+import { sendVerificationEmail } from '@/app/auth/verify-email/actions';
 
 export async function login(
   prevState: { error?: string } | undefined,
@@ -91,19 +92,12 @@ export async function register(
       .update({ username, full_name })
       .eq('id', data.user.id);
 
-    // Profile update error is non-critical, user registration still succeeds
-  }
-
-  // Check if email confirmation is required
-  if (data.user && !data.session) {
-    return {
-      error: 'Registracija uspješna! Molimo provjerite email za potvrdu računa.',
-      success: true
-    };
+    // Send verification email
+    await sendVerificationEmail(data.user.id);
   }
 
   revalidatePath('/', 'layout');
-  redirect('/forum');
+  redirect('/auth/verify-email');
 }
 
 export async function logout() {

@@ -36,6 +36,8 @@ export interface Database {
           skills: string | null
           profile_color: string
           profile_banner_url: string | null
+          email_verified: boolean
+          email_verified_at: string | null
         }
         Insert: {
           id: string
@@ -61,6 +63,8 @@ export interface Database {
           skills?: string | null
           profile_color?: string
           profile_banner_url?: string | null
+          email_verified?: boolean
+          email_verified_at?: string | null
         }
         Update: {
           id?: string
@@ -86,6 +90,8 @@ export interface Database {
           skills?: string | null
           profile_color?: string
           profile_banner_url?: string | null
+          email_verified?: boolean
+          email_verified_at?: string | null
         }
       }
       categories: {
@@ -139,6 +145,7 @@ export interface Database {
           last_reply_by: string | null
           created_at: string
           updated_at: string
+          edited_at: string | null
         }
         Insert: {
           id?: string
@@ -155,6 +162,7 @@ export interface Database {
           last_reply_by?: string | null
           created_at?: string
           updated_at?: string
+          edited_at?: string | null
         }
         Update: {
           id?: string
@@ -171,6 +179,7 @@ export interface Database {
           last_reply_by?: string | null
           created_at?: string
           updated_at?: string
+          edited_at?: string | null
         }
       }
       replies: {
@@ -185,6 +194,7 @@ export interface Database {
           downvotes: number
           created_at: string
           updated_at: string
+          edited_at: string | null
         }
         Insert: {
           id?: string
@@ -197,6 +207,7 @@ export interface Database {
           downvotes?: number
           created_at?: string
           updated_at?: string
+          edited_at?: string | null
         }
         Update: {
           id?: string
@@ -209,6 +220,7 @@ export interface Database {
           downvotes?: number
           created_at?: string
           updated_at?: string
+          edited_at?: string | null
         }
       }
       votes: {
@@ -255,6 +267,35 @@ export interface Database {
           user_id?: string | null
           ip_address?: string | null
           created_at?: string
+        }
+      }
+      email_verification_tokens: {
+        Row: {
+          id: string
+          user_id: string
+          email: string
+          token: string
+          expires_at: string
+          created_at: string
+          used_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          email: string
+          token: string
+          expires_at: string
+          created_at?: string
+          used_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          email?: string
+          token?: string
+          expires_at?: string
+          created_at?: string
+          used_at?: string | null
         }
       }
     }

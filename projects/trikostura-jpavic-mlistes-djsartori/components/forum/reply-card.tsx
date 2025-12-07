@@ -11,6 +11,8 @@ import { MarkdownEditor } from '@/components/forum/markdown-editor';
 import { AdvancedAttachmentList } from '@/components/forum/advanced-attachment-list';
 import { ThumbsUp, ThumbsDown, MoreVertical, Edit2, Trash2, Quote, Link2, CheckCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { editReply } from '@/app/forum/reply/actions';
+import { toast } from 'sonner';
 
 interface ReplyCardProps {
   reply: any;
@@ -107,24 +109,33 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
   }
 
   async function handleEdit() {
-    if (!editContent.trim()) return;
+    if (!editContent.trim()) {
+      toast.error('Sadržaj je obavezan');
+      return;
+    }
 
     setIsSaving(true);
-    const supabase = createClient();
+    const loadingToast = toast.loading('Ažuriram odgovor...');
 
-    const { error } = await (supabase as any)
-      .from('replies')
-      .update({
-        content: editContent.trim(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', reply.id);
+    try {
+      const formData = new FormData();
+      formData.append('replyId', reply.id);
+      formData.append('content', editContent.trim());
 
-    if (!error) {
-      setIsEditing(false);
-      router.refresh();
+      const result = await editReply(formData);
+
+      if (result.success) {
+        toast.success('Odgovor uspješno ažuriran!', { id: loadingToast });
+        setIsEditing(false);
+        router.refresh();
+      } else {
+        toast.error(result.error || 'Došlo je do greške', { id: loadingToast });
+      }
+    } catch (error) {
+      toast.error('Došlo je do greške pri ažuriranju', { id: loadingToast });
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
   }
 
   async function handleDelete() {
@@ -296,8 +307,8 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
                       minute: '2-digit',
                     })}
                   </span>
-                  {reply.updated_at && reply.created_at !== reply.updated_at && (
-                    <span className="text-xs text-gray-400 italic">
+                  {reply.edited_at && (
+                    <span className="text-xs text-gray-400 italic" title={`Uređeno: ${new Date(reply.edited_at).toLocaleString('hr-HR')}`}>
                       (uređeno)
                     </span>
                   )}
