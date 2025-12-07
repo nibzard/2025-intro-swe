@@ -63,7 +63,11 @@ export function ThemeToggle() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+        <div
+          className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50"
+          role="menu"
+          aria-label="Odabir teme"
+        >
           {themes.map((t) => {
             const ThemeIcon = t.icon;
             return (
@@ -78,11 +82,13 @@ export function ThemeToggle() {
                     ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                 }`}
+                role="menuitemradio"
+                aria-checked={theme === t.value}
               >
-                <ThemeIcon className="w-4 h-4" />
+                <ThemeIcon className="w-4 h-4" aria-hidden="true" />
                 <span>{t.label}</span>
                 {theme === t.value && (
-                  <span className="ml-auto text-blue-600 dark:text-blue-400">✓</span>
+                  <span className="ml-auto text-blue-600 dark:text-blue-400" aria-hidden="true">✓</span>
                 )}
               </button>
             );

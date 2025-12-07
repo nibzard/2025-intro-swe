@@ -6,6 +6,7 @@ import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { SkriptaLogo } from '@/components/branding/skripta-logo';
 import { NotificationBell } from '@/components/notifications/notification-bell';
 import { MobileNav } from './mobile-nav';
+import { NavLink } from './nav-link';
 import { logout } from '@/app/auth/actions';
 import { MessageSquare, User, LogOut, Search, Settings } from 'lucide-react';
 import type { Notification } from '@/types/notifications';
@@ -62,31 +63,31 @@ export async function Navbar() {
             </Link>
 
             <div className="hidden md:flex items-center gap-4">
-              <Link
+              <NavLink
                 href="/forum"
                 className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
               >
                 Forum
-              </Link>
-              <Link
+              </NavLink>
+              <NavLink
                 href="/forum/users"
                 className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
               >
                 Korisnici
-              </Link>
-              <Link
+              </NavLink>
+              <NavLink
                 href="/forum/search"
                 className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
               >
                 Pretraži
-              </Link>
+              </NavLink>
               {profile?.role === 'admin' && (
-                <Link
+                <NavLink
                   href="/admin"
                   className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
                 >
                   Admin
-                </Link>
+                </NavLink>
               )}
             </div>
           </div>
@@ -116,7 +117,7 @@ export async function Navbar() {
                   <span className="hidden lg:inline">{profile.username}</span>
                 </Link>
                 <form action={logout}>
-                  <Button variant="ghost" size="sm" type="submit">
+                  <Button variant="ghost" size="sm" type="submit" aria-label="Odjavi se">
                     <LogOut className="w-4 h-4" />
                   </Button>
                 </form>
