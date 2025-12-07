@@ -28,7 +28,7 @@ export async function Navbar() {
       .select('*')
       .eq('id', user.id)
       .single();
-    profile = data;
+    profile = data as Profile | null;
 
     // Fetch notifications
     const { data: notificationData } = await supabase
@@ -43,7 +43,7 @@ export async function Navbar() {
 
     if (notificationData) {
       notifications = notificationData as Notification[];
-      unreadCount = notificationData.filter((n) => !n.is_read).length;
+      unreadCount = (notificationData as Notification[]).filter((n) => !n.is_read).length;
     }
   }
 
