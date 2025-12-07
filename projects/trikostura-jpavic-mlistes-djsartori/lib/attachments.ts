@@ -81,7 +81,6 @@ export async function uploadAttachment(
       });
 
     if (uploadError) {
-      console.error('Upload error:', uploadError);
       return { url: '', error: 'Greška pri učitavanju datoteke' };
     }
 
@@ -92,7 +91,6 @@ export async function uploadAttachment(
 
     return { url: publicUrl };
   } catch (error: any) {
-    console.error('Upload exception:', error);
     return { url: '', error: error.message || 'Greška pri učitavanju datoteke' };
   }
 }
@@ -132,7 +130,6 @@ export async function saveAttachmentMetadata(
     .single();
 
   if (error) {
-    console.error('Database error:', error);
     return { success: false, error: 'Greška pri spremanju datoteke' };
   }
 
@@ -162,9 +159,7 @@ export async function deleteAttachment(
       .from('attachments')
       .remove([filePath]);
 
-    if (storageError) {
-      console.error('Storage delete error:', storageError);
-    }
+    // Continue even if storage delete fails - will be cleaned up later
 
     // Delete from database
     const { error: dbError } = await (supabase as any)
@@ -173,13 +168,11 @@ export async function deleteAttachment(
       .eq('id', attachmentId);
 
     if (dbError) {
-      console.error('Database delete error:', dbError);
       return { success: false, error: 'Greška pri brisanju datoteke' };
     }
 
     return { success: true };
   } catch (error: any) {
-    console.error('Delete exception:', error);
     return { success: false, error: error.message };
   }
 }

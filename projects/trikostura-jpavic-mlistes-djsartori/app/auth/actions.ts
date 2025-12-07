@@ -91,9 +91,7 @@ export async function register(
       .update({ username, full_name })
       .eq('id', data.user.id);
 
-    if (updateError) {
-      console.error('Profile update error:', updateError);
-    }
+    // Profile update error is non-critical, user registration still succeeds
   }
 
   // Check if email confirmation is required
@@ -157,7 +155,6 @@ export async function resetPassword(
     });
 
   if (tokenError) {
-    console.error('Token creation error:', tokenError);
     return { error: `Greška pri stvaranju tokena: ${tokenError.message || 'Nepoznata greška'}. Jeste li pokrenuli SQL skriptu?` };
   }
 
@@ -165,7 +162,6 @@ export async function resetPassword(
   const emailResult = await sendPasswordResetEmail(email, resetCode);
 
   if (!emailResult.success) {
-    console.error('Email send failed:', emailResult.error);
     return { error: 'Greška pri slanju emaila. Molimo pokušajte ponovno.' };
   }
 
@@ -221,7 +217,6 @@ export async function verifyResetCodeAndUpdatePassword(
   );
 
   if (updateError) {
-    console.error('Password update error:', updateError);
     return { error: `Greška pri ažuriranju lozinke: ${updateError.message}` };
   }
 
@@ -264,7 +259,6 @@ export async function updatePassword(
   });
 
   if (error) {
-    console.error('Password update error:', error);
     return { error: `Greška: ${error.message || 'Došlo je do greške prilikom ažuriranja lozinke'}` };
   }
 

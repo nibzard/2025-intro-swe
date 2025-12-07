@@ -269,3 +269,51 @@ export interface Database {
     }
   }
 }
+
+/**
+ * Convenience type exports for easier use in components
+ */
+export type Profile = Database['public']['Tables']['profiles']['Row'];
+export type Category = Database['public']['Tables']['categories']['Row'];
+export type Topic = Database['public']['Tables']['topics']['Row'];
+export type Reply = Database['public']['Tables']['replies']['Row'];
+export type Vote = Database['public']['Tables']['votes']['Row'];
+export type TopicView = Database['public']['Tables']['topic_views']['Row'];
+
+/**
+ * Extended types with relations
+ */
+export interface TopicWithAuthor extends Topic {
+  author: Profile;
+}
+
+export interface TopicWithRelations extends Topic {
+  author: Profile;
+  category: Category;
+}
+
+export interface ReplyWithAuthor extends Reply {
+  author: Profile;
+}
+
+export interface CategoryWithStats extends Category {
+  topic_count?: number;
+  last_post_at?: string | null;
+}
+
+/**
+ * API response types
+ */
+export interface ApiResponse<T = unknown> {
+  data?: T;
+  error?: string;
+  success: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  count: number;
+  page?: number;
+  pageSize?: number;
+  totalPages?: number;
+}

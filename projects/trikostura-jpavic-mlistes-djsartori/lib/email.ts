@@ -12,12 +12,9 @@ try {
   if (fs.existsSync(logoPath)) {
     const logoBuffer = fs.readFileSync(logoPath);
     LOGO_DATA_URI = `data:image/png;base64,${logoBuffer.toString('base64')}`;
-    console.log('[Email] Logo loaded successfully, base64 length:', LOGO_DATA_URI.length);
-  } else {
-    console.warn('[Email] Logo file not found at:', logoPath);
   }
 } catch (error) {
-  console.error('[Email] Failed to load logo:', error);
+  // Logo loading failed - will use fallback gradient in email
 }
 
 export async function sendPasswordResetEmail(email: string, resetCode: string) {

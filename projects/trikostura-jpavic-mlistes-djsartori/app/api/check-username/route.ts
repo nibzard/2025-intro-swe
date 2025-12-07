@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { rateLimiters } from '@/lib/rate-limit';
 
 const RESERVED_USERNAMES = [
   'admin', 'administrator', 'moderator', 'mod', 'support', 'help',
@@ -9,6 +10,12 @@ const RESERVED_USERNAMES = [
 ];
 
 export async function GET(request: NextRequest) {
+  // Apply rate limiting
+  const rateLimitResponse = await rateLimiters.api(request);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const username = searchParams.get('username');
 
@@ -43,7 +50,6 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('Error checking username:', error);
       return NextResponse.json(
         { available: false, error: 'Database error' },
         { status: 500 }
@@ -52,7 +58,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ available: !data });
   } catch (error) {
-    console.error('Error checking username:', error);
     return NextResponse.json(
       { available: false, error: 'Server error' },
       { status: 500 }
