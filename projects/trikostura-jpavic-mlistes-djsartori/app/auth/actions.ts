@@ -124,16 +124,24 @@ export async function resetPassword(
   }
 
   const supabase = await createServerSupabaseClient();
-
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
 
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${siteUrl}/auth/callback?next=/auth/update-password`,
+  // Try using magic link OTP which may bypass PKCE issues
+  const { error } = await supabase.auth.signInWithOtp({
+    email: email,
+    options: {
+      emailRedirectTo: `${siteUrl}/auth/update-password`,
+      shouldCreateUser: false, // Don't create new users, only reset existing
+    },
   });
 
   if (error) {
     console.error('Password reset error:', error);
-    return { error: 'Došlo je do greške. Pokušajte ponovno.' };
+    // Don't reveal if user exists
+    return {
+      success: true,
+      error: undefined,
+    };
   }
 
   return {
