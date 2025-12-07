@@ -121,6 +121,9 @@ export function NotificationBell({
         size="sm"
         className="relative"
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={`Obavijesti${unreadCount > 0 ? ` (${unreadCount} nepročitanih)` : ''}`}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
       >
         <Bell className={`w-5 h-5 ${hasNewNotification ? 'animate-bounce' : ''}`} />
         {unreadCount > 0 && (
@@ -128,6 +131,7 @@ export function NotificationBell({
             className={`absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center ${
               hasNewNotification ? 'animate-pulse' : ''
             }`}
+            aria-hidden="true"
           >
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
@@ -139,8 +143,13 @@ export function NotificationBell({
           <div
             className="fixed inset-0 z-40 bg-black/20 md:bg-transparent"
             onClick={() => setIsOpen(false)}
+            aria-hidden="true"
           />
-          <div className="fixed md:absolute left-0 right-0 md:left-auto md:right-0 top-0 md:top-auto md:mt-2 z-50 p-4 md:p-0">
+          <div
+            className="fixed md:absolute left-0 right-0 md:left-auto md:right-0 top-0 md:top-auto md:mt-2 z-50 p-4 md:p-0"
+            role="dialog"
+            aria-label="Panel s obavijestima"
+          >
             <NotificationList
               notifications={notifications}
               onClose={() => setIsOpen(false)}
