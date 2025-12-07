@@ -163,7 +163,9 @@ export async function resetPassword(
   const emailResult = await sendPasswordResetEmail(email, resetCode);
 
   if (!emailResult.success) {
-    return { error: 'Greška pri slanju emaila. Molimo pokušajte ponovno.' };
+    console.error('Password reset email error:', emailResult.error);
+    const errorMsg = (emailResult.error as any)?.message || 'Nepoznata greška';
+    return { error: `Greška pri slanju emaila: ${errorMsg}` };
   }
 
   return {
