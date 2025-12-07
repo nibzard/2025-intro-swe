@@ -23,9 +23,9 @@ try {
 export async function sendPasswordResetEmail(email: string, resetCode: string) {
   try {
     await resend.emails.send({
-      from: 'Studentski Forum <onboarding@resend.dev>', // Change this in production
+      from: 'Skripta <onboarding@resend.dev>', // Change this in production
       to: email,
-      subject: 'Resetiranje lozinke - Studentski Forum',
+      subject: 'Resetiranje lozinke - Skripta',
       html: `
         <!DOCTYPE html>
         <html lang="hr">
@@ -222,7 +222,7 @@ export async function sendPasswordResetEmail(email: string, resetCode: string) {
                     ${LOGO_DATA_URI ? `<img src="${LOGO_DATA_URI}" alt="Skripta Logo" width="64" height="64" style="display: block; margin: 0 auto; border-radius: 12px;" />` : `<div style="width: 64px; height: 64px; background: linear-gradient(135deg, #E03131 0%, #0066CC 100%); border-radius: 12px; display: flex; align-items: center; justify-center; margin: 0 auto;"><span style="color: white; font-size: 36px; font-weight: 800;">S</span></div>`}
                   </div>
                   <h1 class="title">Resetiraj lozinku</h1>
-                  <p class="subtitle">Studentski Forum</p>
+                  <p class="subtitle">Skripta</p>
                 </div>
 
                 <!-- Content -->
@@ -260,10 +260,10 @@ export async function sendPasswordResetEmail(email: string, resetCode: string) {
 
                 <!-- Footer -->
                 <div class="footer">
-                  <p class="footer-text"><strong>Studentski Forum</strong></p>
+                  <p class="footer-text"><strong>Skripta</strong></p>
                   <p class="footer-text">Ovaj email je automatski generiran, molimo ne odgovarajte na njega.</p>
                   <p class="footer-text" style="margin-top: 12px; font-size: 12px;">
-                    © ${new Date().getFullYear()} Studentski Forum. Sva prava pridržana.
+                    © ${new Date().getFullYear()} Skripta. Sva prava pridržana.
                   </p>
                 </div>
               </div>
