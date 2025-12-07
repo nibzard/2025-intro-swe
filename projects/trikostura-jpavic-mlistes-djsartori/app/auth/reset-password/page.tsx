@@ -63,7 +63,7 @@ export default function ResetPasswordPage() {
     validateEmail(email);
   };
 
-  if (state?.success) {
+  if (state?.success && state?.resetCode && state.resetCode !== 'USER_NOT_FOUND') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-3 sm:p-4">
         <Card className="w-full max-w-md shadow-xl animate-slide-up border-gray-200 dark:border-gray-700">
@@ -78,18 +78,25 @@ export default function ResetPasswordPage() {
               </div>
             </div>
             <CardTitle className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-              Email poslan!
+              Resetiranje kod generiran!
             </CardTitle>
             <CardDescription className="text-sm">
-              Poslali smo vam link za resetiranje lozinke na vašu email adresu.
-              Provjerite svoj inbox i kliknite na link kako biste resetirali lozinku.
+              Vaš kod za resetiranje lozinke:
+            </CardDescription>
+            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+              <code className="text-3xl font-bold text-primary tracking-widest">
+                {state.resetCode}
+              </code>
+            </div>
+            <CardDescription className="text-xs text-muted-foreground">
+              Kod vrijedi 15 minuta. Kliknite dolje da unesete kod i novu lozinku.
             </CardDescription>
           </CardHeader>
           <CardFooter className="flex flex-col space-y-4 px-4 sm:px-6 pb-5 sm:pb-6">
-            <Link href="/auth/login" className="w-full">
+            <Link href="/auth/reset-password/verify" className="w-full">
               <Button variant="gradient" size="lg" className="w-full">
-                <ArrowLeft className="w-4 h-4" />
-                Natrag na prijavu
+                <KeyRound className="w-4 h-4" />
+                Nastavi s resetiranjem
               </Button>
             </Link>
             <div className="text-center">
@@ -100,6 +107,40 @@ export default function ResetPasswordPage() {
                 <span>←</span> Natrag na početnu
               </Link>
             </div>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
+
+  if (state?.success && state?.resetCode === 'USER_NOT_FOUND') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-3 sm:p-4">
+        <Card className="w-full max-w-md shadow-xl animate-slide-up border-gray-200 dark:border-gray-700">
+          <CardHeader className="text-center space-y-4 px-4 sm:px-6 pt-6 sm:pt-8">
+            <div className="flex justify-center">
+              <SkriptaLogo size={64} />
+            </div>
+            <div className="relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full blur opacity-25 animate-pulse" />
+              <div className="relative bg-green-100 dark:bg-green-900/30 rounded-full p-4 inline-block">
+                <CheckCircle className="w-16 h-16 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+            <CardTitle className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+              Zahtjev zaprimljen
+            </CardTitle>
+            <CardDescription className="text-sm">
+              Ako postoji račun s tom email adresom, poslali smo upute za resetiranje.
+            </CardDescription>
+          </CardHeader>
+          <CardFooter className="flex flex-col space-y-4 px-4 sm:px-6 pb-5 sm:pb-6">
+            <Link href="/auth/login" className="w-full">
+              <Button variant="gradient" size="lg" className="w-full">
+                <ArrowLeft className="w-4 h-4" />
+                Natrag na prijavu
+              </Button>
+            </Link>
           </CardFooter>
         </Card>
       </div>
