@@ -321,6 +321,32 @@ export type Reply = Database['public']['Tables']['replies']['Row'];
 export type Vote = Database['public']['Tables']['votes']['Row'];
 export type TopicView = Database['public']['Tables']['topic_views']['Row'];
 
+// Additional types for new features
+export type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
+export type ReportType = 'spam' | 'harassment' | 'inappropriate' | 'misinformation' | 'other';
+
+export interface Bookmark {
+  id: string;
+  user_id: string;
+  topic_id: string;
+  created_at: string;
+}
+
+export interface Report {
+  id: string;
+  reporter_id: string;
+  topic_id: string | null;
+  reply_id: string | null;
+  report_type: ReportType;
+  description: string | null;
+  status: ReportStatus;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  admin_notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 /**
  * Extended types with relations
  */

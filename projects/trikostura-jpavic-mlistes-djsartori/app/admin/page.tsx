@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { Users, MessageSquare, MessagesSquare, TrendingUp } from 'lucide-react';
+import { Users, MessageSquare, MessagesSquare, TrendingUp, Flag } from 'lucide-react';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -275,6 +275,15 @@ export default async function AdminDashboard() {
             <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
             <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white text-center">
               Pregledaj Analitiku
+            </span>
+          </Link>
+          <Link
+            href="/admin/reports"
+            className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-red-500 dark:hover:border-red-500 transition-colors"
+          >
+            <Flag className="h-6 w-6 sm:h-8 sm:w-8 text-red-600" />
+            <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white text-center">
+              Prijave Sadrzaja
             </span>
           </Link>
         </div>

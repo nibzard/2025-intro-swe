@@ -8,7 +8,9 @@ import { TopicContent } from '@/components/forum/topic-content';
 import { TopicControlMenu } from '@/components/forum/topic-control-menu';
 import { EditableTopic } from '@/components/forum/editable-topic';
 import { AdvancedAttachmentList } from '@/components/forum/advanced-attachment-list';
-import { MessageSquare, ArrowLeft } from 'lucide-react';
+import { BookmarkButton } from '@/components/forum/bookmark-button';
+import { TopicActions } from '@/components/forum/topic-actions';
+import { MessageSquare, ArrowLeft, CheckCircle } from 'lucide-react';
 
 export default async function TopicPage({
   params,
@@ -67,6 +69,7 @@ export default async function TopicPage({
       author:profiles!replies_author_id_fkey(username, avatar_url, reputation)
     `)
     .eq('topic_id', topic.id)
+    .order('is_solution', { ascending: false })
     .order('created_at', { ascending: true });
 
   // Get reply attachments
@@ -83,19 +86,33 @@ export default async function TopicPage({
 
   // Get user votes for replies if user is logged in
   let userVotes: any = {};
-  if (user && replies) {
-    const { data: votes } = await supabase
-      .from('votes')
-      .select('reply_id, vote_type')
-      .eq('user_id', user.id)
-      .in(
-        'reply_id',
-        replies.map((r: any) => r.id)
-      );
+  let isBookmarked = false;
 
-    votes?.forEach((vote: any) => {
-      userVotes[vote.reply_id] = vote.vote_type;
-    });
+  if (user) {
+    if (replies) {
+      const { data: votes } = await supabase
+        .from('votes')
+        .select('reply_id, vote_type')
+        .eq('user_id', user.id)
+        .in(
+          'reply_id',
+          replies.map((r: any) => r.id)
+        );
+
+      votes?.forEach((vote: any) => {
+        userVotes[vote.reply_id] = vote.vote_type;
+      });
+    }
+
+    // Check bookmark status
+    const { data: bookmark } = await (supabase as any)
+      .from('bookmarks')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('topic_id', topic.id)
+      .single();
+
+    isBookmarked = !!bookmark;
   }
 
   // Get user profile for permissions
@@ -118,15 +135,29 @@ export default async function TopicPage({
   const isAuthor = user?.id === topic.author_id;
   const isAdmin = userProfile?.role === 'admin';
 
+  // Check if topic has a solution
+  const hasSolution = replies?.some((r: any) => r.is_solution);
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between gap-4">
         <Link href={`/forum/category/${(topic.category as any)?.slug}`}>
           <Button variant="ghost" size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Natrag na {(topic.category as any)?.name}
           </Button>
         </Link>
+
+        {user && (
+          <div className="flex items-center gap-2">
+            <BookmarkButton
+              topicId={topic.id}
+              initialBookmarked={isBookmarked}
+              showText
+            />
+            <TopicActions topicId={topic.id} isAuthor={isAuthor} />
+          </div>
+        )}
       </div>
 
       <Card>
@@ -154,11 +185,17 @@ export default async function TopicPage({
                   {topicTag.tags.name}
                 </span>
               ))}
+              {hasSolution && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded">
+                  <CheckCircle className="w-3 h-3" />
+                  Rijeseno
+                </span>
+              )}
               {topic.is_pinned && (
-                <span className="text-yellow-500">📌 Prikvačeno</span>
+                <span className="text-yellow-500">📌 Prikvaceno</span>
               )}
               {topic.is_locked && (
-                <span className="text-gray-500">🔒 Zaključano</span>
+                <span className="text-gray-500">🔒 Zakljucano</span>
               )}
             </div>
 
@@ -236,7 +273,7 @@ export default async function TopicPage({
       {topic.is_locked && (
         <Card>
           <CardContent className="p-6 text-center text-gray-500">
-            <p>Ova tema je zaključana i ne možete dodati nove odgovore.</p>
+            <p>Ova tema je zakljucana i ne mozete dodati nove odgovore.</p>
           </CardContent>
         </Card>
       )}
