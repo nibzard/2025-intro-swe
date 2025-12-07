@@ -125,21 +125,19 @@ export async function resetPassword(
 
   const supabase = await createServerSupabaseClient();
 
-  // Check if user exists with this email
-  const { data: users, error: userError } = await supabase.auth.admin.listUsers();
+  // Check if user exists by looking up in profiles table
+  const { data: profile, error: profileError } = await (supabase as any)
+    .from('profiles')
+    .select('id, email')
+    .eq('email', email)
+    .single();
 
-  if (userError) {
-    console.error('Error checking user:', userError);
-    return { error: 'Došlo je do greške. Pokušajte ponovno.' };
-  }
-
-  const user = users.users.find(u => u.email === email);
-
-  if (!user) {
+  if (profileError || !profile) {
+    console.log('User not found for email:', email);
     // Don't reveal if user doesn't exist for security
     return {
       success: true,
-      resetCode: 'USER_NOT_FOUND', // Won't be shown
+      resetCode: 'USER_NOT_FOUND',
     };
   }
 
@@ -152,7 +150,7 @@ export async function resetPassword(
   const { error: tokenError } = await (supabase as any)
     .from('password_reset_tokens')
     .insert({
-      user_id: user.id,
+      user_id: profile.id,
       token: resetCode,
       expires_at: expiresAt.toISOString(),
       used: false,
@@ -160,7 +158,8 @@ export async function resetPassword(
 
   if (tokenError) {
     console.error('Token creation error:', tokenError);
-    return { error: 'Došlo je do greške. Pokušajte ponovno.' };
+    console.error('Full error:', JSON.stringify(tokenError, null, 2));
+    return { error: `Greška pri stvaranju tokena: ${tokenError.message || 'Nepoznata greška'}. Jeste li pokrenuli SQL skriptu?` };
   }
 
   // For now, return the code (in production, send via email)
