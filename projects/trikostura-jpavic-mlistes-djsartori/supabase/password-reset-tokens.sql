@@ -18,6 +18,9 @@ CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expires_at ON password_rese
 -- RLS policies
 ALTER TABLE password_reset_tokens ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policy if it exists
+DROP POLICY IF EXISTS "Service role can manage password reset tokens" ON password_reset_tokens;
+
 -- Only allow service role to manage tokens (server-side only)
 CREATE POLICY "Service role can manage password reset tokens"
   ON password_reset_tokens
