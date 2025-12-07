@@ -116,7 +116,7 @@ This file lists all team projects for the SWE course. Students add their project
 
 ### Trip Planner - Klara Lana Vidak & Nikolina Plazibat
 * **Project:** Trip Planner
-* **Folder:** `projects/NK-Klara99-1nikolina23/`
+* **Folder:** `NK-Klara99-1nikolina23/`
 * **Status:** In Progress
 * **Description:** Aplikacija koja korisnicima omogućuje planiranje i organizaciju putovanja uz dodatne preporuke.
 
