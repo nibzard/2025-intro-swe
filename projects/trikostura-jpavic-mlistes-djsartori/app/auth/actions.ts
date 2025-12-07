@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { loginSchema, registerSchema } from '@/lib/validations/auth';
 
 export async function login(
@@ -208,15 +209,16 @@ export async function verifyResetCodeAndUpdatePassword(
     return { error: 'Kod je istekao. Molimo zatražite novi.' };
   }
 
-  // Update password using admin API
-  const { error: updateError } = await supabase.auth.admin.updateUserById(
+  // Update password using admin client
+  const adminClient = createAdminClient();
+  const { error: updateError } = await adminClient.auth.admin.updateUserById(
     tokenData.user_id,
     { password: password }
   );
 
   if (updateError) {
     console.error('Password update error:', updateError);
-    return { error: 'Greška pri ažuriranju lozinke' };
+    return { error: `Greška pri ažuriranju lozinke: ${updateError.message}` };
   }
 
   // Mark token as used
