@@ -23,39 +23,22 @@ export default function AuthCallbackPage() {
       const next = searchParams.get('next');
 
       if (errorParam) {
-        console.error('Auth error from URL:', errorParam, errorDescription);
         setError(errorDescription || errorParam);
         setTimeout(() => router.push('/auth/login'), 3000);
         return;
       }
 
-      console.log('Auth callback initiated:', {
-        hasCode: !!searchParams.get('code'),
-        hasHash: !!window.location.hash,
-        next: next,
-        fullHash: window.location.hash
-      });
-
-      // First check if session already exists (set by Supabase's /auth/v1/verify endpoint)
-      // This happens when user clicks password reset link with type=recovery
+      // Check if session already exists (set by Supabase's /auth/v1/verify endpoint)
       const { data: { session } } = await supabase.auth.getSession();
 
       if (session) {
-        console.log('Session already exists:', session.user.id);
-
-        // If this is a password reset flow, redirect to update password
         if (next === '/auth/update-password') {
-          console.log('Redirecting to update-password');
           router.push('/auth/update-password');
           return;
         }
-
-        // Otherwise, redirect to intended destination
         router.push(next || '/forum');
         return;
       }
-
-      console.log('No existing session, checking for tokens or code');
 
       // Check for hash fragment tokens (implicit flow)
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -63,29 +46,17 @@ export default function AuthCallbackPage() {
       const refreshToken = hashParams.get('refresh_token');
       const type = hashParams.get('type');
 
-      console.log('Hash params:', {
-        hasAccessToken: !!accessToken,
-        hasRefreshToken: !!refreshToken,
-        type: type
-      });
-
       if (accessToken && refreshToken) {
-        console.log('Setting session from hash tokens');
-
-        // Set the session using the tokens from the hash
         const { error } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken,
         });
 
         if (error) {
-          console.error('Session error:', error);
           setError('Greška pri uspostavljanju sesije');
           setTimeout(() => router.push('/auth/login'), 3000);
           return;
         }
-
-        console.log('Session set successfully');
 
         // Redirect based on type
         if (type === 'recovery' || next === '/auth/update-password') {
@@ -99,8 +70,6 @@ export default function AuthCallbackPage() {
         const isPasswordReset = next === '/auth/update-password';
 
         if (!code) {
-          // No session, no tokens, no code
-          console.error('No authentication data found');
           if (isPasswordReset) {
             setError('Link za resetiranje lozinke nije valjan ili je istekao. Molimo zatražite novi link.');
             setTimeout(() => router.push('/auth/reset-password'), 3000);
@@ -111,27 +80,15 @@ export default function AuthCallbackPage() {
           return;
         }
 
-        // Try to exchange the code for a session
-        // For password reset flows, Supabase may handle this differently
-        console.log('Attempting code exchange for:', isPasswordReset ? 'password reset' : 'login');
-
         const { error } = await supabase.auth.exchangeCodeForSession(code);
 
         if (error) {
-          console.error('Code exchange error:', {
-            message: error.message,
-            status: error.status,
-            code: error.code,
-            name: error.name
-          });
-
           // Handle specific error cases
           if (error.message?.includes('already been used')) {
             setError('Link je već iskorišten. Molimo zatražite novi link za resetiranje lozinke.');
           } else if (error.message?.includes('expired')) {
             setError('Link je istekao. Molimo zatražite novi link za resetiranje lozinke.');
           } else if (error.message?.includes('code verifier') || error.message?.includes('code_verifier')) {
-            // PKCE verifier missing - this is the PKCE issue
             if (isPasswordReset) {
               setError('PKCE konfiguracija ne radi za password reset. Kontaktiraj administratora da provjeri Supabase postavke ili koristi custom password reset implementaciju.');
             } else {
@@ -146,7 +103,6 @@ export default function AuthCallbackPage() {
           return;
         }
 
-        console.log('Code exchange successful');
         router.push(next || '/forum');
       }
     };
