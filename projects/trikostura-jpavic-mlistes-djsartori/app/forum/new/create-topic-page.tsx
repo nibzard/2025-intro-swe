@@ -12,6 +12,8 @@ import { AutoSaveIndicator, SaveStatus } from '@/components/forum/new/auto-save-
 import { ArrowLeft, Send, Save, AlertCircle, Sparkles } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
+import { generateSlug } from '@/lib/utils';
+import { processMentions } from '@/app/forum/actions';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
@@ -155,6 +157,7 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
         .from('topics')
         .insert({
           title: title.trim(),
+          slug: generateSlug(title.trim()),
           content: content.trim(),
           category_id: categoryId,
           author_id: user.id,
@@ -196,6 +199,9 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
           }
         }
       }
+
+      // Process mentions and create notifications
+      await processMentions(content.trim(), user.id, topic.id);
 
       // Delete draft if exists
       if (draftId) {

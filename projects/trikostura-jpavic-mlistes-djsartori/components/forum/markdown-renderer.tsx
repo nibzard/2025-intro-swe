@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, lazy, Suspense } from 'react';
+import { memo, lazy, Suspense, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -11,6 +11,16 @@ interface MarkdownRendererProps {
   className?: string;
 }
 
+// Highlight @username mentions
+function preprocessMentions(content: string): string {
+  // Match @username (letters, numbers, underscore, hyphen)
+  const mentionRegex = /(@[a-zA-Z0-9_-]+)/g;
+  return content.replace(
+    mentionRegex,
+    '<span class="mention bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-1 rounded font-medium">$1</span>'
+  );
+}
+
 // Lazy-load syntax highlighter (heavy dependency, only needed for code blocks)
 const SyntaxHighlighter = lazy(() =>
   import('react-syntax-highlighter').then((mod) => ({
@@ -19,6 +29,9 @@ const SyntaxHighlighter = lazy(() =>
 );
 
 export const MarkdownRenderer = memo(function MarkdownRenderer({ content, className = '' }: MarkdownRendererProps) {
+  // Preprocess content to highlight mentions
+  const processedContent = useMemo(() => preprocessMentions(content), [content]);
+
   return (
     <div className={`prose dark:prose-invert max-w-none ${className}`}>
       <ReactMarkdown
@@ -56,7 +69,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({ content, classN
           },
         }}
       >
-        {content}
+        {processedContent}
       </ReactMarkdown>
     </div>
   );

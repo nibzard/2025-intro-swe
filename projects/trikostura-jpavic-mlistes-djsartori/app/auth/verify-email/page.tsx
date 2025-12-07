@@ -1,23 +1,35 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { verifyEmailCode, resendVerificationEmail } from './actions';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Mail, ArrowLeft, CheckCircle, RefreshCw } from 'lucide-react';
+
+// Mask email for privacy (e.g., "j***@example.com")
+function maskEmail(email: string): string {
+  if (!email) return '';
+  const [localPart, domain] = email.split('@');
+  if (!domain) return email;
+  const maskedLocal = localPart.length > 2
+    ? localPart[0] + '***' + localPart[localPart.length - 1]
+    : localPart[0] + '***';
+  return `${maskedLocal}@${domain}`;
+}
 
 export default function VerifyEmailPage() {
   const router = useRouter();
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(['', '', '', '', '', '']);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [userEmail, setUserEmail] = useState<string>('');
+  const [cooldown, setCooldown] = useState(0);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     async function checkUser() {
@@ -37,7 +49,7 @@ export default function VerifyEmailPage() {
         .single();
 
       if (profile) {
-        setUserEmail((profile as any).email);
+        setUserEmail((profile as any).email || user.email || '');
         if ((profile as any).email_verified) {
           setIsVerified(true);
         }
@@ -47,10 +59,64 @@ export default function VerifyEmailPage() {
     checkUser();
   }, [router]);
 
+  // Cooldown timer
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldown]);
+
+  // Auto-focus first input on mount
+  useEffect(() => {
+    inputRefs.current[0]?.focus();
+  }, []);
+
+  const handleInputChange = useCallback((index: number, value: string) => {
+    // Only allow digits
+    const digit = value.replace(/\D/g, '').slice(-1);
+
+    setCode(prev => {
+      const newCode = [...prev];
+      newCode[index] = digit;
+      return newCode;
+    });
+
+    // Auto-focus next input
+    if (digit && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  }, []);
+
+  const handleKeyDown = useCallback((index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !code[index] && index > 0) {
+      // Move to previous input on backspace if current is empty
+      inputRefs.current[index - 1]?.focus();
+    } else if (e.key === 'ArrowLeft' && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    } else if (e.key === 'ArrowRight' && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  }, [code]);
+
+  const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pastedData) {
+      const newCode = pastedData.split('').concat(Array(6).fill('')).slice(0, 6);
+      setCode(newCode);
+      // Focus the next empty input or the last one
+      const nextEmptyIndex = newCode.findIndex(d => !d);
+      inputRefs.current[nextEmptyIndex === -1 ? 5 : nextEmptyIndex]?.focus();
+    }
+  }, []);
+
+  const fullCode = code.join('');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!code || code.length !== 6) {
+    if (fullCode.length !== 6) {
       toast.error('Unesite 6-znamenkasti kod');
       return;
     }
@@ -60,7 +126,7 @@ export default function VerifyEmailPage() {
 
     try {
       const formData = new FormData();
-      formData.append('code', code);
+      formData.append('code', fullCode);
 
       const result = await verifyEmailCode(formData);
 
@@ -74,6 +140,9 @@ export default function VerifyEmailPage() {
         }, 2000);
       } else {
         toast.error(result.error || 'Nevažeći kod', { id: loadingToast });
+        // Clear code on error
+        setCode(['', '', '', '', '', '']);
+        inputRefs.current[0]?.focus();
       }
     } catch (error) {
       toast.error('Došlo je do greške', { id: loadingToast });
@@ -83,6 +152,8 @@ export default function VerifyEmailPage() {
   };
 
   const handleResend = async () => {
+    if (cooldown > 0) return;
+
     setIsResending(true);
     const loadingToast = toast.loading('Šaljem novi kod...');
 
@@ -91,9 +162,15 @@ export default function VerifyEmailPage() {
 
       if (result.success) {
         toast.success('Novi verifikacijski kod poslan!', { id: loadingToast });
-        setCode('');
+        setCode(['', '', '', '', '', '']);
+        setCooldown(60); // 60 second cooldown
+        inputRefs.current[0]?.focus();
       } else {
         toast.error(result.error || 'Greška pri slanju', { id: loadingToast });
+        // Set cooldown from server response if available
+        if ((result as any).cooldownRemaining) {
+          setCooldown((result as any).cooldownRemaining);
+        }
       }
     } catch (error) {
       toast.error('Došlo je do greške', { id: loadingToast });
@@ -141,33 +218,47 @@ export default function VerifyEmailPage() {
             <CardTitle className="text-2xl">Verificirajte svoj email</CardTitle>
             <CardDescription>
               Poslali smo 6-znamenkasti kod na<br />
-              <strong>{userEmail}</strong>
+              <strong className="text-gray-900 dark:text-gray-100">{maskEmail(userEmail)}</strong>
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <Input
-                  type="text"
-                  placeholder="Unesite 6-znamenkasti kod"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  maxLength={6}
-                  className="text-center text-2xl tracking-widest font-mono"
-                  disabled={isSubmitting}
-                  autoFocus
-                />
-                <p className="text-xs text-gray-500 mt-2 text-center">
+                <div className="flex justify-center gap-2 sm:gap-3" onPaste={handlePaste}>
+                  {code.map((digit, index) => (
+                    <input
+                      key={index}
+                      ref={el => { inputRefs.current[index] = el; }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleInputChange(index, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(index, e)}
+                      disabled={isSubmitting}
+                      className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-mono font-bold border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all disabled:opacity-50"
+                      aria-label={`Digit ${index + 1}`}
+                    />
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-3 text-center">
                   Kod vrijedi 15 minuta
                 </p>
               </div>
 
-              <Button type="submit" className="w-full" disabled={isSubmitting || code.length !== 6}>
-                {isSubmitting ? 'Verificiram...' : 'Potvrdi email'}
+              <Button type="submit" className="w-full h-11" disabled={isSubmitting || fullCode.length !== 6}>
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    Verificiram...
+                  </>
+                ) : (
+                  'Potvrdi email'
+                )}
               </Button>
             </form>
 
-            <div className="mt-6 text-center space-y-2">
+            <div className="mt-6 text-center space-y-3">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Niste primili kod?
               </p>
@@ -175,18 +266,38 @@ export default function VerifyEmailPage() {
                 type="button"
                 variant="outline"
                 onClick={handleResend}
-                disabled={isResending}
-                className="w-full"
+                disabled={isResending || cooldown > 0}
+                className="w-full h-11"
               >
-                {isResending ? 'Šaljem...' : 'Pošalji novi kod'}
+                {isResending ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Šaljem...
+                  </>
+                ) : cooldown > 0 ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Pričekajte {cooldown}s
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Pošalji novi kod
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-          Provjerite spam/junk folder ako ne vidite email
-        </p>
+        <div className="text-center space-y-2">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Provjerite spam/junk folder ako ne vidite email
+          </p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            Možete zalijepiti kod izravno (Ctrl+V)
+          </p>
+        </div>
       </div>
     </div>
   );

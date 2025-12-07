@@ -22,13 +22,14 @@ export default async function TopicPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Get topic
+  // Get topic with tags
   const { data: topic }: { data: any } = await supabase
     .from('topics')
     .select(`
       *,
       author:profiles!topics_author_id_fkey(username, avatar_url, reputation),
-      category:categories(name, slug, color, icon)
+      category:categories(name, slug, color, icon),
+      topic_tags(tags(id, name, slug, color))
     `)
     .eq('slug', slug)
     .single();
@@ -131,7 +132,7 @@ export default async function TopicPage({
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span
                 className="px-3 py-1 text-sm font-semibold rounded-full"
                 style={{
@@ -141,6 +142,18 @@ export default async function TopicPage({
               >
                 {(topic.category as any)?.icon} {(topic.category as any)?.name}
               </span>
+              {topic.topic_tags?.map((topicTag: any) => (
+                <span
+                  key={topicTag.tags.id}
+                  className="px-2 py-0.5 text-xs font-medium rounded"
+                  style={{
+                    backgroundColor: topicTag.tags.color ? topicTag.tags.color + '15' : '#e5e7eb',
+                    color: topicTag.tags.color || '#6b7280',
+                  }}
+                >
+                  {topicTag.tags.name}
+                </span>
+              ))}
               {topic.is_pinned && (
                 <span className="text-yellow-500">📌 Prikvačeno</span>
               )}
