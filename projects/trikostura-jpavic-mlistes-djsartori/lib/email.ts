@@ -1,23 +1,27 @@
 import nodemailer from 'nodemailer';
 
-// Create transporter using Gmail SMTP
-// For Gmail, you need to:
-// 1. Enable 2-Factor Authentication on your Google account
-// 2. Create an App Password at: https://myaccount.google.com/apppasswords
-// 3. Use that App Password as GMAIL_APP_PASSWORD
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
+// Create transporter lazily to ensure environment variables are loaded
+function getTransporter() {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    throw new Error('GMAIL_USER and GMAIL_APP_PASSWORD environment variables are required');
+  }
 
-const fromEmail = process.env.GMAIL_USER || 'noreply@example.com';
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD,
+    },
+  });
+}
+
 const fromName = 'Skripta';
 
 export async function sendEmailVerification(email: string, verificationCode: string, username: string) {
   try {
+    const transporter = getTransporter();
+    const fromEmail = process.env.GMAIL_USER;
+
     const result = await transporter.sendMail({
       from: `${fromName} <${fromEmail}>`,
       to: email,
@@ -331,6 +335,9 @@ export async function sendEmailVerification(email: string, verificationCode: str
 
 export async function sendPasswordResetEmail(email: string, resetCode: string) {
   try {
+    const transporter = getTransporter();
+    const fromEmail = process.env.GMAIL_USER;
+
     const result = await transporter.sendMail({
       from: `${fromName} <${fromEmail}>`,
       to: email,
