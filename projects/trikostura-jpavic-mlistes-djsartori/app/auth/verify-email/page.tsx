@@ -8,7 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { verifyEmailCode, resendVerificationEmail } from './actions';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import { Mail, ArrowLeft, CheckCircle, RefreshCw } from 'lucide-react';
+import { Mail, ArrowLeft, CheckCircle, RefreshCw, LogOut } from 'lucide-react';
+import { logout } from '@/app/auth/actions';
 
 // Mask email for privacy (e.g., "j***@example.com")
 function maskEmail(email: string): string {
@@ -205,11 +206,6 @@ export default function VerifyEmailPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 p-4">
       <div className="w-full max-w-md space-y-4">
-        <Link href="/forum" className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200">
-          <ArrowLeft className="w-4 h-4" />
-          Natrag
-        </Link>
-
         <Card>
           <CardHeader className="text-center">
             <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center mb-4">
@@ -297,6 +293,15 @@ export default function VerifyEmailPage() {
           <p className="text-xs text-gray-400 dark:text-gray-500">
             Možete zalijepiti kod izravno (Ctrl+V)
           </p>
+        </div>
+
+        <div className="text-center pt-4">
+          <form action={logout}>
+            <Button type="submit" variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+              <LogOut className="w-4 h-4 mr-2" />
+              Odjavi se
+            </Button>
+          </form>
         </div>
       </div>
     </div>
