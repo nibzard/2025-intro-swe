@@ -275,7 +275,7 @@ export default function Home() {
               </div>
             </div>
             <p className="text-gray-600 dark:text-gray-400 italic">
-              "Upoznao sam kolege s drugih fakulteta i našao studijsku grupu. Zajednica je stvarno friendly i helpful!"
+              "Upoznao sam kolege s drugih fakulteta i našao studijsku grupu. Zajednica je stvarno prijateljska i susretljiva!"
             </p>
             <div className="mt-4 text-yellow-500">⭐⭐⭐⭐⭐</div>
           </div>
@@ -317,8 +317,8 @@ export default function Home() {
               <span className="text-2xl group-open:rotate-180 transition-transform">▼</span>
             </summary>
             <div className="p-6 pt-0 text-gray-600 dark:text-gray-400">
-              Kada pomažeš drugima kvalitetnim odgovorima, dobivacute reputaciju putem ocjena drugih korisnika. Veća reputacija
-              znači da si pouzdaniji izvor informacija i da aktivno doprinsišprograma zajednici. To ti omogućava da se istakneš i eventualno dobiješ posebne privilegije na platformi.
+              Kada pomažeš drugima kvalitetnim odgovorima, dobivaš reputaciju putem ocjena drugih korisnika. Veća reputacija
+              znači da si pouzdaniji izvor informacija i da aktivno doprinosiš zajednici. To ti omogućava da se istakneš i eventualno dobiješ posebne privilegije na platformi.
             </div>
           </details>
 
@@ -328,8 +328,8 @@ export default function Home() {
               <span className="text-2xl group-open:rotate-180 transition-transform">▼</span>
             </summary>
             <div className="p-6 pt-0 text-gray-600 dark:text-gray-400">
-              Naravno! Možešпрogram priložiti dokumente, slike i druge materijale uz svoje objave. Molimo samo da poštujete
-              autorska prava i ne dijelite sadržaj koji nije vaš ili za koji nemate dopuštenje za dijeljenje.
+              Naravno! Možeš priložiti dokumente, slike i druge materijale uz svoje objave. Molimo samo da poštuješ
+              autorska prava i da ne dijeliš sadržaj koji nije tvoj ili za koji nemaš dopuštenje za dijeljenje.
             </div>
           </details>
 
