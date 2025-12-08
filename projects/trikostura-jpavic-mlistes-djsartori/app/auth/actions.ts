@@ -59,16 +59,29 @@ export async function register(
   }
 
   const supabase = await createServerSupabaseClient();
+  const adminClient = createAdminClient();
 
   // Check if username is already taken
-  const { data: existingUser } = await supabase
+  const { data: existingProfile } = await supabase
     .from('profiles')
-    .select('username')
+    .select('username, id')
     .eq('username', username)
     .single();
 
-  if (existingUser) {
-    return { error: 'Korisničko ime je već zauzeto' };
+  if (existingProfile) {
+    // Check if the auth user still exists
+    const { data: authUser } = await (adminClient as any).auth.admin.getUserById(existingProfile.id);
+
+    if (authUser?.user) {
+      // Profile has a valid auth user - username is taken
+      return { error: 'Korisničko ime je već zauzeto' };
+    } else {
+      // Orphaned profile - delete it to allow re-registration
+      await (adminClient as any)
+        .from('profiles')
+        .delete()
+        .eq('id', existingProfile.id);
+    }
   }
 
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
@@ -87,7 +100,6 @@ export async function register(
 
   // Update profile with username (since trigger creates it with email as username)
   if (data.user) {
-    const adminClient = createAdminClient();
     const { error: updateError } = await (adminClient as any)
       .from('profiles')
       .update({ username, full_name, email })
