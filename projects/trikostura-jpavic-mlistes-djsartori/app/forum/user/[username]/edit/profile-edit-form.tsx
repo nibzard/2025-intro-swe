@@ -96,15 +96,14 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
         throw new Error(result.error);
       }
 
-      // Success! Show toast and redirect
+      // Success! Show toast and go back
       toast.success('Profil uspješno ažuriran!', { id: 'profile-save' });
 
       // Scroll to top instantly before navigation
       window.scrollTo(0, 0);
 
-      // Navigate to profile page
-      router.push(`/forum/user/${result.username}`);
-      router.refresh();
+      // Go back to previous page
+      router.back();
     } catch (err: any) {
       // Handle actual errors
       const errorMessage = err?.message || 'Došlo je do greške';
@@ -468,7 +467,10 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.back()}
+          onClick={() => {
+            window.scrollTo(0, 0);
+            router.back();
+          }}
           disabled={loading}
           className="w-full sm:w-auto"
         >
