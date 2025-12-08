@@ -13,12 +13,17 @@ export async function toggleBookmark(topicId: string) {
   }
 
   // Check if already bookmarked
-  const { data: existing } = await (supabase as any)
+  const { data: existing, error: checkError } = await (supabase as any)
     .from('bookmarks')
     .select('id')
     .eq('user_id', user.id)
     .eq('topic_id', topicId)
     .single();
+
+  if (checkError && checkError.code !== 'PGRST116') {
+    console.error('Bookmark check error:', checkError);
+    return { success: false, error: 'Greska pri provjeri oznake' };
+  }
 
   if (existing) {
     // Remove bookmark
@@ -28,25 +33,36 @@ export async function toggleBookmark(topicId: string) {
       .eq('id', existing.id);
 
     if (error) {
+      console.error('Bookmark delete error:', error);
       return { success: false, error: 'Greska pri uklanjanju oznake' };
     }
 
     revalidatePath('/forum');
+    revalidatePath(`/forum/bookmarks`);
+    revalidatePath(`/forum/topic`);
     return { success: true, bookmarked: false };
   } else {
     // Add bookmark
-    const { error } = await (supabase as any)
+    const { data: newBookmark, error } = await (supabase as any)
       .from('bookmarks')
       .insert({
         user_id: user.id,
         topic_id: topicId,
-      });
+      })
+      .select();
 
     if (error) {
+      console.error('Bookmark insert error:', error);
+      return { success: false, error: 'Greska pri spremanju oznake' };
+    }
+
+    if (!newBookmark || newBookmark.length === 0) {
       return { success: false, error: 'Greska pri spremanju oznake' };
     }
 
     revalidatePath('/forum');
+    revalidatePath(`/forum/bookmarks`);
+    revalidatePath(`/forum/topic`);
     return { success: true, bookmarked: true };
   }
 }
