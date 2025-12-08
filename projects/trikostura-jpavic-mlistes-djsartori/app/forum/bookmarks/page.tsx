@@ -25,7 +25,8 @@ export default async function BookmarksPage() {
     .select(`
       id,
       created_at,
-      topics!bookmarks_topic_id_fkey(
+      topic_id,
+      topics:topic_id(
         id,
         title,
         slug,
