@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Shield, UserX, Search, Ban, UserCheck } from 'lucide-react';
-import { updateUserRole, deleteUser, banUser, unbanUser } from '../actions';
+import { Shield, UserX, Search, Ban, UserCheck, AlertTriangle, Clock, X } from 'lucide-react';
+import { updateUserRole, deleteUser, banUser, unbanUser, warnUser, timeoutUser, removeTimeout } from '../actions';
 import { sanitizeSearchQuery } from '@/lib/utils/sanitize';
 import { Avatar } from '@/components/ui/avatar';
 import { toast } from 'sonner';
@@ -19,6 +19,9 @@ type User = {
   is_banned?: boolean;
   banned_at?: string | null;
   ban_reason?: string | null;
+  warning_count?: number;
+  timeout_until?: string | null;
+  timeout_reason?: string | null;
 };
 
 export function UserManagementClient({ users }: { users: User[] }) {
@@ -26,6 +29,11 @@ export function UserManagementClient({ users }: { users: User[] }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [banReason, setBanReason] = useState('');
   const [showBanDialog, setShowBanDialog] = useState<string | null>(null);
+  const [showWarnDialog, setShowWarnDialog] = useState<string | null>(null);
+  const [warnReason, setWarnReason] = useState('');
+  const [showTimeoutDialog, setShowTimeoutDialog] = useState<string | null>(null);
+  const [timeoutReason, setTimeoutReason] = useState('');
+  const [timeoutDuration, setTimeoutDuration] = useState(24); // hours
 
   const sanitizedSearchTerm = sanitizeSearchQuery(searchTerm);
   const filteredUsers = users.filter(
@@ -117,6 +125,90 @@ export function UserManagementClient({ users }: { users: User[] }) {
       toast.error(e.message || 'Doslo je do greske');
     }
     setLoading(null);
+  };
+
+  const handleWarnUser = async (userId: string) => {
+    if (!warnReason.trim()) {
+      toast.error('Morate unijeti razlog upozorenja');
+      return;
+    }
+
+    setLoading(userId);
+    try {
+      const result = await warnUser(userId, warnReason);
+      setShowWarnDialog(null);
+      setWarnReason('');
+
+      if (result.success) {
+        toast.success('Upozorenje uspjesno poslano');
+        window.location.reload();
+      } else {
+        toast.error(result.error || 'Doslo je do greske');
+      }
+    } catch (e: any) {
+      toast.error(e.message || 'Doslo je do greske');
+    }
+    setLoading(null);
+  };
+
+  const handleTimeoutUser = async (userId: string) => {
+    if (!timeoutReason.trim()) {
+      toast.error('Morate unijeti razlog timeouta');
+      return;
+    }
+
+    setLoading(userId);
+    try {
+      const result = await timeoutUser(userId, timeoutReason, timeoutDuration);
+      setShowTimeoutDialog(null);
+      setTimeoutReason('');
+      setTimeoutDuration(24);
+
+      if (result.success) {
+        toast.success(`Korisnik stavljen u timeout na ${timeoutDuration}h`);
+        window.location.reload();
+      } else {
+        toast.error(result.error || 'Doslo je do greske');
+      }
+    } catch (e: any) {
+      toast.error(e.message || 'Doslo je do greske');
+    }
+    setLoading(null);
+  };
+
+  const handleRemoveTimeout = async (userId: string) => {
+    if (!confirm('Jeste li sigurni da zelite ukloniti timeout?')) {
+      return;
+    }
+
+    setLoading(userId);
+    try {
+      const result = await removeTimeout(userId);
+      if (result.success) {
+        toast.success('Timeout uspjesno uklonjen');
+        window.location.reload();
+      } else {
+        toast.error(result.error || 'Doslo je do greske');
+      }
+    } catch (e: any) {
+      toast.error(e.message || 'Doslo je do greske');
+    }
+    setLoading(null);
+  };
+
+  // Check if user is in active timeout
+  const isInTimeout = (user: User) => {
+    if (!user.timeout_until) return false;
+    return new Date(user.timeout_until) > new Date();
+  };
+
+  // Format remaining timeout time
+  const formatTimeoutRemaining = (timeoutUntil: string) => {
+    const remaining = new Date(timeoutUntil).getTime() - Date.now();
+    const hours = Math.floor(remaining / (1000 * 60 * 60));
+    const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
   };
 
   return (
@@ -216,6 +308,18 @@ export function UserManagementClient({ users }: { users: User[] }) {
                           Baniran
                         </span>
                       )}
+                      {isInTimeout(user) && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 w-fit">
+                          <Clock className="h-3 w-3" />
+                          Timeout ({formatTimeoutRemaining(user.timeout_until!)})
+                        </span>
+                      )}
+                      {(user.warning_count || 0) > 0 && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 w-fit">
+                          <AlertTriangle className="h-3 w-3" />
+                          {user.warning_count} upozorenja
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap hidden sm:table-cell">
@@ -243,19 +347,44 @@ export function UserManagementClient({ users }: { users: User[] }) {
                         </span>
                       </button>
 
-                      {/* Ban/Unban button */}
-                      {user.role !== 'admin' && (
-                        user.is_banned ? (
+                      {/* Warning/Timeout/Ban buttons */}
+                      {user.role !== 'admin' && !user.is_banned && (
+                        <>
+                          {/* Warn button */}
                           <button
-                            onClick={() => handleUnbanUser(user.id)}
+                            onClick={() => setShowWarnDialog(user.id)}
                             disabled={loading === user.id}
-                            className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            title="Ukloni ban"
+                            className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            title="Upozori korisnika"
                           >
-                            <UserCheck className="h-3 w-3" />
-                            <span className="hidden lg:inline">Ukloni Ban</span>
+                            <AlertTriangle className="h-3 w-3" />
+                            <span className="hidden lg:inline">Upozori</span>
                           </button>
-                        ) : (
+
+                          {/* Timeout button */}
+                          {isInTimeout(user) ? (
+                            <button
+                              onClick={() => handleRemoveTimeout(user.id)}
+                              disabled={loading === user.id}
+                              className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              title="Ukloni timeout"
+                            >
+                              <X className="h-3 w-3" />
+                              <span className="hidden lg:inline">Ukloni Timeout</span>
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => setShowTimeoutDialog(user.id)}
+                              disabled={loading === user.id}
+                              className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              title="Stavi korisnika u timeout"
+                            >
+                              <Clock className="h-3 w-3" />
+                              <span className="hidden lg:inline">Timeout</span>
+                            </button>
+                          )}
+
+                          {/* Ban button */}
                           <button
                             onClick={() => setShowBanDialog(user.id)}
                             disabled={loading === user.id}
@@ -265,7 +394,20 @@ export function UserManagementClient({ users }: { users: User[] }) {
                             <Ban className="h-3 w-3" />
                             <span className="hidden lg:inline">Banaj</span>
                           </button>
-                        )
+                        </>
+                      )}
+
+                      {/* Unban button for banned users */}
+                      {user.role !== 'admin' && user.is_banned && (
+                        <button
+                          onClick={() => handleUnbanUser(user.id)}
+                          disabled={loading === user.id}
+                          className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          title="Ukloni ban"
+                        >
+                          <UserCheck className="h-3 w-3" />
+                          <span className="hidden lg:inline">Ukloni Ban</span>
+                        </button>
                       )}
 
                       {/* Delete button */}
@@ -330,6 +472,108 @@ export function UserManagementClient({ users }: { users: User[] }) {
                 className="px-4 py-2 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50"
               >
                 {loading === showBanDialog ? 'Bananje...' : 'Banaj'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Warning Dialog */}
+      {showWarnDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              Upozori korisnika
+            </h3>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">
+                Razlog upozorenja *
+              </label>
+              <textarea
+                value={warnReason}
+                onChange={(e) => setWarnReason(e.target.value)}
+                placeholder="Unesite razlog upozorenja..."
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => {
+                  setShowWarnDialog(null);
+                  setWarnReason('');
+                }}
+                className="px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                Odustani
+              </button>
+              <button
+                onClick={() => handleWarnUser(showWarnDialog)}
+                disabled={loading === showWarnDialog || !warnReason.trim()}
+                className="px-4 py-2 text-sm bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:opacity-50"
+              >
+                {loading === showWarnDialog ? 'Slanje...' : 'Posalji upozorenje'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Timeout Dialog */}
+      {showTimeoutDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-amber-500" />
+              Timeout korisnika
+            </h3>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">
+                Trajanje timeouta
+              </label>
+              <select
+                value={timeoutDuration}
+                onChange={(e) => setTimeoutDuration(Number(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"
+              >
+                <option value={1}>1 sat</option>
+                <option value={6}>6 sati</option>
+                <option value={12}>12 sati</option>
+                <option value={24}>1 dan</option>
+                <option value={72}>3 dana</option>
+                <option value={168}>7 dana</option>
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">
+                Razlog timeouta *
+              </label>
+              <textarea
+                value={timeoutReason}
+                onChange={(e) => setTimeoutReason(e.target.value)}
+                placeholder="Unesite razlog timeouta..."
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-sm"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => {
+                  setShowTimeoutDialog(null);
+                  setTimeoutReason('');
+                  setTimeoutDuration(24);
+                }}
+                className="px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                Odustani
+              </button>
+              <button
+                onClick={() => handleTimeoutUser(showTimeoutDialog)}
+                disabled={loading === showTimeoutDialog || !timeoutReason.trim()}
+                className="px-4 py-2 text-sm bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50"
+              >
+                {loading === showTimeoutDialog ? 'Postavljanje...' : 'Postavi timeout'}
               </button>
             </div>
           </div>
