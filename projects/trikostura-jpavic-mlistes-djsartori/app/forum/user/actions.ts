@@ -40,7 +40,7 @@ export async function followUser(targetUserId: string) {
 
   // Create notification for the followed user
   if (followerProfile) {
-    await (supabase as any).rpc('create_notification', {
+    const { error: notificationError } = await (supabase as any).rpc('create_notification', {
       p_user_id: targetUserId,
       p_type: 'follow',
       p_title: 'Novi pratitelj',
@@ -48,6 +48,10 @@ export async function followUser(targetUserId: string) {
       p_link: `/forum/user/${(followerProfile as any).username}`,
       p_actor_id: user.id,
     });
+
+    if (notificationError) {
+      console.error('Notification creation error:', notificationError);
+    }
   }
 
   revalidatePath('/forum/user');
