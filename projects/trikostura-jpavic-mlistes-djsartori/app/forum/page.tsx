@@ -110,8 +110,8 @@ export default async function ForumPage({
   // Manually fetch related data for trending topics
   let trendingTopics: TopicWithCategoryAndAuthor[] = [];
   if (trendingTopicsData && trendingTopicsData.length > 0) {
-    const authorIds = [...new Set(trendingTopicsData.map(t => t.author_id))];
-    const categoryIds = [...new Set(trendingTopicsData.map(t => t.category_id))];
+    const authorIds = [...new Set((trendingTopicsData as Topic[]).map(t => t.author_id))];
+    const categoryIds = [...new Set((trendingTopicsData as Topic[]).map(t => t.category_id))];
 
     const [authorsRes, categoriesRes] = await Promise.all([
       supabase.from('profiles').select('id, username, avatar_url').in('id', authorIds),
@@ -121,7 +121,7 @@ export default async function ForumPage({
     const authorsMap = new Map(authorsRes.data?.map(a => [a.id, a]));
     const categoriesMap = new Map(categoriesRes.data?.map(c => [c.id, c]));
 
-    trendingTopics = trendingTopicsData.map(topic => ({
+    trendingTopics = (trendingTopicsData as Topic[]).map(topic => ({
       ...topic,
       author: authorsMap.get(topic.author_id) || null,
       category: categoriesMap.get(topic.category_id) || null,
@@ -149,8 +149,8 @@ export default async function ForumPage({
   // Manually fetch related data
   let recentTopics: TopicWithCategoryAndAuthor[] = [];
   if (topicsData && topicsData.length > 0) {
-    const authorIds = [...new Set(topicsData.map(t => t.author_id))];
-    const categoryIds = [...new Set(topicsData.map(t => t.category_id))];
+    const authorIds = [...new Set((topicsData as Topic[]).map(t => t.author_id))];
+    const categoryIds = [...new Set((topicsData as Topic[]).map(t => t.category_id))];
 
     const [authorsRes, categoriesRes] = await Promise.all([
       supabase.from('profiles').select('id, username, avatar_url').in('id', authorIds),
@@ -160,7 +160,7 @@ export default async function ForumPage({
     const authorsMap = new Map(authorsRes.data?.map(a => [a.id, a]));
     const categoriesMap = new Map(categoriesRes.data?.map(c => [c.id, c]));
 
-    recentTopics = topicsData.map(topic => ({
+    recentTopics = (topicsData as Topic[]).map(topic => ({
       ...topic,
       author: authorsMap.get(topic.author_id) || null,
       category: categoriesMap.get(topic.category_id) || null,
