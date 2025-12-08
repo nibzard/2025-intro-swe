@@ -213,7 +213,7 @@ export async function sendMessage(conversationId: string, content: string) {
       p_user_id: recipientId,
       p_type: 'new_message',
       p_title: 'Nova poruka',
-      p_message: `${senderProfile.username}: ${messagePreview}`,
+      p_message: `${(senderProfile as any).username}: ${messagePreview}`,
       p_link: `/messages?conversation=${conversationId}`,
       p_actor_id: user.id,
     });
