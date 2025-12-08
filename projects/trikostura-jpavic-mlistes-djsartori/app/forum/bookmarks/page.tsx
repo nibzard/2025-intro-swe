@@ -25,7 +25,7 @@ export default async function BookmarksPage() {
     .select(`
       id,
       created_at,
-      topic:topics(
+      topics!bookmarks_topic_id_fkey(
         id,
         title,
         slug,
@@ -94,13 +94,13 @@ export default async function BookmarksPage() {
                       <span
                         className="px-2 py-0.5 text-xs font-semibold rounded"
                         style={{
-                          backgroundColor: bookmark.topic?.category?.color + '20',
-                          color: bookmark.topic?.category?.color,
+                          backgroundColor: bookmark.topics?.category?.color + '20',
+                          color: bookmark.topics?.category?.color,
                         }}
                       >
-                        {bookmark.topic?.category?.name}
+                        {bookmark.topics?.category?.name}
                       </span>
-                      {bookmark.topic?.has_solution && (
+                      {bookmark.topics?.has_solution && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded">
                           <CheckCircle className="w-3 h-3" />
                           Rijeseno
@@ -108,22 +108,22 @@ export default async function BookmarksPage() {
                       )}
                     </div>
                     <Link
-                      href={`/forum/topic/${bookmark.topic?.slug}`}
+                      href={`/forum/topic/${bookmark.topics?.slug}`}
                       className="text-lg font-semibold hover:text-blue-600 dark:hover:text-blue-400 transition-colors block line-clamp-2"
                     >
-                      {bookmark.topic?.title}
+                      {bookmark.topics?.title}
                     </Link>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500 mt-2">
-                      <span>od {bookmark.topic?.author?.username}</span>
+                      <span>od {bookmark.topics?.author?.username}</span>
                       <span className="flex items-center gap-1">
                         <MessageSquare className="w-4 h-4" />
-                        {bookmark.topic?.reply_count}
+                        {bookmark.topics?.reply_count}
                       </span>
-                      <span>{bookmark.topic?.view_count} pregleda</span>
+                      <span>{bookmark.topics?.view_count} pregleda</span>
                     </div>
                   </div>
                   <BookmarkButton
-                    topicId={bookmark.topic?.id}
+                    topicId={bookmark.topics?.id}
                     initialBookmarked={true}
                     size="sm"
                   />
