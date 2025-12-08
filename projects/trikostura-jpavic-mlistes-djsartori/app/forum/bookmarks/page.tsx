@@ -80,8 +80,11 @@ export default async function BookmarksPage() {
     var bookmarks = bookmarkData.map((bookmark: any) => ({
       ...bookmark,
       topics: topicsData?.find((topic: any) => topic.id === bookmark.topic_id)
-    }));
+    })).filter((bookmark: any) => bookmark.topics); // Only keep bookmarks with valid topics
   }
+
+  // Count valid bookmarks
+  const validBookmarksCount = bookmarks?.length || 0;
 
   return (
     <div className="space-y-6">
@@ -92,21 +95,15 @@ export default async function BookmarksPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold">Moje oznake</h1>
           <p className="text-sm text-gray-500">
-            {bookmarks?.length || 0} {bookmarks?.length === 1 ? 'spremljena tema' : 'spremljenih tema'}
+            {validBookmarksCount} {validBookmarksCount === 1 ? 'spremljena tema' : 'spremljenih tema'}
           </p>
         </div>
       </div>
 
       {bookmarks && bookmarks.length > 0 ? (
         <div className="space-y-3">
-          {bookmarks.map((bookmark: any) => {
-            // Skip bookmarks where the topic no longer exists
-            if (!bookmark.topics) {
-              return null;
-            }
-
-            return (
-              <Card key={bookmark.id} className="hover:shadow-sm transition-shadow">
+          {bookmarks.map((bookmark: any) => (
+            <Card key={bookmark.id} className="hover:shadow-sm transition-shadow">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
@@ -154,8 +151,7 @@ export default async function BookmarksPage() {
                   </div>
                 </CardContent>
               </Card>
-            );
-          })}
+          ))}
         </div>
       ) : (
         <Card>
