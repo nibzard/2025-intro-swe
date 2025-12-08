@@ -23,13 +23,35 @@ export async function login(
 
   const supabase = await createServerSupabaseClient();
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { error, data } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
   if (error) {
     return { error: 'Nevažeći email ili lozinka' };
+  }
+
+  // Check if profile exists, if not recreate it
+  if (data.user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', data.user.id)
+      .maybeSingle();
+
+    if (!profile) {
+      // Profile is missing - recreate it
+      const adminClient = createAdminClient();
+      await (adminClient as any)
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          email: data.user.email,
+          username: data.user.email?.split('@')[0] || 'user',
+          full_name: data.user.user_metadata?.full_name || '',
+        });
+    }
   }
 
   revalidatePath('/', 'layout');
