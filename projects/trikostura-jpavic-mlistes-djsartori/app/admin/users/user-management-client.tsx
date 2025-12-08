@@ -260,10 +260,10 @@ export function UserManagementClient({ users }: { users: User[] }) {
                             onClick={() => setShowBanDialog(user.id)}
                             disabled={loading === user.id}
                             className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            title="Baniraj korisnika"
+                            title="Banaj korisnika"
                           >
                             <Ban className="h-3 w-3" />
-                            <span className="hidden lg:inline">Baniraj</span>
+                            <span className="hidden lg:inline">Banaj</span>
                           </button>
                         )
                       )}
@@ -300,7 +300,7 @@ export function UserManagementClient({ users }: { users: User[] }) {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
               <Ban className="w-5 h-5 text-orange-500" />
-              Baniraj korisnika
+              Banaj korisnika
             </h3>
             <div className="mb-4">
               <label className="block text-sm font-medium mb-2">
@@ -329,7 +329,7 @@ export function UserManagementClient({ users }: { users: User[] }) {
                 disabled={loading === showBanDialog}
                 className="px-4 py-2 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50"
               >
-                {loading === showBanDialog ? 'Baniranje...' : 'Baniraj'}
+                {loading === showBanDialog ? 'Bananje...' : 'Banaj'}
               </button>
             </div>
           </div>
