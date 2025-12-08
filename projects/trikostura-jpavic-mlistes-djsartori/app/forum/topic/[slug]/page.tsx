@@ -46,14 +46,14 @@ export default async function TopicPage({
     .from('profiles')
     .select('username, avatar_url, reputation')
     .eq('id', topic.author_id)
-    .single();
+    .single() as any;
 
   // Get category separately
   const { data: category } = await supabase
     .from('categories')
     .select('name, slug, color, icon')
     .eq('id', topic.category_id)
-    .single();
+    .single() as any;
 
   // Get topic tags separately
   const { data: tagData } = await supabase
