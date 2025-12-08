@@ -137,6 +137,10 @@ export async function register(
   });
 
   if (error) {
+    // Check if user already exists in auth but profile was deleted
+    if (error.message.includes('already registered') || error.message.includes('already been registered')) {
+      return { error: 'Ovaj email je već registriran. Molimo prijavite se umjesto registracije.' };
+    }
     return { error: error.message };
   }
 
