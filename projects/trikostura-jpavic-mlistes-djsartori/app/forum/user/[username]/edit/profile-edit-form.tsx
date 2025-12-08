@@ -88,29 +88,24 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
         formData.set('profile_banner_url', bannerUrl);
       }
 
-      // Update profile with new data - this will redirect on success
+      // Update profile with new data
       const result = await updateProfile(formData);
 
       // Check if update failed
-      if (result && !result.success) {
+      if (!result.success) {
         throw new Error(result.error);
       }
 
-      // If we reach here without redirect, show success
+      // Success! Show toast and redirect
       toast.success('Profil uspješno ažuriran!', { id: 'profile-save' });
-    } catch (err: any) {
-      // Check if this is a Next.js redirect error (expected behavior)
-      if (err?.digest?.startsWith('NEXT_REDIRECT') || err?.message?.includes('NEXT_REDIRECT')) {
-        // This is expected - the redirect is happening
-        toast.success('Profil uspješno ažuriran!', { id: 'profile-save' });
-        // Scroll to top instantly
-        window.scrollTo(0, 0);
-        // Navigate to profile page
-        router.push(`/forum/user/${profile.username}`);
-        router.refresh();
-        return;
-      }
 
+      // Scroll to top instantly before navigation
+      window.scrollTo(0, 0);
+
+      // Navigate to profile page
+      router.push(`/forum/user/${result.username}`);
+      router.refresh();
+    } catch (err: any) {
       // Handle actual errors
       const errorMessage = err?.message || 'Došlo je do greške';
       setError(errorMessage);
