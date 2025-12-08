@@ -89,13 +89,18 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
       }
 
       // Update profile with new data - this will redirect on success
-      await updateProfile(formData);
+      const result = await updateProfile(formData);
+
+      // Check if update failed
+      if (result && !result.success) {
+        throw new Error(result.error);
+      }
 
       // If we reach here without redirect, show success
       toast.success('Profil uspješno ažuriran!', { id: 'profile-save' });
     } catch (err: any) {
       // Check if this is a Next.js redirect error (expected behavior)
-      if (err?.message?.includes('NEXT_REDIRECT')) {
+      if (err?.digest?.startsWith('NEXT_REDIRECT') || err?.message?.includes('NEXT_REDIRECT')) {
         // This is expected - the redirect is happening
         toast.success('Profil uspješno ažuriran!', { id: 'profile-save' });
         return;
