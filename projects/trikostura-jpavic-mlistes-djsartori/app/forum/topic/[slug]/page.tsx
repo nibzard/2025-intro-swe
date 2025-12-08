@@ -25,16 +25,21 @@ export default async function TopicPage({
   } = await supabase.auth.getUser();
 
   // Get topic with tags
-  const { data: topic }: { data: any } = await supabase
+  const { data: topic, error: topicError }: { data: any; error: any } = await supabase
     .from('topics')
     .select(`
       *,
-      author:profiles!topics_author_id_fkey(username, avatar_url, reputation),
+      author:author_id(username, avatar_url, reputation),
       category:categories(name, slug, color, icon),
       topic_tags(tags(id, name, slug, color))
     `)
     .eq('slug', slug)
     .single();
+
+  if (topicError) {
+    console.error('Topic fetch error:', topicError);
+    notFound();
+  }
 
   if (!topic) {
     notFound();

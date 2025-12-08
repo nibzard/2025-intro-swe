@@ -165,7 +165,14 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
         .select()
         .single();
 
-      if (topicError) throw topicError;
+      if (topicError) {
+        console.error('Topic creation error:', topicError);
+        throw new Error(topicError.message || 'Greška pri kreiranju teme');
+      }
+
+      if (!topic) {
+        throw new Error('Tema nije kreirana. Pokušajte ponovno.');
+      }
 
       // Add tags
       if (selectedTags.length > 0 && topic) {

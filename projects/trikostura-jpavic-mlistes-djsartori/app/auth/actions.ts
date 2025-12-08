@@ -87,13 +87,15 @@ export async function register(
 
   // Update profile with username (since trigger creates it with email as username)
   if (data.user) {
-    const { error: updateError } = await (supabase as any)
+    const adminClient = createAdminClient();
+    const { error: updateError } = await (adminClient as any)
       .from('profiles')
       .update({ username, full_name, email })
       .eq('id', data.user.id);
 
     if (updateError) {
       console.error('Profile update error:', updateError);
+      return { error: 'Greška pri kreiranju profila' };
     }
 
     // Send verification email (skip auth check since user just registered)
