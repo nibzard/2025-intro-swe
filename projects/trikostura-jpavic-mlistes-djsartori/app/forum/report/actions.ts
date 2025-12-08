@@ -119,7 +119,8 @@ export async function getReports(status?: string) {
 export async function updateReportStatus(
   reportId: string,
   status: 'reviewed' | 'resolved' | 'dismissed',
-  adminNotes?: string
+  adminNotes?: string,
+  deleteContent?: boolean
 ) {
   const supabase = await createServerSupabaseClient();
 
@@ -138,6 +139,32 @@ export async function updateReportStatus(
 
   if (!profile || (profile as any).role !== 'admin') {
     return { success: false, error: 'Neautorizirano' };
+  }
+
+  // If resolving and deleteContent is true, delete the reported content
+  if (status === 'resolved' && deleteContent) {
+    // Get the report to find out what content to delete
+    const { data: report } = await (supabase as any)
+      .from('reports')
+      .select('topic_id, reply_id')
+      .eq('id', reportId)
+      .single();
+
+    if (report) {
+      if (report.topic_id) {
+        // Delete the topic
+        await (supabase as any)
+          .from('topics')
+          .delete()
+          .eq('id', report.topic_id);
+      } else if (report.reply_id) {
+        // Delete the reply
+        await (supabase as any)
+          .from('replies')
+          .delete()
+          .eq('id', report.reply_id);
+      }
+    }
   }
 
   const { error } = await (supabase as any)
