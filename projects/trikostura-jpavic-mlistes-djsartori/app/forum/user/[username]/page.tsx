@@ -1,11 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { Calendar, MessageSquare, User as UserIcon, Github, Linkedin, Globe, Twitter, Edit, TrendingUp, Award, Star, Sparkles, Trophy, Target, Zap, BookOpen, CheckCircle } from 'lucide-react';
+import { Calendar, MessageSquare, User as UserIcon, Github, Linkedin, Globe, Twitter, Edit, TrendingUp, Award, Star, Sparkles, Trophy, Target, Zap, BookOpen, CheckCircle, Mail, Users } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
+import { SendMessageButton } from '@/components/messages/send-message-button';
+import { FollowButton } from '@/components/user/follow-button';
+import { getFollowStatus } from '../actions';
 
 interface PageProps {
   params: Promise<{ username: string }>;
@@ -40,6 +43,11 @@ export default async function Page({ params }: PageProps) {
   }
 
   const isOwnProfile = user?.id === profile.id;
+
+  // Get follow status
+  const { isFollowing } = !isOwnProfile && user
+    ? await getFollowStatus(profile.id)
+    : { isFollowing: false };
 
   // Get user's topics
   const { data: topics } = await (supabase as any)
@@ -186,14 +194,27 @@ export default async function Page({ params }: PageProps) {
                     <span>Član od {new Date(profile.created_at).toLocaleDateString('hr-HR')}</span>
                   </div>
                 </div>
-                {isOwnProfile && (
-                  <Link href={`/forum/user/${username}/edit`} className="w-full sm:w-auto">
-                    <Button variant="gradient" size="lg" className="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all">
-                      <Edit className="w-4 h-4 mr-2" />
-                      Uredi Profil
-                    </Button>
-                  </Link>
-                )}
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                  {isOwnProfile ? (
+                    <Link href={`/forum/user/${username}/edit`} className="w-full sm:w-auto">
+                      <Button variant="gradient" size="lg" className="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all">
+                        <Edit className="w-4 h-4 mr-2" />
+                        Uredi Profil
+                      </Button>
+                    </Link>
+                  ) : user && (
+                    <>
+                      <FollowButton
+                        targetUserId={profile.id}
+                        initialIsFollowing={isFollowing}
+                      />
+                      <SendMessageButton
+                        targetUserId={profile.id}
+                        targetUsername={profile.username}
+                      />
+                    </>
+                  )}
+                </div>
               </div>
 
               {/* Bio */}
@@ -353,48 +374,70 @@ export default async function Page({ params }: PageProps) {
           )}
 
           {/* Statistics Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-8">
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-pink-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-300" />
-              <div className="relative bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 text-center hover:shadow-xl transition-all">
-                <MessageSquare className="w-8 h-8 mx-auto mb-3 text-red-500" />
-                <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-red-600 to-pink-600 bg-clip-text text-transparent mb-1">
+              <div className="relative bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 text-center hover:shadow-xl transition-all">
+                <MessageSquare className="w-6 h-6 mx-auto mb-2 text-red-500" />
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-red-600 to-pink-600 bg-clip-text text-transparent mb-1">
                   {topicCount}
                 </div>
-                <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Teme</div>
+                <div className="text-xs font-medium text-gray-600 dark:text-gray-400">Teme</div>
               </div>
             </div>
 
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-300" />
-              <div className="relative bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 text-center hover:shadow-xl transition-all">
-                <UserIcon className="w-8 h-8 mx-auto mb-3 text-blue-500" />
-                <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-1">
+              <div className="relative bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 text-center hover:shadow-xl transition-all">
+                <UserIcon className="w-6 h-6 mx-auto mb-2 text-blue-500" />
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-1">
                   {replyCount}
                 </div>
-                <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Odgovori</div>
+                <div className="text-xs font-medium text-gray-600 dark:text-gray-400">Odgovori</div>
               </div>
             </div>
 
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-yellow-600 to-orange-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-300" />
-              <div className="relative bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 text-center hover:shadow-xl transition-all">
-                <Star className="w-8 h-8 mx-auto mb-3 text-yellow-500" />
-                <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-yellow-600 to-orange-600 bg-clip-text text-transparent mb-1">
+              <div className="relative bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 text-center hover:shadow-xl transition-all">
+                <Star className="w-6 h-6 mx-auto mb-2 text-yellow-500" />
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-yellow-600 to-orange-600 bg-clip-text text-transparent mb-1">
                   {profile.reputation || 0}
                 </div>
-                <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Reputacija</div>
+                <div className="text-xs font-medium text-gray-600 dark:text-gray-400">Reputacija</div>
               </div>
             </div>
 
             <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-300" />
-              <div className="relative bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 text-center hover:shadow-xl transition-all">
-                <TrendingUp className="w-8 h-8 mx-auto mb-3 text-purple-500" />
-                <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-purple-600 to-purple-600 bg-clip-text text-transparent mb-1">
+              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-300" />
+              <div className="relative bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 text-center hover:shadow-xl transition-all">
+                <TrendingUp className="w-6 h-6 mx-auto mb-2 text-purple-500" />
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-1">
                   {topicCount + replyCount}
                 </div>
-                <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Aktivnosti</div>
+                <div className="text-xs font-medium text-gray-600 dark:text-gray-400">Aktivnosti</div>
+              </div>
+            </div>
+
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-300" />
+              <div className="relative bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 text-center hover:shadow-xl transition-all">
+                <Users className="w-6 h-6 mx-auto mb-2 text-green-500" />
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-green-600 to-emerald-600 bg-clip-text text-transparent mb-1">
+                  {profile.follower_count || 0}
+                </div>
+                <div className="text-xs font-medium text-gray-600 dark:text-gray-400">Pratitelja</div>
+              </div>
+            </div>
+
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-pink-600 to-rose-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-300" />
+              <div className="relative bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 text-center hover:shadow-xl transition-all">
+                <Users className="w-6 h-6 mx-auto mb-2 text-pink-500" />
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-br from-pink-600 to-rose-600 bg-clip-text text-transparent mb-1">
+                  {profile.following_count || 0}
+                </div>
+                <div className="text-xs font-medium text-gray-600 dark:text-gray-400">Prati</div>
               </div>
             </div>
           </div>
