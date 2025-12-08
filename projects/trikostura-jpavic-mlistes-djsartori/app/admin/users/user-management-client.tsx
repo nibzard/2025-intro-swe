@@ -42,28 +42,37 @@ export function UserManagementClient({ users }: { users: User[] }) {
     }
 
     setLoading(userId);
-    const result = await updateUserRole(userId, newRole);
-    setLoading(null);
-
-    if (result.success) {
-      toast.success(`Uloga uspjesno promijenjena`);
-    } else {
-      toast.error(result.error || 'Doslo je do greske');
+    try {
+      const result = await updateUserRole(userId, newRole);
+      if (result.success) {
+        toast.success(`Uloga uspjesno promijenjena`);
+        window.location.reload();
+      } else {
+        toast.error(result.error || 'Doslo je do greske');
+      }
+    } catch (e: any) {
+      toast.error(e.message || 'Doslo je do greske');
     }
+    setLoading(null);
   };
 
   const handleBanUser = async (userId: string) => {
     setLoading(userId);
-    const result = await banUser(userId, banReason || undefined);
-    setLoading(null);
-    setShowBanDialog(null);
-    setBanReason('');
+    try {
+      const result = await banUser(userId, banReason || undefined);
+      setShowBanDialog(null);
+      setBanReason('');
 
-    if (result.success) {
-      toast.success('Korisnik uspjesno baniran');
-    } else {
-      toast.error(result.error || 'Doslo je do greske');
+      if (result.success) {
+        toast.success('Korisnik uspjesno baniran');
+        window.location.reload();
+      } else {
+        toast.error(result.error || 'Doslo je do greske');
+      }
+    } catch (e: any) {
+      toast.error(e.message || 'Doslo je do greske');
     }
+    setLoading(null);
   };
 
   const handleUnbanUser = async (userId: string) => {
@@ -72,14 +81,18 @@ export function UserManagementClient({ users }: { users: User[] }) {
     }
 
     setLoading(userId);
-    const result = await unbanUser(userId);
-    setLoading(null);
-
-    if (result.success) {
-      toast.success('Ban uspjesno uklonjen');
-    } else {
-      toast.error(result.error || 'Doslo je do greske');
+    try {
+      const result = await unbanUser(userId);
+      if (result.success) {
+        toast.success('Ban uspjesno uklonjen');
+        window.location.reload();
+      } else {
+        toast.error(result.error || 'Doslo je do greske');
+      }
+    } catch (e: any) {
+      toast.error(e.message || 'Doslo je do greske');
     }
+    setLoading(null);
   };
 
   const handleDeleteUser = async (userId: string, username: string) => {
@@ -92,14 +105,18 @@ export function UserManagementClient({ users }: { users: User[] }) {
     }
 
     setLoading(userId);
-    const result = await deleteUser(userId);
-    setLoading(null);
-
-    if (result.success) {
-      toast.success('Korisnik uspjesno obrisan');
-    } else {
-      toast.error(result.error || 'Doslo je do greske');
+    try {
+      const result = await deleteUser(userId);
+      if (result.success) {
+        toast.success('Korisnik uspjesno obrisan');
+        window.location.reload();
+      } else {
+        toast.error(result.error || 'Doslo je do greske');
+      }
+    } catch (e: any) {
+      toast.error(e.message || 'Doslo je do greske');
     }
+    setLoading(null);
   };
 
   return (
