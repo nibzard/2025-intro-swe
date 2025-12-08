@@ -209,7 +209,7 @@ export async function sendMessage(conversationId: string, content: string) {
       ? content.trim().substring(0, 50) + '...'
       : content.trim();
 
-    await (supabase as any).rpc('create_notification', {
+    const { error: notificationError } = await (supabase as any).rpc('create_notification', {
       p_user_id: recipientId,
       p_type: 'new_message',
       p_title: 'Nova poruka',
@@ -217,6 +217,10 @@ export async function sendMessage(conversationId: string, content: string) {
       p_link: `/messages?conversation=${conversationId}`,
       p_actor_id: user.id,
     });
+
+    if (notificationError) {
+      console.error('Notification creation error:', notificationError);
+    }
   }
 
   revalidatePath('/messages');
