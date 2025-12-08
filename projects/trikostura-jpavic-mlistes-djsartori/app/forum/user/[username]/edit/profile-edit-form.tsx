@@ -116,12 +116,21 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
 
 
   return (
-    <form action={handleSubmit} className="space-y-6 sm:space-y-8">
-      {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-3 sm:px-4 py-2 sm:py-3 rounded text-sm">
-          {error}
+    <div className="relative">
+      {loading && (
+        <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-lg">
+          <div className="flex flex-col items-center gap-3">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent" />
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Spremanje...</p>
+          </div>
         </div>
       )}
+      <form action={handleSubmit} className="space-y-6 sm:space-y-8">
+        {error && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 px-3 sm:px-4 py-2 sm:py-3 rounded text-sm">
+            {error}
+          </div>
+        )}
 
       {/* Avatar Upload */}
       <div>
@@ -467,5 +476,6 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
         </Button>
       </div>
     </form>
+    </div>
   );
 }
