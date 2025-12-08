@@ -172,6 +172,11 @@ export async function sendMessage(conversationId: string, content: string) {
     return { success: false, error: 'Nemate pristup ovom razgovoru' };
   }
 
+  // Determine the recipient (the other person in the conversation)
+  const recipientId = conversation.participant1_id === user.id
+    ? conversation.participant2_id
+    : conversation.participant1_id;
+
   // Insert message
   const { error: messageError } = await (supabase as any)
     .from('messages')
@@ -190,6 +195,29 @@ export async function sendMessage(conversationId: string, content: string) {
     .from('conversations')
     .update({ last_message_at: new Date().toISOString() })
     .eq('id', conversationId);
+
+  // Get sender's username for notification
+  const { data: senderProfile } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('id', user.id)
+    .single();
+
+  // Create notification for the recipient
+  if (senderProfile) {
+    const messagePreview = content.trim().length > 50
+      ? content.trim().substring(0, 50) + '...'
+      : content.trim();
+
+    await (supabase as any).rpc('create_notification', {
+      p_user_id: recipientId,
+      p_type: 'new_message',
+      p_title: 'Nova poruka',
+      p_message: `${senderProfile.username}: ${messagePreview}`,
+      p_link: `/messages?conversation=${conversationId}`,
+      p_actor_id: user.id,
+    });
+  }
 
   revalidatePath('/messages');
   return { success: true };

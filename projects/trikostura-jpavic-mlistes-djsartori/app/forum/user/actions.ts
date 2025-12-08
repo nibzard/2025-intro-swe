@@ -31,6 +31,25 @@ export async function followUser(targetUserId: string) {
     return { success: false, error: 'Greska pri pracenju korisnika' };
   }
 
+  // Get follower's username for notification
+  const { data: followerProfile } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('id', user.id)
+    .single();
+
+  // Create notification for the followed user
+  if (followerProfile) {
+    await (supabase as any).rpc('create_notification', {
+      p_user_id: targetUserId,
+      p_type: 'follow',
+      p_title: 'Novi pratitelj',
+      p_message: `${followerProfile.username} te sada prati`,
+      p_link: `/forum/user/${followerProfile.username}`,
+      p_actor_id: user.id,
+    });
+  }
+
   revalidatePath('/forum/user');
   return { success: true };
 }
