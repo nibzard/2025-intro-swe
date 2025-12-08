@@ -4,7 +4,9 @@ export type NotificationType =
   | 'upvote'
   | 'topic_pinned'
   | 'topic_locked'
-  | 'mention';
+  | 'mention'
+  | 'follow'
+  | 'new_message';
 
 export interface Notification {
   id: string;

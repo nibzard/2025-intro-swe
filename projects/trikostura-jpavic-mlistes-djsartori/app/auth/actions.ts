@@ -126,6 +126,31 @@ export async function register(
     }
   }
 
+  // Also check for orphaned auth users (auth exists but profile deleted)
+  try {
+    const { data: authUserByEmail } = await adminClient.auth.admin.listUsers();
+    const existingAuthUser = authUserByEmail?.users?.find((u: any) => u.email === email);
+
+    if (existingAuthUser) {
+      // Check if profile exists for this auth user
+      const { data: profileForAuth } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', existingAuthUser.id)
+        .maybeSingle();
+
+      if (!profileForAuth) {
+        // Orphaned auth user - delete it
+        await adminClient.auth.admin.deleteUser(existingAuthUser.id);
+      } else {
+        // Both auth and profile exist
+        return { error: 'Email je već zauzet' };
+      }
+    }
+  } catch (error) {
+    console.error('Error checking orphaned auth users:', error);
+  }
+
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
 
   const { error, data } = await supabase.auth.signUp({

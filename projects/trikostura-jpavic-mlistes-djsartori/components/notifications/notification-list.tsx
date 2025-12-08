@@ -2,7 +2,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, ThumbsUp, Pin, X, CheckCheck, Bell } from 'lucide-react';
+import { MessageSquare, ThumbsUp, Pin, X, CheckCheck, Bell, UserPlus, Mail } from 'lucide-react';
 import Link from 'next/link';
 import type { Notification } from '@/types/notifications';
 import {
@@ -34,6 +34,10 @@ export function NotificationList({
         return <ThumbsUp className="w-5 h-5 text-green-600 dark:text-green-400" />;
       case 'topic_pinned':
         return <Pin className="w-5 h-5 text-amber-600 dark:text-amber-400" />;
+      case 'follow':
+        return <UserPlus className="w-5 h-5 text-purple-600 dark:text-purple-400" />;
+      case 'new_message':
+        return <Mail className="w-5 h-5 text-pink-600 dark:text-pink-400" />;
       default:
         return <MessageSquare className="w-5 h-5 text-gray-500 dark:text-gray-400" />;
     }
