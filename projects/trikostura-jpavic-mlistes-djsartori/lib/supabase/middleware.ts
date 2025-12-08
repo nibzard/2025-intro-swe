@@ -45,18 +45,26 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Check email verification for logged-in users accessing protected routes
+  // Check email verification and ban status for logged-in users accessing protected routes
   if (user && (
     request.nextUrl.pathname.startsWith('/forum') ||
     request.nextUrl.pathname.startsWith('/admin')
   )) {
-    // Don't redirect if already on verify-email page
-    if (!request.nextUrl.pathname.startsWith('/auth/verify-email')) {
+    // Don't redirect if already on verify-email or banned page
+    if (!request.nextUrl.pathname.startsWith('/auth/verify-email') &&
+        !request.nextUrl.pathname.startsWith('/auth/banned')) {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('email_verified, role')
+        .select('email_verified, role, is_banned, ban_reason')
         .eq('id', user.id)
         .single();
+
+      // Redirect to banned page if user is banned
+      if (profile && (profile as any).is_banned) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/auth/banned';
+        return NextResponse.redirect(url);
+      }
 
       // Redirect to verify-email if not verified
       if (profile && !profile.email_verified) {

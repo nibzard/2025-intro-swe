@@ -30,12 +30,77 @@ async function checkAdminAccess() {
 
 // User Management Actions
 export async function updateUserRole(userId: string, newRole: 'student' | 'admin') {
+  const { userId: adminId } = await checkAdminAccess();
+  const supabase: any = await createServerSupabaseClient();
+
+  // Prevent admin from removing their own admin role
+  if (userId === adminId && newRole !== 'admin') {
+    return { success: false, error: 'Ne mozete ukloniti vlastitu admin ulogu' };
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ role: newRole })
+    .eq('id', userId);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath('/admin/users');
+  return { success: true };
+}
+
+export async function banUser(userId: string, reason?: string) {
+  const { userId: adminId } = await checkAdminAccess();
+  const supabase: any = await createServerSupabaseClient();
+
+  // Prevent admin from banning themselves
+  if (userId === adminId) {
+    return { success: false, error: 'Ne mozete banirati sami sebe' };
+  }
+
+  // Check if target user is also admin
+  const { data: targetProfile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .single();
+
+  if (targetProfile?.role === 'admin') {
+    return { success: false, error: 'Ne mozete banirati drugog admina' };
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      is_banned: true,
+      banned_at: new Date().toISOString(),
+      ban_reason: reason || null,
+      banned_by: adminId,
+    })
+    .eq('id', userId);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath('/admin/users');
+  return { success: true };
+}
+
+export async function unbanUser(userId: string) {
   await checkAdminAccess();
   const supabase: any = await createServerSupabaseClient();
 
   const { error } = await supabase
     .from('profiles')
-    .update({ role: newRole })
+    .update({
+      is_banned: false,
+      banned_at: null,
+      ban_reason: null,
+      banned_by: null,
+    })
     .eq('id', userId);
 
   if (error) {
