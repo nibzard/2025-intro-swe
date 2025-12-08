@@ -20,29 +20,15 @@ export default async function BookmarksPage() {
     redirect('/auth/login');
   }
 
-  const { data: bookmarks, error } = await (supabase as any)
+  // Get user's bookmarks
+  const { data: bookmarkData, error: bookmarkError } = await (supabase as any)
     .from('bookmarks')
-    .select(`
-      id,
-      created_at,
-      topic_id,
-      topics:topic_id(
-        id,
-        title,
-        slug,
-        created_at,
-        reply_count,
-        view_count,
-        has_solution,
-        author:profiles!topics_author_id_fkey(username, avatar_url),
-        category:categories(name, slug, color)
-      )
-    `)
+    .select('id, created_at, topic_id')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Bookmarks query error:', error);
+  if (bookmarkError) {
+    console.error('Bookmarks query error:', bookmarkError);
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
@@ -59,15 +45,42 @@ export default async function BookmarksPage() {
         <Card>
           <CardContent className="p-6">
             <p className="text-red-600 font-mono text-sm">
-              {error.message || 'Nepoznata greška'}
-            </p>
-            <p className="text-gray-600 mt-4">
-              Molimo pokrenite SQL migraciju: <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">supabase/migrations/high_priority_features.sql</code>
+              {bookmarkError.message || 'Nepoznata greška'}
             </p>
           </CardContent>
         </Card>
       </div>
     );
+  }
+
+  // If no bookmarks, return early
+  if (!bookmarkData || bookmarkData.length === 0) {
+    const bookmarks = [];
+  } else {
+    // Get topic IDs
+    const topicIds = bookmarkData.map((b: any) => b.topic_id);
+
+    // Fetch topics with their relations
+    const { data: topicsData } = await (supabase as any)
+      .from('topics')
+      .select(`
+        id,
+        title,
+        slug,
+        created_at,
+        reply_count,
+        view_count,
+        has_solution,
+        author:profiles!topics_author_id_fkey(username, avatar_url),
+        category:categories(name, slug, color)
+      `)
+      .in('id', topicIds);
+
+    // Combine bookmarks with topics
+    var bookmarks = bookmarkData.map((bookmark: any) => ({
+      ...bookmark,
+      topics: topicsData?.find((topic: any) => topic.id === bookmark.topic_id)
+    }));
   }
 
   return (
