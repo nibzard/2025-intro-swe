@@ -103,8 +103,11 @@ export function ProfileEditForm({ profile }: { profile: Profile }) {
       if (err?.digest?.startsWith('NEXT_REDIRECT') || err?.message?.includes('NEXT_REDIRECT')) {
         // This is expected - the redirect is happening
         toast.success('Profil uspješno ažuriran!', { id: 'profile-save' });
-        // Scroll to top after successful save
-        setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+        // Scroll to top instantly
+        window.scrollTo(0, 0);
+        // Navigate to profile page
+        router.push(`/forum/user/${profile.username}`);
+        router.refresh();
         return;
       }
 
