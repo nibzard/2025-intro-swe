@@ -44,8 +44,8 @@ export async function followUser(targetUserId: string) {
       p_user_id: targetUserId,
       p_type: 'follow',
       p_title: 'Novi pratitelj',
-      p_message: `${followerProfile.username} te sada prati`,
-      p_link: `/forum/user/${followerProfile.username}`,
+      p_message: `${(followerProfile as any).username} te sada prati`,
+      p_link: `/forum/user/${(followerProfile as any).username}`,
       p_actor_id: user.id,
     });
   }
