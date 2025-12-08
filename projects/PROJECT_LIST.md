@@ -113,3 +113,10 @@ This file lists all team projects for the SWE course. Students add their project
 * **Folder:** `Melodia-bvuksicc/`
 * **Status:** In Progress
 * **Description:** Aplikacija za pronalazenje ljudi na temelju njihovih glazbenih ukusa i interesa.
+
+### NK - Klara Lana Vidak & Nikolina Plazibat
+* **Project:** Trip Planner
+* **Folder:** `NK-Klara99-1nikolina23/`
+* **Status:** In Progress
+* **Description:** Aplikacija koja korisnicima omogućuje planiranje i organizaciju putovanja uz dodatne preporuke.
+
