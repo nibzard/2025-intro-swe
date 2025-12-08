@@ -42,6 +42,31 @@ export default async function BookmarksPage() {
 
   if (error) {
     console.error('Bookmarks query error:', error);
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-lg flex items-center justify-center">
+            <Bookmark className="w-6 h-6 text-red-600 dark:text-red-400" />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold">Greška</h1>
+            <p className="text-sm text-red-500">
+              Nije moguće učitati oznake
+            </p>
+          </div>
+        </div>
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-red-600 font-mono text-sm">
+              {error.message || 'Nepoznata greška'}
+            </p>
+            <p className="text-gray-600 mt-4">
+              Molimo pokrenite SQL migraciju: <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">supabase/migrations/high_priority_features.sql</code>
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
