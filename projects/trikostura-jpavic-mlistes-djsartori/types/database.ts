@@ -143,6 +143,7 @@ export interface Database {
           reply_count: number
           last_reply_at: string | null
           last_reply_by: string | null
+          has_solution: boolean
           created_at: string
           updated_at: string
           edited_at: string | null
@@ -160,6 +161,7 @@ export interface Database {
           reply_count?: number
           last_reply_at?: string | null
           last_reply_by?: string | null
+          has_solution?: boolean
           created_at?: string
           updated_at?: string
           edited_at?: string | null
@@ -177,6 +179,7 @@ export interface Database {
           reply_count?: number
           last_reply_at?: string | null
           last_reply_by?: string | null
+          has_solution?: boolean
           created_at?: string
           updated_at?: string
           edited_at?: string | null
