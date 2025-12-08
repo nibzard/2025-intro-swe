@@ -24,15 +24,10 @@ export default async function TopicPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Get topic with tags
+  // Get topic with tags - simplified query without complex relationships
   const { data: topic, error: topicError }: { data: any; error: any } = await supabase
     .from('topics')
-    .select(`
-      *,
-      author:author_id(username, avatar_url, reputation),
-      category:categories(name, slug, color, icon),
-      topic_tags(tags(id, name, slug, color))
-    `)
+    .select('*')
     .eq('slug', slug)
     .single();
 
@@ -42,8 +37,37 @@ export default async function TopicPage({
   }
 
   if (!topic) {
+    console.error('Topic not found for slug:', slug);
     notFound();
   }
+
+  // Get author separately
+  const { data: author } = await supabase
+    .from('profiles')
+    .select('username, avatar_url, reputation')
+    .eq('id', topic.author_id)
+    .single();
+
+  // Get category separately
+  const { data: category } = await supabase
+    .from('categories')
+    .select('name, slug, color, icon')
+    .eq('id', topic.category_id)
+    .single();
+
+  // Get topic tags separately
+  const { data: tagData } = await supabase
+    .from('topic_tags')
+    .select('tags(id, name, slug, color)')
+    .eq('topic_id', topic.id);
+
+  // Restructure topic data to match expected format
+  const enrichedTopic = {
+    ...topic,
+    author,
+    category,
+    topic_tags: tagData || [],
+  };
 
   // Increment view count
   try {
@@ -66,16 +90,35 @@ export default async function TopicPage({
     .select('*')
     .eq('topic_id', topic.id);
 
-  // Get replies with user vote info
+  // Get replies without complex relationships
   const { data: replies }: { data: any } = await supabase
     .from('replies')
-    .select(`
-      *,
-      author:profiles!replies_author_id_fkey(username, avatar_url, reputation)
-    `)
+    .select('*')
     .eq('topic_id', topic.id)
     .order('is_solution', { ascending: false })
     .order('created_at', { ascending: true });
+
+  // Get reply authors separately if needed
+  const replyAuthorIds = replies?.map((r: any) => r.author_id).filter(Boolean) || [];
+  let replyAuthors: any = {};
+  if (replyAuthorIds.length > 0) {
+    const { data: authors } = await supabase
+      .from('profiles')
+      .select('id, username, avatar_url, reputation')
+      .in('id', [...new Set(replyAuthorIds)]);
+    
+    if (authors) {
+      authors.forEach((a: any) => {
+        replyAuthors[a.id] = a;
+      });
+    }
+  }
+
+  // Enrich replies with author data
+  const enrichedReplies = (replies || []).map((reply: any) => ({
+    ...reply,
+    author: replyAuthors[reply.author_id],
+  }));
 
   // Get reply attachments
   const { data: replyAttachments } = await supabase
@@ -141,15 +184,19 @@ export default async function TopicPage({
   const isAdmin = userProfile?.role === 'admin';
 
   // Check if topic has a solution
-  const hasSolution = replies?.some((r: any) => r.is_solution);
+  const hasSolution = enrichedReplies?.some((r: any) => r.is_solution);
+
+  // Use enriched data for rendering
+  const topicWithRelations = enrichedTopic;
+  const replies = enrichedReplies;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
-        <Link href={`/forum/category/${(topic.category as any)?.slug}`}>
+        <Link href={`/forum/category/${category?.slug}`}>
           <Button variant="ghost" size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Natrag na {(topic.category as any)?.name}
+            Natrag na {category?.name}
           </Button>
         </Link>
 
@@ -172,11 +219,11 @@ export default async function TopicPage({
               <span
                 className="px-3 py-1 text-sm font-semibold rounded-full"
                 style={{
-                  backgroundColor: (topic.category as any)?.color + '20',
-                  color: (topic.category as any)?.color,
+                  backgroundColor: category?.color + '20',
+                  color: category?.color,
                 }}
               >
-                {(topic.category as any)?.icon} {(topic.category as any)?.name}
+                {category?.icon} {category?.name}
               </span>
               {topic.topic_tags?.map((topicTag: any) => (
                 <span
@@ -216,11 +263,11 @@ export default async function TopicPage({
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-gray-500 mb-6">
             <div className="flex items-center gap-3">
-              <Link href={`/forum/user/${(topic.author as any)?.username}`}>
+              <Link href={`/forum/user/${author?.username}`}>
                 <Avatar
-                  src={(topic.author as any)?.avatar_url}
-                  alt={(topic.author as any)?.username || 'User'}
-                  username={(topic.author as any)?.username}
+                  src={author?.avatar_url}
+                  alt={author?.username || 'User'}
+                  username={author?.username}
                   size="md"
                 />
               </Link>
@@ -228,10 +275,10 @@ export default async function TopicPage({
                 <span>
                   Autor:{' '}
                   <Link
-                    href={`/forum/user/${(topic.author as any)?.username}`}
+                    href={`/forum/user/${author?.username}`}
                     className="font-semibold hover:underline"
                   >
-                    {(topic.author as any)?.username}
+                    {author?.username}
                   </Link>
                 </span>
                 <span className="text-xs sm:text-sm">
