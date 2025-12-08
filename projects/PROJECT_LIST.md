@@ -44,7 +44,7 @@ This file lists all team projects for the SWE course. Students add their project
 * **Description:** Rezerviraj.me is a website that allows users to easily and quickly book various appointments and services online.
 
 ### 404 - Andrea Težak & Tamara Višić
-* **Project:** Matemagija
+* **Project:** MateSfera
 * **Folder:** `404-atezak-tvisic/`
 * **Status:** In Progress
 * **Description:** Aplikacija za djecu od 6 do 12 s diskalkulijom koja kroz igru razvija matematičke i kognitivne vještine
