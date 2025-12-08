@@ -99,52 +99,63 @@ export default async function BookmarksPage() {
 
       {bookmarks && bookmarks.length > 0 ? (
         <div className="space-y-3">
-          {bookmarks.map((bookmark: any) => (
-            <Card key={bookmark.id} className="hover:shadow-sm transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <span
-                        className="px-2 py-0.5 text-xs font-semibold rounded"
-                        style={{
-                          backgroundColor: bookmark.topics?.category?.color + '20',
-                          color: bookmark.topics?.category?.color,
-                        }}
+          {bookmarks.map((bookmark: any) => {
+            // Skip bookmarks where the topic no longer exists
+            if (!bookmark.topics) {
+              return null;
+            }
+
+            return (
+              <Card key={bookmark.id} className="hover:shadow-sm transition-shadow">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        {bookmark.topics.category && (
+                          <span
+                            className="px-2 py-0.5 text-xs font-semibold rounded"
+                            style={{
+                              backgroundColor: bookmark.topics.category.color + '20',
+                              color: bookmark.topics.category.color,
+                            }}
+                          >
+                            {bookmark.topics.category.name}
+                          </span>
+                        )}
+                        {bookmark.topics.has_solution && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded">
+                            <CheckCircle className="w-3 h-3" />
+                            Rijeseno
+                          </span>
+                        )}
+                      </div>
+                      <Link
+                        href={`/forum/topic/${bookmark.topics.slug}`}
+                        className="text-lg font-semibold hover:text-blue-600 dark:hover:text-blue-400 transition-colors block line-clamp-2"
                       >
-                        {bookmark.topics?.category?.name}
-                      </span>
-                      {bookmark.topics?.has_solution && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded">
-                          <CheckCircle className="w-3 h-3" />
-                          Rijeseno
+                        {bookmark.topics.title}
+                      </Link>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500 mt-2">
+                        {bookmark.topics.author?.username && (
+                          <span>od {bookmark.topics.author.username}</span>
+                        )}
+                        <span className="flex items-center gap-1">
+                          <MessageSquare className="w-4 h-4" />
+                          {bookmark.topics.reply_count || 0}
                         </span>
-                      )}
+                        <span>{bookmark.topics.view_count || 0} pregleda</span>
+                      </div>
                     </div>
-                    <Link
-                      href={`/forum/topic/${bookmark.topics?.slug}`}
-                      className="text-lg font-semibold hover:text-blue-600 dark:hover:text-blue-400 transition-colors block line-clamp-2"
-                    >
-                      {bookmark.topics?.title}
-                    </Link>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500 mt-2">
-                      <span>od {bookmark.topics?.author?.username}</span>
-                      <span className="flex items-center gap-1">
-                        <MessageSquare className="w-4 h-4" />
-                        {bookmark.topics?.reply_count}
-                      </span>
-                      <span>{bookmark.topics?.view_count} pregleda</span>
-                    </div>
+                    <BookmarkButton
+                      topicId={bookmark.topics.id}
+                      initialBookmarked={true}
+                      size="sm"
+                    />
                   </div>
-                  <BookmarkButton
-                    topicId={bookmark.topics?.id}
-                    initialBookmarked={true}
-                    size="sm"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       ) : (
         <Card>
