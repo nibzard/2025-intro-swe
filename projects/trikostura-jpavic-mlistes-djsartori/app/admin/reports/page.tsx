@@ -51,7 +51,7 @@ export default async function ReportsPage({
     .from('reports')
     .select(`
       *,
-      reporter:profiles!reports_reporter_id_fkey(username, avatar_url),
+      reporter:profiles!reporter_id(username, avatar_url),
       topic:topics(id, title, slug),
       reply:replies(id, content, topic_id)
     `)
