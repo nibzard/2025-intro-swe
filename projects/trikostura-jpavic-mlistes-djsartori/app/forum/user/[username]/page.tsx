@@ -22,6 +22,9 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
+// Disable caching for profile pages to always show latest data
+export const revalidate = 0;
+
 export default async function Page({ params }: PageProps) {
   const { username } = await params;
   const supabase = await createServerSupabaseClient();
@@ -50,26 +53,52 @@ export default async function Page({ params }: PageProps) {
     : { isFollowing: false };
 
   // Get user's topics
-  const { data: topics } = await (supabase as any)
+  const { data: topicsData } = await (supabase as any)
     .from('topics')
-    .select(`
-      *,
-      category:categories(name, slug, color)
-    `)
+    .select('*')
     .eq('author_id', profile.id)
     .order('created_at', { ascending: false })
     .limit(10);
 
+  // Get categories for topics
+  let topics: any[] = [];
+  if (topicsData && topicsData.length > 0) {
+    const categoryIds = [...new Set(topicsData.map((t: any) => t.category_id))];
+    const { data: categoriesData } = await supabase
+      .from('categories')
+      .select('id, name, slug, color')
+      .in('id', categoryIds);
+
+    const categoriesMap = new Map(categoriesData?.map((c: any) => [c.id, c]));
+    topics = topicsData.map((topic: any) => ({
+      ...topic,
+      category: categoriesMap.get(topic.category_id) || null,
+    }));
+  }
+
   // Get user's recent replies
-  const { data: replies } = await (supabase as any)
+  const { data: repliesData } = await (supabase as any)
     .from('replies')
-    .select(`
-      *,
-      topic:topics(title, slug)
-    `)
+    .select('*')
     .eq('author_id', profile.id)
     .order('created_at', { ascending: false })
     .limit(10);
+
+  // Get topics for replies
+  let replies: any[] = [];
+  if (repliesData && repliesData.length > 0) {
+    const topicIds = [...new Set(repliesData.map((r: any) => r.topic_id))];
+    const { data: topicsForReplies } = await supabase
+      .from('topics')
+      .select('id, title, slug')
+      .in('id', topicIds);
+
+    const topicsMap = new Map(topicsForReplies?.map((t: any) => [t.id, t]));
+    replies = repliesData.map((reply: any) => ({
+      ...reply,
+      topic: topicsMap.get(reply.topic_id) || null,
+    }));
+  }
 
   // Calculate statistics
   const topicCount = topics?.length || 0;
