@@ -51,7 +51,6 @@ export default async function ReportsPage({
     .from('reports')
     .select(`
       *,
-      reporter:profiles!reporter_id(username, avatar_url),
       topic:topics(id, title, slug),
       reply:replies(id, content, topic_id)
     `)
@@ -61,7 +60,21 @@ export default async function ReportsPage({
     query = query.eq('status', status);
   }
 
-  const { data: reports } = await query;
+  const { data: reports, error: reportsError } = await query;
+
+  // Fetch reporter info separately if reports exist
+  if (reports && reports.length > 0) {
+    const reporterIds = [...new Set(reports.map((r: any) => r.reporter_id))];
+    const { data: reporters } = await supabase
+      .from('profiles')
+      .select('id, username, avatar_url')
+      .in('id', reporterIds);
+
+    // Attach reporter info to reports
+    reports.forEach((report: any) => {
+      report.reporter = reporters?.find((r: any) => r.id === report.reporter_id) || null;
+    });
+  }
 
   // Get counts by status
   const { data: allReports } = await (supabase as any)
