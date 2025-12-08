@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare, TrendingUp } from 'lucide-react';
+import { MessageSquare, TrendingUp, Flame, CheckCircle, Clock, Filter } from 'lucide-react';
 import { formatDistanceToNow } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import type { Category, Topic, Profile } from '@/types/database';
 
 interface TopicWithAuthor extends Topic {
@@ -37,7 +38,18 @@ interface TopicWithCategoryAndAuthor extends Topic {
 // Revalidate every 60 seconds
 export const revalidate = 60;
 
-export default async function ForumPage() {
+const TOPICS_PER_PAGE = 15;
+
+export default async function ForumPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; filter?: string }>;
+}) {
+  const { page, filter } = await searchParams;
+  const currentPage = parseInt(page || '1', 10);
+  const currentFilter = filter || 'all'; // all, solved, unsolved
+  const offset = (currentPage - 1) * TOPICS_PER_PAGE;
+
   const supabase = await createServerSupabaseClient();
 
   // Get categories
@@ -84,17 +96,45 @@ export default async function ForumPage() {
     latest_topic: latestTopicByCategory.get(category.id) || null,
   }));
 
-  // Get recent topics with tags
-  const { data: recentTopics } = await supabase
+  // Get trending topics (most views + replies in last 7 days)
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  const { data: trendingTopics } = await supabase
+    .from('topics')
+    .select(`
+      *,
+      author:profiles!topics_author_id_fkey(username, avatar_url),
+      category:categories(name, slug, color)
+    `)
+    .gte('created_at', sevenDaysAgo.toISOString())
+    .order('view_count', { ascending: false })
+    .limit(5);
+
+  // Build query for recent topics with filters and pagination
+  let recentTopicsQuery = supabase
     .from('topics')
     .select(`
       *,
       author:profiles!topics_author_id_fkey(username, avatar_url),
       category:categories(name, slug, color),
       topic_tags(tags(id, name, slug, color))
-    `)
+    `, { count: 'exact' });
+
+  // Apply filter
+  if (currentFilter === 'solved') {
+    recentTopicsQuery = recentTopicsQuery.eq('has_solution', true);
+  } else if (currentFilter === 'unsolved') {
+    recentTopicsQuery = recentTopicsQuery.or('has_solution.is.null,has_solution.eq.false');
+  }
+
+  // Apply ordering and pagination
+  const { data: recentTopics, count: totalTopics } = await recentTopicsQuery
+    .order('is_pinned', { ascending: false })
     .order('created_at', { ascending: false })
-    .limit(10);
+    .range(offset, offset + TOPICS_PER_PAGE - 1);
+
+  const totalPages = Math.ceil((totalTopics || 0) / TOPICS_PER_PAGE);
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -156,11 +196,85 @@ export default async function ForumPage() {
         ))}
       </div>
 
-      <div className="mt-8 sm:mt-12">
-        <div className="flex items-center gap-2 mb-4 sm:mb-6">
-          <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Nedavne Teme</h2>
+      {/* Trending Topics Section */}
+      {trendingTopics && trendingTopics.length > 0 && (
+        <div className="mt-8 sm:mt-12">
+          <div className="flex items-center gap-2 mb-4 sm:mb-6">
+            <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Popularno</h2>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {(trendingTopics as unknown as TopicWithCategoryAndAuthor[])?.slice(0, 3).map((topic, index) => (
+              <Card key={topic.id} className="hover-lift cursor-pointer border-gray-200 dark:border-gray-700 bg-gradient-to-br from-orange-50 to-white dark:from-orange-900/10 dark:to-gray-800">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl font-bold text-orange-500/50">#{index + 1}</div>
+                    <div className="flex-1 min-w-0">
+                      <Link
+                        href={`/forum/topic/${topic.slug}`}
+                        className="text-sm sm:text-base font-bold hover:text-primary transition-colors block line-clamp-2 text-gray-900 dark:text-white"
+                      >
+                        {topic.title}
+                      </Link>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                        <span>{topic.view_count} pregleda</span>
+                        <span>•</span>
+                        <span>{topic.reply_count} odgovora</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
+      )}
+
+      {/* Recent Topics Section with Filters */}
+      <div className="mt-8 sm:mt-12">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6">
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Sve Teme</h2>
+            <span className="text-sm text-gray-500">({totalTopics || 0})</span>
+          </div>
+
+          {/* Filters */}
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-gray-400" />
+            <div className="flex gap-1">
+              <Link href="/forum?filter=all">
+                <Button
+                  variant={currentFilter === 'all' ? 'default' : 'outline'}
+                  size="sm"
+                  className="text-xs"
+                >
+                  Sve
+                </Button>
+              </Link>
+              <Link href="/forum?filter=unsolved">
+                <Button
+                  variant={currentFilter === 'unsolved' ? 'default' : 'outline'}
+                  size="sm"
+                  className="text-xs"
+                >
+                  Neriješeno
+                </Button>
+              </Link>
+              <Link href="/forum?filter=solved">
+                <Button
+                  variant={currentFilter === 'solved' ? 'default' : 'outline'}
+                  size="sm"
+                  className="text-xs"
+                >
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  Riješeno
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+
         <div className="space-y-2 sm:space-y-3">
           {(recentTopics as unknown as TopicWithCategoryAndAuthor[])?.map((topic) => (
             <Card key={topic.id} className="hover-lift cursor-pointer border-gray-200 dark:border-gray-700">
@@ -178,6 +292,12 @@ export default async function ForumPage() {
                     </span>
                     {topic.is_pinned && (
                       <span className="text-sm">📌</span>
+                    )}
+                    {(topic as any).has_solution && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                        <CheckCircle className="w-3 h-3" />
+                        Riješeno
+                      </span>
                     )}
                     {(topic as any).topic_tags?.map((topicTag: any) => (
                       <span
@@ -214,7 +334,67 @@ export default async function ForumPage() {
               </CardContent>
             </Card>
           ))}
+
+          {(!recentTopics || recentTopics.length === 0) && (
+            <Card className="border-gray-200 dark:border-gray-700">
+              <CardContent className="p-8 text-center">
+                <p className="text-gray-500">Nema tema za prikaz</p>
+              </CardContent>
+            </Card>
+          )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-6">
+            <Link
+              href={`/forum?page=${currentPage - 1}${currentFilter !== 'all' ? `&filter=${currentFilter}` : ''}`}
+              className={currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
+            >
+              <Button variant="outline" size="sm" disabled={currentPage <= 1}>
+                Prethodna
+              </Button>
+            </Link>
+
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                return (
+                  <Link
+                    key={pageNum}
+                    href={`/forum?page=${pageNum}${currentFilter !== 'all' ? `&filter=${currentFilter}` : ''}`}
+                  >
+                    <Button
+                      variant={currentPage === pageNum ? 'default' : 'outline'}
+                      size="sm"
+                      className="w-8 h-8 p-0"
+                    >
+                      {pageNum}
+                    </Button>
+                  </Link>
+                );
+              })}
+            </div>
+
+            <Link
+              href={`/forum?page=${currentPage + 1}${currentFilter !== 'all' ? `&filter=${currentFilter}` : ''}`}
+              className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''}
+            >
+              <Button variant="outline" size="sm" disabled={currentPage >= totalPages}>
+                Sljedeća
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
