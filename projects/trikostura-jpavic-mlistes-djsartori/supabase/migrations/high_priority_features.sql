@@ -17,6 +17,11 @@ CREATE TABLE IF NOT EXISTS bookmarks (
 -- Enable RLS
 ALTER TABLE bookmarks ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view own bookmarks" ON bookmarks;
+DROP POLICY IF EXISTS "Users can create own bookmarks" ON bookmarks;
+DROP POLICY IF EXISTS "Users can delete own bookmarks" ON bookmarks;
+
 -- Users can see their own bookmarks
 CREATE POLICY "Users can view own bookmarks" ON bookmarks
   FOR SELECT USING (auth.uid() = user_id);
@@ -36,8 +41,17 @@ CREATE INDEX IF NOT EXISTS idx_bookmarks_topic_id ON bookmarks(topic_id);
 -- =====================================================
 -- REPORTS
 -- =====================================================
-CREATE TYPE report_status AS ENUM ('pending', 'reviewed', 'resolved', 'dismissed');
-CREATE TYPE report_type AS ENUM ('spam', 'harassment', 'inappropriate', 'misinformation', 'other');
+DO $$ BEGIN
+  CREATE TYPE report_status AS ENUM ('pending', 'reviewed', 'resolved', 'dismissed');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE report_type AS ENUM ('spam', 'harassment', 'inappropriate', 'misinformation', 'other');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
 
 CREATE TABLE IF NOT EXISTS reports (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
