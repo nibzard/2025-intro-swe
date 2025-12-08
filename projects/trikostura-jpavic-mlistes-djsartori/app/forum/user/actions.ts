@@ -106,17 +106,26 @@ export async function getFollowers(userId: string, limit = 20, offset = 0) {
 
   const { data: follows, count } = await (supabase as any)
     .from('user_follows')
-    .select(`
-      id,
-      created_at,
-      follower:profiles!user_follows_follower_id_fkey(id, username, avatar_url, full_name)
-    `, { count: 'exact' })
+    .select('id, created_at, follower_id', { count: 'exact' })
     .eq('following_id', userId)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
+  if (!follows || follows.length === 0) {
+    return { followers: [], total: count || 0 };
+  }
+
+  // Get unique follower IDs
+  const followerIds = follows.map((f: any) => f.follower_id);
+
+  // Fetch follower profiles separately
+  const { data: followersData } = await supabase
+    .from('profiles')
+    .select('id, username, avatar_url, full_name')
+    .in('id', followerIds);
+
   return {
-    followers: follows?.map((f: any) => f.follower) || [],
+    followers: followersData || [],
     total: count || 0,
   };
 }
@@ -126,17 +135,26 @@ export async function getFollowing(userId: string, limit = 20, offset = 0) {
 
   const { data: follows, count } = await (supabase as any)
     .from('user_follows')
-    .select(`
-      id,
-      created_at,
-      following:profiles!user_follows_following_id_fkey(id, username, avatar_url, full_name)
-    `, { count: 'exact' })
+    .select('id, created_at, following_id', { count: 'exact' })
     .eq('follower_id', userId)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
+  if (!follows || follows.length === 0) {
+    return { following: [], total: count || 0 };
+  }
+
+  // Get unique following IDs
+  const followingIds = follows.map((f: any) => f.following_id);
+
+  // Fetch following profiles separately
+  const { data: followingData } = await supabase
+    .from('profiles')
+    .select('id, username, avatar_url, full_name')
+    .in('id', followingIds);
+
   return {
-    following: follows?.map((f: any) => f.following) || [],
+    following: followingData || [],
     total: count || 0,
   };
 }
