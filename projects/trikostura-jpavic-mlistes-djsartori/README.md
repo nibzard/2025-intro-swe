@@ -14,20 +14,20 @@ Online forum za studente svih sveučilišta u Hrvatskoj. Korisnici mogu stvarati
 - ✅ **Glasanje** - Upvote/downvote sistem za odgovore
 - ✅ **Pretraga** - Full-text pretraga kroz teme po naslovu i sadržaju
 - ✅ **User profili** - Kompletni profili sa statistikama i aktivnostima
+- ✅ **Editiranje profila** - Uređivanje avatara, biografije i drugih podataka
+- ✅ **Admin panel** - Kompletan admin panel za upravljanje korisnicima, temama, odgovorima, kategorijama i analitiku
+- ✅ **Notifikacije** - Real-time obavijesti za nove odgovore, upvote-ove i prikvačene teme
+- ✅ **Markdown podrška** - Rich text editor sa live preview i syntax highlighting
 - ✅ **Responsive dizajn** - Prilagođeno za mobilne uređaje
 - ✅ **Dark mode podrška** - Svijetla i tamna tema
 - ✅ **Loading states** - Skeleton screens za bolji UX
 - ✅ **Performance optimizacije** - ISR caching, image optimization
 
-### Za implementaciju 🔨
-- ⏳ **Editiranje profila** - Mogućnost uređivanja korisničkih podataka
-- ⏳ **Admin panel** - Upravljanje korisnicima i sadržajem
-- ⏳ **Notifikacije** - Real-time obavijesti za odgovore i glasove
-
 ## 🛠 Tech Stack
 
 - **Frontend:** Next.js 16.0.7 (App Router), TypeScript, React 19.2.1
 - **Styling:** Tailwind CSS 3.4.18, shadcn/ui komponente
+- **Markdown:** react-markdown, remark-gfm, rehype-sanitize, react-syntax-highlighter
 - **Validation:** Zod 4.1.13
 - **Backend:** Supabase (PostgreSQL) sa Row-Level Security
 - **Authentication:** Supabase Auth sa SSR (@supabase/ssr)
@@ -78,10 +78,15 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=tvoj-anon-key
 1. Idi u Supabase dashboard > **SQL Editor**
 2. Kopiraj cijeli sadržaj iz `supabase/schema.sql`
 3. Zalijepi u SQL Editor i pokreni
+4. Kopiraj cijeli sadržaj iz `supabase/notifications.sql`
+5. Zalijepi u SQL Editor i pokreni
 
-Ovo će kreirati sve tablice, politike, triggere i default kategorije.
+Ovo će kreirati sve tablice, politike, triggere, funkcije i default kategorije.
 
-**⚠️ Važno:** Idi na **Authentication > Providers > Email** i **isključi** "Confirm email" ako želiš testirati registraciju bez email potvrde.
+**⚠️ Važno:**
+- Idi na **Authentication > Providers > Email** i **isključi** "Confirm email" ako želiš testirati registraciju bez email potvrde.
+- Notifications SQL mora biti pokrenut nakon schema.sql jer ovisi o tablicama iz schema.sql
+- **Za resetiranje lozinke:** MORA biti isključeno "Secure email change enabled" u Supabase. Vidi [SETUP.md](SETUP.md) za detalje.
 
 ### 6. Pokreni development server
 
@@ -108,12 +113,21 @@ Nakon registracije:
     /category/[slug] # Kategorije
     /topic/[slug]    # Pojedinačna tema
     /user/[username] # User profili
+      /edit          # Uređivanje profila
     /search          # Pretraga tema
     /new             # Nova tema
     loading.tsx      # Loading states
+  /admin             # Admin panel
+    /users           # Upravljanje korisnicima
+    /topics          # Moderacija tema
+    /replies         # Moderacija odgovora
+    /categories      # Upravljanje kategorijama
+    /analytics       # Analitika i statistika
+  /notifications     # Stranica sa svim obavijestima
 /components
   /ui                # shadcn komponente
-  /forum             # Forum komponente
+  /forum             # Forum komponente (markdown editor/renderer, forms, cards)
+  /notifications     # Notification komponente (bell, list)
   /layout            # Navbar
 /lib
   /supabase          # Supabase client (SSR & client)
@@ -121,6 +135,7 @@ Nakon registracije:
 /types               # TypeScript types
 /supabase
   schema.sql         # Database schema
+  notifications.sql  # Notification system schema
 ```
 
 ## 🚀 Deployment na Vercel
@@ -143,12 +158,30 @@ Nakon registracije:
 - **Odgovori**: Komentiranje sa threaded replies
 - **Glasanje**: Upvote/downvote sistem
 - **Pretraga**: Full-text pretraga po naslovu i sadržaju
+- **Markdown**: Rich text editor sa live preview, syntax highlighting i pomoć
+
+### Notifikacije
+- Real-time obavijesti (polling svake 30 sekundi)
+- Obavijesti za nove odgovore na teme
+- Obavijesti za odgovore na komentare
+- Obavijesti za upvote-ove
+- Obavijesti za prikvačene teme
+- Bell icon u navbaru sa unread count
+- Označi kao pročitano / Izbriši notifikaciju
 
 ### User Profile
 - Statistike korisnika (teme, odgovori, reputacija)
 - Najnovije teme i odgovori
 - Role badges (Admin, Moderator)
 - Datum pridruživanja
+- Uređivanje profila (avatar, biografija, fakultet, smjer)
+
+### Admin Panel
+- Upravljanje korisnicima (ban, promote, role assignment)
+- Moderacija tema (pin, lock, delete)
+- Moderacija odgovora (delete)
+- Upravljanje kategorijama (CRUD)
+- Analitika i statistika platforme
 
 ### UI/UX
 - Skeleton loading states
@@ -159,6 +192,14 @@ Nakon registracije:
 ## 📄 Status
 
 **✅ Production Ready** - All core features implemented and optimized
+
+### 🆕 Najnovija Ažuriranja
+- ✨ Dodan Markdown editor sa live preview i syntax highlighting
+- ✨ Integrirani notification sistem sa real-time updates
+- ✨ Admin panel potpuno funkcionalan
+- ✨ Dodano uređivanje profila
+- 🐛 Riješen middleware deprecation error (Next.js 16)
+- 🐛 Riješen supabase.rpc() error na topic stranicama
 
 ---
 

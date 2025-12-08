@@ -27,7 +27,34 @@
 4. Paste it into the SQL Editor and run it
 5. This will create all tables, policies, functions, and default categories
 
-## 4. Install Dependencies and Run
+## 4. Authentication Configuration
+
+### Password Reset Configuration
+
+**IMPORTANT:** Password reset requires implicit flow (hash-based tokens). PKCE does not work for server-initiated password reset.
+
+1. Go to your Supabase Dashboard
+2. Navigate to **Authentication > Providers > Email**
+3. **DISABLE** "Secure email change enabled (Recommended)"
+4. Click **Save**
+
+**Why?** Password reset is initiated via email (server-side), which means there's no client-side `code_verifier` for PKCE. The implicit flow sends tokens in the URL hash fragment which works correctly for password reset.
+
+**Note:** You can keep PKCE enabled for regular login/signup - only password reset needs the implicit flow.
+
+### URL Configuration
+
+Set the correct redirect URLs:
+- Go to **Authentication > URL Configuration**
+- For local development: `http://localhost:3000/auth/callback`
+- For production: `https://2025-intro-swe-bice.vercel.app/auth/callback`
+
+### Optional: Disable Email Confirmation (for testing)
+
+- Go to **Authentication > Providers > Email**
+- **Disable** "Confirm email" if you want to test registration without email confirmation
+
+## 5. Install Dependencies and Run
 
 ```bash
 # Install dependencies
@@ -39,7 +66,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to see your forum!
 
-## 5. Create Admin User (Optional)
+## 6. Create Admin User (Optional)
 
 After registering your first user, you can make them an admin:
 
