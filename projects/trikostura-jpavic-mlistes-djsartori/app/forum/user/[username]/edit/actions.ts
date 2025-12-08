@@ -107,7 +107,8 @@ export async function updateProfile(formData: FormData) {
     .single();
 
   revalidatePath(`/forum/user/${profile.username}`);
-  redirect(`/forum/user/${profile.username}`);
+
+  return { success: true, username: profile.username };
 }
 
 export async function uploadProfileImage(formData: FormData) {
