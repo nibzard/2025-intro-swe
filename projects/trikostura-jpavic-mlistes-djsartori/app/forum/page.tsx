@@ -100,26 +100,38 @@ export default async function ForumPage({
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-  const { data: trendingTopics } = await supabase
+  const { data: trendingTopicsData } = await supabase
     .from('topics')
-    .select(`
-      *,
-      author:profiles!topics_author_id_fkey(username, avatar_url),
-      category:categories(name, slug, color)
-    `)
+    .select('*')
     .gte('created_at', sevenDaysAgo.toISOString())
     .order('view_count', { ascending: false })
     .limit(5);
 
+  // Manually fetch related data for trending topics
+  let trendingTopics: TopicWithCategoryAndAuthor[] = [];
+  if (trendingTopicsData && trendingTopicsData.length > 0) {
+    const authorIds = [...new Set(trendingTopicsData.map(t => t.author_id))];
+    const categoryIds = [...new Set(trendingTopicsData.map(t => t.category_id))];
+
+    const [authorsRes, categoriesRes] = await Promise.all([
+      supabase.from('profiles').select('id, username, avatar_url').in('id', authorIds),
+      supabase.from('categories').select('id, name, slug, color').in('id', categoryIds),
+    ]);
+
+    const authorsMap = new Map(authorsRes.data?.map(a => [a.id, a]));
+    const categoriesMap = new Map(categoriesRes.data?.map(c => [c.id, c]));
+
+    trendingTopics = trendingTopicsData.map(topic => ({
+      ...topic,
+      author: authorsMap.get(topic.author_id) || null,
+      category: categoriesMap.get(topic.category_id) || null,
+    }));
+  }
+
   // Build query for recent topics with filters and pagination
   let recentTopicsQuery = supabase
     .from('topics')
-    .select(`
-      *,
-      author:profiles!topics_author_id_fkey(username, avatar_url),
-      category:categories(name, slug, color),
-      topic_tags(tags(id, name, slug, color))
-    `, { count: 'exact' });
+    .select('*', { count: 'exact' });
 
   // Apply filter
   if (currentFilter === 'solved') {
@@ -129,10 +141,31 @@ export default async function ForumPage({
   }
 
   // Apply ordering and pagination
-  const { data: recentTopics, count: totalTopics } = await recentTopicsQuery
+  const { data: topicsData, count: totalTopics } = await recentTopicsQuery
     .order('is_pinned', { ascending: false })
     .order('created_at', { ascending: false })
     .range(offset, offset + TOPICS_PER_PAGE - 1);
+
+  // Manually fetch related data
+  let recentTopics: TopicWithCategoryAndAuthor[] = [];
+  if (topicsData && topicsData.length > 0) {
+    const authorIds = [...new Set(topicsData.map(t => t.author_id))];
+    const categoryIds = [...new Set(topicsData.map(t => t.category_id))];
+
+    const [authorsRes, categoriesRes] = await Promise.all([
+      supabase.from('profiles').select('id, username, avatar_url').in('id', authorIds),
+      supabase.from('categories').select('id, name, slug, color').in('id', categoryIds),
+    ]);
+
+    const authorsMap = new Map(authorsRes.data?.map(a => [a.id, a]));
+    const categoriesMap = new Map(categoriesRes.data?.map(c => [c.id, c]));
+
+    recentTopics = topicsData.map(topic => ({
+      ...topic,
+      author: authorsMap.get(topic.author_id) || null,
+      category: categoriesMap.get(topic.category_id) || null,
+    }));
+  }
 
   const totalPages = Math.ceil((totalTopics || 0) / TOPICS_PER_PAGE);
 
@@ -299,18 +332,6 @@ export default async function ForumPage({
                         Riješeno
                       </span>
                     )}
-                    {(topic as any).topic_tags?.map((topicTag: any) => (
-                      <span
-                        key={topicTag.tags.id}
-                        className="px-2 py-0.5 text-xs font-medium rounded flex-shrink-0"
-                        style={{
-                          backgroundColor: topicTag.tags.color ? topicTag.tags.color + '15' : '#e5e7eb',
-                          color: topicTag.tags.color || '#6b7280',
-                        }}
-                      >
-                        {topicTag.tags.name}
-                      </span>
-                    ))}
                   </div>
                   <Link
                     href={`/forum/topic/${topic.slug}`}
