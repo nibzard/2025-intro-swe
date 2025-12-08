@@ -157,11 +157,11 @@ export async function verifyEmailCode(formData: FormData) {
       .from('profiles')
       .update({
         email_verified: true,
-        email_verified_at: new Date().toISOString(),
       })
       .eq('id', user.id);
 
     if (updateError) {
+      console.error('Profile update error:', updateError);
       return { success: false, error: 'Greška pri ažuriranju profila' };
     }
 
