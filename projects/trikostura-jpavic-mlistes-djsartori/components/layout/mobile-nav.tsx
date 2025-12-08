@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, Home, Search, Settings, User, LogOut, Plus, Users } from 'lucide-react';
+import { Menu, X, Home, Search, Settings, User, LogOut, Plus, Users, Bookmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
 import { logout } from '@/app/auth/actions';
@@ -106,6 +106,15 @@ export function MobileNav({ user, profile }: MobileNavProps) {
                     >
                       <Search className="w-5 h-5" />
                       Pretraži
+                    </Link>
+
+                    <Link
+                      href="/forum/bookmarks"
+                      onClick={closeMenu}
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors"
+                    >
+                      <Bookmark className="w-5 h-5" />
+                      Moje oznake
                     </Link>
 
                     {profile?.role === 'admin' && (
