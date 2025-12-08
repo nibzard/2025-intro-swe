@@ -42,7 +42,7 @@ export default async function ReportsPage({
     .eq('id', user.id)
     .single();
 
-  if (profile?.role !== 'admin') {
+  if (!profile || (profile as any).role !== 'admin') {
     redirect('/forum');
   }
 

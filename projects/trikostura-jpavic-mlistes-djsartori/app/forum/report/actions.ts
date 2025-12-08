@@ -89,7 +89,7 @@ export async function getReports(status?: string) {
     .eq('id', user.id)
     .single();
 
-  if (profile?.role !== 'admin') {
+  if (!profile || (profile as any).role !== 'admin') {
     return { reports: [], error: 'Neautorizirano' };
   }
 
@@ -136,7 +136,7 @@ export async function updateReportStatus(
     .eq('id', user.id)
     .single();
 
-  if (profile?.role !== 'admin') {
+  if (!profile || (profile as any).role !== 'admin') {
     return { success: false, error: 'Neautorizirano' };
   }
 
