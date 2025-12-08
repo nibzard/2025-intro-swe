@@ -61,7 +61,7 @@ export async function submitReport(formData: FormData) {
 
     if (error) {
       console.error('Report error:', error);
-      return { success: false, error: 'Greska pri slanju prijave' };
+      return { success: false, error: `Greska pri slanju prijave: ${error.message}` };
     }
 
     return { success: true };
