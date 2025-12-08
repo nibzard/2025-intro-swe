@@ -276,7 +276,7 @@ export default async function ForumPage({
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-gray-400" />
             <div className="flex gap-1">
-              <Link href="/forum?filter=all">
+              <Link href="/forum?filter=all" scroll={false}>
                 <Button
                   variant={currentFilter === 'all' ? 'default' : 'outline'}
                   size="sm"
@@ -285,7 +285,7 @@ export default async function ForumPage({
                   Sve
                 </Button>
               </Link>
-              <Link href="/forum?filter=unsolved">
+              <Link href="/forum?filter=unsolved" scroll={false}>
                 <Button
                   variant={currentFilter === 'unsolved' ? 'default' : 'outline'}
                   size="sm"
@@ -294,7 +294,7 @@ export default async function ForumPage({
                   Neriješeno
                 </Button>
               </Link>
-              <Link href="/forum?filter=solved">
+              <Link href="/forum?filter=solved" scroll={false}>
                 <Button
                   variant={currentFilter === 'solved' ? 'default' : 'outline'}
                   size="sm"
