@@ -120,6 +120,9 @@ export default async function TopicPage({
     author: replyAuthors[reply.author_id],
   }));
 
+  // Use enriched replies for rest of code
+  const repliesList = enrichedReplies;
+
   // Get reply attachments
   const { data: replyAttachments } = await supabase
     .from('attachments')
@@ -127,7 +130,7 @@ export default async function TopicPage({
     .in('reply_id', replies?.map((r: any) => r.id) || []);
 
   // Map attachments to replies
-  const repliesWithAttachments = replies?.map((reply: any) => ({
+  const repliesWithAttachments = repliesList?.map((reply: any) => ({
     ...reply,
     attachments: replyAttachments?.filter((att: any) => att.reply_id === reply.id) || [],
   }));
@@ -137,14 +140,14 @@ export default async function TopicPage({
   let isBookmarked = false;
 
   if (user) {
-    if (replies) {
+    if (repliesList) {
       const { data: votes } = await supabase
         .from('votes')
         .select('reply_id, vote_type')
         .eq('user_id', user.id)
         .in(
           'reply_id',
-          replies.map((r: any) => r.id)
+          repliesList.map((r: any) => r.id)
         );
 
       votes?.forEach((vote: any) => {
@@ -184,11 +187,7 @@ export default async function TopicPage({
   const isAdmin = userProfile?.role === 'admin';
 
   // Check if topic has a solution
-  const hasSolution = enrichedReplies?.some((r: any) => r.is_solution);
-
-  // Use enriched data for rendering
-  const topicWithRelations = enrichedTopic;
-  const replies = enrichedReplies;
+  const hasSolution = repliesList?.some((r: any) => r.is_solution);
 
   return (
     <div className="space-y-6">
@@ -203,11 +202,11 @@ export default async function TopicPage({
         {user && (
           <div className="flex items-center gap-2">
             <BookmarkButton
-              topicId={topic.id}
+              topicId={enrichedTopic.id}
               initialBookmarked={isBookmarked}
               showText
             />
-            <TopicActions topicId={topic.id} isAuthor={isAuthor} />
+            <TopicActions topicId={enrichedTopic.id} isAuthor={isAuthor} />
           </div>
         )}
       </div>
@@ -225,7 +224,7 @@ export default async function TopicPage({
               >
                 {category?.icon} {category?.name}
               </span>
-              {topic.topic_tags?.map((topicTag: any) => (
+              {enrichedTopic.topic_tags?.map((topicTag: any) => (
                 <span
                   key={topicTag.tags.id}
                   className="px-2 py-0.5 text-xs font-medium rounded"
@@ -243,23 +242,23 @@ export default async function TopicPage({
                   Rijeseno
                 </span>
               )}
-              {topic.is_pinned && (
+              {enrichedTopic.is_pinned && (
                 <span className="text-yellow-500">📌 Prikvaceno</span>
               )}
-              {topic.is_locked && (
+              {enrichedTopic.is_locked && (
                 <span className="text-gray-500">🔒 Zakljucano</span>
               )}
             </div>
 
             <TopicControlMenu
-              topic={topic}
+              topic={enrichedTopic}
               isAuthor={isAuthor}
               isAdmin={isAdmin}
               categories={categories || []}
             />
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-bold mb-4">{topic.title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-4">{enrichedTopic.title}</h1>
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-gray-500 mb-6">
             <div className="flex items-center gap-3">
@@ -282,7 +281,7 @@ export default async function TopicPage({
                   </Link>
                 </span>
                 <span className="text-xs sm:text-sm">
-                  {new Date(topic.created_at).toLocaleDateString('hr-HR', {
+                  {new Date(enrichedTopic.created_at).toLocaleDateString('hr-HR', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
@@ -295,34 +294,34 @@ export default async function TopicPage({
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
                 <MessageSquare className="w-4 h-4" />
-                {topic.reply_count} odgovora
+                {enrichedTopic.reply_count} odgovora
               </span>
-              <span>{topic.view_count} pregleda</span>
+              <span>{enrichedTopic.view_count} pregleda</span>
             </div>
           </div>
 
           <EditableTopic
-            topicId={topic.id}
-            title={topic.title}
-            content={topic.content}
+            topicId={enrichedTopic.id}
+            title={enrichedTopic.title}
+            content={enrichedTopic.content}
             isAuthor={isAuthor}
             isAdmin={isAdmin}
-            isLocked={topic.is_locked}
-            editedAt={topic.edited_at}
-            createdAt={topic.created_at}
+            isLocked={enrichedTopic.is_locked}
+            editedAt={enrichedTopic.edited_at}
+            createdAt={enrichedTopic.created_at}
           />
           <AdvancedAttachmentList attachments={topicAttachments || []} />
         </CardContent>
       </Card>
 
       <TopicContent
-        topic={topic}
+        topic={enrichedTopic}
         replies={repliesWithAttachments || []}
         userVotes={userVotes}
         currentUserId={user?.id}
       />
 
-      {topic.is_locked && (
+      {enrichedTopic.is_locked && (
         <Card>
           <CardContent className="p-6 text-center text-gray-500">
             <p>Ova tema je zakljucana i ne mozete dodati nove odgovore.</p>
@@ -330,7 +329,7 @@ export default async function TopicPage({
         </Card>
       )}
 
-      {!user && !topic.is_locked && (
+      {!user && !enrichedTopic.is_locked && (
         <Card>
           <CardContent className="p-6 text-center">
             <p className="text-gray-600 dark:text-gray-400 mb-4">
