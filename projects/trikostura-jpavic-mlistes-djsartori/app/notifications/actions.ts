@@ -89,12 +89,9 @@ export async function getNotifications() {
     return { notifications: [], unreadCount: 0 };
   }
 
-  const { data: notifications, error } = await supabase
+  const { data: notificationData, error } = await supabase
     .from('notifications')
-    .select(`
-      *,
-      actor:actor_id(username, avatar_url)
-    `)
+    .select('*')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(20);
@@ -104,10 +101,32 @@ export async function getNotifications() {
     return { notifications: [], unreadCount: 0 };
   }
 
-  const unreadCount = notifications?.filter((n: any) => !n.is_read).length || 0;
+  if (!notificationData || notificationData.length === 0) {
+    return { notifications: [], unreadCount: 0 };
+  }
+
+  // Get unique actor IDs
+  const actorIds = [...new Set(notificationData.map((n: any) => n.actor_id).filter(Boolean))];
+
+  // Fetch actors separately
+  const { data: actorsData } = await supabase
+    .from('profiles')
+    .select('id, username, avatar_url')
+    .in('id', actorIds);
+
+  // Create a map for quick lookup
+  const actorsMap = new Map((actorsData || []).map((a: any) => [a.id, a]));
+
+  // Combine notifications with actor data
+  const notifications = notificationData.map((n: any) => ({
+    ...n,
+    actor: n.actor_id ? actorsMap.get(n.actor_id) : null,
+  }));
+
+  const unreadCount = notifications.filter((n: any) => !n.is_read).length;
 
   return {
-    notifications: notifications || [],
+    notifications,
     unreadCount,
   };
 }

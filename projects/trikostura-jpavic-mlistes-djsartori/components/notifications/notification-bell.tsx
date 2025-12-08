@@ -42,16 +42,29 @@ export function NotificationBell({
             filter: `user_id=eq.${user.id}`,
           },
           async (payload) => {
-            const { data: newNotification } = await (supabase as any)
+            const { data: newNotificationData } = await (supabase as any)
               .from('notifications')
-              .select(`
-                *,
-                actor:actor_id(username, avatar_url)
-              `)
+              .select('*')
               .eq('id', payload.new.id)
               .single();
 
-            if (newNotification) {
+            if (newNotificationData) {
+              // Fetch actor data if actor_id exists
+              let actor = null;
+              if (newNotificationData.actor_id) {
+                const { data: actorData } = await supabase
+                  .from('profiles')
+                  .select('id, username, avatar_url')
+                  .eq('id', newNotificationData.actor_id)
+                  .single();
+                actor = actorData;
+              }
+
+              const newNotification = {
+                ...newNotificationData,
+                actor,
+              };
+
               setNotifications((prev) => [newNotification, ...prev.slice(0, 19)]);
               setUnreadCount((prev) => prev + 1);
               setHasNewNotification(true);
