@@ -20,7 +20,7 @@ export default async function BookmarksPage() {
     redirect('/auth/login');
   }
 
-  const { data: bookmarks } = await (supabase as any)
+  const { data: bookmarks, error } = await (supabase as any)
     .from('bookmarks')
     .select(`
       id,
@@ -39,6 +39,10 @@ export default async function BookmarksPage() {
     `)
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Bookmarks query error:', error);
+  }
 
   return (
     <div className="space-y-6">
