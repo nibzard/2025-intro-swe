@@ -118,8 +118,8 @@ export default async function ForumPage({
       supabase.from('categories').select('id, name, slug, color').in('id', categoryIds),
     ]);
 
-    const authorsMap = new Map(authorsRes.data?.map(a => [a.id, a]));
-    const categoriesMap = new Map(categoriesRes.data?.map(c => [c.id, c]));
+    const authorsMap = new Map((authorsRes.data as any[] || []).map(a => [a.id, a]));
+    const categoriesMap = new Map((categoriesRes.data as any[] || []).map(c => [c.id, c]));
 
     trendingTopics = (trendingTopicsData as Topic[]).map(topic => ({
       ...topic,
@@ -157,8 +157,8 @@ export default async function ForumPage({
       supabase.from('categories').select('id, name, slug, color').in('id', categoryIds),
     ]);
 
-    const authorsMap = new Map(authorsRes.data?.map(a => [a.id, a]));
-    const categoriesMap = new Map(categoriesRes.data?.map(c => [c.id, c]));
+    const authorsMap = new Map((authorsRes.data as any[] || []).map(a => [a.id, a]));
+    const categoriesMap = new Map((categoriesRes.data as any[] || []).map(c => [c.id, c]));
 
     recentTopics = (topicsData as Topic[]).map(topic => ({
       ...topic,
