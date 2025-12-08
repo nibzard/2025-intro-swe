@@ -61,26 +61,46 @@ export async function register(
   const supabase = await createServerSupabaseClient();
   const adminClient = createAdminClient();
 
-  // Check if username is already taken
-  const { data: existingProfile } = await supabase
+  // Check if username or email is already taken
+  const { data: existingByUsername } = await supabase
     .from('profiles')
-    .select('username, id')
+    .select('username, id, email')
     .eq('username', username)
-    .single();
+    .maybeSingle();
 
-  if (existingProfile) {
-    // Check if the auth user still exists
-    const { data: authUser } = await (adminClient as any).auth.admin.getUserById(existingProfile.id);
+  const { data: existingByEmail } = await supabase
+    .from('profiles')
+    .select('username, id, email')
+    .eq('email', email)
+    .maybeSingle();
+
+  // Check username
+  if (existingByUsername) {
+    const { data: authUser } = await (adminClient as any).auth.admin.getUserById((existingByUsername as any).id);
 
     if (authUser?.user) {
-      // Profile has a valid auth user - username is taken
       return { error: 'Korisničko ime je već zauzeto' };
     } else {
-      // Orphaned profile - delete it to allow re-registration
+      // Orphaned profile - delete it
       await (adminClient as any)
         .from('profiles')
         .delete()
-        .eq('id', existingProfile.id);
+        .eq('id', (existingByUsername as any).id);
+    }
+  }
+
+  // Check email
+  if (existingByEmail) {
+    const { data: authUser } = await (adminClient as any).auth.admin.getUserById((existingByEmail as any).id);
+
+    if (authUser?.user) {
+      return { error: 'Email je već zauzet' };
+    } else {
+      // Orphaned profile - delete it
+      await (adminClient as any)
+        .from('profiles')
+        .delete()
+        .eq('id', (existingByEmail as any).id);
     }
   }
 
