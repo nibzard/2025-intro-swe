@@ -134,6 +134,7 @@ export function NotificationBell({
         size="sm"
         className="relative"
         onClick={() => setIsOpen(!isOpen)}
+        title={`Obavijesti${unreadCount > 0 ? ` (${unreadCount} nepročitanih)` : ''}`}
         aria-label={`Obavijesti${unreadCount > 0 ? ` (${unreadCount} nepročitanih)` : ''}`}
         aria-expanded={isOpen}
         aria-haspopup="dialog"

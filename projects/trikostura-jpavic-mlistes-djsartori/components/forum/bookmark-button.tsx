@@ -23,6 +23,7 @@ export function BookmarkButton({
 }: BookmarkButtonProps) {
   const [isBookmarked, setIsBookmarked] = useState(initialBookmarked);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFlashing, setIsFlashing] = useState(false);
 
   async function handleToggle() {
     setIsLoading(true);
@@ -33,6 +34,10 @@ export function BookmarkButton({
       if (result.success) {
         setIsBookmarked(result.bookmarked!);
         toast.success(result.bookmarked ? 'Tema spremljena' : 'Oznaka uklonjena');
+
+        // Trigger flash animation
+        setIsFlashing(true);
+        setTimeout(() => setIsFlashing(false), 600);
       } else {
         toast.error(result.error || 'Doslo je do greske');
       }
@@ -49,11 +54,19 @@ export function BookmarkButton({
       size={size}
       onClick={handleToggle}
       disabled={isLoading}
-      className={isBookmarked ? 'text-yellow-500 hover:text-yellow-600' : ''}
+      className={`
+        ${isBookmarked ? 'text-yellow-500 hover:text-yellow-600' : ''}
+        ${isFlashing ? 'animate-pulse scale-110 transition-transform duration-300' : ''}
+      `}
       title={isBookmarked ? 'Ukloni oznaku' : 'Spremi temu'}
     >
       <Bookmark
-        className={`w-4 h-4 ${showText ? 'mr-2' : ''} ${isBookmarked ? 'fill-current' : ''}`}
+        className={`
+          w-4 h-4
+          ${showText ? 'mr-2' : ''}
+          ${isBookmarked ? 'fill-current' : ''}
+          ${isFlashing ? 'animate-bounce' : ''}
+        `}
       />
       {showText && (isBookmarked ? 'Spremljeno' : 'Spremi')}
     </Button>
