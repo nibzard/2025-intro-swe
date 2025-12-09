@@ -128,8 +128,7 @@ export async function deleteUser(userId: string) {
 }
 
 export async function warnUser(userId: string, reason: string) {
-  const { userId: adminId } = await checkAdminAccess();
-  const supabase: any = await createServerSupabaseClient();
+  const { adminClient, userId: adminId } = await checkAdminAccess();
 
   // Prevent admin from warning themselves
   if (userId === adminId) {
@@ -179,8 +178,7 @@ export async function warnUser(userId: string, reason: string) {
 }
 
 export async function timeoutUser(userId: string, reason: string, durationHours: number) {
-  const { userId: adminId } = await checkAdminAccess();
-  const supabase: any = await createServerSupabaseClient();
+  const { adminClient, userId: adminId } = await checkAdminAccess();
 
   // Prevent admin from timing out themselves
   if (userId === adminId) {
