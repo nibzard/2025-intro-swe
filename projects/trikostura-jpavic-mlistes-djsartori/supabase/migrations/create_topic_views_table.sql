@@ -4,15 +4,22 @@ CREATE TABLE IF NOT EXISTS topic_views (
   topic_id UUID NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
   session_id TEXT, -- For anonymous users
-  viewed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  CONSTRAINT unique_user_topic_view UNIQUE (topic_id, user_id),
-  CONSTRAINT unique_session_topic_view UNIQUE (topic_id, session_id)
+  viewed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create index for faster lookups
+-- Create partial unique indexes (only when values are NOT NULL)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_user_topic_view
+  ON topic_views(topic_id, user_id)
+  WHERE user_id IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_session_topic_view
+  ON topic_views(topic_id, session_id)
+  WHERE session_id IS NOT NULL;
+
+-- Create indexes for faster lookups
 CREATE INDEX IF NOT EXISTS idx_topic_views_topic_id ON topic_views(topic_id);
-CREATE INDEX IF NOT EXISTS idx_topic_views_user_id ON topic_views(user_id);
-CREATE INDEX IF NOT EXISTS idx_topic_views_session_id ON topic_views(session_id);
+CREATE INDEX IF NOT EXISTS idx_topic_views_user_id ON topic_views(user_id) WHERE user_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_topic_views_session_id ON topic_views(session_id) WHERE session_id IS NOT NULL;
 
 -- Enable RLS
 ALTER TABLE topic_views ENABLE ROW LEVEL SECURITY;
