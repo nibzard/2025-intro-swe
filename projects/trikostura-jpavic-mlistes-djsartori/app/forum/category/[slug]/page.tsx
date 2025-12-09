@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/pagination';
+import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { MessageSquare, Pin, CheckCircle } from 'lucide-react';
 
 // Revalidate every 30 seconds
@@ -58,6 +59,14 @@ export default async function CategoryPage({
 
   return (
     <div className="space-y-4 sm:space-y-6 px-3 sm:px-0">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb
+        items={[
+          { label: 'Forum', href: '/forum' },
+          { label: category.name },
+        ]}
+      />
+
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex-1 w-full sm:w-auto">
           <div className="flex items-center gap-3">
