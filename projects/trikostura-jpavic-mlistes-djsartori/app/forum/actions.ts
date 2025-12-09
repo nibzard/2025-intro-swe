@@ -45,7 +45,7 @@ export async function deleteTopicAction(topicId: string) {
 
   // Check if user is author or admin
   const isAuthor = (topic as any).author_id === user.id;
-  const isAdmin = profile?.role === 'admin';
+  const isAdmin = (profile as any)?.role === 'admin';
 
   if (!isAuthor && !isAdmin) {
     return { success: false, error: 'Not authorized' };
@@ -87,7 +87,7 @@ export async function togglePinTopicAction(topicId: string, isPinned: boolean) {
     .eq('id', user.id)
     .single();
 
-  if (profile?.role !== 'admin') {
+  if ((profile as any)?.role !== 'admin') {
     return { success: false, error: 'Not authorized' };
   }
 
@@ -125,7 +125,7 @@ export async function toggleLockTopicAction(topicId: string, isLocked: boolean) 
     .eq('id', user.id)
     .single();
 
-  if (profile?.role !== 'admin') {
+  if ((profile as any)?.role !== 'admin') {
     return { success: false, error: 'Not authorized' };
   }
 
@@ -163,7 +163,7 @@ export async function moveTopicAction(topicId: string, newCategoryId: string) {
     .eq('id', user.id)
     .single();
 
-  if (profile?.role !== 'admin') {
+  if ((profile as any)?.role !== 'admin') {
     return { success: false, error: 'Not authorized' };
   }
 
@@ -214,7 +214,7 @@ export async function deleteReplyAction(replyId: string) {
 
   // Check if user is author or admin
   const isAuthor = (reply as any).author_id === user.id;
-  const isAdmin = profile?.role === 'admin';
+  const isAdmin = (profile as any)?.role === 'admin';
 
   if (!isAuthor && !isAdmin) {
     return { success: false, error: 'Not authorized' };
@@ -266,7 +266,7 @@ export async function markSolutionAction(replyId: string, topicId: string) {
 
   // Check if user is topic author or admin
   const isTopicAuthor = (topic as any).author_id === user.id;
-  const isAdmin = profile?.role === 'admin';
+  const isAdmin = (profile as any)?.role === 'admin';
 
   if (!isTopicAuthor && !isAdmin) {
     return { success: false, error: 'Not authorized' };
