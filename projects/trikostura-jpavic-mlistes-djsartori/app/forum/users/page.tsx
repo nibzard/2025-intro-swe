@@ -223,6 +223,13 @@ export default async function UsersPage() {
                       </span>
                     )}
                   </div>
+                  <Avatar
+                    src={user.avatar_url}
+                    alt={user.username}
+                    username={user.username}
+                    size="md"
+                    className="flex-shrink-0"
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-sm sm:text-base font-semibold truncate">
@@ -274,6 +281,13 @@ export default async function UsersPage() {
                       #{index + 1}
                     </span>
                   </div>
+                  <Avatar
+                    src={user.avatar_url}
+                    alt={user.username}
+                    username={user.username}
+                    size="md"
+                    className="flex-shrink-0"
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-sm sm:text-base font-semibold truncate">
