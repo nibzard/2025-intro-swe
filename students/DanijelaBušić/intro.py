@@ -8,4 +8,4 @@ class Student:
 
 # Example usage:
 s1 = Student("Danijela", 3)
-s1.greet()
+s1.greet() 
