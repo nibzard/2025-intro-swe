@@ -10,6 +10,7 @@ import { EditableTopic } from '@/components/forum/editable-topic';
 import { AdvancedAttachmentList } from '@/components/forum/advanced-attachment-list';
 import { BookmarkButton } from '@/components/forum/bookmark-button';
 import { TopicActions } from '@/components/forum/topic-actions';
+import { recordTopicView } from '../actions';
 import { MessageSquare, ArrowLeft, CheckCircle } from 'lucide-react';
 
 export default async function TopicPage({
@@ -69,20 +70,8 @@ export default async function TopicPage({
     topic_tags: tagData || [],
   };
 
-  // Increment view count
-  try {
-    await (supabase as any).rpc('increment', {
-      table_name: 'topics',
-      row_id: topic.id,
-      column_name: 'view_count',
-    });
-  } catch {
-    // Fallback if function doesn't exist
-    await (supabase as any)
-      .from('topics')
-      .update({ view_count: topic.view_count + 1 })
-      .eq('id', topic.id);
-  }
+  // Record unique view (only counts once per user/session)
+  await recordTopicView(topic.id);
 
   // Get topic attachments
   const { data: topicAttachments } = await supabase
