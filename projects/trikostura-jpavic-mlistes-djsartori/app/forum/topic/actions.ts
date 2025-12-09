@@ -2,6 +2,8 @@
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
+import { randomUUID } from 'crypto';
 import { z } from 'zod';
 
 const EditTopicSchema = z.object({
@@ -87,5 +89,81 @@ export async function editTopic(formData: FormData) {
       return { success: false, error: error.issues[0].message };
     }
     return { success: false, error: 'Došlo je do greške' };
+  }
+}
+
+export async function recordTopicView(topicId: string) {
+  const supabase = await createServerSupabaseClient();
+  const cookieStore = await cookies();
+
+  // Get current user if logged in
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Get or create session ID for anonymous users
+  let sessionId = cookieStore.get('view_session_id')?.value;
+  if (!sessionId) {
+    sessionId = randomUUID();
+    cookieStore.set('view_session_id', sessionId, {
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      httpOnly: true,
+      sameSite: 'lax',
+    });
+  }
+
+  try {
+    // Check if view already exists
+    const { data: existingView } = await supabase
+      .from('topic_views')
+      .select('id')
+      .eq('topic_id', topicId)
+      .or(user ? `user_id.eq.${user.id}` : `session_id.eq.${sessionId}`)
+      .single();
+
+    // If view doesn't exist, record it
+    if (!existingView) {
+      // Insert the view record
+      const { error: insertError } = await supabase
+        .from('topic_views')
+        .insert({
+          topic_id: topicId,
+          user_id: user?.id || null,
+          session_id: user ? null : sessionId,
+        });
+
+      if (insertError) {
+        console.error('Error recording view:', insertError);
+        return { success: false };
+      }
+
+      // Increment the view count
+      try {
+        await (supabase as any).rpc('increment', {
+          table_name: 'topics',
+          row_id: topicId,
+          column_name: 'view_count',
+        });
+      } catch {
+        // Fallback: manually increment
+        const { data: topic } = await supabase
+          .from('topics')
+          .select('view_count')
+          .eq('id', topicId)
+          .single();
+
+        if (topic) {
+          await (supabase as any)
+            .from('topics')
+            .update({ view_count: (topic.view_count || 0) + 1 })
+            .eq('id', topicId);
+        }
+      }
+
+      return { success: true, newView: true };
+    }
+
+    return { success: true, newView: false };
+  } catch (error) {
+    console.error('Error in recordTopicView:', error);
+    return { success: false };
   }
 }
