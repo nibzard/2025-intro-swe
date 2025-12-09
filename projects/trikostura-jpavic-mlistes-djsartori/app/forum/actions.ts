@@ -253,10 +253,10 @@ export async function markSolutionAction(replyId: string, topicId: string) {
     .eq('id', user.id)
     .single();
 
-  // Get topic to check ownership
+  // Get topic to check ownership and get slug for revalidation
   const { data: topic } = await supabase
     .from('topics')
-    .select('author_id')
+    .select('author_id, slug')
     .eq('id', topicId)
     .single();
 
@@ -276,28 +276,38 @@ export async function markSolutionAction(replyId: string, topicId: string) {
   const adminClient = createAdminClient();
 
   // First, unmark any existing solutions
-  await (adminClient as any)
+  const { error: unmarkError } = await (adminClient as any)
     .from('replies')
     .update({ is_solution: false })
     .eq('topic_id', topicId);
 
+  if (unmarkError) {
+    return { success: false, error: `Failed to unmark existing solutions: ${unmarkError.message}` };
+  }
+
   // Then mark the new solution
-  const { error } = await (adminClient as any)
+  const { error: markError } = await (adminClient as any)
     .from('replies')
     .update({ is_solution: true })
     .eq('id', replyId);
 
-  if (error) {
-    return { success: false, error: error.message };
+  if (markError) {
+    return { success: false, error: `Failed to mark solution: ${markError.message}` };
   }
 
   // Update topic to has_solution
-  await (adminClient as any)
+  const { error: topicError } = await (adminClient as any)
     .from('topics')
     .update({ has_solution: true })
     .eq('id', topicId);
 
+  if (topicError) {
+    return { success: false, error: `Failed to update topic: ${topicError.message}` };
+  }
+
+  // Revalidate both forum and specific topic page
   revalidatePath('/forum');
+  revalidatePath(`/forum/topic/${(topic as any).slug}`);
 
   return { success: true };
 }
