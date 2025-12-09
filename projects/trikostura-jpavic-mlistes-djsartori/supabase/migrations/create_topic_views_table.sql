@@ -1,5 +1,8 @@
+-- Drop table if it exists (to ensure clean state)
+DROP TABLE IF EXISTS topic_views CASCADE;
+
 -- Create topic_views table to track unique views
-CREATE TABLE IF NOT EXISTS topic_views (
+CREATE TABLE topic_views (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   topic_id UUID NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
@@ -8,18 +11,18 @@ CREATE TABLE IF NOT EXISTS topic_views (
 );
 
 -- Create partial unique indexes (only when values are NOT NULL)
-CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_user_topic_view
+CREATE UNIQUE INDEX idx_unique_user_topic_view
   ON topic_views(topic_id, user_id)
   WHERE user_id IS NOT NULL;
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_session_topic_view
+CREATE UNIQUE INDEX idx_unique_session_topic_view
   ON topic_views(topic_id, session_id)
   WHERE session_id IS NOT NULL;
 
 -- Create indexes for faster lookups
-CREATE INDEX IF NOT EXISTS idx_topic_views_topic_id ON topic_views(topic_id);
-CREATE INDEX IF NOT EXISTS idx_topic_views_user_id ON topic_views(user_id) WHERE user_id IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_topic_views_session_id ON topic_views(session_id) WHERE session_id IS NOT NULL;
+CREATE INDEX idx_topic_views_topic_id ON topic_views(topic_id);
+CREATE INDEX idx_topic_views_user_id ON topic_views(user_id) WHERE user_id IS NOT NULL;
+CREATE INDEX idx_topic_views_session_id ON topic_views(session_id) WHERE session_id IS NOT NULL;
 
 -- Enable RLS
 ALTER TABLE topic_views ENABLE ROW LEVEL SECURITY;
