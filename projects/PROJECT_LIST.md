@@ -27,6 +27,12 @@ This file lists all team projects for the SWE course. Students add their project
 
 ## Current Projects
 
+### BB - Ivan Bobanac & Mateo Blažević
+* **Project:** Student Planner
+* **Folder:** `BB-ibobanac-mblazevic11/`
+* **Status:** In Progress
+* **Description:** Aplikacija odnosno jednostavni planer za pregledno praćenje studentskih obveza, rokova i napretka kroz semestar
+
 ### Paradižot - Karlo Ćurčija & Ela Kević & Lucija Tomić & Jere Vitaljić
 * **Project:** Promet aplikacija
 * **Folder:** `PrometApp-kcurcija-ekevic-ltomic-jvitaljic/`
