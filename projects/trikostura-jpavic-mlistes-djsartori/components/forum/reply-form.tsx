@@ -10,6 +10,7 @@ import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 import { processMentions } from '@/app/forum/actions';
 import { toast } from 'sonner';
 import { Send, Loader2, Smile } from 'lucide-react';
+import { useButtonAnimation } from '@/hooks/use-button-animation';
 
 interface ReplyFormProps {
   topicId: string;
@@ -34,6 +35,7 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess }: Repl
   const formRef = useRef<HTMLFormElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const initialContentRef = useRef(content);
+  const { triggerAnimation, animationClasses } = useButtonAnimation();
 
   // Track unsaved changes
   useEffect(() => {
@@ -173,6 +175,7 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess }: Repl
       // Process mentions and create notifications
       await processMentions(content.trim(), user.id, topicId, newReply.id);
 
+      triggerAnimation();
       toast.success('Odgovor uspješno objavljen!', { id: toastId });
 
       // Reset form
@@ -293,7 +296,7 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess }: Repl
         <Button
           type="submit"
           disabled={isSubmitting || isOverLimit}
-          className="min-w-[160px]"
+          className={`min-w-[160px] ${animationClasses}`}
         >
           {isSubmitting ? (
             <>
