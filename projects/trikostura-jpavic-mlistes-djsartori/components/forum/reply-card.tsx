@@ -15,6 +15,7 @@ import { createClient } from '@/lib/supabase/client';
 import { editReply } from '@/app/forum/reply/actions';
 import { deleteReplyAction, markSolutionAction } from '@/app/forum/actions';
 import { toast } from 'sonner';
+import { useButtonAnimation } from '@/hooks/use-button-animation';
 
 interface ReplyCardProps {
   reply: any;
@@ -39,6 +40,8 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [isSolution, setIsSolution] = useState(reply.is_solution);
   const router = useRouter();
+  const { triggerAnimation: triggerUpvoteAnimation, animationClasses: upvoteAnimation } = useButtonAnimation();
+  const { triggerAnimation: triggerDownvoteAnimation, animationClasses: downvoteAnimation } = useButtonAnimation();
 
   const isAuthor = currentUserId === reply.author_id;
   const canEdit = isAuthor;
@@ -70,8 +73,10 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
       setCurrentVote(undefined);
       if (voteType === 1) {
         setUpvotes(upvotes - 1);
+        triggerUpvoteAnimation();
       } else {
         setDownvotes(downvotes - 1);
+        triggerDownvoteAnimation();
       }
     }
     // If user is changing vote
@@ -85,9 +90,11 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
       if (voteType === 1) {
         setUpvotes(upvotes + 1);
         setDownvotes(downvotes - 1);
+        triggerUpvoteAnimation();
       } else {
         setDownvotes(downvotes + 1);
         setUpvotes(upvotes - 1);
+        triggerDownvoteAnimation();
       }
       setCurrentVote(voteType);
     }
@@ -102,8 +109,10 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
       setCurrentVote(voteType);
       if (voteType === 1) {
         setUpvotes(upvotes + 1);
+        triggerUpvoteAnimation();
       } else {
         setDownvotes(downvotes + 1);
+        triggerDownvoteAnimation();
       }
     }
 
@@ -233,7 +242,7 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
               size="sm"
               onClick={() => handleVote(1)}
               disabled={!isLoggedIn || isVoting}
-              className="h-8 px-3"
+              className={`h-8 px-3 ${upvoteAnimation}`}
             >
               <ThumbsUp className="w-3.5 h-3.5 mr-1" />
               <span className="text-sm">{upvotes}</span>
@@ -246,7 +255,7 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
               size="sm"
               onClick={() => handleVote(-1)}
               disabled={!isLoggedIn || isVoting}
-              className="h-8 px-3"
+              className={`h-8 px-3 ${downvoteAnimation}`}
             >
               <ThumbsDown className="w-3.5 h-3.5 mr-1" />
               <span className="text-sm">{downvotes}</span>
@@ -260,7 +269,7 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
               size="sm"
               onClick={() => handleVote(1)}
               disabled={!isLoggedIn || isVoting}
-              className="w-10 h-10 p-0"
+              className={`w-10 h-10 p-0 ${upvoteAnimation}`}
             >
               <ThumbsUp className="w-4 h-4" />
             </Button>
@@ -272,7 +281,7 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
               size="sm"
               onClick={() => handleVote(-1)}
               disabled={!isLoggedIn || isVoting}
-              className="w-10 h-10 p-0"
+              className={`w-10 h-10 p-0 ${downvoteAnimation}`}
             >
               <ThumbsDown className="w-4 h-4" />
             </Button>

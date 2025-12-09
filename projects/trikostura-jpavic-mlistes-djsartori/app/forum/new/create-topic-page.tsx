@@ -17,6 +17,7 @@ import { processMentions } from '@/app/forum/actions';
 import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { useButtonAnimation } from '@/hooks/use-button-animation';
 
 const MAX_TITLE_LENGTH = 200;
 const MAX_CONTENT_LENGTH = 10000;
@@ -35,6 +36,8 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
   const [draftId, setDraftId] = useState<string | null>(initialDraft?.id || null);
   const [error, setError] = useState('');
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const { triggerAnimation: triggerSubmitAnimation, animationClasses: submitAnimation } = useButtonAnimation();
+  const { triggerAnimation: triggerSaveAnimation, animationClasses: saveAnimation } = useButtonAnimation();
 
   // Auto-save draft
   const saveDraft = useCallback(async () => {
@@ -79,11 +82,12 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
 
       setSaveStatus('saved');
       setLastSaved(new Date());
+      triggerSaveAnimation();
     } catch (err) {
       console.error('Error saving draft:', err);
       setSaveStatus('error');
     }
-  }, [title, content, categoryId, selectedTags, draftId]);
+  }, [title, content, categoryId, selectedTags, draftId, triggerSaveAnimation]);
 
   // Auto-save on changes
   useEffect(() => {
@@ -216,6 +220,7 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
         await (supabase as any).from('topic_drafts').delete().eq('id', draftId);
       }
 
+      triggerSubmitAnimation();
       toast.success('Tema uspješno objavljena!', { id: loadingToast });
       router.push(`/forum/topic/${topic.slug}`);
     } catch (err: any) {
@@ -387,7 +392,7 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
           <Button
             type="submit"
             disabled={isSubmitting || !title.trim() || !content.trim() || !categoryId}
-            className="flex-1 sm:flex-none h-11 sm:px-8"
+            className={`flex-1 sm:flex-none h-11 sm:px-8 ${submitAnimation}`}
           >
             {isSubmitting ? (
               <>
@@ -402,7 +407,7 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
             )}
           </Button>
 
-          <Button type="button" variant="outline" onClick={saveDraft} disabled={saveStatus === 'saving'} className="flex-1 sm:flex-none h-11">
+          <Button type="button" variant="outline" onClick={saveDraft} disabled={saveStatus === 'saving'} className={`flex-1 sm:flex-none h-11 ${saveAnimation}`}>
             <Save className="w-4 h-4 mr-2" />
             Spremi nacrt
           </Button>

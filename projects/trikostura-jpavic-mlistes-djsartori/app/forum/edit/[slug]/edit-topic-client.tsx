@@ -12,6 +12,7 @@ import { ArrowLeft, Save, AlertCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { toast } from 'sonner';
+import { useButtonAnimation } from '@/hooks/use-button-animation';
 
 const MAX_TITLE_LENGTH = 200;
 const MAX_CONTENT_LENGTH = 10000;
@@ -32,6 +33,7 @@ export function EditTopicClient({ topic }: EditTopicClientProps) {
   const [content, setContent] = useState(topic.content);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const { triggerAnimation, animationClasses } = useButtonAnimation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +68,7 @@ export function EditTopicClient({ topic }: EditTopicClientProps) {
 
       if (updateError) throw updateError;
 
+      triggerAnimation();
       toast.success('Tema uspjesno uredena!', { id: loadingToast });
       router.push(`/forum/topic/${topic.slug}`);
       router.refresh();
@@ -155,7 +158,7 @@ export function EditTopicClient({ topic }: EditTopicClientProps) {
           <Button
             type="submit"
             disabled={isSubmitting || !title.trim() || !content.trim()}
-            className="flex-1 sm:flex-none h-11 sm:px-8"
+            className={`flex-1 sm:flex-none h-11 sm:px-8 ${animationClasses}`}
           >
             {isSubmitting ? (
               <>

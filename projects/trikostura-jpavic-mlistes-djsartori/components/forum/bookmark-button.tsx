@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Bookmark } from 'lucide-react';
 import { toggleBookmark } from '@/app/forum/bookmark/actions';
 import { toast } from 'sonner';
+import { useButtonAnimation, useIconAnimation } from '@/hooks/use-button-animation';
+import { emitBookmarkEvent } from '@/lib/bookmark-events';
 
 interface BookmarkButtonProps {
   topicId: string;
@@ -23,7 +25,8 @@ export function BookmarkButton({
 }: BookmarkButtonProps) {
   const [isBookmarked, setIsBookmarked] = useState(initialBookmarked);
   const [isLoading, setIsLoading] = useState(false);
-  const [isFlashing, setIsFlashing] = useState(false);
+  const { triggerAnimation: triggerButtonAnimation, animationClasses: buttonAnimation } = useButtonAnimation();
+  const { triggerAnimation: triggerIconAnimation, animationClasses: iconAnimation } = useIconAnimation();
 
   async function handleToggle() {
     setIsLoading(true);
@@ -36,8 +39,11 @@ export function BookmarkButton({
         toast.success(result.bookmarked ? 'Tema spremljena' : 'Oznaka uklonjena');
 
         // Trigger flash animation
-        setIsFlashing(true);
-        setTimeout(() => setIsFlashing(false), 600);
+        triggerButtonAnimation();
+        triggerIconAnimation();
+
+        // Emit event for navbar notification
+        emitBookmarkEvent({ topicId, bookmarked: result.bookmarked! });
       } else {
         toast.error(result.error || 'Doslo je do greske');
       }
@@ -56,7 +62,7 @@ export function BookmarkButton({
       disabled={isLoading}
       className={`
         ${isBookmarked ? 'text-yellow-500 hover:text-yellow-600' : ''}
-        ${isFlashing ? 'animate-pulse scale-110 transition-transform duration-300' : ''}
+        ${buttonAnimation}
       `}
       title={isBookmarked ? 'Ukloni oznaku' : 'Spremi temu'}
     >
@@ -65,7 +71,7 @@ export function BookmarkButton({
           w-4 h-4
           ${showText ? 'mr-2' : ''}
           ${isBookmarked ? 'fill-current' : ''}
-          ${isFlashing ? 'animate-bounce' : ''}
+          ${iconAnimation}
         `}
       />
       {showText && (isBookmarked ? 'Spremljeno' : 'Spremi')}
