@@ -13,6 +13,7 @@ import { ThumbsUp, ThumbsDown, MoreVertical, Edit2, Trash2, Quote, Link2, CheckC
 import { ReportDialog } from './report-dialog';
 import { createClient } from '@/lib/supabase/client';
 import { editReply } from '@/app/forum/reply/actions';
+import { deleteReplyAction, markSolutionAction } from '@/app/forum/actions';
 import { toast } from 'sonner';
 
 interface ReplyCardProps {
@@ -142,30 +143,25 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
 
   async function handleDelete() {
     setIsDeleting(true);
-    const supabase = createClient();
 
-    const { error } = await (supabase as any)
-      .from('replies')
-      .delete()
-      .eq('id', reply.id);
+    const result = await deleteReplyAction(reply.id);
 
-    if (!error) {
+    if (result.success) {
       router.refresh();
+    } else {
+      alert(`Error: ${result.error}`);
     }
     setIsDeleting(false);
   }
 
   async function handleMarkSolution() {
-    const supabase = createClient();
+    const result = await markSolutionAction(reply.id, reply.topic_id);
 
-    const { error } = await (supabase as any)
-      .from('replies')
-      .update({ is_solution: true })
-      .eq('id', reply.id);
-
-    if (!error) {
+    if (result.success) {
       setIsSolution(true);
       router.refresh();
+    } else {
+      alert(`Error: ${result.error}`);
     }
   }
 
