@@ -11,7 +11,8 @@ import { AdvancedAttachmentList } from '@/components/forum/advanced-attachment-l
 import { BookmarkButton } from '@/components/forum/bookmark-button';
 import { TopicActions } from '@/components/forum/topic-actions';
 import { recordTopicView } from '../actions';
-import { MessageSquare, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Breadcrumb } from '@/components/forum/breadcrumb';
+import { MessageSquare, CheckCircle } from 'lucide-react';
 
 export default async function TopicPage({
   params,
@@ -191,16 +192,18 @@ export default async function TopicPage({
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb Navigation */}
       <div className="flex items-center justify-between gap-4">
-        <Link href={`/forum/category/${category?.slug}`}>
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Natrag na {category?.name}
-          </Button>
-        </Link>
+        <Breadcrumb
+          items={[
+            { label: 'Forum', href: '/forum' },
+            { label: category?.name || 'Category', href: `/forum/category/${category?.slug}` },
+            { label: topic.title },
+          ]}
+        />
 
         {user && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <BookmarkButton
               topicId={enrichedTopic.id}
               initialBookmarked={isBookmarked}
