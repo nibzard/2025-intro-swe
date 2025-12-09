@@ -71,7 +71,13 @@ export default async function TopicPage({
   };
 
   // Record unique view (only counts once per user/session)
-  await recordTopicView(topic.id);
+  // Non-blocking: page should load even if view tracking fails
+  try {
+    await recordTopicView(topic.id);
+  } catch (error) {
+    console.error('Failed to record topic view:', error);
+    // Continue loading the page even if view tracking fails
+  }
 
   // Get topic attachments
   const { data: topicAttachments } = await supabase
