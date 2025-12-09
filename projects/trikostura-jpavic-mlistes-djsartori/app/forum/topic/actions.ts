@@ -117,7 +117,7 @@ export async function recordTopicView(topicId: string) {
       .select('id')
       .eq('topic_id', topicId)
       .or(user ? `user_id.eq.${user.id}` : `session_id.eq.${sessionId}`)
-      .single();
+      .maybeSingle();
 
     // If view doesn't exist, record it
     if (!existingView) {
