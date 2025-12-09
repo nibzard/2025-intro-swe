@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Pin, Lock, Unlock, Trash2, Search, Eye } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { pinTopic, lockTopic, deleteTopic } from '../actions';
 import { Avatar } from '@/components/ui/avatar';
 
@@ -28,6 +29,7 @@ type Topic = {
 };
 
 export function TopicModerationClient({ topics }: { topics: Topic[] }) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<'all' | 'pinned' | 'locked'>('all');
@@ -52,6 +54,8 @@ export function TopicModerationClient({ topics }: { topics: Topic[] }) {
 
     if (!result.success) {
       alert(`Error: ${result.error}`);
+    } else {
+      router.refresh();
     }
   };
 
@@ -62,6 +66,8 @@ export function TopicModerationClient({ topics }: { topics: Topic[] }) {
 
     if (!result.success) {
       alert(`Error: ${result.error}`);
+    } else {
+      router.refresh();
     }
   };
 
@@ -80,6 +86,9 @@ export function TopicModerationClient({ topics }: { topics: Topic[] }) {
 
     if (!result.success) {
       alert(`Error: ${result.error}`);
+    } else {
+      // Refresh the page to show updated list
+      router.refresh();
     }
   };
 
