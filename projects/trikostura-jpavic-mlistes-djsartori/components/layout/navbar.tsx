@@ -142,7 +142,7 @@ export async function Navbar() {
                   <span className="hidden lg:inline">{profile.username}</span>
                 </Link>
                 <form action={logout}>
-                  <Button variant="ghost" size="sm" type="submit" aria-label="Odjavi se">
+                  <Button variant="ghost" size="sm" type="submit" title="Odjavi se" aria-label="Odjavi se">
                     <LogOut className="w-4 h-4" />
                   </Button>
                 </form>
