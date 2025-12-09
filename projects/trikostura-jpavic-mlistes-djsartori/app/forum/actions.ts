@@ -64,7 +64,7 @@ export async function deleteTopicAction(topicId: string) {
 
   // Revalidate relevant paths
   revalidatePath('/forum');
-  revalidatePath(`/forum/topic/${topic.slug}`);
+  revalidatePath(`/forum/topic/${(topic as any).slug}`);
   revalidatePath(`/forum/category/*`);
 
   return { success: true };
