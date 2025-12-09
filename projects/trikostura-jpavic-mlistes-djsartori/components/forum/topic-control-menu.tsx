@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { MoreVertical, Edit2, Trash2, Pin, Lock, Unlock, FolderOpen } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { deleteTopicAction } from '@/app/forum/actions';
 
 interface TopicControlMenuProps {
   topic: any;
@@ -29,16 +30,14 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
 
   async function handleDelete() {
     setIsProcessing(true);
-    const supabase = createClient();
 
-    const { error } = await (supabase as any)
-      .from('topics')
-      .delete()
-      .eq('id', topic.id);
+    const result = await deleteTopicAction(topic.id);
 
-    if (!error) {
+    if (result.success) {
       router.push('/forum');
+      router.refresh();
     } else {
+      alert(`Error: ${result.error}`);
       setIsProcessing(false);
     }
   }
