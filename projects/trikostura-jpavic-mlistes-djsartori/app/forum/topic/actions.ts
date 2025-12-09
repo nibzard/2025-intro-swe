@@ -112,7 +112,7 @@ export async function recordTopicView(topicId: string) {
 
   try {
     // Check if view already exists
-    const { data: existingView } = await supabase
+    const { data: existingView } = await (supabase as any)
       .from('topic_views')
       .select('id')
       .eq('topic_id', topicId)
@@ -122,7 +122,7 @@ export async function recordTopicView(topicId: string) {
     // If view doesn't exist, record it
     if (!existingView) {
       // Insert the view record
-      const { error: insertError } = await supabase
+      const { error: insertError } = await (supabase as any)
         .from('topic_views')
         .insert({
           topic_id: topicId,
@@ -144,7 +144,7 @@ export async function recordTopicView(topicId: string) {
         });
       } catch {
         // Fallback: manually increment
-        const { data: topic } = await supabase
+        const { data: topic } = await (supabase as any)
           .from('topics')
           .select('view_count')
           .eq('id', topicId)
