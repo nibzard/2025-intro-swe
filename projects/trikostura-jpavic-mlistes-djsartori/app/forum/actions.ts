@@ -44,7 +44,7 @@ export async function deleteTopicAction(topicId: string) {
   }
 
   // Check if user is author or admin
-  const isAuthor = topic.author_id === user.id;
+  const isAuthor = (topic as any).author_id === user.id;
   const isAdmin = profile?.role === 'admin';
 
   if (!isAuthor && !isAdmin) {
@@ -213,7 +213,7 @@ export async function deleteReplyAction(replyId: string) {
   }
 
   // Check if user is author or admin
-  const isAuthor = reply.author_id === user.id;
+  const isAuthor = (reply as any).author_id === user.id;
   const isAdmin = profile?.role === 'admin';
 
   if (!isAuthor && !isAdmin) {
@@ -265,7 +265,7 @@ export async function markSolutionAction(replyId: string, topicId: string) {
   }
 
   // Check if user is topic author or admin
-  const isTopicAuthor = topic.author_id === user.id;
+  const isTopicAuthor = (topic as any).author_id === user.id;
   const isAdmin = profile?.role === 'admin';
 
   if (!isTopicAuthor && !isAdmin) {
