@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { EnhancedMarkdownEditor } from '@/components/forum/new/enhanced-markdown-editor';
 import { ArrowLeft, Save, AlertCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { toast } from 'sonner';
 
 const MAX_TITLE_LENGTH = 200;
@@ -78,7 +79,16 @@ export function EditTopicClient({ topic }: EditTopicClientProps) {
 
   return (
     <div className="max-w-4xl mx-auto py-4 sm:py-8 px-3 sm:px-4">
-      <div className="mb-6">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb
+        items={[
+          { label: 'Forum', href: '/forum' },
+          { label: topic.title, href: `/forum/topic/${topic.slug}` },
+          { label: 'Uredi' },
+        ]}
+      />
+
+      <div className="mb-6 mt-6">
         <Link
           href={`/forum/topic/${topic.slug}`}
           className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 mb-4"

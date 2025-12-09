@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UserSearch } from '@/components/forum/user-search';
 import { Avatar } from '@/components/ui/avatar';
+import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { Trophy, TrendingUp, Users, Star, Calendar, MessageSquare, FileText, Award } from 'lucide-react';
 
 // Revalidate every 5 minutes
@@ -130,6 +131,14 @@ export default async function UsersPage() {
 
   return (
     <div className="space-y-6 sm:space-y-8">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb
+        items={[
+          { label: 'Forum', href: '/forum' },
+          { label: 'Korisnici' },
+        ]}
+      />
+
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">

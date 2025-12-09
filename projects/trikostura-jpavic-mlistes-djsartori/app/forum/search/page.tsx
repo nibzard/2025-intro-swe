@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
 import { sanitizeSearchQuery } from '@/lib/utils/sanitize';
+import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { Search, MessageSquare, Filter, X, ChevronDown } from 'lucide-react';
 import {
   Select,
@@ -283,6 +284,14 @@ export default function SearchPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb
+        items={[
+          { label: 'Forum', href: '/forum' },
+          { label: 'Pretraga' },
+        ]}
+      />
+
       <div>
         <h1 className="text-3xl font-bold mb-2">Napredna Pretraga Foruma</h1>
         <p className="text-gray-600 dark:text-gray-400">

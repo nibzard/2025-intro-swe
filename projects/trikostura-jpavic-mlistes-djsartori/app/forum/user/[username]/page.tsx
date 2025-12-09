@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
 import { SendMessageButton } from '@/components/messages/send-message-button';
 import { FollowButton } from '@/components/user/follow-button';
+import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { getFollowStatus } from '../actions';
 
 interface PageProps {
@@ -126,6 +127,15 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 px-3 sm:px-4 pb-8">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb
+        items={[
+          { label: 'Forum', href: '/forum' },
+          { label: 'Korisnici', href: '/forum/users' },
+          { label: profile.username },
+        ]}
+      />
+
       {/* Profile Banner with Overlay */}
       <div className="relative w-full h-48 sm:h-72 rounded-2xl overflow-hidden shadow-2xl">
         {profile.profile_banner_url ? (

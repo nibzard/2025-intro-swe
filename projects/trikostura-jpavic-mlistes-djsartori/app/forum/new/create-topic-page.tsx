@@ -14,6 +14,7 @@ import { createClient } from '@/lib/supabase/client';
 import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 import { generateSlug } from '@/lib/utils';
 import { processMentions } from '@/app/forum/actions';
+import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
@@ -229,8 +230,16 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
 
   return (
     <div className="max-w-5xl mx-auto py-4 sm:py-8 px-3 sm:px-4">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb
+        items={[
+          { label: 'Forum', href: '/forum' },
+          { label: 'Nova tema' },
+        ]}
+      />
+
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-6 mt-6">
         <Link
           href="/forum"
           className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 mb-4"
