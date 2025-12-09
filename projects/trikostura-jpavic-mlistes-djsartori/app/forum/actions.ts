@@ -53,7 +53,7 @@ export async function deleteTopicAction(topicId: string) {
 
   // Use admin client to delete (bypass RLS)
   const adminClient = createAdminClient();
-  const { error } = await adminClient
+  const { error } = await (adminClient as any)
     .from('topics')
     .delete()
     .eq('id', topicId);
@@ -93,7 +93,7 @@ export async function togglePinTopicAction(topicId: string, isPinned: boolean) {
 
   // Use admin client to update
   const adminClient = createAdminClient();
-  const { error } = await adminClient
+  const { error } = await (adminClient as any)
     .from('topics')
     .update({ is_pinned: isPinned })
     .eq('id', topicId);
@@ -131,7 +131,7 @@ export async function toggleLockTopicAction(topicId: string, isLocked: boolean) 
 
   // Use admin client to update
   const adminClient = createAdminClient();
-  const { error } = await adminClient
+  const { error } = await (adminClient as any)
     .from('topics')
     .update({ is_locked: isLocked })
     .eq('id', topicId);
@@ -169,7 +169,7 @@ export async function moveTopicAction(topicId: string, newCategoryId: string) {
 
   // Use admin client to update
   const adminClient = createAdminClient();
-  const { error } = await adminClient
+  const { error } = await (adminClient as any)
     .from('topics')
     .update({ category_id: newCategoryId })
     .eq('id', topicId);
@@ -222,7 +222,7 @@ export async function deleteReplyAction(replyId: string) {
 
   // Use admin client to delete (bypass RLS)
   const adminClient = createAdminClient();
-  const { error } = await adminClient
+  const { error } = await (adminClient as any)
     .from('replies')
     .delete()
     .eq('id', replyId);
@@ -276,13 +276,13 @@ export async function markSolutionAction(replyId: string, topicId: string) {
   const adminClient = createAdminClient();
 
   // First, unmark any existing solutions
-  await adminClient
+  await (adminClient as any)
     .from('replies')
     .update({ is_solution: false })
     .eq('topic_id', topicId);
 
   // Then mark the new solution
-  const { error } = await adminClient
+  const { error } = await (adminClient as any)
     .from('replies')
     .update({ is_solution: true })
     .eq('id', replyId);
@@ -292,7 +292,7 @@ export async function markSolutionAction(replyId: string, topicId: string) {
   }
 
   // Update topic to has_solution
-  await adminClient
+  await (adminClient as any)
     .from('topics')
     .update({ has_solution: true })
     .eq('id', topicId);
