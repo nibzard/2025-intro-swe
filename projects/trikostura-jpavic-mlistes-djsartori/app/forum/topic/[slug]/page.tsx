@@ -73,9 +73,14 @@ export default async function TopicPage({
   // Record unique view (only counts once per user/session)
   // Non-blocking: page should load even if view tracking fails
   try {
-    await recordTopicView(topic.id);
+    const result = await recordTopicView(topic.id);
+    if (!result.success) {
+      console.error('Failed to record topic view:', result.error || 'Unknown error');
+    } else {
+      console.log('View tracking result:', result.newView ? 'New view recorded' : 'View already exists');
+    }
   } catch (error) {
-    console.error('Failed to record topic view:', error);
+    console.error('Exception in recordTopicView:', error);
     // Continue loading the page even if view tracking fails
   }
 
