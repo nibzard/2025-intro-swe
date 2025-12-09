@@ -69,3 +69,235 @@ export async function deleteTopicAction(topicId: string) {
 
   return { success: true };
 }
+
+export async function togglePinTopicAction(topicId: string, isPinned: boolean) {
+  const supabase = await createServerSupabaseClient();
+
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: 'Not authenticated' };
+  }
+
+  // Check if user is admin
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (profile?.role !== 'admin') {
+    return { success: false, error: 'Not authorized' };
+  }
+
+  // Use admin client to update
+  const adminClient = createAdminClient();
+  const { error } = await adminClient
+    .from('topics')
+    .update({ is_pinned: isPinned })
+    .eq('id', topicId);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath('/forum');
+  revalidatePath('/admin/topics');
+
+  return { success: true };
+}
+
+export async function toggleLockTopicAction(topicId: string, isLocked: boolean) {
+  const supabase = await createServerSupabaseClient();
+
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: 'Not authenticated' };
+  }
+
+  // Check if user is admin
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (profile?.role !== 'admin') {
+    return { success: false, error: 'Not authorized' };
+  }
+
+  // Use admin client to update
+  const adminClient = createAdminClient();
+  const { error } = await adminClient
+    .from('topics')
+    .update({ is_locked: isLocked })
+    .eq('id', topicId);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath('/forum');
+  revalidatePath('/admin/topics');
+
+  return { success: true };
+}
+
+export async function moveTopicAction(topicId: string, newCategoryId: string) {
+  const supabase = await createServerSupabaseClient();
+
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: 'Not authenticated' };
+  }
+
+  // Check if user is admin
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (profile?.role !== 'admin') {
+    return { success: false, error: 'Not authorized' };
+  }
+
+  // Use admin client to update
+  const adminClient = createAdminClient();
+  const { error } = await adminClient
+    .from('topics')
+    .update({ category_id: newCategoryId })
+    .eq('id', topicId);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath('/forum');
+  revalidatePath('/admin/topics');
+
+  return { success: true };
+}
+
+export async function deleteReplyAction(replyId: string) {
+  const supabase = await createServerSupabaseClient();
+
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: 'Not authenticated' };
+  }
+
+  // Get user profile to check if admin
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  // Get reply to check ownership
+  const { data: reply } = await supabase
+    .from('replies')
+    .select('author_id, topic_id')
+    .eq('id', replyId)
+    .single();
+
+  if (!reply) {
+    return { success: false, error: 'Reply not found' };
+  }
+
+  // Check if user is author or admin
+  const isAuthor = reply.author_id === user.id;
+  const isAdmin = profile?.role === 'admin';
+
+  if (!isAuthor && !isAdmin) {
+    return { success: false, error: 'Not authorized' };
+  }
+
+  // Use admin client to delete (bypass RLS)
+  const adminClient = createAdminClient();
+  const { error } = await adminClient
+    .from('replies')
+    .delete()
+    .eq('id', replyId);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath('/forum');
+
+  return { success: true };
+}
+
+export async function markSolutionAction(replyId: string, topicId: string) {
+  const supabase = await createServerSupabaseClient();
+
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: 'Not authenticated' };
+  }
+
+  // Get user profile to check if admin
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  // Get topic to check ownership
+  const { data: topic } = await supabase
+    .from('topics')
+    .select('author_id')
+    .eq('id', topicId)
+    .single();
+
+  if (!topic) {
+    return { success: false, error: 'Topic not found' };
+  }
+
+  // Check if user is topic author or admin
+  const isTopicAuthor = topic.author_id === user.id;
+  const isAdmin = profile?.role === 'admin';
+
+  if (!isTopicAuthor && !isAdmin) {
+    return { success: false, error: 'Not authorized' };
+  }
+
+  // Use admin client to update (bypass RLS)
+  const adminClient = createAdminClient();
+
+  // First, unmark any existing solutions
+  await adminClient
+    .from('replies')
+    .update({ is_solution: false })
+    .eq('topic_id', topicId);
+
+  // Then mark the new solution
+  const { error } = await adminClient
+    .from('replies')
+    .update({ is_solution: true })
+    .eq('id', replyId);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  // Update topic to has_solution
+  await adminClient
+    .from('topics')
+    .update({ has_solution: true })
+    .eq('id', topicId);
+
+  revalidatePath('/forum');
+
+  return { success: true };
+}

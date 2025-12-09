@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { MoreVertical, Edit2, Trash2, Pin, Lock, Unlock, FolderOpen } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import { deleteTopicAction } from '@/app/forum/actions';
+import { deleteTopicAction, togglePinTopicAction, toggleLockTopicAction, moveTopicAction } from '@/app/forum/actions';
 
 interface TopicControlMenuProps {
   topic: any;
@@ -44,15 +44,13 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
 
   async function handleTogglePin() {
     setIsProcessing(true);
-    const supabase = createClient();
 
-    const { error } = await (supabase as any)
-      .from('topics')
-      .update({ is_pinned: !topic.is_pinned })
-      .eq('id', topic.id);
+    const result = await togglePinTopicAction(topic.id, !topic.is_pinned);
 
-    if (!error) {
+    if (result.success) {
       router.refresh();
+    } else {
+      alert(`Error: ${result.error}`);
     }
     setIsProcessing(false);
     setShowActions(false);
@@ -60,15 +58,13 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
 
   async function handleToggleLock() {
     setIsProcessing(true);
-    const supabase = createClient();
 
-    const { error } = await (supabase as any)
-      .from('topics')
-      .update({ is_locked: !topic.is_locked })
-      .eq('id', topic.id);
+    const result = await toggleLockTopicAction(topic.id, !topic.is_locked);
 
-    if (!error) {
+    if (result.success) {
       router.refresh();
+    } else {
+      alert(`Error: ${result.error}`);
     }
     setIsProcessing(false);
     setShowActions(false);
@@ -76,15 +72,13 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
 
   async function handleMoveCategory() {
     setIsProcessing(true);
-    const supabase = createClient();
 
-    const { error } = await (supabase as any)
-      .from('topics')
-      .update({ category_id: selectedCategory })
-      .eq('id', topic.id);
+    const result = await moveTopicAction(topic.id, selectedCategory);
 
-    if (!error) {
+    if (result.success) {
       router.refresh();
+    } else {
+      alert(`Error: ${result.error}`);
     }
     setIsProcessing(false);
     setShowMoveCategory(false);
