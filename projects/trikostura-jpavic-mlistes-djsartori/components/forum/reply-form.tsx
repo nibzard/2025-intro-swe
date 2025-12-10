@@ -264,7 +264,7 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess, onClea
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
       {/* Quote Indicator */}
       {quotedText && quotedAuthor && (
-        <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded">
+        <div className="flex items-start gap-2 p-3 bg-blue-50/50 dark:bg-blue-900/10 border-l-4 border-blue-500 rounded-lg">
           <Quote className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <p className="text-xs text-blue-700 dark:text-blue-400 font-medium mb-1">
@@ -287,7 +287,7 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess, onClea
 
       {/* Tips Panel */}
       {showTips && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div className="bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-800/50 rounded-lg p-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
@@ -359,14 +359,14 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess, onClea
             )}
           </div>
 
-          <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+          <div className="inline-flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
             <button
               type="button"
               onClick={() => setIsPreviewMode(false)}
-              className={`px-2 py-1 text-xs flex items-center gap-1 transition-colors ${
+              className={`px-3 py-1.5 text-xs flex items-center gap-1.5 rounded-md transition-all ${
                 !isPreviewMode
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               <Edit3 className="w-3 h-3" />
@@ -375,10 +375,10 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess, onClea
             <button
               type="button"
               onClick={() => setIsPreviewMode(true)}
-              className={`px-2 py-1 text-xs flex items-center gap-1 transition-colors ${
+              className={`px-3 py-1.5 text-xs flex items-center gap-1.5 rounded-md transition-all ${
                 isPreviewMode
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               <Eye className="w-3 h-3" />
@@ -388,7 +388,7 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess, onClea
         </div>
 
         {isPreviewMode ? (
-          <div className="min-h-[150px] max-h-[400px] overflow-y-auto p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800">
+          <div className="min-h-[150px] max-h-[400px] overflow-y-auto p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50/50 dark:bg-gray-800/50">
             {content ? (
               <MarkdownRenderer content={content} />
             ) : (
@@ -425,7 +425,7 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess, onClea
 
         {/* Quick Emoji Picker */}
         {showEmojiPicker && (
-          <div className="flex flex-wrap gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="flex flex-wrap gap-2 p-3 bg-gray-50/50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
             {QUICK_EMOJIS.map((emoji) => (
               <button
                 key={emoji}
