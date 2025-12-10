@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,7 +19,9 @@ import {
   Sparkles,
   Users,
   BookOpen,
-  Lightbulb
+  Lightbulb,
+  LayoutList,
+  LayoutGrid
 } from 'lucide-react';
 import {
   Select,
@@ -64,6 +66,14 @@ export default function SearchPage() {
   const [sortBy, setSortBy] = useState<'relevance' | 'date-desc' | 'date-asc' | 'replies'>('relevance');
   const [searchIn, setSearchIn] = useState<'all' | 'topics' | 'replies'>('all');
 
+  // Autocomplete
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSuggestion, setSelectedSuggestion] = useState(-1);
+
+  // View options
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+
   // Categories list
   const [categories, setCategories] = useState<any[]>([]);
 
@@ -75,6 +85,26 @@ export default function SearchPage() {
 
   // Recent searches
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  // Ref for search input
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Focus search with / or Ctrl+K / Cmd+K
+      if (
+        (e.key === '/' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) ||
+        ((e.ctrlKey || e.metaKey) && e.key === 'k')
+      ) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    return () => document.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   // Load categories, stats, and trending topics on mount
   useEffect(() => {
@@ -343,6 +373,41 @@ export default function SearchPage() {
     }
   }
 
+  // Autocomplete suggestions with debouncing
+  useEffect(() => {
+    if (!query.trim() || query.length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const supabase = createClient();
+        const sanitizedQuery = sanitizeSearchQuery(query);
+
+        if (!sanitizedQuery) {
+          setSuggestions([]);
+          return;
+        }
+
+        const { data: topics } = await supabase
+          .from('topics')
+          .select('id, title, slug, category:categories(name, color)')
+          .ilike('title', `%${sanitizedQuery}%`)
+          .limit(5);
+
+        setSuggestions(topics || []);
+        setShowSuggestions(true);
+      } catch (error) {
+        console.error('Autocomplete error:', error);
+        setSuggestions([]);
+      }
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timer);
+  }, [query]);
+
   // Re-run search when filters change
   useEffect(() => {
     if (hasSearched) {
@@ -364,6 +429,37 @@ export default function SearchPage() {
     setAuthorFilter('');
     setSortBy('relevance');
     setSearchIn('all');
+  };
+
+  // Handle keyboard navigation for autocomplete
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions || suggestions.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedSuggestion((prev) =>
+          prev < suggestions.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedSuggestion((prev) => (prev > 0 ? prev - 1 : -1));
+        break;
+      case 'Enter':
+        if (selectedSuggestion >= 0) {
+          e.preventDefault();
+          const suggestion = suggestions[selectedSuggestion];
+          setQuery(suggestion.title);
+          setShowSuggestions(false);
+          setSelectedSuggestion(-1);
+        }
+        break;
+      case 'Escape':
+        setShowSuggestions(false);
+        setSelectedSuggestion(-1);
+        break;
+    }
   };
 
   const activeFilterCount =
@@ -396,15 +492,59 @@ export default function SearchPage() {
           <form onSubmit={handleSearch} className="space-y-4">
             <div className="flex gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
                 <Input
+                  ref={searchInputRef}
                   type="text"
-                  placeholder="Upiši pojam za pretragu..."
+                  placeholder="Upiši pojam za pretragu... (ili pritisni '/' ili Ctrl+K)"
                   value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setSelectedSuggestion(-1);
+                  }}
+                  onKeyDown={handleKeyDown}
+                  onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                   className="pl-10"
                   disabled={isSearching}
+                  autoComplete="off"
                 />
+
+                {/* Autocomplete Suggestions Dropdown */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                    {suggestions.map((suggestion, index) => (
+                      <div
+                        key={suggestion.id}
+                        className={`px-4 py-3 cursor-pointer transition-colors border-b border-gray-100 dark:border-gray-700 last:border-0 ${
+                          index === selectedSuggestion
+                            ? 'bg-blue-50 dark:bg-blue-900/20'
+                            : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                        }`}
+                        onClick={() => {
+                          setQuery(suggestion.title);
+                          setShowSuggestions(false);
+                          setSelectedSuggestion(-1);
+                        }}
+                      >
+                        <div className="font-medium text-gray-900 dark:text-white line-clamp-1">
+                          {suggestion.title}
+                        </div>
+                        {suggestion.category && (
+                          <span
+                            className="inline-block mt-1 px-2 py-0.5 text-xs rounded"
+                            style={{
+                              backgroundColor: suggestion.category.color + '20',
+                              color: suggestion.category.color,
+                            }}
+                          >
+                            {suggestion.category.name}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <Button
                 type="button"
@@ -481,6 +621,86 @@ export default function SearchPage() {
               )}
             </div>
 
+            {/* Active Filter Chips */}
+            {activeFilterCount > 0 && (
+              <div className="flex flex-wrap gap-2 pt-2 border-t">
+                <span className="text-sm text-gray-500 py-1">Aktivni filteri:</span>
+
+                {selectedCategories.map((catId) => {
+                  const category = categories.find(c => c.id === catId);
+                  return category ? (
+                    <Badge
+                      key={catId}
+                      variant="secondary"
+                      className="cursor-pointer hover:opacity-70 transition-opacity"
+                      style={{
+                        backgroundColor: category.color + '30',
+                        borderColor: category.color,
+                        color: category.color,
+                      }}
+                      onClick={() => toggleCategory(catId)}
+                    >
+                      {category.name}
+                      <X className="w-3 h-3 ml-1" />
+                    </Badge>
+                  ) : null;
+                })}
+
+                {dateRange !== 'all' && (
+                  <Badge
+                    variant="secondary"
+                    className="cursor-pointer hover:opacity-70 transition-opacity"
+                    onClick={() => setDateRange('all')}
+                  >
+                    Datum: {
+                      dateRange === 'day' ? 'Zadnji dan' :
+                      dateRange === 'week' ? 'Zadnji tjedan' :
+                      dateRange === 'month' ? 'Zadnji mjesec' :
+                      'Zadnja godina'
+                    }
+                    <X className="w-3 h-3 ml-1" />
+                  </Badge>
+                )}
+
+                {authorFilter.trim() && (
+                  <Badge
+                    variant="secondary"
+                    className="cursor-pointer hover:opacity-70 transition-opacity"
+                    onClick={() => setAuthorFilter('')}
+                  >
+                    Autor: {authorFilter}
+                    <X className="w-3 h-3 ml-1" />
+                  </Badge>
+                )}
+
+                {sortBy !== 'relevance' && (
+                  <Badge
+                    variant="secondary"
+                    className="cursor-pointer hover:opacity-70 transition-opacity"
+                    onClick={() => setSortBy('relevance')}
+                  >
+                    Sortiranje: {
+                      sortBy === 'date-desc' ? 'Najnovije' :
+                      sortBy === 'date-asc' ? 'Najstarije' :
+                      'Broj odgovora'
+                    }
+                    <X className="w-3 h-3 ml-1" />
+                  </Badge>
+                )}
+
+                {searchIn !== 'all' && (
+                  <Badge
+                    variant="secondary"
+                    className="cursor-pointer hover:opacity-70 transition-opacity"
+                    onClick={() => setSearchIn('all')}
+                  >
+                    Pretraži u: {searchIn === 'topics' ? 'Samo Teme' : 'Samo Odgovori'}
+                    <X className="w-3 h-3 ml-1" />
+                  </Badge>
+                )}
+              </div>
+            )}
+
             {/* Advanced Filters */}
             {showFilters && (
               <div className="border-t pt-4 space-y-4">
@@ -529,9 +749,12 @@ export default function SearchPage() {
         <div className="space-y-4">
           {results.length > 0 ? (
             <>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-4">
                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Pronađeno {results.length} {results.length === 1 ? 'rezultat' : 'rezultata'}
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {results.length}
+                  </span>{' '}
+                  {results.length === 1 ? 'rezultat' : 'rezultata'}
                   {searchIn === 'all' && (
                     <span className="ml-2">
                       ({results.filter((r) => r.type === 'topic').length} tema,{' '}
@@ -539,8 +762,37 @@ export default function SearchPage() {
                     </span>
                   )}
                 </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">Prikaz:</span>
+                  <div className="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`px-3 py-1.5 flex items-center gap-1.5 transition-colors ${
+                        viewMode === 'list'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`}
+                      title="Prikaz liste"
+                    >
+                      <LayoutList className="w-4 h-4" />
+                      <span className="text-sm">Lista</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`px-3 py-1.5 flex items-center gap-1.5 transition-colors border-l border-gray-300 dark:border-gray-600 ${
+                        viewMode === 'grid'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`}
+                      title="Prikaz mreže"
+                    >
+                      <LayoutGrid className="w-4 h-4" />
+                      <span className="text-sm">Mreža</span>
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-3">
+              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-3'}>
                 {results.map((result) => (
                   <Card key={`${result.type}-${result.id}`} className="hover:shadow-md transition-shadow">
                     <CardContent className="p-5">
