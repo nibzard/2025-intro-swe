@@ -48,58 +48,66 @@ export default async function Page({ params }: PageProps) {
 
   const isOwnProfile = user?.id === profile.id;
 
-  // Get follow status
-  const { isFollowing } = !isOwnProfile && user
-    ? await getFollowStatus(profile.id)
-    : { isFollowing: false };
-
-  // Get user's topics
-  const { data: topicsData } = await (supabase as any)
-    .from('topics')
-    .select('*')
-    .eq('author_id', profile.id)
-    .order('created_at', { ascending: false })
-    .limit(10);
-
-  // Get categories for topics
-  let topics: any[] = [];
-  if (topicsData && topicsData.length > 0) {
-    const categoryIds = [...new Set(topicsData.map((t: any) => t.category_id))];
-    const { data: categoriesData } = await supabase
-      .from('categories')
-      .select('id, name, slug, color')
-      .in('id', categoryIds);
-
-    const categoriesMap = new Map(categoriesData?.map((c: any) => [c.id, c]));
-    topics = topicsData.map((topic: any) => ({
-      ...topic,
-      category: categoriesMap.get(topic.category_id) || null,
-    }));
-  }
-
-  // Get user's recent replies
-  const { data: repliesData } = await (supabase as any)
-    .from('replies')
-    .select('*')
-    .eq('author_id', profile.id)
-    .order('created_at', { ascending: false })
-    .limit(10);
-
-  // Get topics for replies
-  let replies: any[] = [];
-  if (repliesData && repliesData.length > 0) {
-    const topicIds = [...new Set(repliesData.map((r: any) => r.topic_id))];
-    const { data: topicsForReplies } = await supabase
+  // Run all profile data queries in parallel
+  const [
+    followStatus,
+    { data: topicsData },
+    { data: repliesData }
+  ] = await Promise.all([
+    !isOwnProfile && user
+      ? getFollowStatus(profile.id)
+      : Promise.resolve({ isFollowing: false }),
+    supabase
       .from('topics')
-      .select('id, title, slug')
-      .in('id', topicIds);
+      .select('*')
+      .eq('author_id', profile.id)
+      .order('created_at', { ascending: false })
+      .limit(10),
+    supabase
+      .from('replies')
+      .select('*')
+      .eq('author_id', profile.id)
+      .order('created_at', { ascending: false })
+      .limit(10)
+  ]);
 
-    const topicsMap = new Map(topicsForReplies?.map((t: any) => [t.id, t]));
-    replies = repliesData.map((reply: any) => ({
-      ...reply,
-      topic: topicsMap.get(reply.topic_id) || null,
-    }));
-  }
+  const { isFollowing } = followStatus;
+
+  // Get categories for topics and topics for replies in parallel
+  const categoryIds = topicsData ? [...new Set(topicsData.map((t: any) => t.category_id))] : [];
+  const topicIds = repliesData ? [...new Set(repliesData.map((r: any) => r.topic_id))] : [];
+
+  const [
+    { data: categoriesData },
+    { data: topicsForReplies }
+  ] = await Promise.all([
+    categoryIds.length > 0
+      ? supabase
+          .from('categories')
+          .select('id, name, slug, color')
+          .in('id', categoryIds)
+      : Promise.resolve({ data: [] }),
+    topicIds.length > 0
+      ? supabase
+          .from('topics')
+          .select('id, title, slug')
+          .in('id', topicIds)
+      : Promise.resolve({ data: [] })
+  ]);
+
+  // Enrich topics with categories
+  const categoriesMap = new Map(categoriesData?.map((c: any) => [c.id, c]));
+  const topics = topicsData?.map((topic: any) => ({
+    ...topic,
+    category: categoriesMap.get(topic.category_id) || null,
+  })) || [];
+
+  // Enrich replies with topic data
+  const topicsMap = new Map(topicsForReplies?.map((t: any) => [t.id, t]));
+  const replies = repliesData?.map((reply: any) => ({
+    ...reply,
+    topic: topicsMap.get(reply.topic_id) || null,
+  })) || [];
 
   // Calculate statistics
   const topicCount = topics?.length || 0;

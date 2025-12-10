@@ -43,25 +43,39 @@ export default async function TopicPage({
     notFound();
   }
 
-  // Get author separately
-  const { data: author } = await supabase
-    .from('profiles')
-    .select('username, avatar_url, reputation')
-    .eq('id', topic.author_id)
-    .single() as any;
-
-  // Get category separately
-  const { data: category } = await supabase
-    .from('categories')
-    .select('name, slug, color, icon')
-    .eq('id', topic.category_id)
-    .single() as any;
-
-  // Get topic tags separately
-  const { data: tagData } = await supabase
-    .from('topic_tags')
-    .select('tags(id, name, slug, color)')
-    .eq('topic_id', topic.id);
+  // Run all topic-related queries in parallel
+  const [
+    { data: author },
+    { data: category },
+    { data: tagData },
+    { data: topicAttachments },
+    { data: replies }
+  ] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('username, avatar_url, reputation')
+      .eq('id', topic.author_id)
+      .single() as any,
+    supabase
+      .from('categories')
+      .select('name, slug, color, icon')
+      .eq('id', topic.category_id)
+      .single() as any,
+    supabase
+      .from('topic_tags')
+      .select('tags(id, name, slug, color)')
+      .eq('topic_id', topic.id),
+    supabase
+      .from('attachments')
+      .select('*')
+      .eq('topic_id', topic.id),
+    supabase
+      .from('replies')
+      .select('*')
+      .eq('topic_id', topic.id)
+      .order('is_solution', { ascending: false })
+      .order('created_at', { ascending: true })
+  ]);
 
   // Restructure topic data to match expected format
   const enrichedTopic = {
@@ -85,34 +99,33 @@ export default async function TopicPage({
     // Continue loading the page even if view tracking fails
   }
 
-  // Get topic attachments
-  const { data: topicAttachments } = await supabase
-    .from('attachments')
-    .select('*')
-    .eq('topic_id', topic.id);
-
-  // Get replies without complex relationships
-  const { data: replies }: { data: any } = await supabase
-    .from('replies')
-    .select('*')
-    .eq('topic_id', topic.id)
-    .order('is_solution', { ascending: false })
-    .order('created_at', { ascending: true });
-
-  // Get reply authors separately if needed
+  // Get reply authors and attachments in parallel (if there are replies)
   const replyAuthorIds = replies?.map((r: any) => r.author_id).filter(Boolean) || [];
   let replyAuthors: any = {};
+  let replyAttachments: any[] = [];
+
   if (replyAuthorIds.length > 0) {
-    const { data: authors } = await supabase
-      .from('profiles')
-      .select('id, username, avatar_url, reputation')
-      .in('id', [...new Set(replyAuthorIds)]);
-    
+    const [
+      { data: authors },
+      { data: attachments }
+    ] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('id, username, avatar_url, reputation')
+        .in('id', [...new Set(replyAuthorIds)]),
+      supabase
+        .from('attachments')
+        .select('*')
+        .in('reply_id', replies?.map((r: any) => r.id) || [])
+    ]);
+
     if (authors) {
       authors.forEach((a: any) => {
         replyAuthors[a.id] = a;
       });
     }
+
+    replyAttachments = attachments || [];
   }
 
   // Enrich replies with author data
@@ -124,58 +137,59 @@ export default async function TopicPage({
   // Use enriched replies for rest of code
   const repliesList = enrichedReplies;
 
-  // Get reply attachments
-  const { data: replyAttachments } = await supabase
-    .from('attachments')
-    .select('*')
-    .in('reply_id', replies?.map((r: any) => r.id) || []);
-
   // Map attachments to replies
   const repliesWithAttachments = repliesList?.map((reply: any) => ({
     ...reply,
     attachments: replyAttachments?.filter((att: any) => att.reply_id === reply.id) || [],
   }));
 
-  // Get user votes for replies if user is logged in
+  // Get user-specific data in parallel (votes, bookmarks, profile)
   let userVotes: any = {};
   let isBookmarked = false;
+  let userProfile: any = null;
 
   if (user) {
-    if (repliesList) {
-      const { data: votes } = await supabase
-        .from('votes')
-        .select('reply_id, vote_type')
-        .eq('user_id', user.id)
-        .in(
-          'reply_id',
-          repliesList.map((r: any) => r.id)
-        );
+    const userQueries: Promise<any>[] = [
+      supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+    ];
 
-      votes?.forEach((vote: any) => {
-        userVotes[vote.reply_id] = vote.vote_type;
-      });
+    if (repliesList && repliesList.length > 0) {
+      userQueries.push(
+        supabase
+          .from('votes')
+          .select('reply_id, vote_type')
+          .eq('user_id', user.id)
+          .in('reply_id', repliesList.map((r: any) => r.id))
+      );
+    } else {
+      userQueries.push(Promise.resolve({ data: null }));
     }
 
-    // Check bookmark status
-    const { data: bookmark } = await (supabase as any)
-      .from('bookmarks')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('topic_id', topic.id)
-      .single();
+    userQueries.push(
+      supabase
+        .from('bookmarks')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('topic_id', topic.id)
+        .maybeSingle()
+    );
 
-    isBookmarked = !!bookmark;
-  }
+    const [
+      { data: profile },
+      { data: votes },
+      { data: bookmark }
+    ] = await Promise.all(userQueries);
 
-  // Get user profile for permissions
-  let userProfile: any = null;
-  if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
     userProfile = profile;
+    isBookmarked = !!bookmark;
+
+    votes?.forEach((vote: any) => {
+      userVotes[vote.reply_id] = vote.vote_type;
+    });
   }
 
   // Get all categories for move function
