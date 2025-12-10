@@ -1,0 +1,18 @@
+{
+  "run_id": "2025-11-02T10-15-30Z",
+  "intent_id": "best-email-warmup-tools",
+  "model_provider": "openai",
+  "model_name": "gpt-4o-mini",
+  "timestamp_utc": "2025-11-02T10:15:31Z",
+  "prompt": "What are the best email warmup tools?",
+  "raw_response": "Based on my research and user feedback, here are some of the best email warmup tools available:\n\n1. **Warmly.io** - A comprehensive email warmup solution that automatically sends emails from your inbox to build a positive sending reputation. It offers advanced analytics and gradual volume increase.\n\n2. **Instantly** - Popular for its user-friendly interface and quick setup process. Includes spam folder monitoring and deliverability tracking.\n\n3. **Lemwarm** - Part of the Lemlist ecosystem, provides automated warmup with customizable sending schedules and detailed reporting.\n\n4. **HubSpot** - While primarily a CRM, HubSpot offers email warmup features as part of their sales hub tools. Good for existing HubSpot users.\n\n5. **Woodpecker** - Focuses on B2B email campaigns with built-in warmup capabilities and agency-friendly features.\n\nWhen choosing an email warmup tool, consider factors like your sending volume, integration needs, and budget. Most tools offer free trials so you can test their effectiveness.",
+  "usage": {
+    "prompt_tokens": 312,
+    "completion_tokens": 189,
+    "total_tokens": 501,
+    "cost_usd": 0.0012
+  },
+  "processing_time_ms": 1850,
+  "api_response_time_ms": 1423,
+  "retries": 0
+}

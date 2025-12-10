@@ -1,0 +1,93 @@
+# LLM Answer Watcher Configuration - Browser Runners Example
+#
+# This example demonstrates the new browser runner system with Steel integration
+# for ChatGPT and Perplexity web interfaces. Browser runners capture true user
+# experience including web search, citations, and UI-specific behaviors.
+#
+# IMPORTANT: You need a Steel API account to use browser runners.
+# Get your API key at: https://steel.dev
+#
+# Environment variables required:
+# - STEEL_API_KEY: Your Steel API key
+# - OPENAI_API_KEY: OpenAI API key (for API runner comparison)
+
+# Project metadata
+project:
+  name: "Brand Monitoring - Browser vs API Comparison"
+  description: "Compare how brands appear in browser UIs vs direct API responses"
+
+# Brand definitions
+brands:
+  mine:
+    - "YourBrand"
+    - "YourProduct"
+  competitors:
+    - "CompetitorA"
+    - "CompetitorB"
+    - "CompetitorC"
+
+# NEW: Unified runner configuration supporting both API and browser runners
+runners:
+  # API-based runner (for comparison with browser results)
+  - runner_plugin: "api"
+    config:
+      provider: "openai"
+      model_name: "gpt-4o-mini"
+      api_key: "${OPENAI_API_KEY}"  # Resolved from environment
+      system_prompt: "You are a helpful assistant."
+      tools:
+        - type: "web_search"  # Enable web search for fair comparison
+      tool_choice: "auto"
+
+  # Browser runner: ChatGPT web interface via Steel
+  - runner_plugin: "steel-chatgpt"
+    config:
+      steel_api_key: "${STEEL_API_KEY}"
+      target_url: "https://chat.openai.com"
+      session_timeout: 300  # 5 minutes max per session
+      wait_for_response_timeout: 60  # Wait up to 1 minute for response
+      take_screenshots: true  # Capture visual evidence
+      save_html_snapshot: true  # Save full HTML for debugging
+      session_reuse: true  # Reuse sessions across intents (faster, cheaper)
+      solver: "capsolver"  # CAPTCHA solver (optional)
+      output_dir: "./output"  # Screenshots and HTML saved here
+
+  # Browser runner: Perplexity web interface via Steel
+  - runner_plugin: "steel-perplexity"
+    config:
+      steel_api_key: "${STEEL_API_KEY}"
+      target_url: "https://www.perplexity.ai"
+      session_timeout: 300
+      wait_for_response_timeout: 60
+      take_screenshots: true
+      save_html_snapshot: true
+      session_reuse: true
+      solver: "capsolver"
+      output_dir: "./output"
+
+# Buyer-intent queries to test
+intents:
+  - id: "email-warmup"
+    prompt: "What are the best email warmup tools?"
+
+  - id: "crm-software"
+    prompt: "What are the top CRM software platforms for small businesses?"
+
+  - id: "seo-tools"
+    prompt: "Which SEO tools do marketers recommend?"
+
+# Extraction settings
+extraction_settings:
+  method: "regex"  # Use regex for fast extraction (browser responses may not support function calling)
+  fuzzy_matching_threshold: 85
+
+# Run settings
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./llm_answers.db"
+
+  # Budget controls (browser runners use $0 cost for now)
+  budget:
+    enabled: true
+    max_per_run_usd: 1.0  # Only API runners count toward budget
+    warn_threshold_usd: 0.5

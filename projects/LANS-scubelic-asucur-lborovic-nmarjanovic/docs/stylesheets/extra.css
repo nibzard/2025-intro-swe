@@ -1,0 +1,82 @@
+/* Custom styles for LLM Answer Watcher documentation */
+
+:root {
+  --md-primary-fg-color: #4f46e5;
+  --md-primary-fg-color--light: #6366f1;
+  --md-primary-fg-color--dark: #4338ca;
+}
+
+/* Code block improvements */
+.highlight pre {
+  border-radius: 0.5rem;
+}
+
+/* Improve table styling */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table th {
+  background-color: var(--md-primary-fg-color);
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+}
+
+table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--md-default-fg-color--lightest);
+}
+
+/* Admonition customization */
+.admonition {
+  border-radius: 0.5rem;
+}
+
+/* Feature cards */
+.feature-card {
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  margin-bottom: 1rem;
+}
+
+.feature-card h3 {
+  margin-top: 0;
+}
+
+/* Command line styling */
+.command-line {
+  background-color: #1e293b;
+  color: #e2e8f0;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  font-family: 'Roboto Mono', monospace;
+  overflow-x: auto;
+}
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-right: 0.5rem;
+}
+
+.badge-success {
+  background-color: #10b981;
+  color: white;
+}
+
+.badge-warning {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.badge-info {
+  background-color: #3b82f6;
+  color: white;
+}
