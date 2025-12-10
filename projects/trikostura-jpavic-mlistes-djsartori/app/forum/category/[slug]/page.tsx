@@ -12,6 +12,33 @@ export const revalidate = 60;
 
 const TOPICS_PER_PAGE = 20;
 
+// Generate metadata for SEO
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const supabase = await createServerSupabaseClient();
+
+  const { data: category } = await (supabase as any)
+    .from('categories')
+    .select('name, description')
+    .eq('slug', slug)
+    .single();
+
+  if (!category) {
+    return {
+      title: 'Kategorija nije pronađena',
+    };
+  }
+
+  return {
+    title: `${category.name} | Skripta Forum`,
+    description: category.description || `Pregledajte teme u kategoriji ${category.name}`,
+  };
+}
+
 export default async function CategoryPage({
   params,
   searchParams,
@@ -22,12 +49,13 @@ export default async function CategoryPage({
   const { slug } = await params;
   const { page } = await searchParams;
   const currentPage = Math.max(1, parseInt(page || '1', 10));
+  const offset = (currentPage - 1) * TOPICS_PER_PAGE;
   const supabase = await createServerSupabaseClient();
 
   // Get category
   const { data: category } = await (supabase as any)
     .from('categories')
-    .select('*')
+    .select('id, name, slug, description, icon, color')
     .eq('slug', slug)
     .single();
 
@@ -35,27 +63,29 @@ export default async function CategoryPage({
     notFound();
   }
 
-  // Get total count for pagination
-  const { count: totalCount } = await (supabase as any)
-    .from('topics')
-    .select('*', { count: 'exact', head: true })
-    .eq('category_id', (category as any).id);
-
-  const totalPages = Math.ceil((totalCount || 0) / TOPICS_PER_PAGE);
-  const offset = (currentPage - 1) * TOPICS_PER_PAGE;
-
-  // Get topics in this category with pagination
-  const { data: topics } = await (supabase as any)
+  // Get topics with count in single query for better performance
+  const { data: topics, count: totalCount } = await (supabase as any)
     .from('topics')
     .select(`
-      *,
+      id,
+      title,
+      slug,
+      created_at,
+      is_pinned,
+      is_locked,
+      has_solution,
+      view_count,
+      reply_count,
+      last_reply_at,
       author:profiles!topics_author_id_fkey(username, avatar_url),
       category:categories(name, slug, color)
-    `)
+    `, { count: 'exact' })
     .eq('category_id', (category as any).id)
     .order('is_pinned', { ascending: false })
     .order('created_at', { ascending: false })
     .range(offset, offset + TOPICS_PER_PAGE - 1);
+
+  const totalPages = Math.ceil((totalCount || 0) / TOPICS_PER_PAGE);
 
   return (
     <div className="space-y-4 sm:space-y-6 px-3 sm:px-0">

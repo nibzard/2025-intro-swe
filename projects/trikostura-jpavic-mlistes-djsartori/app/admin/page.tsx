@@ -8,49 +8,61 @@ export const dynamic = 'force-dynamic';
 async function getAdminStats() {
   const supabase = await createServerSupabaseClient();
 
-  // Get total users
-  const { count: totalUsers } = await supabase
-    .from('profiles')
-    .select('*', { count: 'exact', head: true });
-
-  // Get total topics
-  const { count: totalTopics } = await supabase
-    .from('topics')
-    .select('*', { count: 'exact', head: true });
-
-  // Get total replies
-  const { count: totalReplies } = await supabase
-    .from('replies')
-    .select('*', { count: 'exact', head: true });
-
-  // Get users registered in last 7 days
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-  const { count: newUsers } = await supabase
-    .from('profiles')
-    .select('*', { count: 'exact', head: true })
-    .gte('created_at', sevenDaysAgo.toISOString());
+  // Run all queries in parallel for better performance
+  const [
+    { count: totalUsers },
+    { count: totalTopics },
+    { count: totalReplies },
+    { count: newUsers },
+    { data: recentTopics },
+    { data: activeUsers }
+  ] = await Promise.all([
+    // Get total users
+    supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true }),
 
-  // Get recent topics
-  const { data: recentTopics } = await supabase
-    .from('topics')
-    .select(
-      `
-      *,
-      author:profiles!topics_author_id_fkey(username, full_name),
-      category:categories(name, color)
-    `
-    )
-    .order('created_at', { ascending: false })
-    .limit(5);
+    // Get total topics
+    supabase
+      .from('topics')
+      .select('*', { count: 'exact', head: true }),
 
-  // Get most active users
-  const { data: activeUsers } = await supabase
-    .from('profiles')
-    .select('id, username, full_name, reputation, avatar_url')
-    .order('reputation', { ascending: false })
-    .limit(5);
+    // Get total replies
+    supabase
+      .from('replies')
+      .select('*', { count: 'exact', head: true }),
+
+    // Get users registered in last 7 days
+    supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', sevenDaysAgo.toISOString()),
+
+    // Get recent topics with selective fields
+    supabase
+      .from('topics')
+      .select(`
+        id,
+        title,
+        slug,
+        reply_count,
+        created_at,
+        author:profiles!topics_author_id_fkey(username, full_name),
+        category:categories(name, color)
+      `)
+      .order('created_at', { ascending: false })
+      .limit(5),
+
+    // Get most active users
+    supabase
+      .from('profiles')
+      .select('id, username, full_name, reputation, avatar_url')
+      .order('reputation', { ascending: false })
+      .limit(5)
+  ]);
 
   return {
     totalUsers: totalUsers || 0,
