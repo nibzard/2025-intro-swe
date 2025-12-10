@@ -266,14 +266,14 @@ export default async function TopicPage({
         )}
       </div>
 
-      <Card className="border-0 shadow-sm hover:shadow-md transition-all duration-300 rounded-xl">
+      <Card className="border-2 border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-all duration-300">
         <CardContent className="p-6 sm:p-8">
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap">
               <span
-                className="px-4 py-2 text-sm font-semibold rounded-full transition-all hover:scale-105"
+                className="px-4 py-1.5 text-sm font-bold rounded-full shadow-sm ring-1 ring-black/5 dark:ring-white/10 transition-transform hover:scale-105"
                 style={{
-                  backgroundColor: category?.color + '15',
+                  backgroundColor: category?.color + '25',
                   color: category?.color,
                 }}
               >
@@ -283,9 +283,9 @@ export default async function TopicPage({
               {enrichedTopic.topic_tags?.map((topicTag: any) => (
                 <span
                   key={topicTag.tags.id}
-                  className="px-3 py-1 text-xs font-medium rounded-full transition-all hover:shadow-sm"
+                  className="px-3 py-1 text-xs font-semibold rounded-full shadow-sm ring-1 ring-black/5 dark:ring-white/10 transition-transform hover:scale-105"
                   style={{
-                    backgroundColor: topicTag.tags.color ? topicTag.tags.color + '10' : '#e5e7eb',
+                    backgroundColor: topicTag.tags.color ? topicTag.tags.color + '20' : '#e5e7eb',
                     color: topicTag.tags.color || '#6b7280',
                   }}
                 >
@@ -293,18 +293,18 @@ export default async function TopicPage({
                 </span>
               ))}
               {hasSolution && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 text-green-700 dark:text-green-300 rounded-full ring-1 ring-green-500/20 transition-all hover:scale-105">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 text-green-700 dark:text-green-300 rounded-full shadow-sm ring-1 ring-green-500/20 transition-transform hover:scale-105">
                   <CheckCircle className="w-3.5 h-3.5" />
                   Riješeno
                 </span>
               )}
               {enrichedTopic.is_pinned && (
-                <span className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-full ring-1 ring-yellow-500/20">
+                <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold bg-gradient-to-r from-yellow-100 to-amber-100 dark:from-yellow-900 dark:to-amber-900 text-yellow-700 dark:text-yellow-300 rounded-full shadow-sm ring-1 ring-yellow-500/20">
                   📌 Prikvačeno
                 </span>
               )}
               {enrichedTopic.is_locked && (
-                <span className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-gray-100 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 rounded-full ring-1 ring-gray-500/20">
+                <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full shadow-sm ring-1 ring-gray-500/20">
                   🔒 Zaključano
                 </span>
               )}
@@ -318,9 +318,9 @@ export default async function TopicPage({
             />
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-extrabold mb-6 text-gray-900 dark:text-white leading-tight">{enrichedTopic.title}</h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent leading-tight">{enrichedTopic.title}</h1>
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-gray-50/50 dark:bg-gray-800/30 rounded-xl border-subtle mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/30 rounded-xl border border-gray-200 dark:border-gray-700 mb-6">
             <div className="flex items-center gap-4">
               <Link href={`/forum/user/${author?.username}`} className="flex-shrink-0 transition-transform hover:scale-110">
                 <Avatar
@@ -359,19 +359,19 @@ export default async function TopicPage({
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-              <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-4 sm:gap-6">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                 <MessageSquare className="w-4 h-4 text-blue-500" />
-                <span className="font-medium text-gray-900 dark:text-white">{enrichedTopic.reply_count}</span>
-                <span>odgovora</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{enrichedTopic.reply_count}</span>
+                <span className="text-xs text-gray-600 dark:text-gray-400">odgovora</span>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                 <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
-                <span className="font-medium text-gray-900 dark:text-white">{enrichedTopic.view_count}</span>
-                <span>pregleda</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{enrichedTopic.view_count}</span>
+                <span className="text-xs text-gray-600 dark:text-gray-400">pregleda</span>
               </div>
             </div>
           </div>

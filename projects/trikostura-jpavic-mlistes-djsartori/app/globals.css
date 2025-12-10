@@ -82,38 +82,9 @@
     @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
   }
 
-  /* Subtle hover lift - modern minimal design */
-  .hover-lift-subtle {
-    @apply transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md;
-  }
-
-  /* Gentle scale on hover */
-  .hover-scale {
-    @apply transition-transform duration-200 hover:scale-105;
-  }
-
   /* Smooth transitions */
   .transition-smooth {
     @apply transition-all duration-300 ease-out;
-  }
-
-  /* Subtle border for modern cards */
-  .border-subtle {
-    @apply border border-gray-100 dark:border-gray-800;
-  }
-
-  /* Elevated card background */
-  .bg-card-elevated {
-    @apply bg-white dark:bg-gray-900 shadow-sm rounded-xl;
-  }
-}
-
-/* Reduced motion support for accessibility */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
   }
 }
 
