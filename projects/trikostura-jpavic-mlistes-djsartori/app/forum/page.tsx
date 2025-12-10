@@ -36,8 +36,8 @@ interface TopicWithCategoryAndAuthor extends Topic {
   author: Pick<Profile, 'username' | 'avatar_url'> | null;
 }
 
-// Revalidate every 60 seconds
-export const revalidate = 60;
+// Revalidate every 120 seconds (2 minutes) for better cache performance
+export const revalidate = 120;
 
 const TOPICS_PER_PAGE = 15;
 
@@ -101,66 +101,37 @@ export default async function ForumPage({
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-  const { data: trendingTopicsData } = await supabase
+  const { data: trendingTopics } = await supabase
     .from('topics')
-    .select('*')
+    .select(`
+      id,
+      title,
+      slug,
+      view_count,
+      reply_count,
+      created_at,
+      author:profiles!topics_author_id_fkey(username, avatar_url),
+      category:categories(name, slug, color)
+    `)
     .gte('created_at', sevenDaysAgo.toISOString())
     .order('view_count', { ascending: false })
     .limit(5);
 
-  // Manually fetch related data for trending topics
-  let trendingTopics: TopicWithCategoryAndAuthor[] = [];
-  if (trendingTopicsData && trendingTopicsData.length > 0) {
-    const authorIds = [...new Set((trendingTopicsData as Topic[]).map(t => t.author_id))];
-    const categoryIds = [...new Set((trendingTopicsData as Topic[]).map(t => t.category_id))];
-
-    const [authorsRes, categoriesRes] = await Promise.all([
-      supabase.from('profiles').select('id, username, avatar_url').in('id', authorIds),
-      supabase.from('categories').select('id, name, slug, color').in('id', categoryIds),
-    ]);
-
-    const authorsMap = new Map((authorsRes.data as any[] || []).map(a => [a.id, a]));
-    const categoriesMap = new Map((categoriesRes.data as any[] || []).map(c => [c.id, c]));
-
-    trendingTopics = (trendingTopicsData as Topic[]).map(topic => ({
-      ...topic,
-      author: authorsMap.get(topic.author_id) || null,
-      category: categoriesMap.get(topic.category_id) || null,
-    }));
-  }
-
   // Get recent topics (without server-side filtering for instant client-side switching)
-  const { data: topicsData, count: totalTopics } = await supabase
+  const { data: recentTopics, count: totalTopics } = await supabase
     .from('topics')
-    .select('*', { count: 'exact' })
+    .select(`
+      *,
+      author:profiles!topics_author_id_fkey(username, avatar_url),
+      category:categories(name, slug, color)
+    `, { count: 'exact' })
     .order('is_pinned', { ascending: false })
     .order('created_at', { ascending: false })
     .range(offset, offset + TOPICS_PER_PAGE - 1);
 
-  // Manually fetch related data
-  let recentTopics: TopicWithCategoryAndAuthor[] = [];
-  if (topicsData && topicsData.length > 0) {
-    const authorIds = [...new Set((topicsData as Topic[]).map(t => t.author_id))];
-    const categoryIds = [...new Set((topicsData as Topic[]).map(t => t.category_id))];
-
-    const [authorsRes, categoriesRes] = await Promise.all([
-      supabase.from('profiles').select('id, username, avatar_url').in('id', authorIds),
-      supabase.from('categories').select('id, name, slug, color').in('id', categoryIds),
-    ]);
-
-    const authorsMap = new Map((authorsRes.data as any[] || []).map(a => [a.id, a]));
-    const categoriesMap = new Map((categoriesRes.data as any[] || []).map(c => [c.id, c]));
-
-    recentTopics = (topicsData as Topic[]).map(topic => ({
-      ...topic,
-      author: authorsMap.get(topic.author_id) || null,
-      category: categoriesMap.get(topic.category_id) || null,
-    }));
-  }
-
   // Calculate solved and unsolved counts for client-side filtering
-  const solvedCount = recentTopics.filter(t => t.has_solution === true).length;
-  const unsolvedCount = recentTopics.filter(t => !t.has_solution).length;
+  const solvedCount = recentTopics?.filter(t => t.has_solution === true).length || 0;
+  const unsolvedCount = recentTopics?.filter(t => !t.has_solution).length || 0;
 
   const totalPages = Math.ceil((totalTopics || 0) / TOPICS_PER_PAGE);
 
@@ -266,8 +237,8 @@ export default async function ForumPage({
         </div>
 
         <TopicListClient
-          topics={recentTopics as any}
-          totalCount={recentTopics.length}
+          topics={(recentTopics || []) as any}
+          totalCount={recentTopics?.length || 0}
           solvedCount={solvedCount}
           unsolvedCount={unsolvedCount}
         />

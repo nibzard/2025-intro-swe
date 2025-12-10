@@ -7,8 +7,8 @@ import { Pagination } from '@/components/ui/pagination';
 import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { MessageSquare, Pin, CheckCircle } from 'lucide-react';
 
-// Revalidate every 30 seconds
-export const revalidate = 30;
+// Revalidate every 60 seconds (1 minute) for better cache performance
+export const revalidate = 60;
 
 const TOPICS_PER_PAGE = 20;
 
