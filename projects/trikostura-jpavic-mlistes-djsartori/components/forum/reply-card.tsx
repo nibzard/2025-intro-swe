@@ -263,17 +263,17 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
           </div>
 
           {/* Desktop: Vertical voting bar */}
-          <div className="hidden sm:flex flex-col items-center gap-2">
+          <div className="hidden sm:flex flex-col items-center gap-2 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-2 rounded-xl border border-gray-200 dark:border-gray-700">
             <Button
               variant={currentVote === 1 ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleVote(1)}
               disabled={!isLoggedIn || isVoting}
-              className={`w-10 h-10 p-0 ${upvoteAnimation}`}
+              className={`w-11 h-11 p-0 rounded-lg shadow-sm hover:shadow-md transition-all ${currentVote === 1 ? 'bg-gradient-to-br from-blue-500 to-blue-600 ring-2 ring-blue-300' : ''} ${upvoteAnimation}`}
             >
               <ThumbsUp className="w-4 h-4" />
             </Button>
-            <span className="text-lg font-semibold">
+            <span className="text-xl font-bold bg-gradient-to-br from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent px-2 py-1 rounded-md">
               {upvotes - downvotes}
             </span>
             <Button
@@ -281,16 +281,16 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
               size="sm"
               onClick={() => handleVote(-1)}
               disabled={!isLoggedIn || isVoting}
-              className={`w-10 h-10 p-0 ${downvoteAnimation}`}
+              className={`w-11 h-11 p-0 rounded-lg shadow-sm hover:shadow-md transition-all ${currentVote === -1 ? 'bg-gradient-to-br from-red-500 to-red-600 ring-2 ring-red-300' : ''} ${downvoteAnimation}`}
             >
               <ThumbsDown className="w-4 h-4" />
             </Button>
           </div>
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
+            <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2 p-3 bg-gradient-to-r from-gray-50 to-transparent dark:from-gray-800/50 dark:to-transparent rounded-lg border-l-4 border-blue-500">
               <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                <Link href={`/forum/user/${reply.author?.username}`} className="flex-shrink-0">
+                <Link href={`/forum/user/${reply.author?.username}`} className="flex-shrink-0 transition-transform hover:scale-110">
                   <Avatar
                     src={reply.author?.avatar_url}
                     alt={reply.author?.username || 'User'}
@@ -298,32 +298,39 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
                     size="sm"
                   />
                 </Link>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 flex-1 min-w-0">
-                  <Link
-                    href={`/forum/user/${reply.author?.username}`}
-                    className="font-semibold text-sm sm:text-base truncate hover:underline"
-                  >
-                    {reply.author?.username}
-                  </Link>
-                  <span className="text-xs sm:text-sm text-gray-500">
-                    {new Date(reply.created_at).toLocaleDateString('hr-HR', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </span>
-                  {reply.edited_at && (
-                    <span className="text-xs text-gray-400 italic" title={`Uređeno: ${new Date(reply.edited_at).toLocaleString('hr-HR')}`}>
-                      (uređeno)
+                <div className="flex flex-col gap-1 flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Link
+                      href={`/forum/user/${reply.author?.username}`}
+                      className="font-bold text-sm sm:text-base text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      {reply.author?.username}
+                    </Link>
+                    {reply.author?.reputation > 0 && (
+                      <span className="text-xs px-2 py-0.5 bg-gradient-to-r from-yellow-100 to-amber-100 dark:from-yellow-900 dark:to-amber-900 text-yellow-700 dark:text-yellow-300 rounded-full font-bold shadow-sm ring-1 ring-yellow-500/20">
+                        ⭐ {reply.author.reputation}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>
+                      {new Date(reply.created_at).toLocaleDateString('hr-HR', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
                     </span>
-                  )}
-                  {reply.author?.reputation > 0 && (
-                    <span className="text-xs px-2 py-0.5 sm:py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded">
-                      {reply.author.reputation} rep
-                    </span>
-                  )}
+                    {reply.edited_at && (
+                      <span className="italic text-gray-500" title={`Uređeno: ${new Date(reply.edited_at).toLocaleString('hr-HR')}`}>
+                        • (uređeno)
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
