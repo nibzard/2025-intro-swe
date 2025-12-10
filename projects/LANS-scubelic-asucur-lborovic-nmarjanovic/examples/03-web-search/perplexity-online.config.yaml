@@ -1,0 +1,33 @@
+# Perplexity Online Example
+# Demonstrates Perplexity Sonar (always includes web search + citations)
+# Cost: ~$0.003 per run (3 intents × $0.001/query)
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "perplexity"
+      model_name: "sonar"
+      env_api_key: "PERPLEXITY_API_KEY"
+      # Perplexity automatically searches web for every query
+      # No need to enable tools - it's built-in
+
+brands:
+  mine: ["YourBrand"]
+  competitors: ["CompetitorA", "CompetitorB"]
+
+intents:
+  - id: "current-tools-2025"
+    prompt: "What are the best project management tools in 2025?"
+
+  - id: "recent-launches"
+    prompt: "What are the newest project management platforms?"
+
+  - id: "current-pricing"
+    prompt: "What do project management tools cost in 2025?"
+
+# Perplexity benefits:
+# - Always includes citations to sources
+# - Built-in web search (no extra cost)
+# - Good for tracking where LLMs find information about your brand

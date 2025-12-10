@@ -1,0 +1,18 @@
+{
+  "run_id": "2025-11-02T10-15-30Z",
+  "intent_id": "sales-engagement-platforms",
+  "model_provider": "anthropic",
+  "model_name": "claude-3-5-haiku-20241022",
+  "timestamp_utc": "2025-11-02T10:16:45Z",
+  "prompt": "What are the best sales engagement platforms?",
+  "raw_response": "Here are the top sales engagement platforms for 2024:\n\n**1. HubSpot Sales Hub** - Comprehensive platform combining CRM, email tracking, and sales automation. Features include email sequences, deal pipeline management, and detailed analytics. Particularly strong for small to medium businesses.\n\n**2. Apollo.io** - Sales intelligence and engagement platform with excellent data enrichment capabilities. Known for its massive database of contacts and companies, plus email sequences and dialer functionality.\n\n**3. Instantly** - User-friendly platform focused on email outreach and automation. Good for teams needing quick setup and straightforward campaign management.\n\n**4. Woodpecker** - B2B-focused with strong agency features. Offers email automation, follow-up sequences, and team collaboration tools.\n\n**5. Warmly** - While newer to the market, offers innovative features for sales engagement including real-time website visitor identification and automated outreach sequences.\n\nWhen selecting a platform, consider your team size, integration requirements, and specific sales processes. Many offer tiered pricing based on features and contact limits.",
+  "usage": {
+    "prompt_tokens": 285,
+    "completion_tokens": 224,
+    "total_tokens": 509,
+    "cost_usd": 0.0018
+  },
+  "processing_time_ms": 2100,
+  "api_response_time_ms": 1687,
+  "retries": 0
+}

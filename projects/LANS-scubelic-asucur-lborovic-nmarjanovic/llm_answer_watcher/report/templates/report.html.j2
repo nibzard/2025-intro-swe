@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Answer Watcher Report - {{ run_id }}</title>
+    <style>
+        /* Modern CSS Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Root Variables - Professional Blue/Green Palette */
+        :root {
+            --color-primary: #0066cc;
+            --color-success: #10b981;
+            --color-danger: #ef4444;
+            --color-warning: #f59e0b;
+            --color-bg: #f8fafc;
+            --color-surface: #ffffff;
+            --color-border: #e2e8f0;
+            --color-text: #1e293b;
+            --color-text-muted: #64748b;
+            --color-accent: #06b6d4;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --radius: 8px;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-mono: "SF Mono", Monaco, "Cascadia Code", "Courier New", monospace;
+        }
+
+        /* Base Styles */
+        body {
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            color: var(--color-text);
+            background: var(--color-bg);
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: var(--radius);
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header .subtitle {
+            font-size: 1rem;
+            opacity: 0.95;
+            font-family: var(--font-mono);
+        }
+
+        /* Summary Card */
+        .summary-card {
+            background: var(--color-surface);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--color-border);
+        }
+
+        .summary-card h2 {
+            font-size: 1.25rem;
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--color-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+        }
+
+        .summary-item .label {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .summary-item .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-text);
+        }
+
+        .summary-item.success .value {
+            color: var(--color-success);
+        }
+
+        /* Intent Section */
+        .intent-section {
+            background: var(--color-surface);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--color-border);
+        }
+
+        .intent-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .intent-header h3 {
+            font-size: 1.5rem;
+            color: var(--color-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .intent-prompt {
+            font-style: italic;
+            color: var(--color-text-muted);
+            padding: 0.75rem;
+            background: var(--color-bg);
+            border-left: 4px solid var(--color-accent);
+            border-radius: 4px;
+            margin-top: 0.5rem;
+        }
+
+        /* Model Result Card */
+        .model-result {
+            background: var(--color-bg);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--color-border);
+        }
+
+        .model-result:last-child {
+            margin-bottom: 0;
+        }
+
+        .model-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .model-name {
+            font-weight: 600;
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            color: var(--color-text);
+        }
+
+        .appeared-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .appeared-badge.yes {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .appeared-badge.no {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Mentions Section */
+        .mentions-section {
+            margin-top: 1rem;
+        }
+
+        .mentions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .mentions-column h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .mention-list {
+            list-style: none;
+        }
+
+        .mention-item {
+            padding: 0.5rem;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mention-name {
+            font-weight: 500;
+            color: var(--color-text);
+        }
+
+        .mention-position {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            font-family: var(--font-mono);
+        }
+
+        .empty-state {
+            padding: 1rem;
+            text-align: center;
+            color: var(--color-text-muted);
+            font-style: italic;
+            background: var(--color-surface);
+            border: 1px dashed var(--color-border);
+            border-radius: 4px;
+        }
+
+        /* Ranked List */
+        .ranked-list {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--color-surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+        }
+
+        .ranked-list h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .rank-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .rank-position {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            min-width: 2rem;
+            text-align: center;
+        }
+
+        .rank-brand {
+            flex: 1;
+            font-weight: 500;
+            color: var(--color-text);
+        }
+
+        .rank-confidence {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            font-family: var(--font-mono);
+            padding: 0.25rem 0.5rem;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+        }
+
+        .confidence-high {
+            color: var(--color-success);
+            border-color: var(--color-success);
+            background: #dcfce7;
+        }
+
+        .confidence-medium {
+            color: var(--color-warning);
+            border-color: var(--color-warning);
+            background: #fef3c7;
+        }
+
+        .confidence-low {
+            color: var(--color-text-muted);
+        }
+
+        /* Brand Highlighting in LLM Responses */
+        .highlight-mine {
+            background-color: #fef08a;  /* yellow-200 */
+            font-weight: 600;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .highlight-competitor {
+            background-color: #fed7aa;  /* orange-200 */
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        /* LLM Response Collapsible */
+        .llm-response-section {
+            margin-top: 1rem;
+            border-top: 1px solid var(--color-border);
+            padding-top: 1rem;
+        }
+
+        .llm-response-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            transition: all 0.2s;
+        }
+
+        .llm-response-toggle:hover {
+            background: var(--color-bg);
+            color: var(--color-text);
+        }
+
+        .llm-response-toggle .arrow {
+            transition: transform 0.2s;
+        }
+
+        .llm-response-toggle.expanded .arrow {
+            transform: rotate(90deg);
+        }
+
+        .llm-response-content {
+            display: none;
+            margin-top: 0.75rem;
+            padding: 1rem;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .llm-response-content.show {
+            display: block;
+        }
+
+        .llm-response-text {
+            font-size: 0.875rem;
+            line-height: 1.6;
+            color: var(--color-text);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .raw-files-links {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .raw-file-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.375rem 0.75rem;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--color-primary);
+            text-decoration: none;
+            font-family: var(--font-mono);
+            transition: all 0.2s;
+        }
+
+        .raw-file-link:hover {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        /* Cost Display */
+        .cost-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+
+        /* Visibility Scores */
+        .visibility-section {
+            background: var(--color-surface);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--color-border);
+        }
+
+        .visibility-section h2 {
+            font-size: 1.25rem;
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .visibility-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .visibility-column h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .brand-score-item {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .brand-score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .brand-score-name {
+            font-weight: 600;
+            color: var(--color-text);
+            font-size: 1rem;
+        }
+
+        .visibility-percentage {
+            font-size: 1.25rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-family: var(--font-mono);
+        }
+
+        .visibility-high {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .visibility-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .visibility-low {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .brand-score-details {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .score-detail {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .score-detail-label {
+            font-weight: 500;
+        }
+
+        .score-detail-value {
+            font-family: var(--font-mono);
+        }
+
+        .no-visibility-data {
+            text-align: center;
+            padding: 2rem;
+            color: var(--color-text-muted);
+            font-style: italic;
+            background: var(--color-bg);
+            border: 1px dashed var(--color-border);
+            border-radius: var(--radius);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--color-surface);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--color-border);
+            text-align: center;
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+        }
+
+        .footer strong {
+            color: var(--color-text);
+        }
+
+        /* Toggle Switch Styles */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: all 0.3s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: all 0.3s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: var(--color-success);
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .toggle-switch input:focus + .toggle-slider {
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+
+        /* Hidden state for filtered model results */
+        .model-result.hidden {
+            display: none;
+        }
+
+        .model-result {
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        /* Tool Badge (Web Search indicator) */
+        .tool-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            margin-left: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: #f0f9ff;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+            border-radius: 4px;
+            font-family: var(--font-sans);
+            vertical-align: middle;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .visibility-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .mentions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .model-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .header {
+                background: var(--color-primary);
+                color: white;
+            }
+
+            .summary-card,
+            .intent-section,
+            .model-result {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>LLM Answer Watcher Report</h1>
+            <div class="subtitle">
+                Run ID: {{ run_id }} | {{ timestamp_utc }}{% if config_filename %} | Config: {{ config_filename }}{% endif %}
+            </div>
+        </header>
+
+        <!-- Summary Card -->
+        <section class="summary-card">
+            <h2>Run Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="label">Total Cost</div>
+                    <div class="value success">{{ total_cost_formatted }}</div>
+                </div>
+                {% if has_operations_cost %}
+                <div class="summary-item">
+                    <div class="label">LLM Queries Cost</div>
+                    <div class="value">{{ total_llm_cost_formatted }}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="label">Operations Cost</div>
+                    <div class="value">{{ total_operations_cost_formatted }}</div>
+                </div>
+                {% endif %}
+                <div class="summary-item">
+                    <div class="label">Intents Queried</div>
+                    <div class="value">{{ total_intents }}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="label">Models Used</div>
+                    <div class="value">{{ total_models }}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="label">Success Rate</div>
+                    <div class="value">{{ success_rate }}%</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Models Used -->
+        {% if models_used %}
+        <section class="summary-card">
+            <h2>Models Queried</h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+                {% for model in models_used %}
+                <span class="cost-badge" style="background: #dbeafe; color: #1e40af;">
+                    {{ model.provider }}/{{ model.model_name }}
+                </span>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Filter Controls -->
+        <section class="summary-card">
+            <h2>Display Filters</h2>
+            <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem;">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="hideEmptyToggle" />
+                    <span class="toggle-slider"></span>
+                </label>
+                <label for="hideEmptyToggle" style="cursor: pointer; font-size: 0.95rem; color: var(--color-text);">
+                    Show only results where my brand appeared
+                </label>
+            </div>
+        </section>
+
+        <!-- Visibility Scores -->
+        {% if visibility_scores and (visibility_scores.my_brands or visibility_scores.competitor_brands) %}
+        <section class="visibility-section">
+            <h2>Brand Visibility Scores</h2>
+            <p style="color: var(--color-text-muted); font-size: 0.875rem; margin-top: 0.5rem;">
+                Visibility score shows the percentage of queries where each brand appeared across all intents and models tested.
+            </p>
+
+            <div class="visibility-grid">
+                <!-- My Brands -->
+                <div class="visibility-column">
+                    <h3>
+                        <span style="color: var(--color-success);">✓</span>
+                        My Brands ({{ visibility_scores.my_brands|length }})
+                    </h3>
+                    {% if visibility_scores.my_brands %}
+                        {% for brand in visibility_scores.my_brands %}
+                        <div class="brand-score-item">
+                            <div class="brand-score-header">
+                                <div class="brand-score-name">{{ brand.brand_name }}</div>
+                                <div class="visibility-percentage {% if brand.visibility_percentage >= 60 %}visibility-high{% elif brand.visibility_percentage >= 30 %}visibility-medium{% else %}visibility-low{% endif %}">
+                                    {{ brand.visibility_percentage }}%
+                                </div>
+                            </div>
+                            <div class="brand-score-details">
+                                <div class="score-detail">
+                                    <span class="score-detail-label">Appeared in:</span>
+                                    <span class="score-detail-value">{{ brand.appearance_count }}/{{ brand.total_queries }} queries</span>
+                                </div>
+                                {% if brand.average_rank %}
+                                <div class="score-detail">
+                                    <span class="score-detail-label">Avg rank:</span>
+                                    <span class="score-detail-value">#{{ brand.average_rank }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-visibility-data">
+                            No brand mentions found
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Competitor Brands -->
+                <div class="visibility-column">
+                    <h3>
+                        <span style="color: var(--color-text-muted);">◆</span>
+                        Competitors ({{ visibility_scores.competitor_brands|length }})
+                    </h3>
+                    {% if visibility_scores.competitor_brands %}
+                        {% for brand in visibility_scores.competitor_brands %}
+                        <div class="brand-score-item">
+                            <div class="brand-score-header">
+                                <div class="brand-score-name">{{ brand.brand_name }}</div>
+                                <div class="visibility-percentage {% if brand.visibility_percentage >= 60 %}visibility-high{% elif brand.visibility_percentage >= 30 %}visibility-medium{% else %}visibility-low{% endif %}">
+                                    {{ brand.visibility_percentage }}%
+                                </div>
+                            </div>
+                            <div class="brand-score-details">
+                                <div class="score-detail">
+                                    <span class="score-detail-label">Appeared in:</span>
+                                    <span class="score-detail-value">{{ brand.appearance_count }}/{{ brand.total_queries }} queries</span>
+                                </div>
+                                {% if brand.average_rank %}
+                                <div class="score-detail">
+                                    <span class="score-detail-label">Avg rank:</span>
+                                    <span class="score-detail-value">#{{ brand.average_rank }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-visibility-data">
+                            No competitor mentions found
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Intent Results -->
+        {% for intent in intents %}
+        <section class="intent-section">
+            <div class="intent-header">
+                <h3>{{ intent.intent_id }}</h3>
+                <div class="intent-prompt">"{{ intent.prompt }}"</div>
+            </div>
+
+            <!-- Model Results for this Intent -->
+            {% for result in intent.results %}
+            <div class="model-result" data-has-my-brand="{{ 'true' if result.appeared_mine else 'false' }}">
+                <!-- Model Header with Appeared Badge -->
+                <div class="model-header">
+                    <span class="model-name">
+                        {{ result.provider }}/{{ result.model_name }}
+                        {% if result.has_web_search %}
+                            <span class="tool-badge">🌐 Web Search: {{ result.web_search_count }}</span>
+                        {% endif %}
+                    </span>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span class="appeared-badge {{ 'yes' if result.appeared_mine else 'no' }}">
+                            {% if result.appeared_mine %}
+                                 Appeared
+                            {% else %}
+                                 Not Found
+                            {% endif %}
+                        </span>
+                        <span class="cost-badge">{{ result.cost_formatted }}</span>
+                    </div>
+                </div>
+
+                <!-- Mentions Section -->
+                <div class="mentions-section">
+                    <div class="mentions-grid">
+                        <!-- My Mentions -->
+                        <div class="mentions-column">
+                            <h4>My Mentions ({{ result.my_mentions|length }})</h4>
+                            {% if result.my_mentions %}
+                            <ul class="mention-list">
+                                {% for mention in result.my_mentions %}
+                                <li class="mention-item">
+                                    <span class="mention-name">{{ mention.original_text }}</span>
+                                    <span class="mention-position">pos: {{ mention.rank_position if mention.rank_position is not none else '—' }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <div class="empty-state">No mentions found</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Competitor Mentions -->
+                        <div class="mentions-column">
+                            <h4>Competitor Mentions ({{ result.competitor_mentions|length }})</h4>
+                            {% if result.competitor_mentions %}
+                            <ul class="mention-list">
+                                {% for mention in result.competitor_mentions %}
+                                <li class="mention-item">
+                                    <span class="mention-name">{{ mention.original_text }}</span>
+                                    <span class="mention-position">pos: {{ mention.rank_position if mention.rank_position is not none else '—' }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <div class="empty-state">No competitor mentions</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ranked List -->
+                {% if result.ranked_list %}
+                <div class="ranked-list">
+                    <h4>Ranked List ({{ result.rank_extraction_method }} extraction, confidence: {{ "%.1f"|format(result.rank_confidence * 100) }}%)</h4>
+                    {% for rank in result.ranked_list %}
+                    <div class="rank-item">
+                        <div class="rank-position">{{ rank.rank_position }}</div>
+                        <div class="rank-brand">{{ rank.brand_name }}</div>
+                        {% if rank.confidence >= 0.8 %}
+                        <span class="rank-confidence confidence-high">{{ "%.0f"|format(rank.confidence * 100) }}%</span>
+                        {% elif rank.confidence >= 0.5 %}
+                        <span class="rank-confidence confidence-medium">{{ "%.0f"|format(rank.confidence * 100) }}%</span>
+                        {% else %}
+                        <span class="rank-confidence confidence-low">{{ "%.0f"|format(rank.confidence * 100) }}%</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Operations Results (if any) -->
+                {% if result.has_operations %}
+                <div class="operations-section" style="margin-top: 1.5rem;">
+                    <div class="llm-response-toggle" onclick="toggleResponse(this)">
+                        <span class="arrow">▶</span>
+                        <span>Operations Results ({{ result.operations|length }} operations, {{ result.operations_cost_formatted }})</span>
+                    </div>
+                    <div class="llm-response-content">
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            {% for operation in result.operations %}
+                            <div style="padding: 1rem; background: #f8f9fa; border-radius: 0.5rem; border-left: 3px solid {% if operation.error %}#dc2626{% elif operation.skipped %}#9ca3af{% else %}#10b981{% endif %};">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                    <div style="font-weight: 600; color: var(--color-text-secondary);">
+                                        {{ operation.operation_id }}
+                                    </div>
+                                    <div style="display: flex; gap: 0.75rem; align-items: center;">
+                                        {% if operation.error %}
+                                        <span class="status-badge" style="background: #fee2e2; color: #dc2626;">Error</span>
+                                        {% elif operation.skipped %}
+                                        <span class="status-badge" style="background: #f3f4f6; color: #6b7280;">Skipped</span>
+                                        {% endif %}
+                                        <span class="cost-badge" style="font-size: 0.75rem;">{{ operation.cost_formatted }}</span>
+                                        <span style="color: #6b7280; font-size: 0.75rem;">{{ operation.tokens_used }} tokens</span>
+                                    </div>
+                                </div>
+                                {% if operation.error %}
+                                <div style="color: #dc2626; font-size: 0.875rem; margin-top: 0.5rem;">
+                                    <strong>Error:</strong> {{ operation.error }}
+                                </div>
+                                {% elif not operation.skipped %}
+                                <div style="color: var(--color-text); font-size: 0.875rem; line-height: 1.6; white-space: pre-wrap; font-family: 'SF Mono', Monaco, 'Courier New', monospace;">{{ operation.result_text }}</div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- LLM Response Text (Expandable) -->
+                {% if result.answer_text %}
+                <div class="llm-response-section">
+                    <div class="llm-response-toggle" onclick="toggleResponse(this)">
+                        <span class="arrow">▶</span>
+                        <span>View LLM Response ({{ result.answer_length }} chars)</span>
+                    </div>
+                    <div class="llm-response-content">
+                        <div class="llm-response-text">{{ result.answer_text }}</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Raw Data Files -->
+                <div class="raw-files-links">
+                    <a href="intent_{{ intent.intent_id }}_raw_{{ result.provider }}_{{ result.model_name }}.json" class="raw-file-link" target="_blank">
+                        📄 Raw JSON
+                    </a>
+                    <a href="intent_{{ intent.intent_id }}_parsed_{{ result.provider }}_{{ result.model_name }}.json" class="raw-file-link" target="_blank">
+                        📊 Parsed JSON
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+        {% endfor %}
+
+        <!-- Footer with Cost Disclaimer -->
+        <footer class="footer">
+            <p>
+                <strong>Cost Disclaimer:</strong> Cost estimates are approximate and based on public pricing.
+                Actual costs may vary. Always check your provider's billing dashboard for accurate costs.
+            </p>
+            <p style="margin-top: 0.5rem; font-size: 0.75rem;">
+                Generated by <strong>LLM Answer Watcher</strong> | {{ timestamp_utc }}
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Toggle LLM response visibility
+        function toggleResponse(button) {
+            const content = button.nextElementSibling;
+            const wasHidden = !content.classList.contains('show');
+
+            content.classList.toggle('show');
+            button.classList.toggle('expanded');
+
+            // Apply brand highlighting when first opened
+            if (wasHidden && content.dataset.highlighted !== 'true') {
+                const textDiv = content.querySelector('.llm-response-text');
+                const modelResult = button.closest('.model-result');
+
+                if (textDiv && modelResult) {
+                    // Extract brand names from the mentions columns
+                    // First column is "My Mentions", second is "Competitor Mentions"
+                    const mentionsColumns = modelResult.querySelectorAll('.mentions-column');
+                    const myBrands = mentionsColumns.length > 0 ?
+                        extractBrandNames(modelResult, '.mentions-column:nth-child(1)') : [];
+                    const competitorBrands = mentionsColumns.length > 1 ?
+                        extractBrandNames(modelResult, '.mentions-column:nth-child(2)') : [];
+
+                    // Apply highlighting
+                    highlightBrands(textDiv, myBrands, competitorBrands);
+
+                    // Mark as highlighted to avoid re-processing
+                    content.dataset.highlighted = 'true';
+                }
+            }
+        }
+
+        // Filter functionality for hiding empty results
+        const STORAGE_KEY = 'llm-watcher-hide-empty';
+
+        function applyFilter(hideEmpty) {
+            const modelResults = document.querySelectorAll('.model-result');
+            let hiddenCount = 0;
+
+            modelResults.forEach(result => {
+                const hasMyBrand = result.getAttribute('data-has-my-brand') === 'true';
+
+                if (hideEmpty && !hasMyBrand) {
+                    result.classList.add('hidden');
+                    hiddenCount++;
+                } else {
+                    result.classList.remove('hidden');
+                }
+            });
+
+            // Save preference to localStorage
+            try {
+                localStorage.setItem(STORAGE_KEY, hideEmpty ? 'true' : 'false');
+            } catch (e) {
+                // localStorage might be disabled in some browsers
+                console.warn('Could not save filter preference:', e);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('hideEmptyToggle');
+
+            // Load saved preference from localStorage
+            try {
+                const savedState = localStorage.getItem(STORAGE_KEY);
+                if (savedState === 'true') {
+                    toggle.checked = true;
+                    applyFilter(true);
+                }
+            } catch (e) {
+                // localStorage might be disabled
+                console.warn('Could not load filter preference:', e);
+            }
+
+            // Listen for toggle changes
+            toggle.addEventListener('change', function() {
+                applyFilter(this.checked);
+            });
+        });
+
+        // Brand highlighting functionality
+        function extractBrandNames(modelResult, selector) {
+            const column = modelResult.querySelector(selector);
+            if (!column) return [];
+
+            const mentionItems = column.querySelectorAll('.mention-name');
+            const brands = Array.from(mentionItems).map(el => el.textContent.trim());
+
+            // Remove duplicates
+            return [...new Set(brands)];
+        }
+
+        function highlightBrands(textElement, myBrands, competitorBrands) {
+            // Get the plain text content
+            let html = textElement.textContent;
+
+            // Build array of all brands with their type
+            const allBrands = [
+                ...myBrands.map(b => ({text: b, className: 'highlight-mine'})),
+                ...competitorBrands.map(b => ({text: b, className: 'highlight-competitor'}))
+            ];
+
+            // Sort by length (longest first) to avoid partial matches
+            // e.g., "Steel.dev" should be matched before "Steel"
+            allBrands.sort((a, b) => b.text.length - a.text.length);
+
+            // Replace each brand with highlighted span
+            allBrands.forEach(brand => {
+                // Escape special regex characters
+                const escapedBrand = brand.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+                // Use word boundaries to match whole words only
+                // This prevents "hub" matching in "GitHub"
+                const pattern = new RegExp(`\\b(${escapedBrand})\\b`, 'gi');
+
+                // Replace with highlighted span
+                html = html.replace(pattern, `<span class="${brand.className}">$1</span>`);
+            });
+
+            // Update the element's HTML
+            textElement.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

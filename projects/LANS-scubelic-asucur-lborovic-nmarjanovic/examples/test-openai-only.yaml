@@ -1,0 +1,24 @@
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+      system_prompt: "openai/gpt-4-default"
+
+  use_llm_rank_extraction: false
+
+brands:
+  mine:
+    - "Lemwarm"
+    - "Lemlist"
+
+  competitors:
+    - "Instantly"
+    - "HubSpot"
+
+intents:
+  - id: "best-email-warmup-tools"
+    prompt: "What are the best email warmup tools?"
