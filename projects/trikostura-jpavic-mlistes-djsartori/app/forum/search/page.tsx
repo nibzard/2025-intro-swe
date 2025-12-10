@@ -8,7 +8,19 @@ import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
 import { sanitizeSearchQuery } from '@/lib/utils/sanitize';
 import { Breadcrumb } from '@/components/forum/breadcrumb';
-import { Search, MessageSquare, Filter, X, ChevronDown } from 'lucide-react';
+import {
+  Search,
+  MessageSquare,
+  Filter,
+  X,
+  ChevronDown,
+  TrendingUp,
+  Clock,
+  Sparkles,
+  Users,
+  BookOpen,
+  Lightbulb
+} from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -35,6 +47,9 @@ type SearchResult = {
   is_pinned?: boolean;
 };
 
+const RECENT_SEARCHES_KEY = 'forum_recent_searches';
+const MAX_RECENT_SEARCHES = 5;
+
 export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -52,18 +67,93 @@ export default function SearchPage() {
   // Categories list
   const [categories, setCategories] = useState<any[]>([]);
 
-  // Load categories on mount
+  // Stats
+  const [stats, setStats] = useState({ totalTopics: 0, totalReplies: 0, totalUsers: 0 });
+
+  // Trending topics
+  const [trendingTopics, setTrendingTopics] = useState<any[]>([]);
+
+  // Recent searches
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  // Load categories, stats, and trending topics on mount
   useEffect(() => {
-    async function loadCategories() {
+    async function loadData() {
       const supabase = createClient();
-      const { data } = await supabase
+
+      // Load categories
+      const { data: categoriesData } = await supabase
         .from('categories')
         .select('id, name, slug, color')
         .order('order_index', { ascending: true });
-      setCategories(data || []);
+      setCategories(categoriesData || []);
+
+      // Load stats
+      const { count: topicsCount } = await supabase
+        .from('topics')
+        .select('*', { count: 'exact', head: true });
+
+      const { count: repliesCount } = await supabase
+        .from('replies')
+        .select('*', { count: 'exact', head: true });
+
+      const { count: usersCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      setStats({
+        totalTopics: topicsCount || 0,
+        totalReplies: repliesCount || 0,
+        totalUsers: usersCount || 0,
+      });
+
+      // Load trending topics (most replies in last 7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const { data: trending } = await supabase
+        .from('topics')
+        .select(`
+          id,
+          title,
+          slug,
+          reply_count,
+          view_count,
+          category:categories(name, color)
+        `)
+        .gte('created_at', sevenDaysAgo.toISOString())
+        .order('reply_count', { ascending: false })
+        .limit(5);
+
+      setTrendingTopics(trending || []);
     }
-    loadCategories();
+
+    loadData();
+
+    // Load recent searches from localStorage
+    const saved = localStorage.getItem(RECENT_SEARCHES_KEY);
+    if (saved) {
+      setRecentSearches(JSON.parse(saved));
+    }
   }, []);
+
+  const saveRecentSearch = (searchQuery: string) => {
+    const trimmed = searchQuery.trim();
+    if (!trimmed) return;
+
+    const updated = [
+      trimmed,
+      ...recentSearches.filter(s => s !== trimmed)
+    ].slice(0, MAX_RECENT_SEARCHES);
+
+    setRecentSearches(updated);
+    localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+  };
+
+  const clearRecentSearches = () => {
+    setRecentSearches([]);
+    localStorage.removeItem(RECENT_SEARCHES_KEY);
+  };
 
   async function handleSearch(e?: React.FormEvent) {
     if (e) e.preventDefault();
@@ -72,6 +162,7 @@ export default function SearchPage() {
 
     setIsSearching(true);
     setHasSearched(true);
+    saveRecentSearch(query);
 
     try {
       const sanitizedQuery = sanitizeSearchQuery(query);
@@ -295,10 +386,11 @@ export default function SearchPage() {
       <div>
         <h1 className="text-3xl font-bold mb-2">Napredna Pretraga Foruma</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Pretraži teme i odgovore s naprednim filterima
+          Pretraži {stats.totalTopics.toLocaleString()} tema i {stats.totalReplies.toLocaleString()} odgovora
         </p>
       </div>
 
+      {/* Search Card */}
       <Card>
         <CardContent className="p-6">
           <form onSubmit={handleSearch} className="space-y-4">
@@ -333,64 +425,68 @@ export default function SearchPage() {
                   }`}
                 />
               </Button>
-              <Button type="submit" disabled={isSearching}>
+              <Button type="submit" disabled={isSearching || !query.trim()}>
                 {isSearching ? 'Pretraživanje...' : 'Pretraži'}
               </Button>
             </div>
 
+            {/* Quick Filters - Always Visible */}
+            <div className="flex flex-wrap gap-2">
+              <Select value={searchIn} onValueChange={(val: any) => setSearchIn(val)}>
+                <SelectTrigger className="w-auto">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Sve</SelectItem>
+                  <SelectItem value="topics">Samo Teme</SelectItem>
+                  <SelectItem value="replies">Samo Odgovori</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={dateRange} onValueChange={setDateRange}>
+                <SelectTrigger className="w-auto">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Bilo kada</SelectItem>
+                  <SelectItem value="day">Zadnji dan</SelectItem>
+                  <SelectItem value="week">Zadnji tjedan</SelectItem>
+                  <SelectItem value="month">Zadnji mjesec</SelectItem>
+                  <SelectItem value="year">Zadnja godina</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
+                <SelectTrigger className="w-auto">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="relevance">Relevantnost</SelectItem>
+                  <SelectItem value="date-desc">Najnovije</SelectItem>
+                  <SelectItem value="date-asc">Najstarije</SelectItem>
+                  <SelectItem value="replies">Broj odgovora</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {activeFilterCount > 0 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  Obriši filtere
+                </Button>
+              )}
+            </div>
+
+            {/* Advanced Filters */}
             {showFilters && (
               <div className="border-t pt-4 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {/* Search In */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Pretraži u</label>
-                    <Select value={searchIn} onValueChange={(val: any) => setSearchIn(val)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Sve (Teme i Odgovori)</SelectItem>
-                        <SelectItem value="topics">Samo Teme</SelectItem>
-                        <SelectItem value="replies">Samo Odgovori</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Date Range */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Datum</label>
-                    <Select value={dateRange} onValueChange={setDateRange}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Bilo kada</SelectItem>
-                        <SelectItem value="day">Zadnji dan</SelectItem>
-                        <SelectItem value="week">Zadnji tjedan</SelectItem>
-                        <SelectItem value="month">Zadnji mjesec</SelectItem>
-                        <SelectItem value="year">Zadnja godina</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Sort By */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Sortiraj po</label>
-                    <Select value={sortBy} onValueChange={(val: any) => setSortBy(val)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="relevance">Relevantnosti</SelectItem>
-                        <SelectItem value="date-desc">Najnovije</SelectItem>
-                        <SelectItem value="date-asc">Najstarije</SelectItem>
-                        <SelectItem value="replies">Broj odgovora</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Author Filter */}
-                  <div className="md:col-span-2">
+                  <div>
                     <label className="text-sm font-medium mb-2 block">Autor</label>
                     <Input
                       type="text"
@@ -409,7 +505,7 @@ export default function SearchPage() {
                       <Badge
                         key={category.id}
                         variant={selectedCategories.includes(category.id) ? 'default' : 'outline'}
-                        className="cursor-pointer"
+                        className="cursor-pointer hover:opacity-80 transition-opacity"
                         style={
                           selectedCategories.includes(category.id)
                             ? { backgroundColor: category.color, borderColor: category.color }
@@ -422,27 +518,13 @@ export default function SearchPage() {
                     ))}
                   </div>
                 </div>
-
-                {activeFilterCount > 0 && (
-                  <div className="flex justify-end">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={clearFilters}
-                      className="text-sm"
-                    >
-                      <X className="w-4 h-4 mr-1" />
-                      Obriši filtere
-                    </Button>
-                  </div>
-                )}
               </div>
             )}
           </form>
         </CardContent>
       </Card>
 
+      {/* Search Results */}
       {hasSearched && (
         <div className="space-y-4">
           {results.length > 0 ? (
@@ -460,7 +542,7 @@ export default function SearchPage() {
               </div>
               <div className="space-y-3">
                 {results.map((result) => (
-                  <Card key={`${result.type}-${result.id}`} className="hover:shadow-sm transition-shadow">
+                  <Card key={`${result.type}-${result.id}`} className="hover:shadow-md transition-shadow">
                     <CardContent className="p-5">
                       <div className="flex items-start gap-4">
                         <div className="flex-1">
@@ -538,27 +620,186 @@ export default function SearchPage() {
           ) : (
             <Card>
               <CardContent className="p-12 text-center">
-                <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Nema rezultata</h3>
-                <p className="text-gray-500">
-                  Pokušaj s drugačijim pojmom za pretragu ili promijeni filtere
-                </p>
+                <div className="max-w-md mx-auto">
+                  <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Search className="w-10 h-10 text-gray-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">Nema rezultata</h3>
+                  <p className="text-gray-500 mb-4">
+                    Pokušaj s drugačijim pojmom za pretragu ili promijeni filtere
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setQuery('');
+                      setHasSearched(false);
+                      clearFilters();
+                    }}
+                  >
+                    Nova pretraga
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )}
         </div>
       )}
 
+      {/* Empty State - Show helpful content */}
       {!hasSearched && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Započni naprednu pretragu</h3>
-            <p className="text-gray-500">
-              Upiši pojam u polje iznad i koristi filtere za preciznije rezultate
-            </p>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Search Tips */}
+          <Card className="lg:col-span-2">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Lightbulb className="w-5 h-5 text-yellow-500" />
+                <h3 className="text-lg font-semibold">Savjeti za pretraživanje</h3>
+              </div>
+              <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+                <div>
+                  <span className="font-medium text-gray-900 dark:text-white">Jednostavna pretraga:</span>
+                  <p className="mt-1">Upiši bilo koji pojam, npr. "matematika", "programiranje", "ispit"</p>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-900 dark:text-white">Više riječi:</span>
+                  <p className="mt-1">Traži teme koje sadrže sve navedene riječi, npr. "web development tutorial"</p>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-900 dark:text-white">Koristi filtere:</span>
+                  <p className="mt-1">Suzite rezultate po kategoriji, datumu, autoru ili vrsti sadržaja</p>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-900 dark:text-white">Primjeri pretraga:</span>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {['Python tutorial', 'React hooks', 'SQL query', 'Machine learning'].map((example) => (
+                      <Badge
+                        key={example}
+                        variant="outline"
+                        className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+                        onClick={() => {
+                          setQuery(example);
+                          handleSearch();
+                        }}
+                      >
+                        {example}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Trending Topics */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp className="w-5 h-5 text-orange-500" />
+                <h3 className="text-lg font-semibold">Popularne Teme</h3>
+              </div>
+              <div className="space-y-3">
+                {trendingTopics.length > 0 ? (
+                  trendingTopics.map((topic) => (
+                    <Link
+                      key={topic.id}
+                      href={`/forum/topic/${topic.slug}`}
+                      className="block group"
+                    >
+                      <div className="text-sm font-medium group-hover:text-blue-600 transition-colors line-clamp-2">
+                        {topic.title}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                        {topic.category && (
+                          <span
+                            className="px-1.5 py-0.5 rounded"
+                            style={{
+                              backgroundColor: topic.category.color + '20',
+                              color: topic.category.color,
+                            }}
+                          >
+                            {topic.category.name}
+                          </span>
+                        )}
+                        <span>{topic.reply_count} odgovora</span>
+                      </div>
+                    </Link>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">Nema popularnih tema</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Searches */}
+          {recentSearches.length > 0 && (
+            <Card className="lg:col-span-2">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-blue-500" />
+                    <h3 className="text-lg font-semibold">Nedavne Pretrage</h3>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearRecentSearches}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {recentSearches.map((search, index) => (
+                    <Badge
+                      key={index}
+                      variant="outline"
+                      className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+                      onClick={() => {
+                        setQuery(search);
+                        handleSearch();
+                      }}
+                    >
+                      {search}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Stats Card */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="w-5 h-5 text-purple-500" />
+                <h3 className="text-lg font-semibold">Statistika</h3>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Teme</span>
+                  </div>
+                  <span className="font-semibold">{stats.totalTopics.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Odgovori</span>
+                  </div>
+                  <span className="font-semibold">{stats.totalReplies.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Korisnici</span>
+                  </div>
+                  <span className="font-semibold">{stats.totalUsers.toLocaleString()}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );
