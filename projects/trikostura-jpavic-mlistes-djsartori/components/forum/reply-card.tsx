@@ -232,7 +232,7 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
   }
 
   return (
-    <Card id={`reply-${reply.id}`}>
+    <Card id={`reply-${reply.id}`} className={`border-2 transition-all duration-300 hover:shadow-lg ${isSolution ? 'border-green-300 dark:border-green-800 bg-green-50/30 dark:bg-green-900/10' : 'border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700'}`}>
       <CardContent className="p-3 sm:p-6">
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           {/* Mobile: Horizontal voting bar */}
@@ -428,8 +428,12 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
             <AdvancedAttachmentList attachments={reply.attachments || []} />
 
             {isSolution && (
-              <div className="mt-2 sm:mt-3 inline-flex items-center gap-1 px-2 sm:px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded text-xs sm:text-sm font-medium">
-                ✓ Označeno kao rješenje
+              <div className="mt-3 sm:mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 text-green-800 dark:text-green-200 rounded-lg text-sm font-bold shadow-md ring-2 ring-green-500/20 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <CheckCircle className="w-4 h-4" />
+                <span>Označeno kao rješenje</span>
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
               </div>
             )}
 
