@@ -38,7 +38,7 @@ export async function generateMetadata({
     };
   }
 
-  const description = topic.content?.substring(0, 160) || 'Pogledajte ovu temu na Skripta forumu';
+  const description = (topic as any).content?.substring(0, 160) || 'Pogledajte ovu temu na Skripta forumu';
 
   return {
     title: `${topic.title} | Skripta Forum`,
