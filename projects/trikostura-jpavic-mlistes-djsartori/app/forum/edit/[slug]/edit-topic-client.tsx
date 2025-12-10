@@ -8,8 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { EnhancedMarkdownEditor } from '@/components/forum/new/enhanced-markdown-editor';
+import { EnhancedFileUpload } from '@/components/forum/new/enhanced-file-upload';
 import { ArrowLeft, Save, AlertCircle, Eye, Edit3, Lightbulb, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { toast } from 'sonner';
 import { useButtonAnimation } from '@/hooks/use-button-animation';
@@ -33,6 +35,7 @@ export function EditTopicClient({ topic }: EditTopicClientProps) {
   const router = useRouter();
   const [title, setTitle] = useState(topic.title);
   const [content, setContent] = useState(topic.content);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -60,6 +63,13 @@ export function EditTopicClient({ topic }: EditTopicClientProps) {
 
     try {
       const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error('Morate biti prijavljeni');
+      }
 
       const { error: updateError } = await (supabase as any)
         .from('topics')
@@ -72,8 +82,31 @@ export function EditTopicClient({ topic }: EditTopicClientProps) {
 
       if (updateError) throw updateError;
 
+      // Upload new attachments if any
+      if (selectedFiles.length > 0) {
+        for (const file of selectedFiles) {
+          try {
+            const result = await uploadAttachment(file, user.id);
+            if (result.url) {
+              await saveAttachmentMetadata(
+                result.url,
+                file.name,
+                file.size,
+                file.type,
+                user.id,
+                topic.id,
+                'topic'
+              );
+            }
+          } catch (err) {
+            console.error('Error uploading file:', err);
+            toast.warning(`Nije uspjelo učitavanje: ${file.name}`);
+          }
+        }
+      }
+
       triggerAnimation();
-      toast.success('Tema uspjesno uredena!', { id: loadingToast });
+      toast.success('Tema uspješno uređena!', { id: loadingToast });
       router.push(`/forum/topic/${topic.slug}`);
       router.refresh();
     } catch (err: any) {
@@ -271,6 +304,14 @@ export function EditTopicClient({ topic }: EditTopicClientProps) {
                 maxLength={MAX_CONTENT_LENGTH}
               />
             )}
+          </CardContent>
+        </Card>
+
+        {/* File Upload */}
+        <Card>
+          <CardContent className="p-4 sm:p-6">
+            <Label className="text-base font-semibold mb-3 block">Dodaj nove priloge (opcionalno)</Label>
+            <EnhancedFileUpload files={selectedFiles} onChange={setSelectedFiles} maxFiles={5} />
           </CardContent>
         </Card>
 
