@@ -149,12 +149,12 @@ export default async function TopicPage({
   let userProfile: any = null;
 
   if (user) {
-    const userQueries: Promise<any>[] = [
+    const userQueries = [
       supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
-        .single()
+        .single() as any
     ];
 
     if (repliesList && repliesList.length > 0) {
@@ -163,7 +163,7 @@ export default async function TopicPage({
           .from('votes')
           .select('reply_id, vote_type')
           .eq('user_id', user.id)
-          .in('reply_id', repliesList.map((r: any) => r.id))
+          .in('reply_id', repliesList.map((r: any) => r.id)) as any
       );
     } else {
       userQueries.push(Promise.resolve({ data: null }));
@@ -175,7 +175,7 @@ export default async function TopicPage({
         .select('id')
         .eq('user_id', user.id)
         .eq('topic_id', topic.id)
-        .maybeSingle()
+        .maybeSingle() as any
     );
 
     const [
