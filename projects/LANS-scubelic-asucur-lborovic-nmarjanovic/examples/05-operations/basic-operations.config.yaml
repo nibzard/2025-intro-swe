@@ -1,0 +1,56 @@
+# Basic Operations Example
+# Simple quality scoring operation runs on every intent
+# Cost: ~$0.009 per run (3 intents × [$0.001 query + $0.002 operation])
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+
+brands:
+  mine: ["YourBrand"]
+  competitors: ["CompetitorA", "CompetitorB"]
+
+intents:
+  - id: "best-tools"
+    prompt: "What are the best project management tools?"
+
+  - id: "buying-guide"
+    prompt: "How do I choose project management software?"
+
+  - id: "tool-comparison"
+    prompt: "Compare the top project management platforms"
+
+# Global operations run for EVERY intent
+# Use operations to automatically analyze LLM responses
+global_operations:
+  - id: "quality-score"
+    description: "Rate response quality and relevance"
+    prompt: |
+      Rate this LLM response on a scale of 1-10 for:
+      - Accuracy of information
+      - Completeness of answer
+      - Relevance to the question
+
+      Question: {intent:prompt}
+      Response: {intent:response}
+
+      Provide:
+      1. A single number score (1-10)
+      2. One sentence explaining the score
+    model: "gpt-4o-mini"
+    enabled: true
+
+# Operations output stored in:
+# - JSON: operation_<id>_<provider>_<model>.json
+# - SQLite: operations table
+#
+# Use cases:
+# - Identify low-quality responses for manual review
+# - Track response quality over time
+# - Compare quality across providers
+# - Alert on quality drops

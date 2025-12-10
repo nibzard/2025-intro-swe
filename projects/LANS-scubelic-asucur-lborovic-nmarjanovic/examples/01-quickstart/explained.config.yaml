@@ -1,0 +1,147 @@
+# LLM Answer Watcher - Explained Configuration
+#
+# This file explains every configuration option with inline comments.
+# Use this as a reference to understand what each field does.
+
+# ============================================================================
+# RUN SETTINGS
+# ============================================================================
+# Controls where output is saved and how the tool executes
+run_settings:
+  # Directory where all output files will be saved
+  # Each run creates a timestamped subdirectory (e.g., ./output/2025-11-08T10-00-00Z/)
+  output_dir: "./output"
+
+  # SQLite database path for historical tracking
+  # All brand mentions are stored here for trend analysis
+  # OPTIONAL: If not specified, defaults to ./output/watcher.db
+  sqlite_db_path: "./output/watcher.db"
+
+  # Maximum number of concurrent API requests
+  # Higher = faster runs, but may hit rate limits
+  # Conservative default: 10 (safe for most API tiers)
+  # OPTIONAL: If not specified, defaults to 10
+  max_concurrent_requests: 10
+
+  # ============================================================================
+  # MODELS - Which LLMs to query
+  # ============================================================================
+  # You can specify multiple models to compare how different LLMs respond
+  models:
+    # OpenAI GPT-4o-mini (recommended for testing)
+    - provider: "openai"              # Provider name (openai, anthropic, google, mistral, grok, perplexity)
+      model_name: "gpt-4o-mini"       # Specific model identifier
+      env_api_key: "OPENAI_API_KEY"   # Environment variable containing API key (NEVER hardcode keys!)
+      system_prompt: "openai/gpt-4-default"  # OPTIONAL: System prompt template (see llm_answer_watcher/system_prompts/)
+
+    # Add more models to compare responses:
+    # - provider: "anthropic"
+    #   model_name: "claude-3-5-haiku-20241022"
+    #   env_api_key: "ANTHROPIC_API_KEY"
+
+  # DEPRECATED: Legacy flag for LLM-based rank extraction (use extraction_settings instead)
+  # use_llm_rank_extraction: false
+
+# ============================================================================
+# BRANDS - Who to track
+# ============================================================================
+# Define your brand and competitors to monitor in LLM responses
+brands:
+  # Your brand names and aliases
+  # Include all variations people might use (e.g., "HubSpot", "Hubspot", "HubSpot CRM")
+  mine:
+    - "YourBrand"
+    - "YourProduct"
+    - "YourCompany"
+
+  # Competitor brands to track
+  # Monitor how often they appear relative to your brand
+  competitors:
+    - "CompetitorA"
+    - "CompetitorB"
+    - "CompetitorC"
+
+# ============================================================================
+# INTENTS - What questions to ask
+# ============================================================================
+# Buyer-intent queries that potential customers actually search for
+# These should be real questions from search analytics, sales calls, etc.
+intents:
+  # Each intent has an ID and a prompt
+  - id: "best-tools"                  # Unique identifier (used in filenames)
+    prompt: "What are the best email marketing tools?"  # The actual question to ask the LLM
+
+  - id: "tool-comparison"
+    prompt: "Compare the top email marketing platforms for small businesses"
+
+  # Add more intents to monitor different buyer stages:
+  # - id: "alternatives"
+  #   prompt: "What are alternatives to [CompetitorA]?"
+  # - id: "reviews"
+  #   prompt: "What do users say about [category] tools?"
+
+# ============================================================================
+# EXTRACTION SETTINGS (Optional)
+# ============================================================================
+# Advanced: Use LLM-based extraction for better accuracy
+# If not specified, defaults to fast regex-based extraction
+#
+# extraction_settings:
+#   # Model to use for extraction (can be different from query models)
+#   extraction_model:
+#     provider: "openai"
+#     model_name: "gpt-4o-mini"       # Fast, cheap model for extraction
+#     env_api_key: "OPENAI_API_KEY"
+#     system_prompt: "openai/extraction-default"
+#
+#   # Extraction method
+#   # - "regex": Fast, cheap, ~85% accuracy (default)
+#   # - "function_calling": Slow, costs +$0.001/query, ~95% accuracy
+#   # - "hybrid": Try function calling, fall back to regex on failure
+#   method: "function_calling"
+#
+#   # Fall back to regex if function calling fails
+#   fallback_to_regex: true
+#
+#   # Minimum confidence threshold for accepting function results (0.0-1.0)
+#   min_confidence: 0.7
+#
+#   # Extract sentiment for each brand mention (requires LLM extraction)
+#   enable_sentiment_analysis: true
+#
+#   # Classify query intent (buyer stage, urgency) before extraction
+#   enable_intent_classification: true
+
+# ============================================================================
+# BUDGET CONTROLS (Optional)
+# ============================================================================
+# Prevent runaway costs with budget limits
+#
+# run_settings:
+#   budget:
+#     enabled: true                    # Enable budget enforcement
+#     max_per_run_usd: 1.00            # Abort if total run would exceed $1.00
+#     max_per_intent_usd: 0.10         # Abort if single intent would exceed $0.10
+#     warn_threshold_usd: 0.50         # Show warning if estimated cost > $0.50 (but continue)
+
+# ============================================================================
+# GLOBAL OPERATIONS (Optional)
+# ============================================================================
+# Run additional LLM analysis on every intent response
+# See examples/05-operations/ for detailed examples
+#
+# global_operations:
+#   - id: "quality-score"
+#     description: "Rate response quality"
+#     prompt: "Rate this response 1-10 for accuracy: {intent:response}"
+#     model: "gpt-4o-mini"
+#     enabled: true
+
+# ============================================================================
+# NOTES
+# ============================================================================
+# - API keys should NEVER be hardcoded (use env_api_key to reference environment variables)
+# - Costs scale with: (# intents) × (# models) × (tokens per query)
+# - Example cost: 3 intents × 2 models × $0.001 = $0.006 per run
+# - See .env.example for how to set up environment variables
+# - See other examples/ directories for provider-specific configs, web search, operations, etc.
