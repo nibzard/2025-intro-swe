@@ -16,10 +16,7 @@ interface TopicControlMenuProps {
 
 export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: TopicControlMenuProps) {
   const [showActions, setShowActions] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showMoveCategory, setShowMoveCategory] = useState(false);
-  const [showPinConfirm, setShowPinConfirm] = useState(false);
-  const [showLockConfirm, setShowLockConfirm] = useState(false);
+  const [openDialog, setOpenDialog] = useState<'delete' | 'pin' | 'lock' | 'move' | null>(null);
   const [selectedCategory, setSelectedCategory] = useState(topic.category_id);
   const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
@@ -55,7 +52,7 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
       alert(`Error: ${result.error}`);
     }
     setIsProcessing(false);
-    setShowPinConfirm(false);
+    setOpenDialog(null);
     setShowActions(false);
   }
 
@@ -70,7 +67,7 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
       alert(`Error: ${result.error}`);
     }
     setIsProcessing(false);
-    setShowLockConfirm(false);
+    setOpenDialog(null);
     setShowActions(false);
   }
 
@@ -85,7 +82,7 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
       alert(`Error: ${result.error}`);
     }
     setIsProcessing(false);
-    setShowMoveCategory(false);
+    setOpenDialog(null);
     setShowActions(false);
   }
 
@@ -121,7 +118,7 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
             {canPin && (
               <button
                 onClick={() => {
-                  setShowPinConfirm(true);
+                  setOpenDialog('pin');
                   setShowActions(false);
                 }}
                 disabled={isProcessing}
@@ -134,7 +131,7 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
             {canLock && (
               <button
                 onClick={() => {
-                  setShowLockConfirm(true);
+                  setOpenDialog('lock');
                   setShowActions(false);
                 }}
                 disabled={isProcessing}
@@ -147,7 +144,7 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
             {canMove && (
               <button
                 onClick={() => {
-                  setShowMoveCategory(true);
+                  setOpenDialog('move');
                   setShowActions(false);
                 }}
                 className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
@@ -161,7 +158,7 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
                 <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
                 <button
                   onClick={() => {
-                    setShowDeleteConfirm(true);
+                    setOpenDialog('delete');
                     setShowActions(false);
                   }}
                   className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-red-600"
@@ -175,7 +172,7 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
         </div>
       )}
 
-      {showDeleteConfirm && (
+      {openDialog === 'delete' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-semibold mb-3">Obriši temu</h3>
@@ -186,7 +183,7 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
             <div className="flex gap-2 justify-end">
               <Button
                 variant="outline"
-                onClick={() => setShowDeleteConfirm(false)}
+                onClick={() => setOpenDialog(null)}
                 disabled={isProcessing}
               >
                 Odustani
@@ -203,7 +200,7 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
         </div>
       )}
 
-      {showMoveCategory && (
+      {openDialog === 'move' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-semibold mb-3">Premjesti temu</h3>
@@ -224,7 +221,7 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
             <div className="flex gap-2 justify-end">
               <Button
                 variant="outline"
-                onClick={() => setShowMoveCategory(false)}
+                onClick={() => setOpenDialog(null)}
                 disabled={isProcessing}
               >
                 Odustani
@@ -240,7 +237,7 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
         </div>
       )}
 
-      {showPinConfirm && (
+      {openDialog === 'pin' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-semibold mb-3">
@@ -254,7 +251,7 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
             <div className="flex gap-2 justify-end">
               <Button
                 variant="outline"
-                onClick={() => setShowPinConfirm(false)}
+                onClick={() => setOpenDialog(null)}
                 disabled={isProcessing}
               >
                 Odustani
@@ -271,7 +268,7 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
         </div>
       )}
 
-      {showLockConfirm && (
+      {openDialog === 'lock' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
             <h3 className="text-lg font-semibold mb-3">
@@ -285,7 +282,7 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
             <div className="flex gap-2 justify-end">
               <Button
                 variant="outline"
-                onClick={() => setShowLockConfirm(false)}
+                onClick={() => setOpenDialog(null)}
                 disabled={isProcessing}
               >
                 Odustani
