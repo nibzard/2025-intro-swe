@@ -8,11 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { EnhancedMarkdownEditor } from '@/components/forum/new/enhanced-markdown-editor';
-import { ArrowLeft, Save, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Save, AlertCircle, Eye, Edit3, Lightbulb, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { toast } from 'sonner';
 import { useButtonAnimation } from '@/hooks/use-button-animation';
+import { MarkdownRenderer } from '@/components/forum/markdown-renderer';
+import { useEffect } from 'react';
 
 const MAX_TITLE_LENGTH = 200;
 const MAX_CONTENT_LENGTH = 10000;
@@ -33,6 +35,8 @@ export function EditTopicClient({ topic }: EditTopicClientProps) {
   const [content, setContent] = useState(topic.content);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [showTips, setShowTips] = useState(false);
   const { triggerAnimation, animationClasses } = useButtonAnimation();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -80,6 +84,27 @@ export function EditTopicClient({ topic }: EditTopicClientProps) {
     }
   };
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+S or Cmd+S to save
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (!isSubmitting && title.trim() && content.trim()) {
+          const form = document.querySelector('form');
+          if (form) {
+            form.requestSubmit();
+          }
+        } else {
+          toast.error('Molimo ispunite sva obavezna polja');
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [title, content, isSubmitting]);
+
   return (
     <div className="max-w-4xl mx-auto py-4 sm:py-8 px-3 sm:px-4">
       {/* Breadcrumb Navigation */}
@@ -113,6 +138,46 @@ export function EditTopicClient({ topic }: EditTopicClientProps) {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Tips Panel */}
+        {showTips && (
+          <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Lightbulb className="w-5 h-5 text-blue-500" />
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                      Savjeti za uređivanje
+                    </h3>
+                  </div>
+                  <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-500 mt-0.5">•</span>
+                      <span><strong>Provjeri sadržaj:</strong> Koristi pregled za provjeru formatiranja</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-500 mt-0.5">•</span>
+                      <span><strong>Označi izmjene:</strong> Jasno navedi što si promijenio</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-500 mt-0.5">•</span>
+                      <span><strong>Prečac:</strong> Ctrl+S za brzo spremanje</span>
+                    </li>
+                  </ul>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowTips(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  aria-label="Zatvori savjete"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardContent className="p-4 sm:p-6">
             <div className="space-y-2">
@@ -142,15 +207,70 @@ export function EditTopicClient({ topic }: EditTopicClientProps) {
 
         <Card>
           <CardContent className="p-4 sm:p-6">
-            <Label className="text-base font-semibold mb-3 block">
-              Sadrzaj <span className="text-red-500">*</span>
-            </Label>
-            <EnhancedMarkdownEditor
-              value={content}
-              onChange={setContent}
-              placeholder="Sadrzaj teme..."
-              maxLength={MAX_CONTENT_LENGTH}
-            />
+            <div className="flex items-center justify-between mb-3">
+              <Label className="text-base font-semibold">
+                Sadrzaj <span className="text-red-500">*</span>
+              </Label>
+              <div className="flex items-center gap-2">
+                {!showTips && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowTips(true)}
+                    className="text-xs h-7"
+                  >
+                    <Lightbulb className="w-3 h-3 mr-1" />
+                    Savjeti
+                  </Button>
+                )}
+                <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setIsPreviewMode(false)}
+                    className={`px-3 py-1 text-sm flex items-center gap-1 transition-colors ${
+                      !isPreviewMode
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    <Edit3 className="w-3 h-3" />
+                    Uredi
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsPreviewMode(true)}
+                    className={`px-3 py-1 text-sm flex items-center gap-1 transition-colors ${
+                      isPreviewMode
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    <Eye className="w-3 h-3" />
+                    Pregled
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {isPreviewMode ? (
+              <div className="min-h-[300px] max-h-[500px] overflow-y-auto p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800">
+                {content ? (
+                  <MarkdownRenderer content={content} />
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-12">
+                    Nema sadržaja za prikaz. Pređi na način uređivanja da napišeš sadržaj.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <EnhancedMarkdownEditor
+                value={content}
+                onChange={setContent}
+                placeholder="Sadrzaj teme..."
+                maxLength={MAX_CONTENT_LENGTH}
+              />
+            )}
           </CardContent>
         </Card>
 
