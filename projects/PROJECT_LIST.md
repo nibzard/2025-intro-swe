@@ -117,3 +117,8 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** Aplikacija koja korisnicima omogućuje planiranje i organizaciju putovanja uz dodatne preporuke.
 
+### PC Builder - Stipe Barišić & Luka Ćirković
+* **Project:** PC Builder
+* **Folder:** `stipzard/ai-git-project-stipe/`
+* **Status:** In Progress
+* **Description:** Upisivanje vaseg budžeta i sastavljanje najboljeg racunara za taj budžet.
