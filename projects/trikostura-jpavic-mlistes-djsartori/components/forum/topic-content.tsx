@@ -47,31 +47,35 @@ export function TopicContent({ topic, replies, userVotes, currentUserId }: Topic
   const isTopicAuthor = currentUserId === topic.author_id;
 
   return (
-    <>
+    <div className="space-y-8">
       {replies && replies.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <MessageSquare className="w-6 h-6" />
-            Odgovori ({replies.length})
-          </h2>
-          {replies.map((reply: any) => (
-            <ReplyCard
-              key={reply.id}
-              reply={reply}
-              userVote={userVotes[reply.id]}
-              isLoggedIn={!!currentUserId}
-              currentUserId={currentUserId}
-              isTopicAuthor={isTopicAuthor}
-              onQuote={handleQuote}
-            />
-          ))}
+          <div className="pb-3 border-b border-gray-100 dark:border-gray-800">
+            <h2 className="text-2xl font-bold flex items-center gap-2 text-gray-900 dark:text-white">
+              <MessageSquare className="w-6 h-6 text-blue-500" />
+              Odgovori ({replies.length})
+            </h2>
+          </div>
+          <div className="space-y-4">
+            {replies.map((reply: any) => (
+              <ReplyCard
+                key={reply.id}
+                reply={reply}
+                userVote={userVotes[reply.id]}
+                isLoggedIn={!!currentUserId}
+                currentUserId={currentUserId}
+                isTopicAuthor={isTopicAuthor}
+                onQuote={handleQuote}
+              />
+            ))}
+          </div>
         </div>
       )}
 
       {currentUserId && !topic.is_locked && (
-        <Card ref={replyFormRef}>
+        <Card ref={replyFormRef} className="border-0 shadow-sm rounded-xl">
           <CardContent className="p-6">
-            <h3 className="text-xl font-semibold mb-4">Dodaj odgovor</h3>
+            <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Dodaj odgovor</h3>
             <ReplyForm
               topicId={topic.id}
               quotedText={quotedText}
@@ -81,6 +85,6 @@ export function TopicContent({ topic, replies, userVotes, currentUserId }: Topic
           </CardContent>
         </Card>
       )}
-    </>
+    </div>
   );
 }

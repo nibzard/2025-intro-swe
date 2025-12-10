@@ -316,38 +316,42 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
   }
 
   return (
-    <Card id={`reply-${reply.id}`} className={`border-2 shadow-md hover:shadow-lg transition-all duration-300 ${isSolution ? 'border-green-300 dark:border-green-800 bg-green-50/30 dark:bg-green-900/10' : 'border-gray-200 dark:border-gray-700'}`}>
+    <Card id={`reply-${reply.id}`} className={`border-0 shadow-sm hover:shadow-md transition-all duration-300 rounded-xl ${isSolution ? 'ring-2 ring-green-500/20 bg-green-50/10 dark:bg-green-900/5' : ''}`}>
       <CardContent className="p-3 sm:p-6">
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           {/* Mobile: Horizontal voting bar */}
-          <div className="flex sm:hidden items-center gap-3 pb-3 border-b border-gray-200 dark:border-gray-800">
+          <div className="flex sm:hidden items-center gap-3 pb-3 border-b border-gray-100 dark:border-gray-800">
             <Button
-              variant={currentVote === 1 ? 'default' : 'outline'}
+              variant="outline"
               size="sm"
               onClick={() => handleVote(1)}
               disabled={!isLoggedIn || isVoting}
-              className={`h-8 px-3 transition-all ${
-                currentVote === 1 ? 'scale-110 shadow-md' : ''
+              className={`h-8 px-3 rounded-lg transition-all ${
+                currentVote === 1
+                  ? 'border-green-500/30 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
               } ${isVoting ? 'opacity-50 cursor-wait' : ''} ${
-                !isLoggedIn ? 'cursor-not-allowed' : 'hover:scale-105'
+                !isLoggedIn ? 'cursor-not-allowed' : ''
               } ${upvoteAnimation}`}
               title={!isLoggedIn ? 'Prijavite se da biste glasali' : 'Sviđa mi se'}
             >
               <ThumbsUp className={`w-3.5 h-3.5 mr-1 ${isVoting ? 'animate-pulse' : ''}`} />
               <span className="text-sm">{upvotes}</span>
             </Button>
-            <span className="text-base font-semibold bg-gradient-to-br from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+            <span className="text-lg font-semibold text-gray-900 dark:text-white">
               {upvotes - downvotes}
             </span>
             <Button
-              variant={currentVote === -1 ? 'default' : 'outline'}
+              variant="outline"
               size="sm"
               onClick={() => handleVote(-1)}
               disabled={!isLoggedIn || isVoting}
-              className={`h-8 px-3 transition-all ${
-                currentVote === -1 ? 'scale-110 shadow-md' : ''
+              className={`h-8 px-3 rounded-lg transition-all ${
+                currentVote === -1
+                  ? 'border-red-500/30 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
               } ${isVoting ? 'opacity-50 cursor-wait' : ''} ${
-                !isLoggedIn ? 'cursor-not-allowed' : 'hover:scale-105'
+                !isLoggedIn ? 'cursor-not-allowed' : ''
               } ${downvoteAnimation}`}
               title={!isLoggedIn ? 'Prijavite se da biste glasali' : 'Ne sviđa mi se'}
             >
@@ -357,16 +361,16 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
           </div>
 
           {/* Desktop: Vertical voting bar */}
-          <div className="hidden sm:flex flex-col items-center gap-2 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-2 rounded-xl border border-gray-200 dark:border-gray-700">
+          <div className="hidden sm:flex flex-col items-center gap-2 bg-gray-50/50 dark:bg-gray-800/30 p-2 rounded-lg">
             <Button
-              variant={currentVote === 1 ? 'default' : 'outline'}
+              variant="outline"
               size="sm"
               onClick={() => handleVote(1)}
               disabled={!isLoggedIn || isVoting}
-              className={`w-11 h-11 p-0 rounded-lg shadow-sm transition-all ${
+              className={`w-10 h-10 p-0 rounded-lg transition-all ${
                 currentVote === 1
-                  ? 'bg-gradient-to-br from-blue-500 to-blue-600 ring-2 ring-blue-300 scale-110'
-                  : 'hover:shadow-md hover:scale-105'
+                  ? 'border-green-500/30 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
               } ${isVoting ? 'opacity-50 cursor-wait' : ''} ${
                 !isLoggedIn ? 'cursor-not-allowed opacity-40' : ''
               } ${upvoteAnimation}`}
@@ -374,18 +378,18 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
             >
               <ThumbsUp className={`w-4 h-4 ${isVoting ? 'animate-pulse' : ''}`} />
             </Button>
-            <span className="text-xl font-bold bg-gradient-to-br from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent px-2 py-1 rounded-md">
+            <span className="text-lg font-semibold text-gray-900 dark:text-white px-2 py-1">
               {upvotes - downvotes}
             </span>
             <Button
-              variant={currentVote === -1 ? 'default' : 'outline'}
+              variant="outline"
               size="sm"
               onClick={() => handleVote(-1)}
               disabled={!isLoggedIn || isVoting}
-              className={`w-11 h-11 p-0 rounded-lg shadow-sm transition-all ${
+              className={`w-10 h-10 p-0 rounded-lg transition-all ${
                 currentVote === -1
-                  ? 'bg-gradient-to-br from-red-500 to-red-600 ring-2 ring-red-300 scale-110'
-                  : 'hover:shadow-md hover:scale-105'
+                  ? 'border-red-500/30 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
               } ${isVoting ? 'opacity-50 cursor-wait' : ''} ${
                 !isLoggedIn ? 'cursor-not-allowed opacity-40' : ''
               } ${downvoteAnimation}`}
@@ -396,7 +400,7 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
           </div>
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2 p-3 bg-gradient-to-r from-gray-50 to-transparent dark:from-gray-800/50 dark:to-transparent rounded-lg border-l-4 border-blue-500">
+            <div className="flex items-start justify-between pb-4 border-b border-gray-100 dark:border-gray-800 mb-4">
               <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                 <Link href={`/forum/user/${reply.author?.username}`} className="flex-shrink-0 transition-transform hover:scale-110">
                   <Avatar
@@ -454,7 +458,7 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
                   </Button>
 
                   {showActions && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+                    <div className="absolute right-0 mt-2 w-56 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 z-20 overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200">
                       <div className="py-1">
                         {canEdit && (
                           <button
@@ -462,7 +466,7 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
                               setIsEditing(true);
                               setShowActions(false);
                             }}
-                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                            className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-3"
                           >
                             <Edit2 className="w-4 h-4" />
                             Uredi
@@ -474,7 +478,7 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
                               handleMarkSolution();
                               setShowActions(false);
                             }}
-                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-green-600"
+                            className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-3 text-green-600"
                           >
                             <CheckCircle className="w-4 h-4" />
                             Označi kao rješenje
@@ -485,7 +489,7 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
                             handleQuote();
                             setShowActions(false);
                           }}
-                          className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                          className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-3"
                         >
                           <Quote className="w-4 h-4" />
                           Citiraj
@@ -495,20 +499,20 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
                             handleShare();
                             setShowActions(false);
                           }}
-                          className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                          className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-3"
                         >
                           <Link2 className="w-4 h-4" />
                           Kopiraj link
                         </button>
                         {canDelete && (
                           <>
-                            <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                            <div className="border-t border-gray-100 dark:border-gray-800 my-1"></div>
                             <button
                               onClick={() => {
                                 setShowDeleteConfirm(true);
                                 setShowActions(false);
                               }}
-                              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-red-600"
+                              className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-3 text-red-600"
                             >
                               <Trash2 className="w-4 h-4" />
                               Obriši
@@ -517,13 +521,13 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
                         )}
                         {!isAuthor && (
                           <>
-                            <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                            <div className="border-t border-gray-100 dark:border-gray-800 my-1"></div>
                             <button
                               onClick={() => {
                                 setShowReportDialog(true);
                                 setShowActions(false);
                               }}
-                              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-orange-600"
+                              className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-3 text-orange-600"
                             >
                               <Flag className="w-4 h-4" />
                               Prijavi
@@ -543,12 +547,9 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
             <AdvancedAttachmentList attachments={reply.attachments || []} />
 
             {isSolution && (
-              <div className="mt-3 sm:mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 text-green-800 dark:text-green-200 rounded-lg text-sm font-bold shadow-md ring-2 ring-green-500/20 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 text-green-700 dark:text-green-300 rounded-full text-sm font-semibold ring-1 ring-green-500/20 animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <CheckCircle className="w-4 h-4" />
                 <span>Označeno kao rješenje</span>
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
               </div>
             )}
 
