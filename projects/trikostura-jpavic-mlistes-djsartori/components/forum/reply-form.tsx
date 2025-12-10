@@ -9,13 +9,16 @@ import { createClient } from '@/lib/supabase/client';
 import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 import { processMentions } from '@/app/forum/actions';
 import { toast } from 'sonner';
-import { Send, Loader2, Smile } from 'lucide-react';
+import { Send, Loader2, Smile, Eye, Edit3, Lightbulb, X, Zap, Quote } from 'lucide-react';
+import { useButtonAnimation } from '@/hooks/use-button-animation';
+import { MarkdownRenderer } from '@/components/forum/markdown-renderer';
 
 interface ReplyFormProps {
   topicId: string;
   quotedText?: string;
   quotedAuthor?: string;
   onSuccess?: () => void;
+  onClearQuote?: () => void;
 }
 
 const MAX_CONTENT_LENGTH = 10000;
@@ -23,17 +26,37 @@ const MAX_CONTENT_LENGTH = 10000;
 // Common emojis for quick access
 const QUICK_EMOJIS = ['👍', '👎', '😊', '😂', '❤️', '🎉', '🤔', '👏', '🔥', '💯'];
 
-export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess }: ReplyFormProps) {
+export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess, onClearQuote }: ReplyFormProps) {
   const [content, setContent] = useState(quotedText ? `> ${quotedText.split('\n').join('\n> ')}\n\n@${quotedAuthor} ` : '');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [showTips, setShowTips] = useState(false);
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const initialContentRef = useRef(content);
+  const { triggerAnimation, animationClasses } = useButtonAnimation();
+
+  // Update content when quote is added
+  useEffect(() => {
+    if (quotedText && quotedAuthor) {
+      const quotedContent = `> ${quotedText.split('\n').join('\n> ')}\n\n@${quotedAuthor} `;
+      setContent(quotedContent);
+      initialContentRef.current = quotedContent;
+      // Focus on textarea after quote is inserted
+      setTimeout(() => {
+        textareaRef.current?.focus();
+        const textarea = textareaRef.current;
+        if (textarea) {
+          textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+        }
+      }, 100);
+    }
+  }, [quotedText, quotedAuthor]);
 
   // Track unsaved changes
   useEffect(() => {
@@ -173,6 +196,7 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess }: Repl
       // Process mentions and create notifications
       await processMentions(content.trim(), user.id, topicId, newReply.id);
 
+      triggerAnimation();
       toast.success('Odgovor uspješno objavljen!', { id: toastId });
 
       // Reset form
@@ -208,32 +232,196 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess }: Repl
   const charactersLeft = useMemo(() => MAX_CONTENT_LENGTH - content.length, [content]);
   const isOverLimit = useMemo(() => charactersLeft < 0, [charactersLeft]);
 
+  // Quick reply templates
+  const applyTemplate = (template: string) => {
+    setContent(template);
+    toast.success('Predložak primijenjen!');
+  };
+
+  const replyTemplates = [
+    {
+      name: 'Hvala',
+      template: 'Hvala na odgovoru! To mi je pomoglo da riješim problem. 👍',
+    },
+    {
+      name: 'Dodatno pitanje',
+      template: 'Hvala na objašnjenju! Imam još jedno pitanje:\n\n',
+    },
+    {
+      name: 'Rješenje',
+      template: '## Rješenje\n\nNašao sam rješenje! Evo što je uspjelo:\n\n1. \n2. \n\nNadam se da će ovo pomoći i drugima s istim problemom!',
+    },
+  ];
+
+  const handleClearQuote = () => {
+    setContent('');
+    if (onClearQuote) {
+      onClearQuote();
+    }
+  };
+
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <div className="relative">
-          <MarkdownEditor
-            ref={textareaRef}
-            value={content}
-            onChange={setContent}
-            placeholder="Napiši svoj odgovor... (Markdown podržan) • Ctrl+Enter za objavu"
-            rows={6}
-          />
+      {/* Quote Indicator */}
+      {quotedText && quotedAuthor && (
+        <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded">
+          <Quote className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-blue-700 dark:text-blue-400 font-medium mb-1">
+              Citiraš {quotedAuthor}
+            </p>
+            <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
+              {quotedText}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleClearQuote}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            title="Ukloni citat"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
-          {/* Emoji Picker Button */}
-          <div className="absolute bottom-2 right-2">
-            <Button
+      {/* Tips Panel */}
+      {showTips && (
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Lightbulb className="w-4 h-4 text-blue-500" />
+                <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+                  Savjeti za dobar odgovor
+                </h4>
+              </div>
+              <ul className="space-y-1 text-xs text-gray-700 dark:text-gray-300">
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 mt-0.5">•</span>
+                  <span>Budi jasan i koncizan u odgovoru</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 mt-0.5">•</span>
+                  <span>Koristi primjere koda ako je primjenjivo</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 mt-0.5">•</span>
+                  <span>Provjeri svoj odgovor u pregledu prije objave</span>
+                </li>
+              </ul>
+            </div>
+            <button
               type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="h-8 w-8 p-0"
-              title="Dodaj emoji"
+              onClick={() => setShowTips(false)}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              aria-label="Zatvori savjete"
             >
-              <Smile className="w-4 h-4" />
-            </Button>
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </div>
+      )}
+
+      <div className="space-y-2">
+        {/* Header with Preview Toggle and Templates */}
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2">
+            {!showTips && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowTips(true)}
+                className="text-xs h-7"
+              >
+                <Lightbulb className="w-3 h-3 mr-1" />
+                Savjeti
+              </Button>
+            )}
+            {!content && replyTemplates.length > 0 && (
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-500 dark:text-gray-400">Brzi odgovor:</span>
+                {replyTemplates.map((tpl) => (
+                  <Button
+                    key={tpl.name}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => applyTemplate(tpl.template)}
+                    className="text-xs h-7"
+                  >
+                    <Zap className="w-3 h-3 mr-1" />
+                    {tpl.name}
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setIsPreviewMode(false)}
+              className={`px-2 py-1 text-xs flex items-center gap-1 transition-colors ${
+                !isPreviewMode
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              <Edit3 className="w-3 h-3" />
+              Uredi
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsPreviewMode(true)}
+              className={`px-2 py-1 text-xs flex items-center gap-1 transition-colors ${
+                isPreviewMode
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              <Eye className="w-3 h-3" />
+              Pregled
+            </button>
+          </div>
+        </div>
+
+        {isPreviewMode ? (
+          <div className="min-h-[150px] max-h-[400px] overflow-y-auto p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800">
+            {content ? (
+              <MarkdownRenderer content={content} />
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+                Nema sadržaja za prikaz. Pređi na način uređivanja da napišeš odgovor.
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="relative">
+            <MarkdownEditor
+              ref={textareaRef}
+              value={content}
+              onChange={setContent}
+              placeholder="Napiši svoj odgovor... (Markdown podržan) • Ctrl+Enter za objavu"
+              rows={6}
+            />
+
+            {/* Emoji Picker Button */}
+            <div className="absolute bottom-2 right-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className="h-8 w-8 p-0"
+                title="Dodaj emoji"
+              >
+                <Smile className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Quick Emoji Picker */}
         {showEmojiPicker && (
@@ -293,7 +481,7 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess }: Repl
         <Button
           type="submit"
           disabled={isSubmitting || isOverLimit}
-          className="min-w-[160px]"
+          className={`min-w-[160px] ${animationClasses}`}
         >
           {isSubmitting ? (
             <>

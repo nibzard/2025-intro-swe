@@ -5,6 +5,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { SkriptaLogo } from '@/components/branding/skripta-logo';
 import { NotificationBell } from '@/components/notifications/notification-bell';
+import { NavbarBookmarkButton } from './navbar-bookmark-button';
 import { MobileNav } from './mobile-nav';
 import { NavLink } from './nav-link';
 import { logout } from '@/app/auth/actions';
@@ -114,11 +115,7 @@ export async function Navbar() {
                 <Link href="/forum/new">
                   <Button variant="gradient" size="sm">Nova tema</Button>
                 </Link>
-                <Link href="/forum/bookmarks" title="Moje oznake">
-                  <Button variant="ghost" size="sm">
-                    <Bookmark className="w-4 h-4" />
-                  </Button>
-                </Link>
+                <NavbarBookmarkButton />
                 <Link href="/messages" title="Poruke">
                   <Button variant="ghost" size="sm">
                     <Mail className="w-4 h-4" />
@@ -142,7 +139,7 @@ export async function Navbar() {
                   <span className="hidden lg:inline">{profile.username}</span>
                 </Link>
                 <form action={logout}>
-                  <Button variant="ghost" size="sm" type="submit" aria-label="Odjavi se">
+                  <Button variant="ghost" size="sm" type="submit" title="Odjavi se" aria-label="Odjavi se">
                     <LogOut className="w-4 h-4" />
                   </Button>
                 </form>

@@ -8,7 +8,7 @@ export default async function UsersPage() {
 
   const { data: users } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, username, email, full_name, avatar_url, role, reputation, is_banned, created_at')
     .order('created_at', { ascending: false });
 
   return (

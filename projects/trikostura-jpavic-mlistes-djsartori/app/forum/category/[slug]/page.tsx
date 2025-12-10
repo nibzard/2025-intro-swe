@@ -4,12 +4,42 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/pagination';
+import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { MessageSquare, Pin, CheckCircle } from 'lucide-react';
 
-// Revalidate every 30 seconds
-export const revalidate = 30;
+// Revalidate every 60 seconds (1 minute) for better cache performance
+export const revalidate = 60;
 
 const TOPICS_PER_PAGE = 20;
+
+// Generate metadata for SEO
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const supabase = await createServerSupabaseClient();
+
+  const { data: category } = await (supabase as any)
+    .from('categories')
+    .select('name, description')
+    .eq('slug', slug)
+    .single();
+
+  if (!category) {
+    return {
+      title: 'Kategorija nije pronađena',
+    };
+  }
+
+  const categoryData = category as any;
+
+  return {
+    title: `${categoryData.name} | Skripta Forum`,
+    description: categoryData.description || `Pregledajte teme u kategoriji ${categoryData.name}`,
+  };
+}
 
 export default async function CategoryPage({
   params,
@@ -21,12 +51,13 @@ export default async function CategoryPage({
   const { slug } = await params;
   const { page } = await searchParams;
   const currentPage = Math.max(1, parseInt(page || '1', 10));
+  const offset = (currentPage - 1) * TOPICS_PER_PAGE;
   const supabase = await createServerSupabaseClient();
 
   // Get category
   const { data: category } = await (supabase as any)
     .from('categories')
-    .select('*')
+    .select('id, name, slug, description, icon, color')
     .eq('slug', slug)
     .single();
 
@@ -34,30 +65,40 @@ export default async function CategoryPage({
     notFound();
   }
 
-  // Get total count for pagination
-  const { count: totalCount } = await (supabase as any)
-    .from('topics')
-    .select('*', { count: 'exact', head: true })
-    .eq('category_id', (category as any).id);
-
-  const totalPages = Math.ceil((totalCount || 0) / TOPICS_PER_PAGE);
-  const offset = (currentPage - 1) * TOPICS_PER_PAGE;
-
-  // Get topics in this category with pagination
-  const { data: topics } = await (supabase as any)
+  // Get topics with count in single query for better performance
+  const { data: topics, count: totalCount } = await (supabase as any)
     .from('topics')
     .select(`
-      *,
+      id,
+      title,
+      slug,
+      created_at,
+      is_pinned,
+      is_locked,
+      has_solution,
+      view_count,
+      reply_count,
+      last_reply_at,
       author:profiles!topics_author_id_fkey(username, avatar_url),
       category:categories(name, slug, color)
-    `)
+    `, { count: 'exact' })
     .eq('category_id', (category as any).id)
     .order('is_pinned', { ascending: false })
     .order('created_at', { ascending: false })
     .range(offset, offset + TOPICS_PER_PAGE - 1);
 
+  const totalPages = Math.ceil((totalCount || 0) / TOPICS_PER_PAGE);
+
   return (
     <div className="space-y-4 sm:space-y-6 px-3 sm:px-0">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb
+        items={[
+          { label: 'Forum', href: '/forum' },
+          { label: category.name },
+        ]}
+      />
+
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex-1 w-full sm:w-auto">
           <div className="flex items-center gap-3">
