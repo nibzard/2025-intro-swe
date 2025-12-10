@@ -18,6 +18,8 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
   const [showActions, setShowActions] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showMoveCategory, setShowMoveCategory] = useState(false);
+  const [showPinConfirm, setShowPinConfirm] = useState(false);
+  const [showLockConfirm, setShowLockConfirm] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(topic.category_id);
   const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
@@ -53,6 +55,7 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
       alert(`Error: ${result.error}`);
     }
     setIsProcessing(false);
+    setShowPinConfirm(false);
     setShowActions(false);
   }
 
@@ -67,6 +70,7 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
       alert(`Error: ${result.error}`);
     }
     setIsProcessing(false);
+    setShowLockConfirm(false);
     setShowActions(false);
   }
 
@@ -116,7 +120,10 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
             )}
             {canPin && (
               <button
-                onClick={handleTogglePin}
+                onClick={() => {
+                  setShowPinConfirm(true);
+                  setShowActions(false);
+                }}
                 disabled={isProcessing}
                 className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-blue-600"
               >
@@ -126,7 +133,10 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
             )}
             {canLock && (
               <button
-                onClick={handleToggleLock}
+                onClick={() => {
+                  setShowLockConfirm(true);
+                  setShowActions(false);
+                }}
                 disabled={isProcessing}
                 className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-orange-600"
               >
@@ -224,6 +234,68 @@ export function TopicControlMenu({ topic, isAuthor, isAdmin, categories = [] }: 
                 disabled={isProcessing}
               >
                 {isProcessing ? 'Premještanje...' : 'Premjesti'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPinConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-3">
+              {topic.is_pinned ? 'Otkvači temu' : 'Prikvači temu'}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              {topic.is_pinned
+                ? 'Jeste li sigurni da želite otkvačiti ovu temu? Tema će se prikazivati normalno u listi tema.'
+                : 'Jeste li sigurni da želite prikvačiti ovu temu? Prikvačene teme se prikazuju na vrhu liste tema.'}
+            </p>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setShowPinConfirm(false)}
+                disabled={isProcessing}
+              >
+                Odustani
+              </Button>
+              <Button
+                onClick={handleTogglePin}
+                disabled={isProcessing}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isProcessing ? 'Primjenjujem...' : topic.is_pinned ? 'Da, otkvači' : 'Da, prikvači'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showLockConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-3">
+              {topic.is_locked ? 'Otključaj temu' : 'Zaključaj temu'}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              {topic.is_locked
+                ? 'Jeste li sigurni da želite otključati ovu temu? Korisnici će moći dodavati nove odgovore.'
+                : 'Jeste li sigurni da želite zaključati ovu temu? Korisnici neće moći dodavati nove odgovore.'}
+            </p>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setShowLockConfirm(false)}
+                disabled={isProcessing}
+              >
+                Odustani
+              </Button>
+              <Button
+                onClick={handleToggleLock}
+                disabled={isProcessing}
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                {isProcessing ? 'Primjenjujem...' : topic.is_locked ? 'Da, otključaj' : 'Da, zaključaj'}
               </Button>
             </div>
           </div>
