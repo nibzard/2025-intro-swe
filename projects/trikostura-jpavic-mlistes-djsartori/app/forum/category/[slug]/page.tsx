@@ -33,9 +33,11 @@ export async function generateMetadata({
     };
   }
 
+  const categoryData = category as any;
+
   return {
-    title: `${category.name} | Skripta Forum`,
-    description: category.description || `Pregledajte teme u kategoriji ${category.name}`,
+    title: `${categoryData.name} | Skripta Forum`,
+    description: categoryData.description || `Pregledajte teme u kategoriji ${categoryData.name}`,
   };
 }
 
