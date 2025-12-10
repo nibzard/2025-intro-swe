@@ -49,27 +49,23 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
   const canMarkSolution = isTopicAuthor && !isSolution;
 
   async function handleVote(voteType: number) {
-    if (!isLoggedIn || isVoting) return;
-
-    setIsVoting(true);
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      setIsVoting(false);
+    if (!isLoggedIn) {
+      toast.error('Morate biti prijavljeni da biste glasali');
       return;
     }
 
-    // If user is clicking the same vote, remove it
-    if (currentVote === voteType) {
-      await supabase
-        .from('votes')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('reply_id', reply.id);
+    if (isVoting) return;
 
+    setIsVoting(true);
+
+    // Store previous state for rollback on error
+    const previousVote = currentVote;
+    const previousUpvotes = upvotes;
+    const previousDownvotes = downvotes;
+
+    // Optimistic update - update UI immediately
+    if (currentVote === voteType) {
+      // Removing vote
       setCurrentVote(undefined);
       if (voteType === 1) {
         setUpvotes(upvotes - 1);
@@ -78,15 +74,8 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
         setDownvotes(downvotes - 1);
         triggerDownvoteAnimation();
       }
-    }
-    // If user is changing vote
-    else if (currentVote) {
-      await (supabase as any)
-        .from('votes')
-        .update({ vote_type: voteType })
-        .eq('user_id', user.id)
-        .eq('reply_id', reply.id);
-
+    } else if (currentVote) {
+      // Changing vote
       if (voteType === 1) {
         setUpvotes(upvotes + 1);
         setDownvotes(downvotes - 1);
@@ -97,15 +86,8 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
         triggerDownvoteAnimation();
       }
       setCurrentVote(voteType);
-    }
-    // New vote
-    else {
-      await (supabase as any).from('votes').insert({
-        user_id: user.id,
-        reply_id: reply.id,
-        vote_type: voteType,
-      });
-
+    } else {
+      // New vote
       setCurrentVote(voteType);
       if (voteType === 1) {
         setUpvotes(upvotes + 1);
@@ -116,8 +98,110 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
       }
     }
 
-    setIsVoting(false);
-    router.refresh();
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error('Niste prijavljeni');
+      }
+
+      // Perform database operation
+      if (previousVote === voteType) {
+        // Remove vote
+        const { error } = await supabase
+          .from('votes')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('reply_id', reply.id);
+
+        if (error) throw error;
+
+        // Remove upvote notification if it was an upvote
+        if (voteType === 1 && reply.author_id !== user.id) {
+          await (supabase as any)
+            .from('notifications')
+            .delete()
+            .eq('user_id', reply.author_id)
+            .eq('actor_id', user.id)
+            .eq('reply_id', reply.id)
+            .eq('type', 'upvote');
+        }
+      } else if (previousVote) {
+        // Change vote
+        const { error } = await (supabase as any)
+          .from('votes')
+          .update({ vote_type: voteType })
+          .eq('user_id', user.id)
+          .eq('reply_id', reply.id);
+
+        if (error) throw error;
+
+        // Handle notification changes
+        if (reply.author_id !== user.id) {
+          if (voteType === 1 && previousVote === -1) {
+            // Changed from downvote to upvote - create notification
+            await (supabase as any).from('notifications').insert({
+              user_id: reply.author_id,
+              actor_id: user.id,
+              type: 'upvote',
+              reply_id: reply.id,
+              topic_id: reply.topic_id,
+            });
+          } else if (voteType === -1 && previousVote === 1) {
+            // Changed from upvote to downvote - remove notification
+            await (supabase as any)
+              .from('notifications')
+              .delete()
+              .eq('user_id', reply.author_id)
+              .eq('actor_id', user.id)
+              .eq('reply_id', reply.id)
+              .eq('type', 'upvote');
+          }
+        }
+      } else {
+        // New vote
+        const { error } = await (supabase as any).from('votes').insert({
+          user_id: user.id,
+          reply_id: reply.id,
+          vote_type: voteType,
+        });
+
+        if (error) throw error;
+
+        // Create upvote notification (only for upvotes, and not for own replies)
+        if (voteType === 1 && reply.author_id !== user.id) {
+          await (supabase as any).from('notifications').insert({
+            user_id: reply.author_id,
+            actor_id: user.id,
+            type: 'upvote',
+            reply_id: reply.id,
+            topic_id: reply.topic_id,
+          });
+        }
+      }
+
+      // Success feedback
+      if (previousVote === voteType) {
+        toast.success('Glas uklonjen');
+      } else if (voteType === 1) {
+        toast.success('👍 Sviđa ti se!');
+      } else {
+        toast.success('👎 Ne sviđa ti se');
+      }
+    } catch (error: any) {
+      // Rollback optimistic update on error
+      setCurrentVote(previousVote);
+      setUpvotes(previousUpvotes);
+      setDownvotes(previousDownvotes);
+
+      console.error('Voting error:', error);
+      toast.error(error.message || 'Greška pri glasanju. Pokušajte ponovno.');
+    } finally {
+      setIsVoting(false);
+    }
   }
 
   async function handleEdit() {
@@ -232,7 +316,7 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
   }
 
   return (
-    <Card id={`reply-${reply.id}`} className={`border-2 transition-all duration-300 hover:shadow-lg ${isSolution ? 'border-green-300 dark:border-green-800 bg-green-50/30 dark:bg-green-900/10' : 'border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700'}`}>
+    <Card id={`reply-${reply.id}`} className={`border-2 shadow-md hover:shadow-lg transition-all duration-300 ${isSolution ? 'border-green-300 dark:border-green-800 bg-green-50/30 dark:bg-green-900/10' : 'border-gray-200 dark:border-gray-700'}`}>
       <CardContent className="p-3 sm:p-6">
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           {/* Mobile: Horizontal voting bar */}
@@ -242,12 +326,17 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
               size="sm"
               onClick={() => handleVote(1)}
               disabled={!isLoggedIn || isVoting}
-              className={`h-8 px-3 ${upvoteAnimation}`}
+              className={`h-8 px-3 transition-all ${
+                currentVote === 1 ? 'scale-110 shadow-md' : ''
+              } ${isVoting ? 'opacity-50 cursor-wait' : ''} ${
+                !isLoggedIn ? 'cursor-not-allowed' : 'hover:scale-105'
+              } ${upvoteAnimation}`}
+              title={!isLoggedIn ? 'Prijavite se da biste glasali' : 'Sviđa mi se'}
             >
-              <ThumbsUp className="w-3.5 h-3.5 mr-1" />
+              <ThumbsUp className={`w-3.5 h-3.5 mr-1 ${isVoting ? 'animate-pulse' : ''}`} />
               <span className="text-sm">{upvotes}</span>
             </Button>
-            <span className="text-base font-semibold">
+            <span className="text-base font-semibold bg-gradient-to-br from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
               {upvotes - downvotes}
             </span>
             <Button
@@ -255,9 +344,14 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
               size="sm"
               onClick={() => handleVote(-1)}
               disabled={!isLoggedIn || isVoting}
-              className={`h-8 px-3 ${downvoteAnimation}`}
+              className={`h-8 px-3 transition-all ${
+                currentVote === -1 ? 'scale-110 shadow-md' : ''
+              } ${isVoting ? 'opacity-50 cursor-wait' : ''} ${
+                !isLoggedIn ? 'cursor-not-allowed' : 'hover:scale-105'
+              } ${downvoteAnimation}`}
+              title={!isLoggedIn ? 'Prijavite se da biste glasali' : 'Ne sviđa mi se'}
             >
-              <ThumbsDown className="w-3.5 h-3.5 mr-1" />
+              <ThumbsDown className={`w-3.5 h-3.5 mr-1 ${isVoting ? 'animate-pulse' : ''}`} />
               <span className="text-sm">{downvotes}</span>
             </Button>
           </div>
@@ -269,9 +363,16 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
               size="sm"
               onClick={() => handleVote(1)}
               disabled={!isLoggedIn || isVoting}
-              className={`w-11 h-11 p-0 rounded-lg shadow-sm hover:shadow-md transition-all ${currentVote === 1 ? 'bg-gradient-to-br from-blue-500 to-blue-600 ring-2 ring-blue-300' : ''} ${upvoteAnimation}`}
+              className={`w-11 h-11 p-0 rounded-lg shadow-sm transition-all ${
+                currentVote === 1
+                  ? 'bg-gradient-to-br from-blue-500 to-blue-600 ring-2 ring-blue-300 scale-110'
+                  : 'hover:shadow-md hover:scale-105'
+              } ${isVoting ? 'opacity-50 cursor-wait' : ''} ${
+                !isLoggedIn ? 'cursor-not-allowed opacity-40' : ''
+              } ${upvoteAnimation}`}
+              title={!isLoggedIn ? 'Prijavite se da biste glasali' : 'Sviđa mi se'}
             >
-              <ThumbsUp className="w-4 h-4" />
+              <ThumbsUp className={`w-4 h-4 ${isVoting ? 'animate-pulse' : ''}`} />
             </Button>
             <span className="text-xl font-bold bg-gradient-to-br from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent px-2 py-1 rounded-md">
               {upvotes - downvotes}
@@ -281,9 +382,16 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
               size="sm"
               onClick={() => handleVote(-1)}
               disabled={!isLoggedIn || isVoting}
-              className={`w-11 h-11 p-0 rounded-lg shadow-sm hover:shadow-md transition-all ${currentVote === -1 ? 'bg-gradient-to-br from-red-500 to-red-600 ring-2 ring-red-300' : ''} ${downvoteAnimation}`}
+              className={`w-11 h-11 p-0 rounded-lg shadow-sm transition-all ${
+                currentVote === -1
+                  ? 'bg-gradient-to-br from-red-500 to-red-600 ring-2 ring-red-300 scale-110'
+                  : 'hover:shadow-md hover:scale-105'
+              } ${isVoting ? 'opacity-50 cursor-wait' : ''} ${
+                !isLoggedIn ? 'cursor-not-allowed opacity-40' : ''
+              } ${downvoteAnimation}`}
+              title={!isLoggedIn ? 'Prijavite se da biste glasali' : 'Ne sviđa mi se'}
             >
-              <ThumbsDown className="w-4 h-4" />
+              <ThumbsDown className={`w-4 h-4 ${isVoting ? 'animate-pulse' : ''}`} />
             </Button>
           </div>
 

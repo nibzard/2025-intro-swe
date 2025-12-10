@@ -41,6 +41,12 @@ export const revalidate = 120;
 
 const TOPICS_PER_PAGE = 15;
 
+// Metadata for SEO
+export const metadata = {
+  title: 'Forum | Skripta - Hrvatska Studentska Zajednica',
+  description: 'Pridruži se diskusijama, postavi pitanja i razmijeni znanje s hrvatskim studentima. Najbolja studentska zajednica u Hrvatskoj.',
+};
+
 export default async function ForumPage({
   searchParams,
 }: {
@@ -53,23 +59,74 @@ export default async function ForumPage({
 
   const supabase = await createServerSupabaseClient();
 
-  // Get categories
-  const { data: categories } = await supabase
-    .from('categories')
-    .select('*')
-    .order('order_index', { ascending: true });
+  // Run all queries in parallel for better performance
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-  // Get all topics with minimal data for counting (single query)
-  const { data: allTopics } = await supabase
-    .from('topics')
-    .select('id, category_id, created_at');
+  const [
+    { data: categories },
+    { data: allTopics },
+    { data: recentTopicsByCategory },
+    { data: trendingTopics },
+    { data: recentTopics, count: totalTopics }
+  ] = await Promise.all([
+    // Get categories
+    supabase
+      .from('categories')
+      .select('id, name, slug, description, icon, color, order_index')
+      .order('order_index', { ascending: true }),
 
-  // Get recent topics per category for "latest topic" display (single query)
-  const { data: recentTopicsByCategory } = await supabase
-    .from('topics')
-    .select('id, title, slug, created_at, category_id, author:profiles!topics_author_id_fkey(username)')
-    .order('created_at', { ascending: false })
-    .limit(100); // Get enough to ensure we have latest for each category
+    // Get all topics with minimal data for counting
+    supabase
+      .from('topics')
+      .select('id, category_id, created_at'),
+
+    // Get recent topics per category for "latest topic" display
+    supabase
+      .from('topics')
+      .select('id, title, slug, created_at, category_id, author:profiles!topics_author_id_fkey(username)')
+      .order('created_at', { ascending: false })
+      .limit(50), // Reduced from 100 to 50
+
+    // Get trending topics (most views + replies in last 7 days)
+    supabase
+      .from('topics')
+      .select(`
+        id,
+        title,
+        slug,
+        view_count,
+        reply_count,
+        created_at,
+        author:profiles!topics_author_id_fkey(username, avatar_url),
+        category:categories(name, slug, color)
+      `)
+      .gte('created_at', sevenDaysAgo.toISOString())
+      .order('view_count', { ascending: false })
+      .limit(5),
+
+    // Get recent topics with selective fields
+    supabase
+      .from('topics')
+      .select(`
+        id,
+        title,
+        slug,
+        created_at,
+        is_pinned,
+        is_locked,
+        has_solution,
+        view_count,
+        reply_count,
+        category_id,
+        author_id,
+        author:profiles!topics_author_id_fkey(username, avatar_url),
+        category:categories(name, slug, color)
+      `, { count: 'exact' })
+      .order('is_pinned', { ascending: false })
+      .order('created_at', { ascending: false })
+      .range(offset, offset + TOPICS_PER_PAGE - 1)
+  ]);
 
   // Build maps for efficient lookup
   const topicCountByCategory = new Map<string, number>();
@@ -96,38 +153,6 @@ export default async function ForumPage({
     topic_count: topicCountByCategory.get(category.id) || 0,
     latest_topic: latestTopicByCategory.get(category.id) || null,
   }));
-
-  // Get trending topics (most views + replies in last 7 days)
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-  const { data: trendingTopics } = await supabase
-    .from('topics')
-    .select(`
-      id,
-      title,
-      slug,
-      view_count,
-      reply_count,
-      created_at,
-      author:profiles!topics_author_id_fkey(username, avatar_url),
-      category:categories(name, slug, color)
-    `)
-    .gte('created_at', sevenDaysAgo.toISOString())
-    .order('view_count', { ascending: false })
-    .limit(5);
-
-  // Get recent topics (without server-side filtering for instant client-side switching)
-  const { data: recentTopics, count: totalTopics } = await supabase
-    .from('topics')
-    .select(`
-      *,
-      author:profiles!topics_author_id_fkey(username, avatar_url),
-      category:categories(name, slug, color)
-    `, { count: 'exact' })
-    .order('is_pinned', { ascending: false })
-    .order('created_at', { ascending: false })
-    .range(offset, offset + TOPICS_PER_PAGE - 1);
 
   // Calculate solved and unsolved counts for client-side filtering
   const solvedCount = recentTopics?.filter((t: any) => t.has_solution === true).length || 0;

@@ -14,6 +14,43 @@ import { recordTopicView } from '../actions';
 import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { MessageSquare, CheckCircle } from 'lucide-react';
 
+// Revalidate every 60 seconds for better cache performance
+export const revalidate = 60;
+
+// Generate metadata for SEO
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const supabase = await createServerSupabaseClient();
+
+  const { data: topic } = await supabase
+    .from('topics')
+    .select('title, content')
+    .eq('slug', slug)
+    .single();
+
+  if (!topic) {
+    return {
+      title: 'Tema nije pronađena',
+    };
+  }
+
+  const description = topic.content?.substring(0, 160) || 'Pogledajte ovu temu na Skripta forumu';
+
+  return {
+    title: `${topic.title} | Skripta Forum`,
+    description,
+    openGraph: {
+      title: topic.title,
+      description,
+      type: 'article',
+    },
+  };
+}
+
 export default async function TopicPage({
   params,
 }: {
@@ -228,7 +265,7 @@ export default async function TopicPage({
         )}
       </div>
 
-      <Card className="border-2 border-gray-100 dark:border-gray-800 shadow-lg hover:shadow-xl transition-shadow duration-300">
+      <Card className="border-2 border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-all duration-300">
         <CardContent className="p-6 sm:p-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2 flex-wrap">
@@ -302,8 +339,8 @@ export default async function TopicPage({
                     {author?.username}
                   </Link>
                   {author?.reputation > 0 && (
-                    <span className="px-2 py-0.5 text-xs font-bold bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 rounded-full">
-                      {author.reputation} rep
+                    <span className="px-2 py-0.5 text-xs font-bold bg-gradient-to-r from-yellow-100 to-amber-100 dark:from-yellow-900 dark:to-amber-900 text-yellow-700 dark:text-yellow-300 rounded-full shadow-sm ring-1 ring-yellow-500/20">
+                      ⭐ {author.reputation}
                     </span>
                   )}
                 </div>
