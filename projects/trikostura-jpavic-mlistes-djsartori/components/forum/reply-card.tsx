@@ -13,7 +13,9 @@ import { ThumbsUp, ThumbsDown, MoreVertical, Edit2, Trash2, Quote, Link2, CheckC
 import { ReportDialog } from './report-dialog';
 import { createClient } from '@/lib/supabase/client';
 import { editReply } from '@/app/forum/reply/actions';
+import { deleteReplyAction, markSolutionAction } from '@/app/forum/actions';
 import { toast } from 'sonner';
+import { useButtonAnimation } from '@/hooks/use-button-animation';
 
 interface ReplyCardProps {
   reply: any;
@@ -38,6 +40,8 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [isSolution, setIsSolution] = useState(reply.is_solution);
   const router = useRouter();
+  const { triggerAnimation: triggerUpvoteAnimation, animationClasses: upvoteAnimation } = useButtonAnimation();
+  const { triggerAnimation: triggerDownvoteAnimation, animationClasses: downvoteAnimation } = useButtonAnimation();
 
   const isAuthor = currentUserId === reply.author_id;
   const canEdit = isAuthor;
@@ -45,69 +49,159 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
   const canMarkSolution = isTopicAuthor && !isSolution;
 
   async function handleVote(voteType: number) {
-    if (!isLoggedIn || isVoting) return;
-
-    setIsVoting(true);
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      setIsVoting(false);
+    if (!isLoggedIn) {
+      toast.error('Morate biti prijavljeni da biste glasali');
       return;
     }
 
-    // If user is clicking the same vote, remove it
-    if (currentVote === voteType) {
-      await supabase
-        .from('votes')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('reply_id', reply.id);
+    if (isVoting) return;
 
+    setIsVoting(true);
+
+    // Store previous state for rollback on error
+    const previousVote = currentVote;
+    const previousUpvotes = upvotes;
+    const previousDownvotes = downvotes;
+
+    // Optimistic update - update UI immediately
+    if (currentVote === voteType) {
+      // Removing vote
       setCurrentVote(undefined);
       if (voteType === 1) {
         setUpvotes(upvotes - 1);
+        triggerUpvoteAnimation();
       } else {
         setDownvotes(downvotes - 1);
+        triggerDownvoteAnimation();
       }
-    }
-    // If user is changing vote
-    else if (currentVote) {
-      await (supabase as any)
-        .from('votes')
-        .update({ vote_type: voteType })
-        .eq('user_id', user.id)
-        .eq('reply_id', reply.id);
-
+    } else if (currentVote) {
+      // Changing vote
       if (voteType === 1) {
         setUpvotes(upvotes + 1);
         setDownvotes(downvotes - 1);
+        triggerUpvoteAnimation();
       } else {
         setDownvotes(downvotes + 1);
         setUpvotes(upvotes - 1);
+        triggerDownvoteAnimation();
       }
       setCurrentVote(voteType);
-    }
-    // New vote
-    else {
-      await (supabase as any).from('votes').insert({
-        user_id: user.id,
-        reply_id: reply.id,
-        vote_type: voteType,
-      });
-
+    } else {
+      // New vote
       setCurrentVote(voteType);
       if (voteType === 1) {
         setUpvotes(upvotes + 1);
+        triggerUpvoteAnimation();
       } else {
         setDownvotes(downvotes + 1);
+        triggerDownvoteAnimation();
       }
     }
 
-    setIsVoting(false);
-    router.refresh();
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error('Niste prijavljeni');
+      }
+
+      // Perform database operation
+      if (previousVote === voteType) {
+        // Remove vote
+        const { error } = await supabase
+          .from('votes')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('reply_id', reply.id);
+
+        if (error) throw error;
+
+        // Remove upvote notification if it was an upvote
+        if (voteType === 1 && reply.author_id !== user.id) {
+          await (supabase as any)
+            .from('notifications')
+            .delete()
+            .eq('user_id', reply.author_id)
+            .eq('actor_id', user.id)
+            .eq('reply_id', reply.id)
+            .eq('type', 'upvote');
+        }
+      } else if (previousVote) {
+        // Change vote
+        const { error } = await (supabase as any)
+          .from('votes')
+          .update({ vote_type: voteType })
+          .eq('user_id', user.id)
+          .eq('reply_id', reply.id);
+
+        if (error) throw error;
+
+        // Handle notification changes
+        if (reply.author_id !== user.id) {
+          if (voteType === 1 && previousVote === -1) {
+            // Changed from downvote to upvote - create notification
+            await (supabase as any).from('notifications').insert({
+              user_id: reply.author_id,
+              actor_id: user.id,
+              type: 'upvote',
+              reply_id: reply.id,
+              topic_id: reply.topic_id,
+            });
+          } else if (voteType === -1 && previousVote === 1) {
+            // Changed from upvote to downvote - remove notification
+            await (supabase as any)
+              .from('notifications')
+              .delete()
+              .eq('user_id', reply.author_id)
+              .eq('actor_id', user.id)
+              .eq('reply_id', reply.id)
+              .eq('type', 'upvote');
+          }
+        }
+      } else {
+        // New vote
+        const { error } = await (supabase as any).from('votes').insert({
+          user_id: user.id,
+          reply_id: reply.id,
+          vote_type: voteType,
+        });
+
+        if (error) throw error;
+
+        // Create upvote notification (only for upvotes, and not for own replies)
+        if (voteType === 1 && reply.author_id !== user.id) {
+          await (supabase as any).from('notifications').insert({
+            user_id: reply.author_id,
+            actor_id: user.id,
+            type: 'upvote',
+            reply_id: reply.id,
+            topic_id: reply.topic_id,
+          });
+        }
+      }
+
+      // Success feedback
+      if (previousVote === voteType) {
+        toast.success('Glas uklonjen');
+      } else if (voteType === 1) {
+        toast.success('👍 Sviđa ti se!');
+      } else {
+        toast.success('👎 Ne sviđa ti se');
+      }
+    } catch (error: any) {
+      // Rollback optimistic update on error
+      setCurrentVote(previousVote);
+      setUpvotes(previousUpvotes);
+      setDownvotes(previousDownvotes);
+
+      console.error('Voting error:', error);
+      toast.error(error.message || 'Greška pri glasanju. Pokušajte ponovno.');
+    } finally {
+      setIsVoting(false);
+    }
   }
 
   async function handleEdit() {
@@ -142,30 +236,25 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
 
   async function handleDelete() {
     setIsDeleting(true);
-    const supabase = createClient();
 
-    const { error } = await (supabase as any)
-      .from('replies')
-      .delete()
-      .eq('id', reply.id);
+    const result = await deleteReplyAction(reply.id);
 
-    if (!error) {
+    if (result.success) {
       router.refresh();
+    } else {
+      alert(`Error: ${result.error}`);
     }
     setIsDeleting(false);
   }
 
   async function handleMarkSolution() {
-    const supabase = createClient();
+    const result = await markSolutionAction(reply.id, reply.topic_id);
 
-    const { error } = await (supabase as any)
-      .from('replies')
-      .update({ is_solution: true })
-      .eq('id', reply.id);
-
-    if (!error) {
+    if (result.success) {
       setIsSolution(true);
       router.refresh();
+    } else {
+      alert(`Error: ${result.error}`);
     }
   }
 
@@ -227,7 +316,7 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
   }
 
   return (
-    <Card id={`reply-${reply.id}`}>
+    <Card id={`reply-${reply.id}`} className={`border-2 shadow-md hover:shadow-lg transition-all duration-300 ${isSolution ? 'border-green-300 dark:border-green-800 bg-green-50/30 dark:bg-green-900/10' : 'border-gray-200 dark:border-gray-700'}`}>
       <CardContent className="p-3 sm:p-6">
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           {/* Mobile: Horizontal voting bar */}
@@ -237,12 +326,17 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
               size="sm"
               onClick={() => handleVote(1)}
               disabled={!isLoggedIn || isVoting}
-              className="h-8 px-3"
+              className={`h-8 px-3 transition-all ${
+                currentVote === 1 ? 'scale-110 shadow-md' : ''
+              } ${isVoting ? 'opacity-50 cursor-wait' : ''} ${
+                !isLoggedIn ? 'cursor-not-allowed' : 'hover:scale-105'
+              } ${upvoteAnimation}`}
+              title={!isLoggedIn ? 'Prijavite se da biste glasali' : 'Sviđa mi se'}
             >
-              <ThumbsUp className="w-3.5 h-3.5 mr-1" />
+              <ThumbsUp className={`w-3.5 h-3.5 mr-1 ${isVoting ? 'animate-pulse' : ''}`} />
               <span className="text-sm">{upvotes}</span>
             </Button>
-            <span className="text-base font-semibold">
+            <span className="text-base font-semibold bg-gradient-to-br from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
               {upvotes - downvotes}
             </span>
             <Button
@@ -250,25 +344,37 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
               size="sm"
               onClick={() => handleVote(-1)}
               disabled={!isLoggedIn || isVoting}
-              className="h-8 px-3"
+              className={`h-8 px-3 transition-all ${
+                currentVote === -1 ? 'scale-110 shadow-md' : ''
+              } ${isVoting ? 'opacity-50 cursor-wait' : ''} ${
+                !isLoggedIn ? 'cursor-not-allowed' : 'hover:scale-105'
+              } ${downvoteAnimation}`}
+              title={!isLoggedIn ? 'Prijavite se da biste glasali' : 'Ne sviđa mi se'}
             >
-              <ThumbsDown className="w-3.5 h-3.5 mr-1" />
+              <ThumbsDown className={`w-3.5 h-3.5 mr-1 ${isVoting ? 'animate-pulse' : ''}`} />
               <span className="text-sm">{downvotes}</span>
             </Button>
           </div>
 
           {/* Desktop: Vertical voting bar */}
-          <div className="hidden sm:flex flex-col items-center gap-2">
+          <div className="hidden sm:flex flex-col items-center gap-2 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-2 rounded-xl border border-gray-200 dark:border-gray-700">
             <Button
               variant={currentVote === 1 ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleVote(1)}
               disabled={!isLoggedIn || isVoting}
-              className="w-10 h-10 p-0"
+              className={`w-11 h-11 p-0 rounded-lg shadow-sm transition-all ${
+                currentVote === 1
+                  ? 'bg-gradient-to-br from-blue-500 to-blue-600 ring-2 ring-blue-300 scale-110'
+                  : 'hover:shadow-md hover:scale-105'
+              } ${isVoting ? 'opacity-50 cursor-wait' : ''} ${
+                !isLoggedIn ? 'cursor-not-allowed opacity-40' : ''
+              } ${upvoteAnimation}`}
+              title={!isLoggedIn ? 'Prijavite se da biste glasali' : 'Sviđa mi se'}
             >
-              <ThumbsUp className="w-4 h-4" />
+              <ThumbsUp className={`w-4 h-4 ${isVoting ? 'animate-pulse' : ''}`} />
             </Button>
-            <span className="text-lg font-semibold">
+            <span className="text-xl font-bold bg-gradient-to-br from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent px-2 py-1 rounded-md">
               {upvotes - downvotes}
             </span>
             <Button
@@ -276,16 +382,23 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
               size="sm"
               onClick={() => handleVote(-1)}
               disabled={!isLoggedIn || isVoting}
-              className="w-10 h-10 p-0"
+              className={`w-11 h-11 p-0 rounded-lg shadow-sm transition-all ${
+                currentVote === -1
+                  ? 'bg-gradient-to-br from-red-500 to-red-600 ring-2 ring-red-300 scale-110'
+                  : 'hover:shadow-md hover:scale-105'
+              } ${isVoting ? 'opacity-50 cursor-wait' : ''} ${
+                !isLoggedIn ? 'cursor-not-allowed opacity-40' : ''
+              } ${downvoteAnimation}`}
+              title={!isLoggedIn ? 'Prijavite se da biste glasali' : 'Ne sviđa mi se'}
             >
-              <ThumbsDown className="w-4 h-4" />
+              <ThumbsDown className={`w-4 h-4 ${isVoting ? 'animate-pulse' : ''}`} />
             </Button>
           </div>
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
+            <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2 p-3 bg-gradient-to-r from-gray-50 to-transparent dark:from-gray-800/50 dark:to-transparent rounded-lg border-l-4 border-blue-500">
               <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                <Link href={`/forum/user/${reply.author?.username}`} className="flex-shrink-0">
+                <Link href={`/forum/user/${reply.author?.username}`} className="flex-shrink-0 transition-transform hover:scale-110">
                   <Avatar
                     src={reply.author?.avatar_url}
                     alt={reply.author?.username || 'User'}
@@ -293,32 +406,39 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
                     size="sm"
                   />
                 </Link>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 flex-1 min-w-0">
-                  <Link
-                    href={`/forum/user/${reply.author?.username}`}
-                    className="font-semibold text-sm sm:text-base truncate hover:underline"
-                  >
-                    {reply.author?.username}
-                  </Link>
-                  <span className="text-xs sm:text-sm text-gray-500">
-                    {new Date(reply.created_at).toLocaleDateString('hr-HR', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </span>
-                  {reply.edited_at && (
-                    <span className="text-xs text-gray-400 italic" title={`Uređeno: ${new Date(reply.edited_at).toLocaleString('hr-HR')}`}>
-                      (uređeno)
+                <div className="flex flex-col gap-1 flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Link
+                      href={`/forum/user/${reply.author?.username}`}
+                      className="font-bold text-sm sm:text-base text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      {reply.author?.username}
+                    </Link>
+                    {reply.author?.reputation > 0 && (
+                      <span className="text-xs px-2 py-0.5 bg-gradient-to-r from-yellow-100 to-amber-100 dark:from-yellow-900 dark:to-amber-900 text-yellow-700 dark:text-yellow-300 rounded-full font-bold shadow-sm ring-1 ring-yellow-500/20">
+                        ⭐ {reply.author.reputation}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>
+                      {new Date(reply.created_at).toLocaleDateString('hr-HR', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
                     </span>
-                  )}
-                  {reply.author?.reputation > 0 && (
-                    <span className="text-xs px-2 py-0.5 sm:py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded">
-                      {reply.author.reputation} rep
-                    </span>
-                  )}
+                    {reply.edited_at && (
+                      <span className="italic text-gray-500" title={`Uređeno: ${new Date(reply.edited_at).toLocaleString('hr-HR')}`}>
+                        • (uređeno)
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -423,8 +543,12 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
             <AdvancedAttachmentList attachments={reply.attachments || []} />
 
             {isSolution && (
-              <div className="mt-2 sm:mt-3 inline-flex items-center gap-1 px-2 sm:px-3 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded text-xs sm:text-sm font-medium">
-                ✓ Označeno kao rješenje
+              <div className="mt-3 sm:mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 text-green-800 dark:text-green-200 rounded-lg text-sm font-bold shadow-md ring-2 ring-green-500/20 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <CheckCircle className="w-4 h-4" />
+                <span>Označeno kao rješenje</span>
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
               </div>
             )}
 

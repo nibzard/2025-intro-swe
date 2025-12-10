@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BookmarkButton } from '@/components/forum/bookmark-button';
+import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { Bookmark, MessageSquare, CheckCircle } from 'lucide-react';
 
 export const metadata = {
@@ -88,6 +89,14 @@ export default async function BookmarksPage() {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb
+        items={[
+          { label: 'Forum', href: '/forum' },
+          { label: 'Moje oznake' },
+        ]}
+      />
+
       <div className="flex items-center gap-3">
         <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex items-center justify-center">
           <Bookmark className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />

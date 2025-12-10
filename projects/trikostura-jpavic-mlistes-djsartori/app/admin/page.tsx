@@ -1,55 +1,68 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Users, MessageSquare, MessagesSquare, TrendingUp, Flag } from 'lucide-react';
 import Link from 'next/link';
+import { Avatar } from '@/components/ui/avatar';
 
 export const dynamic = 'force-dynamic';
 
 async function getAdminStats() {
   const supabase = await createServerSupabaseClient();
 
-  // Get total users
-  const { count: totalUsers } = await supabase
-    .from('profiles')
-    .select('*', { count: 'exact', head: true });
-
-  // Get total topics
-  const { count: totalTopics } = await supabase
-    .from('topics')
-    .select('*', { count: 'exact', head: true });
-
-  // Get total replies
-  const { count: totalReplies } = await supabase
-    .from('replies')
-    .select('*', { count: 'exact', head: true });
-
-  // Get users registered in last 7 days
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-  const { count: newUsers } = await supabase
-    .from('profiles')
-    .select('*', { count: 'exact', head: true })
-    .gte('created_at', sevenDaysAgo.toISOString());
+  // Run all queries in parallel for better performance
+  const [
+    { count: totalUsers },
+    { count: totalTopics },
+    { count: totalReplies },
+    { count: newUsers },
+    { data: recentTopics },
+    { data: activeUsers }
+  ] = await Promise.all([
+    // Get total users
+    supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true }),
 
-  // Get recent topics
-  const { data: recentTopics } = await supabase
-    .from('topics')
-    .select(
-      `
-      *,
-      author:profiles!topics_author_id_fkey(username, full_name),
-      category:categories(name, color)
-    `
-    )
-    .order('created_at', { ascending: false })
-    .limit(5);
+    // Get total topics
+    supabase
+      .from('topics')
+      .select('*', { count: 'exact', head: true }),
 
-  // Get most active users
-  const { data: activeUsers } = await supabase
-    .from('profiles')
-    .select('id, username, full_name, reputation')
-    .order('reputation', { ascending: false })
-    .limit(5);
+    // Get total replies
+    supabase
+      .from('replies')
+      .select('*', { count: 'exact', head: true }),
+
+    // Get users registered in last 7 days
+    supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', sevenDaysAgo.toISOString()),
+
+    // Get recent topics with selective fields
+    supabase
+      .from('topics')
+      .select(`
+        id,
+        title,
+        slug,
+        reply_count,
+        created_at,
+        author:profiles!topics_author_id_fkey(username, full_name),
+        category:categories(name, color)
+      `)
+      .order('created_at', { ascending: false })
+      .limit(5),
+
+    // Get most active users
+    supabase
+      .from('profiles')
+      .select('id, username, full_name, reputation, avatar_url')
+      .order('reputation', { ascending: false })
+      .limit(5)
+  ]);
 
   return {
     totalUsers: totalUsers || 0,
@@ -205,9 +218,15 @@ export default async function AdminDashboard() {
                   key={user.id}
                   className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-gray-700 last:border-0"
                 >
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-semibold">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-semibold text-sm flex-shrink-0">
                     {index + 1}
                   </div>
+                  <Avatar
+                    src={user.avatar_url}
+                    alt={user.username}
+                    username={user.username}
+                    size="md"
+                  />
                   <div className="flex-1 min-w-0">
                     <Link
                       href={`/forum/user/${user.username}`}
