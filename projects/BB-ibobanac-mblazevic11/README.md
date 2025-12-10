@@ -2,7 +2,7 @@
 
 ## 👥 Team Members
 - Ivan Bobanac (ibobanac)
-- Mate Blažević (mblazevic)
+- Mateo Blažević (mblazevic11)
 
 ## 🧩 Project Overview
 **Student Planner** omogućuje studentima:
