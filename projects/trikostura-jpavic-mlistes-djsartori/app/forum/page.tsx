@@ -130,8 +130,8 @@ export default async function ForumPage({
     .range(offset, offset + TOPICS_PER_PAGE - 1);
 
   // Calculate solved and unsolved counts for client-side filtering
-  const solvedCount = recentTopics?.filter(t => t.has_solution === true).length || 0;
-  const unsolvedCount = recentTopics?.filter(t => !t.has_solution).length || 0;
+  const solvedCount = recentTopics?.filter((t: any) => t.has_solution === true).length || 0;
+  const unsolvedCount = recentTopics?.filter((t: any) => !t.has_solution).length || 0;
 
   const totalPages = Math.ceil((totalTopics || 0) / TOPICS_PER_PAGE);
 
