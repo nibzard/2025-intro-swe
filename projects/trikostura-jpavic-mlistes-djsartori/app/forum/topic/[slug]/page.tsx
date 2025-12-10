@@ -38,13 +38,14 @@ export async function generateMetadata({
     };
   }
 
-  const description = (topic as any).content?.substring(0, 160) || 'Pogledajte ovu temu na Skripta forumu';
+  const topicData = topic as any;
+  const description = topicData.content?.substring(0, 160) || 'Pogledajte ovu temu na Skripta forumu';
 
   return {
-    title: `${topic.title} | Skripta Forum`,
+    title: `${topicData.title} | Skripta Forum`,
     description,
     openGraph: {
-      title: topic.title,
+      title: topicData.title,
       description,
       type: 'article',
     },
