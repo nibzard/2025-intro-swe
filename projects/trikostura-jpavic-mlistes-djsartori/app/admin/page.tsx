@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Users, MessageSquare, MessagesSquare, TrendingUp, Flag } from 'lucide-react';
 import Link from 'next/link';
+import { Avatar } from '@/components/ui/avatar';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,7 +48,7 @@ async function getAdminStats() {
   // Get most active users
   const { data: activeUsers } = await supabase
     .from('profiles')
-    .select('id, username, full_name, reputation')
+    .select('id, username, full_name, reputation, avatar_url')
     .order('reputation', { ascending: false })
     .limit(5);
 
@@ -205,9 +206,15 @@ export default async function AdminDashboard() {
                   key={user.id}
                   className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-gray-700 last:border-0"
                 >
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-semibold">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-semibold text-sm flex-shrink-0">
                     {index + 1}
                   </div>
+                  <Avatar
+                    src={user.avatar_url}
+                    alt={user.username}
+                    username={user.username}
+                    size="md"
+                  />
                   <div className="flex-1 min-w-0">
                     <Link
                       href={`/forum/user/${user.username}`}
