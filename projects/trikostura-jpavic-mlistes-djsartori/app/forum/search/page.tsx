@@ -647,158 +647,166 @@ export default function SearchPage() {
 
       {/* Empty State - Show helpful content */}
       {!hasSearched && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Search Tips */}
-          <Card className="lg:col-span-2">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Lightbulb className="w-5 h-5 text-yellow-500" />
-                <h3 className="text-lg font-semibold">Savjeti za pretraživanje</h3>
-              </div>
-              <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
-                <div>
-                  <span className="font-medium text-gray-900 dark:text-white">Jednostavna pretraga:</span>
-                  <p className="mt-1">Upiši bilo koji pojam, npr. "matematika", "programiranje", "ispit"</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-900 dark:text-white">Više riječi:</span>
-                  <p className="mt-1">Traži teme koje sadrže sve navedene riječi, npr. "web development tutorial"</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-900 dark:text-white">Koristi filtere:</span>
-                  <p className="mt-1">Suzite rezultate po kategoriji, datumu, autoru ili vrsti sadržaja</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-900 dark:text-white">Primjeri pretraga:</span>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {['Python tutorial', 'React hooks', 'SQL query', 'Machine learning'].map((example) => (
-                      <Badge
-                        key={example}
-                        variant="outline"
-                        className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
-                        onClick={() => {
-                          setQuery(example);
-                          handleSearch();
-                        }}
-                      >
-                        {example}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Trending Topics */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="w-5 h-5 text-orange-500" />
-                <h3 className="text-lg font-semibold">Popularne Teme</h3>
-              </div>
-              <div className="space-y-3">
-                {trendingTopics.length > 0 ? (
-                  trendingTopics.map((topic) => (
-                    <Link
-                      key={topic.id}
-                      href={`/forum/topic/${topic.slug}`}
-                      className="block group"
-                    >
-                      <div className="text-sm font-medium group-hover:text-blue-600 transition-colors line-clamp-2">
-                        {topic.title}
-                      </div>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
-                        {topic.category && (
-                          <span
-                            className="px-1.5 py-0.5 rounded"
-                            style={{
-                              backgroundColor: topic.category.color + '20',
-                              color: topic.category.color,
-                            }}
-                          >
-                            {topic.category.name}
-                          </span>
-                        )}
-                        <span>{topic.reply_count} odgovora</span>
-                      </div>
-                    </Link>
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-500">Nema popularnih tema</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Recent Searches */}
-          {recentSearches.length > 0 && (
+        <div className="space-y-6">
+          {/* Top Row: Search Tips and Trending Topics */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Search Tips */}
             <Card className="lg:col-span-2">
               <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-blue-500" />
-                    <h3 className="text-lg font-semibold">Nedavne Pretrage</h3>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={clearRecentSearches}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
+                <div className="flex items-center gap-2 mb-4">
+                  <Lightbulb className="w-5 h-5 text-yellow-500" />
+                  <h3 className="text-lg font-semibold">Savjeti za pretraživanje</h3>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {recentSearches.map((search, index) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
-                      onClick={() => {
-                        setQuery(search);
-                        handleSearch();
-                      }}
-                    >
-                      {search}
-                    </Badge>
-                  ))}
+                <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
+                  <div>
+                    <span className="font-medium text-gray-900 dark:text-white">Jednostavna pretraga:</span>
+                    <p className="mt-1">Upiši bilo koji pojam, npr. "matematika", "programiranje", "ispit"</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-900 dark:text-white">Više riječi:</span>
+                    <p className="mt-1">Traži teme koje sadrže sve navedene riječi, npr. "web development tutorial"</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-900 dark:text-white">Koristi filtere:</span>
+                    <p className="mt-1">Suzite rezultate po kategoriji, datumu, autoru ili vrsti sadržaja</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-900 dark:text-white">Primjeri pretraga:</span>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {['Python tutorial', 'React hooks', 'SQL query', 'Machine learning'].map((example) => (
+                        <Badge
+                          key={example}
+                          variant="outline"
+                          className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                          onClick={() => {
+                            setQuery(example);
+                            handleSearch();
+                          }}
+                        >
+                          {example}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          )}
 
-          {/* Stats Card */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="w-5 h-5 text-purple-500" />
-                <h3 className="text-lg font-semibold">Statistika</h3>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Teme</span>
-                  </div>
-                  <span className="font-semibold">{stats.totalTopics.toLocaleString()}</span>
+            {/* Trending Topics */}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <TrendingUp className="w-5 h-5 text-orange-500" />
+                  <h3 className="text-lg font-semibold">Popularne Teme</h3>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Odgovori</span>
-                  </div>
-                  <span className="font-semibold">{stats.totalReplies.toLocaleString()}</span>
+                <div className="space-y-3">
+                  {trendingTopics.length > 0 ? (
+                    trendingTopics.map((topic) => (
+                      <Link
+                        key={topic.id}
+                        href={`/forum/topic/${topic.slug}`}
+                        className="block group"
+                      >
+                        <div className="text-sm font-medium group-hover:text-blue-600 transition-colors line-clamp-2">
+                          {topic.title}
+                        </div>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                          {topic.category && (
+                            <span
+                              className="px-1.5 py-0.5 rounded"
+                              style={{
+                                backgroundColor: topic.category.color + '20',
+                                color: topic.category.color,
+                              }}
+                            >
+                              {topic.category.name}
+                            </span>
+                          )}
+                          <span>{topic.reply_count} odgovora</span>
+                        </div>
+                      </Link>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">Nema popularnih tema</p>
+                  )}
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Korisnici</span>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Bottom Row: Recent Searches and Stats side by side */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Recent Searches */}
+            {recentSearches.length > 0 && (
+              <Card className="lg:col-span-2">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-blue-500" />
+                      <h3 className="text-lg font-semibold">Nedavne Pretrage</h3>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearRecentSearches}
+                      className="hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      title="Obriši sve nedavne pretrage"
+                    >
+                      <X className="w-4 h-4 text-red-500" />
+                    </Button>
                   </div>
-                  <span className="font-semibold">{stats.totalUsers.toLocaleString()}</span>
+                  <div className="flex flex-wrap gap-2">
+                    {recentSearches.map((search, index) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-500 transition-colors"
+                        onClick={() => {
+                          setQuery(search);
+                          handleSearch();
+                        }}
+                      >
+                        {search}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Stats Card - Always visible, takes remaining space */}
+            <Card className={recentSearches.length > 0 ? '' : 'lg:col-span-3'}>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles className="w-5 h-5 text-purple-500" />
+                  <h3 className="text-lg font-semibold">Statistika</h3>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="w-5 h-5 text-blue-600" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">Teme</span>
+                    </div>
+                    <span className="text-lg font-bold text-blue-600">{stats.totalTopics.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="w-5 h-5 text-green-600" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">Odgovori</span>
+                    </div>
+                    <span className="text-lg font-bold text-green-600">{stats.totalReplies.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-5 h-5 text-purple-600" />
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">Korisnici</span>
+                    </div>
+                    <span className="text-lg font-bold text-purple-600">{stats.totalUsers.toLocaleString()}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       )}
     </div>
