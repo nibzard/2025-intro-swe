@@ -28,6 +28,11 @@ export function TopicContent({ topic, replies, userVotes, currentUserId }: Topic
     }, 100);
   };
 
+  const handleClearQuote = () => {
+    setQuotedText(undefined);
+    setQuotedAuthor(undefined);
+  };
+
   useEffect(() => {
     // Clear quote when form is submitted (content changes)
     if (quotedText) {
@@ -71,6 +76,7 @@ export function TopicContent({ topic, replies, userVotes, currentUserId }: Topic
               topicId={topic.id}
               quotedText={quotedText}
               quotedAuthor={quotedAuthor}
+              onClearQuote={handleClearQuote}
             />
           </CardContent>
         </Card>
