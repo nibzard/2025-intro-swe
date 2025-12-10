@@ -1,0 +1,161 @@
+# Structured + Standard Operations Example
+# Demonstrates mixing function calling (structured) and text-based (standard) operations
+# Cost: ~$0.015 per run (1 intent × [$0.001 query + $0.014 operations])
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+
+brands:
+  mine: ["Lemwarm"]
+  competitors: ["Instantly", "HubSpot", "Apollo.io", "Woodpecker"]
+
+intents:
+  - id: "best-email-warmup-tools"
+    prompt: "What are the best email warmup tools for 2025?"
+
+    operations:
+      # STRUCTURED OPERATION #1: Extract pricing with schema validation
+      - id: "extract-pricing"
+        description: "Extract pricing information with structured output"
+        type: "structured"
+        function_schema:
+          type: "function"
+          name: "extract_pricing"
+          parameters:
+            type: "object"
+            properties:
+              pricing_info:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    brand: {type: "string"}
+                    has_free_tier: {type: "boolean"}
+                    starting_price: {type: "number"}
+                    currency: {type: "string"}
+                    pricing_model: {type: "string", enum: ["per_user", "per_email", "flat_rate", "unknown"]}
+                  required: ["brand", "has_free_tier"]
+            required: ["pricing_info"]
+        prompt: |
+          Extract pricing details mentioned for each tool in this response:
+          {intent:response}
+        output_format: "json"
+
+      # STRUCTURED OPERATION #2: Feature extraction using built-in template
+      - id: "extract-features"
+        description: "Extract features for each tool"
+        type: "structured"
+        function_template: "extract_features"  # Use built-in template
+        prompt: |
+          Extract all features mentioned for each email warmup tool:
+          {intent:response}
+
+          Focus on: deliverability, automation, analytics, integrations.
+        output_format: "json"
+
+      # STRUCTURED OPERATION #3: Gap analysis with inline schema
+      - id: "gap-analysis"
+        description: "Identify feature and pricing gaps"
+        type: "structured"
+        depends_on: ["extract-pricing", "extract-features"]
+        function_template: "identify_gaps"  # Use built-in template
+        prompt: |
+          My brand: {brand:mine}
+          My current rank: {rank:mine}
+
+          Competitor pricing data:
+          {operation:extract-pricing}
+
+          Competitor features data:
+          {operation:extract-features}
+
+          Analyze what we're missing and what makes us unique.
+        output_format: "json"
+
+      # STANDARD OPERATION #1: Strategic narrative (creative writing)
+      # NOTE: No "type" field needed - defaults to "standard"
+      - id: "positioning-narrative"
+        description: "Write positioning narrative based on gaps"
+        depends_on: ["gap-analysis"]
+        prompt: |
+          Based on this competitive gap analysis:
+          {operation:gap-analysis}
+
+          Write a 2-paragraph positioning narrative for {brand:mine} that:
+          1. Acknowledges our current market position (rank {rank:mine})
+          2. Highlights our unique strengths from the analysis
+          3. Frames any gaps as strategic choices or future roadmap items
+
+          Keep it authentic and avoid marketing fluff. Write for an internal audience.
+        output_format: "text"
+
+      # STANDARD OPERATION #2: Email to sales team (human-readable)
+      - id: "sales-talking-points"
+        description: "Generate sales talking points email"
+        depends_on: ["gap-analysis", "positioning-narrative"]
+        prompt: |
+          Create a brief email to the sales team summarizing this week's LLM ranking update.
+
+          CONTEXT:
+          - Query: {intent:prompt}
+          - Our rank: {rank:mine}
+          - Competitors mentioned: {competitors:mentioned}
+
+          KEY INSIGHTS (structured data):
+          {operation:gap-analysis}
+
+          POSITIONING NARRATIVE:
+          {operation:positioning-narrative}
+
+          Format as a professional email with:
+          - Subject line
+          - Brief greeting
+          - 3-4 key insights (bullet points)
+          - Recommended talking points for customer conversations
+          - Call to action
+
+          Keep it concise (under 300 words) and actionable.
+        output_format: "text"
+
+      # STANDARD OPERATION #3: Content ideas (brainstorming)
+      - id: "content-ideas"
+        description: "Brainstorm blog post ideas to improve ranking"
+        prompt: |
+          Based on this LLM response about email warmup tools:
+          {intent:response}
+
+          My brand ({brand:mine}) currently ranks #{rank:mine}.
+
+          Brainstorm 5 blog post ideas that would:
+          - Address gaps in how LLMs talk about us
+          - Target buyer-intent keywords in this space
+          - Differentiate us from {competitors:mentioned}
+
+          For each idea provide:
+          - Working title
+          - 1-sentence description
+          - Target keyword/topic
+          - Expected impact (high/medium/low)
+
+          Format as a numbered list.
+        output_format: "text"
+        condition: "{rank:mine} > 1"  # Only if we're not #1
+
+# Operation execution flow:
+# 1. extract-pricing (structured) - Returns validated JSON
+# 2. extract-features (structured) - Returns validated JSON
+# 3. gap-analysis (structured) - Uses data from #1 and #2, returns JSON
+# 4. positioning-narrative (standard) - Uses #3, returns creative text
+# 5. sales-talking-points (standard) - Uses #3 and #4, returns email
+# 6. content-ideas (standard) - Uses original response, returns brainstorm
+#
+# Benefits of mixing:
+# - Structured operations provide reliable data extraction
+# - Standard operations enable creative synthesis and human-readable output
+# - Structured data feeds into creative writing for best of both worlds

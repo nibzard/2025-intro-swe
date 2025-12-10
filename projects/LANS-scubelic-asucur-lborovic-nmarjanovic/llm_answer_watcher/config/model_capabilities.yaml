@@ -1,0 +1,60 @@
+# ABOUTME: Model capabilities configuration for LLM Answer Watcher
+# ABOUTME: Defines provider-specific model parameter support and quirks
+
+# OpenAI model capabilities
+openai:
+  # Models that don't support custom temperature parameter
+  # These models only support their default temperature (usually 1.0)
+  temperature:
+    # Prefixes that match entire model families
+    unsupported_prefixes:
+      - "o3-"       # o3-mini, o3-mini-2025-01-01, etc.
+      - "gpt-5"     # gpt-5, gpt-5-mini, gpt-5-nano, gpt-5-pro, etc.
+      - "gpt-4.1"   # gpt-4.1-nano, gpt-4.1-mini, etc.
+
+    # Exact model names that don't support temperature (for edge cases)
+    unsupported_exact: []
+
+  # Models that use max_completion_tokens instead of max_tokens
+  # Note: We don't currently use max_tokens, but this documents the quirk
+  parameters:
+    max_completion_tokens_models:
+      - "gpt-5"
+      - "gpt-5-mini"
+      - "gpt-5-nano"
+      - "gpt-5-pro"
+      - "gpt-5-chat-latest"
+      - "gpt-4.1-nano"
+      - "gpt-4.1-nano-2025-04-14"
+      - "gpt-4.1-mini"
+      - "gpt-4.1-mini-2025-04-14"
+
+# Anthropic model capabilities
+anthropic:
+  temperature:
+    unsupported_prefixes: []
+    unsupported_exact: []
+
+# Google model capabilities
+google:
+  temperature:
+    unsupported_prefixes: []
+    unsupported_exact: []
+
+# Mistral model capabilities
+mistral:
+  temperature:
+    unsupported_prefixes: []
+    unsupported_exact: []
+
+# Grok model capabilities
+grok:
+  temperature:
+    unsupported_prefixes: []
+    unsupported_exact: []
+
+# Perplexity model capabilities
+perplexity:
+  temperature:
+    unsupported_prefixes: []
+    unsupported_exact: []

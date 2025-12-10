@@ -1,0 +1,92 @@
+# Budget Controls Example
+# Prevent runaway costs with spending limits
+# Cost: Limited by budget settings
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+
+    - provider: "anthropic"
+      model_name: "claude-3-5-haiku-20241022"
+      env_api_key: "ANTHROPIC_API_KEY"
+
+  # Budget controls (RECOMMENDED for production)
+  budget:
+    enabled: true  # Enable budget enforcement
+
+    # Abort if total run would exceed $1.00
+    max_per_run_usd: 1.00
+
+    # Abort if single intent would exceed $0.10
+    max_per_intent_usd: 0.10
+
+    # Show warning if estimated cost > $0.50 (but continue)
+    warn_threshold_usd: 0.50
+
+brands:
+  mine: ["YourBrand"]
+  competitors: ["CompetitorA", "CompetitorB", "CompetitorC"]
+
+intents:
+  - id: "best-tools"
+    prompt: "What are the best project management tools?"
+
+  - id: "tool-comparison"
+    prompt: "Compare the top project management platforms"
+
+  - id: "buying-guide"
+    prompt: "How do I choose project management software?"
+
+# Budget behavior:
+# 1. Tool estimates cost BEFORE running
+# 2. If estimate > max_per_run_usd: ABORT with error
+# 3. If estimate > warn_threshold_usd: WARN but continue
+# 4. Cost tracked per-intent to enforce max_per_intent_usd
+#
+# Example scenarios:
+#
+# Scenario 1: Under budget (continues)
+# - 3 intents × 2 models × $0.002/query = $0.012 estimated
+# - Under $1.00 limit → runs successfully
+#
+# Scenario 2: Warning threshold (warns but continues)
+# - 10 intents × 5 models × $0.01/query = $0.50 estimated
+# - Equals warn_threshold_usd → shows warning, continues
+#
+# Scenario 3: Budget exceeded (aborts)
+# - 100 intents × 5 models × $0.01/query = $5.00 estimated
+# - Exceeds max_per_run_usd ($1.00) → ABORTS before running
+#
+# Use --force flag to override budget limits:
+# llm-answer-watcher run --config thisfile.yaml --force
+
+# Alternative budget strategies:
+
+# Strategy 1: Development (very strict)
+# budget:
+#   enabled: true
+#   max_per_run_usd: 0.10  # Only $0.10 per run
+#   warn_threshold_usd: 0.05
+
+# Strategy 2: Production monitoring (generous with warnings)
+# budget:
+#   enabled: true
+#   max_per_run_usd: 10.00  # Allow up to $10
+#   warn_threshold_usd: 5.00  # Warn at $5
+
+# Strategy 3: Per-intent focus (prevent expensive queries)
+# budget:
+#   enabled: true
+#   max_per_intent_usd: 0.05  # Each intent max $0.05
+#   # No max_per_run_usd limit
+
+# Strategy 4: Warnings only (no hard limits)
+# budget:
+#   enabled: true
+#   warn_threshold_usd: 1.00
+#   # No max limits - only warns

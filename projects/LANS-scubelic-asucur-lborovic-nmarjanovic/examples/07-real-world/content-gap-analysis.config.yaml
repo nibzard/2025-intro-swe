@@ -1,0 +1,135 @@
+# Content Gap Analysis Template
+# Identify content opportunities to improve LLM rankings
+# Cost: ~$0.25 per run (comprehensive analysis with operations)
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/content-gaps.db"
+  max_concurrent_requests: 10
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+      tools:
+        - type: "web_search"
+
+extraction_settings:
+  extraction_model:
+    provider: "openai"
+    model_name: "gpt-4o-mini"
+    env_api_key: "OPENAI_API_KEY"
+  method: "function_calling"
+  fallback_to_regex: true
+  enable_sentiment_analysis: true
+
+brands:
+  mine: ["YourBrand"]
+  competitors: ["TopCompetitor", "EmergingCompetitor", "NichePlayer"]
+
+# Target queries where you want to rank better
+intents:
+  - id: "buyer-intent-1"
+    prompt: "What are the best [category] tools for [use case]?"
+
+    operations:
+      # Step 1: Analyze why competitors rank higher
+      - id: "competitor-advantage-analysis"
+        description: "Why do competitors rank higher?"
+        prompt: |
+          Analyze why these competitors rank higher than {brand:mine} in this response:
+
+          Competitors ranked higher: {competitors:mentioned}
+          Their mentions: {competitors:competitor_mentions}
+          Our rank: {rank:mine}
+
+          Response: {intent:response}
+
+          Identify:
+          1. What specific features/capabilities are highlighted for top competitors?
+          2. What use cases are they associated with?
+          3. What keywords/topics are emphasized?
+          4. What's missing from {brand:mine}'s mention (or why aren't we mentioned)?
+        model: "gpt-4o-mini"
+
+      # Step 2: Generate content recommendations
+      - id: "content-recommendations"
+        description: "Generate specific content to create"
+        prompt: |
+          Based on this competitive analysis, recommend 5 specific pieces of content that would help {brand:mine} rank higher.
+
+          Analysis:
+          {operation:competitor-advantage-analysis}
+
+          For each recommendation provide:
+          1. Content type (blog post, guide, case study, etc.)
+          2. Specific title
+          3. Key topics/keywords to cover
+          4. Why it would improve our ranking
+          5. Priority (High/Medium/Low)
+        depends_on: ["competitor-advantage-analysis"]
+        model: "gpt-4o-mini"
+
+      # Step 3: Blog post outline
+      - id: "priority-blog-outline"
+        description: "Create outline for highest-priority content"
+        prompt: |
+          Create a detailed blog post outline for the highest-priority recommendation.
+
+          Recommendations:
+          {operation:content-recommendations}
+
+          Provide:
+          - SEO-optimized H1 title
+          - H2/H3 structure (8-10 sections)
+          - Key points for each section
+          - Internal linking opportunities
+          - CTAs
+          - Target word count
+        depends_on: ["content-recommendations"]
+        model: "gpt-4o-mini"
+
+  - id: "buyer-intent-2"
+    prompt: "How do I choose the right [category] solution?"
+
+    operations:
+      # Similar operations structure...
+      - id: "decision-criteria-analysis"
+        description: "Extract decision criteria mentioned"
+        prompt: |
+          What decision criteria does this response emphasize for choosing {intent:prompt}?
+
+          Response: {intent:response}
+
+          List:
+          1. Decision factors mentioned (price, features, ease of use, etc.)
+          2. Order of importance (based on emphasis)
+          3. Which criteria favor competitors over us?
+          4. Which criteria we could own with better content?
+        model: "gpt-4o-mini"
+
+      - id: "decision-guide-outline"
+        description: "Create buyer's guide outline"
+        prompt: |
+          Create an outline for a comprehensive buyer's guide that addresses these decision criteria.
+
+          Criteria analysis:
+          {operation:decision-criteria-analysis}
+
+          Structure the guide to position {brand:mine} favorably while providing genuine value.
+        depends_on: ["decision-criteria-analysis"]
+        model: "gpt-4o-mini"
+
+# Output deliverables:
+# - Competitive advantage analysis per intent
+# - 5+ specific content recommendations per intent
+# - Blog post outlines ready to assign to writers
+# - Decision criteria analysis
+# - Buyer's guide structures
+#
+# How to use:
+# 1. Run monthly to identify new content opportunities
+# 2. Prioritize recommendations by impact
+# 3. Assign to content team
+# 4. Track if new content improves rankings in future runs
+# 5. Iterate based on results
