@@ -8,6 +8,7 @@ import { AdvancedFileUpload } from '@/components/forum/advanced-file-upload';
 import { createClient } from '@/lib/supabase/client';
 import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 import { processMentions } from '@/app/forum/actions';
+import { detectSpam, detectDuplicate, detectRapidPosting } from '@/lib/spam-detection';
 import { toast } from 'sonner';
 import { Send, Loader2, Smile, Eye, Edit3, Lightbulb, X, Zap, Quote } from 'lucide-react';
 import { useButtonAnimation } from '@/hooks/use-button-animation';
@@ -148,6 +149,51 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess, onClea
         toast.error('Morate biti prijavljeni', { id: toastId });
         setIsSubmitting(false);
         return;
+      }
+
+      // Spam detection - check content
+      const spamCheck = detectSpam(content.trim());
+      if (spamCheck.isSpam) {
+        toast.error(`Sadržaj je označen kao spam: ${spamCheck.reason}`, { id: toastId });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Fetch recent posts by this user for duplicate/rate limit checks
+      const { data: recentReplies } = await (supabase as any)
+        .from('replies')
+        .select('content, created_at')
+        .eq('author_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (recentReplies && recentReplies.length > 0) {
+        // Check for duplicate content
+        const duplicateCheck = detectDuplicate({
+          content: content.trim(),
+          userId: user.id,
+          recentPosts: recentReplies,
+          timeWindowMinutes: 5,
+        });
+
+        if (duplicateCheck.isSpam) {
+          toast.error(`${duplicateCheck.reason}. Molimo pričekajte prije ponovnog objavljivanja.`, { id: toastId });
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Check for rapid posting
+        const rateCheck = detectRapidPosting({
+          userId: user.id,
+          recentPosts: recentReplies,
+          maxPostsPerMinute: 3,
+        });
+
+        if (rateCheck.isSpam) {
+          toast.error(`${rateCheck.reason}. Molimo usporite.`, { id: toastId });
+          setIsSubmitting(false);
+          return;
+        }
       }
 
       const { error: insertError, data: newReply } = await (supabase as any)
