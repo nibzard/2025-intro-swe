@@ -1,0 +1,28 @@
+# Perplexity Provider Example
+# Demonstrates Perplexity Sonar models (always includes web search + citations)
+# Cost: ~$0.003 per run (3 intents × sonar)
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "perplexity"
+      model_name: "sonar"
+      env_api_key: "PERPLEXITY_API_KEY"
+      # Perplexity automatically searches the web for every query
+      # Citations are included in responses
+
+brands:
+  mine: ["YourBrand", "YourProduct"]
+  competitors: ["CompetitorA", "CompetitorB", "CompetitorC"]
+
+intents:
+  - id: "best-tools"
+    prompt: "What are the best project management tools?"
+
+  - id: "tool-comparison"
+    prompt: "Compare the top project management platforms for teams"
+
+  - id: "buying-guide"
+    prompt: "How do I choose the right project management software?"

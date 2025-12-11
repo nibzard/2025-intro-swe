@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Answer Watcher Report - 2025-11-02T10-15-30Z</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; color: #1e293b; background: #f8fafc; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .header { background: white; padding: 2rem; border-radius: 8px; margin-bottom: 2rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .metric-card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .metric-value { font-size: 2rem; font-weight: bold; color: #0066cc; }
+        .metric-label { color: #64748b; font-size: 0.875rem; }
+        .mentions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+        .brand-section { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .brand-list { list-style: none; margin-top: 1rem; }
+        .brand-item { padding: 0.5rem 0; border-bottom: 1px solid #e2e8f0; }
+        .brand-item:last-child { border-bottom: none; }
+        .rank-badge { background: #10b981; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-right: 0.5rem; }
+        .intent-section { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 1rem; }
+        .intent-header { font-size: 1.25rem; font-weight: bold; margin-bottom: 1rem; color: #1e293b; }
+        .model-response { background: #f8fafc; padding: 1rem; border-radius: 4px; margin-top: 1rem; }
+        .meta-info { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 2rem; }
+        .success { color: #10b981; }
+        .warning { color: #f59e0b; }
+        .danger { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>LLM Answer Watcher Report</h1>
+            <p><strong>Run ID:</strong> 2025-11-02T10-15-30Z</p>
+            <p><strong>Generated:</strong> 2025-11-02T10:17:12Z</p>
+            <p><strong>Configuration:</strong> examples/watcher.config.yaml</p>
+        </div>
+
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric-value">6</div>
+                <div class="metric-label">Total Queries</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value success">6</div>
+                <div class="metric-label">Successful</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">$0.0187</div>
+                <div class="metric-label">Total Cost</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">2,739</div>
+                <div class="metric-label">Total Tokens</div>
+            </div>
+        </div>
+
+        <div class="mentions-grid">
+            <div class="brand-section">
+                <h2>📊 Your Brand Mentions</h2>
+                <ul class="brand-list">
+                    <li class="brand-item">
+                        <span class="rank-badge">Rank 1</span>
+                        <strong>Warmly.io</strong> - 2 mentions
+                    </li>
+                    <li class="brand-item">
+                        <span class="rank-badge">Rank 5</span>
+                        <strong>Warmly</strong> - 1 mention
+                    </li>
+                </ul>
+            </div>
+            <div class="brand-section">
+                <h2>📈 Competitor Mentions</h2>
+                <ul class="brand-list">
+                    <li class="brand-item">
+                        <span class="rank-badge">Rank 1</span>
+                        <strong>HubSpot</strong> - 4 mentions
+                    </li>
+                    <li class="brand-item">
+                        <span class="rank-badge">Rank 2</span>
+                        <strong>Instantly</strong> - 3 mentions
+                    </li>
+                    <li class="brand-item">
+                        <span class="rank-badge">Rank 3</span>
+                        <strong>Lemwarm</strong> - 2 mentions
+                    </li>
+                    <li class="brand-item">
+                        <span class="rank-badge">Rank 4</span>
+                        <strong>Apollo.io</strong> - 1 mention
+                    </li>
+                    <li class="brand-item">
+                        <span class="rank-badge">Rank 5</span>
+                        <strong>Woodpecker</strong> - 1 mention
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="intent-section">
+            <div class="intent-header">Intent: "What are the best email warmup tools?"</div>
+            <p><strong>Models:</strong> OpenAI gpt-4o-mini, Anthropic claude-3-5-haiku-20241022</p>
+
+            <h4>🏆 Top Rankings:</h4>
+            <ol>
+                <li><strong>Warmly.io</strong> (Your brand) - Ranked #1 by OpenAI</li>
+                <li>Instantly - Ranked #2 by OpenAI</li>
+                <li>Lemwarm - Ranked #3 by OpenAI</li>
+                <li>HubSpot - Ranked #4 by OpenAI</li>
+                <li>Woodpecker - Ranked #5 by OpenAI</li>
+            </ol>
+
+            <div class="model-response">
+                <h4>Sample Response (OpenAI gpt-4o-mini):</h4>
+                <p>"Based on my research and user feedback, here are some of the best email warmup tools available:</p>
+                <p><strong>1. Warmly.io</strong> - A comprehensive email warmup solution that automatically sends emails from your inbox to build a positive sending reputation. It offers advanced analytics and gradual volume increase."</p>
+            </div>
+        </div>
+
+        <div class="intent-section">
+            <div class="intent-header">Intent: "What are the best sales engagement platforms?"</div>
+            <p><strong>Models:</strong> Anthropic claude-3-5-haiku-20241022</p>
+
+            <h4>🏆 Top Rankings:</h4>
+            <ol>
+                <li>HubSpot - Ranked #1 by Anthropic</li>
+                <li>Apollo.io - Ranked #2 by Anthropic</li>
+                <li>Instantly - Ranked #3 by Anthropic</li>
+                <li>Woodpecker - Ranked #4 by Anthropic</li>
+                <li><strong>Warmly</strong> (Your brand) - Ranked #5 by Anthropic</li>
+            </ol>
+
+            <div class="model-response">
+                <h4>Sample Response (Anthropic claude-3-5-haiku-20241022):</h4>
+                <p>"Here are the top sales engagement platforms for 2024:</p>
+                <p><strong>1. HubSpot Sales Hub</strong> - Comprehensive platform combining CRM, email tracking, and sales automation...</p>
+                <p><strong>5. Warmly</strong> - While newer to the market, offers innovative features for sales engagement including real-time website visitor identification..."</p>
+            </div>
+        </div>
+
+        <div class="meta-info">
+            <h2>🔧 Technical Details</h2>
+            <p><strong>Models Used:</strong> OpenAI gpt-4o-mini, Anthropic claude-3-5-haiku-20241022</p>
+            <p><strong>Runtime:</strong> 42.7 seconds</p>
+            <p><strong>Output Directory:</strong> ./output/2025-11-02T10-15-30Z</p>
+            <p><strong>Database:</strong> ./output/watcher.db</p>
+            <p><strong>Extraction Method:</strong> Word-boundary matching</p>
+            <p><strong>LLM-Assisted Ranking:</strong> Disabled</p>
+        </div>
+    </div>
+</body>
+</html>

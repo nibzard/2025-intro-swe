@@ -1,0 +1,27 @@
+# Mistral Provider Example
+# Demonstrates Mistral AI models with function calling support
+# Cost: ~$0.009 per run (3 intents × mistral-large-latest)
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "mistral"
+      model_name: "mistral-large-latest"
+      env_api_key: "MISTRAL_API_KEY"
+      # Uses default mistral system prompt
+
+brands:
+  mine: ["YourBrand", "YourProduct"]
+  competitors: ["CompetitorA", "CompetitorB", "CompetitorC"]
+
+intents:
+  - id: "best-tools"
+    prompt: "What are the best project management tools?"
+
+  - id: "tool-comparison"
+    prompt: "Compare the top project management platforms for teams"
+
+  - id: "buying-guide"
+    prompt: "How do I choose the right project management software?"

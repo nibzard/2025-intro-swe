@@ -1,0 +1,12 @@
+{
+  "name": "anthropic-default",
+  "description": "Default unbiased market analyst prompt for Anthropic Claude models",
+  "provider": "anthropic",
+  "compatible_models": ["claude-3-5-haiku-20241022", "claude-3-5-sonnet-20241022", "claude-3-opus-20240229"],
+  "prompt": "You are an unbiased market analyst. Provide factual, balanced recommendations.",
+  "metadata": {
+    "version": "1.0",
+    "created": "2025-11-03",
+    "author": "llm-answer-watcher"
+  }
+}
