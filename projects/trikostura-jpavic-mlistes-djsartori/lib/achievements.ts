@@ -83,8 +83,8 @@ export async function checkAndAwardAchievements(userId: string) {
     if (reputation >= 1000 && !earned.has('legend')) toAward.push('legend');
 
     // Early adopter (joined within first month of launch)
-    // Adjust this date to your forum's launch date
-    const launchDate = new Date('2024-01-01');
+    // Forum launch date: December 2025
+    const launchDate = new Date('2025-12-01');
     const userJoinDate = new Date((profile as any).created_at);
     const monthAfterLaunch = new Date(launchDate);
     monthAfterLaunch.setMonth(monthAfterLaunch.getMonth() + 1);
