@@ -1,0 +1,64 @@
+# Example configuration with budget controls
+# This config demonstrates how to use the budget system to prevent runaway costs
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+      system_prompt: "openai/gpt-4-default"
+
+    - provider: "anthropic"
+      model_name: "claude-3-5-haiku-20241022"
+      env_api_key: "ANTHROPIC_API_KEY"
+
+  use_llm_rank_extraction: false
+
+  # Budget controls (optional) - prevents runaway costs
+  budget:
+    enabled: true  # Enable budget controls
+    max_per_run_usd: 1.00  # Abort if total run cost would exceed $1.00
+    max_per_intent_usd: 0.10  # Abort if single intent cost would exceed $0.10
+    warn_threshold_usd: 0.50  # Show warning if estimated cost > $0.50 (but continue)
+
+  # Alternative budget configs:
+  #
+  # Strict budget (development):
+  # budget:
+  #   enabled: true
+  #   max_per_run_usd: 0.10  # Only $0.10 per run max
+  #   warn_threshold_usd: 0.05
+  #
+  # Warning only (production monitoring):
+  # budget:
+  #   enabled: true
+  #   warn_threshold_usd: 5.00  # Warn if > $5, but don't abort
+  #
+  # Disable budget:
+  # budget:
+  #   enabled: false
+
+brands:
+  mine:
+    - "Warmly"
+    - "Warmly.io"
+
+  competitors:
+    - "Instantly"
+    - "Lemwarm"
+    - "HubSpot"
+    - "Apollo.io"
+    - "Woodpecker"
+
+intents:
+  - id: "best-email-warmup-tools"
+    prompt: "What are the best email warmup tools?"
+
+  - id: "email-warmup-comparison"
+    prompt: "Compare the top email warmup tools for improving deliverability"
+
+  - id: "sales-engagement-platforms"
+    prompt: "What are the best sales engagement platforms?"
