@@ -52,11 +52,6 @@ export default async function Page({ params }: PageProps) {
 
   const isOwnProfile = user?.id === profile.id;
 
-  // Check and award achievements for the profile being viewed
-  try {
-    await checkAndAwardAchievements(profile.id);
-  } catch (error) {
-    console.error('Achievement check failed:', error);
   // Check and award achievements for the profile being viewed (non-blocking)
   checkAndAwardAchievements(profile.id).catch(err => 
     console.error('Achievement check failed:', err)
