@@ -226,8 +226,6 @@ export default async function Page({ params }: PageProps) {
   }).sort((a, b) => b.count - a.count);
 
   const stats = {
-    totalTopics,
-    totalReplies,
     totalViews,
     totalUpvotes,
     solutionsMarked,

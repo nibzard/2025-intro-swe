@@ -1,9 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart3, MessageSquare, Eye, ThumbsUp, Target } from 'lucide-react';
+import { BarChart3, Eye, ThumbsUp, Target } from 'lucide-react';
 
 interface StatsData {
-  totalTopics: number;
-  totalReplies: number;
   totalViews: number;
   totalUpvotes: number;
   solutionsMarked: number;
@@ -23,19 +21,7 @@ export function StatsDashboard({ stats }: { stats: StatsData }) {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Main Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-          <div className="text-center p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
-            <MessageSquare className="w-6 h-6 mx-auto mb-2 text-blue-600 dark:text-blue-400" />
-            <div className="text-2xl font-bold">{stats.totalTopics}</div>
-            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Teme</div>
-          </div>
-
-          <div className="text-center p-4 rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
-            <MessageSquare className="w-6 h-6 mx-auto mb-2 text-green-600 dark:text-green-400" />
-            <div className="text-2xl font-bold">{stats.totalReplies}</div>
-            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Odgovori</div>
-          </div>
-
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="text-center p-4 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20">
             <Eye className="w-6 h-6 mx-auto mb-2 text-purple-600 dark:text-purple-400" />
             <div className="text-2xl font-bold">{stats.totalViews}</div>
