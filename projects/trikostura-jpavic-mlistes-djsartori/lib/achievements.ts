@@ -84,7 +84,7 @@ export async function checkAndAwardAchievements(userId: string) {
 
     // Early adopter (joined within first month of launch)
     // Forum launch date: December 2025
-    const launchDate = new Date('2025-12-01');
+    const launchDate = new Date('2025-12-04');
     const userJoinDate = new Date((profile as any).created_at);
     const monthAfterLaunch = new Date(launchDate);
     monthAfterLaunch.setMonth(monthAfterLaunch.getMonth() + 1);
