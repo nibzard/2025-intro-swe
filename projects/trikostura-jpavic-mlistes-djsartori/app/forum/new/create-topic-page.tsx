@@ -15,7 +15,7 @@ import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 import { generateSlug } from '@/lib/utils';
 import { processMentions } from '@/app/forum/actions';
 import { detectSpam, detectDuplicate, detectRapidPosting } from '@/lib/spam-detection';
-import { checkAndAwardAchievements } from '@/lib/achievements';
+import { checkAndAwardAchievements } from '@/app/forum/achievements/actions';
 import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { toast } from 'sonner';
 import Link from 'next/link';

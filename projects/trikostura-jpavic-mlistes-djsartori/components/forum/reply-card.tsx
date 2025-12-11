@@ -14,7 +14,7 @@ import { ReportDialog } from './report-dialog';
 import { createClient } from '@/lib/supabase/client';
 import { editReply } from '@/app/forum/reply/actions';
 import { deleteReplyAction, markSolutionAction } from '@/app/forum/actions';
-import { checkAndAwardAchievements } from '@/lib/achievements';
+import { checkAndAwardAchievements } from '@/app/forum/achievements/actions';
 import { toast } from 'sonner';
 import { useButtonAnimation } from '@/hooks/use-button-animation';
 
