@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/client';
 import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 import { processMentions } from '@/app/forum/actions';
 import { detectSpam, detectDuplicate, detectRapidPosting } from '@/lib/spam-detection';
+import { checkAndAwardAchievements } from '@/lib/achievements';
 import { toast } from 'sonner';
 import { Send, Loader2, Smile, Eye, Edit3, Lightbulb, X, Zap, Quote } from 'lucide-react';
 import { useButtonAnimation } from '@/hooks/use-button-animation';
@@ -241,6 +242,23 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess, onClea
 
       // Process mentions and create notifications
       await processMentions(content.trim(), user.id, topicId, newReply.id);
+
+      // Check and award achievements
+      const newAchievements = await checkAndAwardAchievements(user.id);
+
+      // Show achievement notifications
+      if (newAchievements && newAchievements.length > 0) {
+        const { ACHIEVEMENTS } = await import('@/lib/achievements');
+        newAchievements.forEach(achievementId => {
+          const achievement = ACHIEVEMENTS[achievementId];
+          if (achievement) {
+            toast.success(`🏆 Novo postignuće: ${achievement.name}!`, {
+              description: achievement.description,
+              duration: 5000,
+            });
+          }
+        });
+      }
 
       triggerAnimation();
       toast.success('Odgovor uspješno objavljen!', { id: toastId });
