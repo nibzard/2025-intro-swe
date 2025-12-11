@@ -25,16 +25,6 @@ const nextConfig = {
       exclude: ['error', 'warn'],
     } : false,
   },
-  
-  // Enable SWC minification
-  swcMinify: true,
-  
-  // Optimize module resolution
-  modularizeImports: {
-    'lucide-react': {
-      transform: 'lucide-react/dist/esm/icons/{{member}}',
-    },
-  },
 
   // Fix for GitHub Codespaces and server actions
   experimental: {
