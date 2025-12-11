@@ -1,0 +1,63 @@
+# Function Calling Extraction Example
+# LLM-based brand mention detection with high accuracy
+# Cost: ~$0.006 per run (3 intents × $0.002 with extraction)
+# Accuracy: ~95%
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+
+# Function calling extraction settings
+extraction_settings:
+  # Use LLM for extraction (more accurate than regex)
+  extraction_model:
+    provider: "openai"
+    model_name: "gpt-4o-mini"
+    env_api_key: "OPENAI_API_KEY"
+    system_prompt: "openai/extraction-default"
+
+  # Method: function_calling (structured output)
+  method: "function_calling"
+
+  # Don't fall back to regex (pure LLM extraction)
+  fallback_to_regex: false
+
+  # Minimum confidence threshold (0.0-1.0)
+  min_confidence: 0.8
+
+  # Enable sentiment analysis (positive/negative/neutral)
+  enable_sentiment_analysis: true
+
+  # Enable intent classification (buyer stage, urgency)
+  enable_intent_classification: true
+
+brands:
+  mine: ["YourBrand", "YourProduct"]
+  competitors: ["CompetitorA", "CompetitorB", "CompetitorC"]
+
+intents:
+  - id: "best-tools"
+    prompt: "What are the best project management tools?"
+
+  - id: "tool-comparison"
+    prompt: "Compare the top project management platforms"
+
+  - id: "buying-guide"
+    prompt: "How do I choose project management software?"
+
+# Function calling benefits:
+# - ~95% accuracy (better than regex)
+# - Handles brand variations and typos
+# - Extracts sentiment per mention
+# - Classifies buyer intent and urgency
+# - Provides confidence scores
+#
+# Trade-offs:
+# - Adds ~$0.001 per query for extraction
+# - Slightly slower (~1-2 seconds per query)
+# - Best for: Production accuracy, sentiment tracking

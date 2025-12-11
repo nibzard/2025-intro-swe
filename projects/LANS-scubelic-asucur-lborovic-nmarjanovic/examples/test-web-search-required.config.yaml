@@ -1,0 +1,28 @@
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    # Force web search with tool_choice: "required"
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+      system_prompt: "openai/gpt-4-default"
+      tools:
+        - type: "web_search"
+      tool_choice: "required"  # Force web search
+
+  use_llm_rank_extraction: false
+
+brands:
+  mine:
+    - "Warmly"
+    - "Warmly.io"
+
+  competitors:
+    - "Instantly"
+    - "Lemwarm"
+
+intents:
+  - id: "current-email-tools"
+    prompt: "What are the most popular email warmup tools in 2025?"
