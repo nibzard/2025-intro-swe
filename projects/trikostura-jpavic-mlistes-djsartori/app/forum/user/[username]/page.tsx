@@ -27,8 +27,8 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
-// Disable caching for profile pages to always show latest data
-export const revalidate = 0;
+// Cache profile pages for 30 seconds for better performance
+export const revalidate = 30;
 
 export default async function Page({ params }: PageProps) {
   const { username } = await params;

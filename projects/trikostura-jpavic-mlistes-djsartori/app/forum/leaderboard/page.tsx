@@ -10,29 +10,40 @@ export const metadata = {
   description: 'Najbolji doprinositelji zajednice',
 };
 
-export const revalidate = 300; // Revalidate every 5 minutes
+export const revalidate = 120; // Revalidate every 2 minutes
 
 export default async function LeaderboardPage() {
   const supabase = await createServerSupabaseClient();
 
-  // Get top users by reputation (all time)
-  const { data: topAllTimeData } = await supabase
-    .from('profiles')
-    .select('id, username, avatar_url, reputation')
-    .order('reputation', { ascending: false })
-    .limit(10);
-
-  const topAllTime: any[] = topAllTimeData || [];
-
-  // Get top users this month (by activity)
+  // Get first day of month for filtering
   const firstDayOfMonth = new Date();
   firstDayOfMonth.setDate(1);
   firstDayOfMonth.setHours(0, 0, 0, 0);
 
-  const { data: activityThisMonth } = await supabase
-    .from('user_activity')
-    .select('user_id, topics_count, replies_count')
-    .gte('activity_date', firstDayOfMonth.toISOString().split('T')[0]);
+  // PARALLEL QUERIES: Fetch all data at once
+  const [
+    { data: topAllTimeData },
+    { data: activityThisMonth },
+    { data: recentActivity }
+  ] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id, username, avatar_url, reputation')
+      .order('reputation', { ascending: false })
+      .limit(10),
+    supabase
+      .from('user_activity')
+      .select('user_id, topics_count, replies_count')
+      .gte('activity_date', firstDayOfMonth.toISOString().split('T')[0]),
+    // Only get last 90 days of activity for streak calculation (not ALL activity)
+    supabase
+      .from('user_activity')
+      .select('user_id, activity_date')
+      .gte('activity_date', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+      .order('activity_date', { ascending: false })
+  ]);
+
+  const topAllTime: any[] = topAllTimeData || [];
 
   // Aggregate activity by user
   const userActivityMap = new Map<string, number>();
@@ -59,17 +70,11 @@ export default async function LeaderboardPage() {
     activityCount: userActivityMap.get(profile.id) || 0,
   })).sort((a, b) => b.activityCount - a.activityCount);
 
-  // Get users with longest streaks
-  const { data: allActivity } = await supabase
-    .from('user_activity')
-    .select('user_id, activity_date')
-    .order('activity_date', { ascending: false });
-
-  // Calculate streaks
+  // Calculate streaks (using only last 90 days instead of all activity)
   const streakMap = new Map<string, number>();
   const userDatesMap = new Map<string, Set<string>>();
 
-  allActivity?.forEach((activity: any) => {
+  recentActivity?.forEach((activity: any) => {
     if (!userDatesMap.has(activity.user_id)) {
       userDatesMap.set(activity.user_id, new Set());
     }
