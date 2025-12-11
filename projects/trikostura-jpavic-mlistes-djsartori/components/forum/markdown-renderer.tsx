@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, lazy, Suspense, useMemo } from 'react';
+import { memo, lazy, Suspense } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
@@ -11,16 +11,6 @@ interface MarkdownRendererProps {
   className?: string;
 }
 
-// Highlight @username mentions
-function preprocessMentions(content: string): string {
-  // Match @username (letters, numbers, underscore, hyphen)
-  const mentionRegex = /(@[a-zA-Z0-9_-]+)/g;
-  return content.replace(
-    mentionRegex,
-    '<span class="mention bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-1 rounded font-medium">$1</span>'
-  );
-}
-
 // Lazy-load syntax highlighter (heavy dependency, only needed for code blocks)
 const SyntaxHighlighter = lazy(() =>
   import('react-syntax-highlighter').then((mod) => ({
@@ -29,15 +19,18 @@ const SyntaxHighlighter = lazy(() =>
 );
 
 export const MarkdownRenderer = memo(function MarkdownRenderer({ content, className = '' }: MarkdownRendererProps) {
-  // Preprocess content to highlight mentions
-  const processedContent = useMemo(() => preprocessMentions(content), [content]);
-
   return (
     <div className={`prose dark:prose-invert max-w-none ${className}`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw, rehypeSanitize]}
         components={{
+          // Safely highlight mentions in text nodes
+          p({ children, ...props }: any) {
+            const processedChildren = processTextWithMentions(children);
+            return <p {...props}>{processedChildren}</p>;
+          },
+          // Syntax highlighting for code blocks
           code({ node, inline, className, children, ...props }: any) {
             const match = /language-(\w+)/.exec(className || '');
             return !inline && match ? (
@@ -69,8 +62,39 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({ content, classN
           },
         }}
       >
-        {processedContent}
+        {content}
       </ReactMarkdown>
     </div>
   );
 });
+
+// Safely process text content to highlight @mentions
+function processTextWithMentions(children: any): any {
+  if (typeof children === 'string') {
+    const parts = children.split(/(@[a-zA-Z0-9_-]+)/g);
+    return parts.map((part, i) => {
+      if (part.match(/^@[a-zA-Z0-9_-]+$/)) {
+        return (
+          <span
+            key={i}
+            className="mention bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-1 rounded font-medium"
+          >
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  }
+
+  if (Array.isArray(children)) {
+    return children.map((child, i) => {
+      if (typeof child === 'string') {
+        return <span key={i}>{processTextWithMentions(child)}</span>;
+      }
+      return child;
+    });
+  }
+
+  return children;
+}
