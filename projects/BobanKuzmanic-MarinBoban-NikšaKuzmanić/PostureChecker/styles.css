@@ -1,0 +1,214 @@
+/* Minimalistic, sterile posture checker theme */
+
+:root {
+  --primary-bg: #f8f9fa;
+  --card-bg: #ffffff;
+  --border-color: #e9ecef;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --accent-green: #28a745;
+  --accent-red: #dc3545;
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background-color: var(--card-bg);
+  border-bottom: 3px solid var(--accent-green);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+header h1 {
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  color: var(--accent-green);
+}
+
+main {
+  flex: 1;
+  padding-top: 2rem !important;
+  padding-bottom: 2rem !important;
+}
+
+.card {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  background-color: var(--card-bg);
+  transition: all 0.2s ease;
+  border-left: 4px solid transparent;
+}
+
+.card:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  border-left-color: var(--accent-green);
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.card-title {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+.card-text {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Buttons */
+.btn-success {
+  background-color: var(--accent-green);
+  border-color: var(--accent-green);
+  font-weight: 500;
+  padding: 0.5rem 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #218838;
+  border-color: #218838;
+  box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+}
+
+.btn-danger {
+  background-color: var(--accent-red);
+  border-color: var(--accent-red);
+  font-weight: 500;
+  padding: 0.5rem 1.5rem;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #c82333;
+  border-color: #c82333;
+  box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Form elements */
+.form-range {
+  height: 5px;
+  border-radius: 3px;
+  background-color: var(--border-color);
+}
+
+.form-range::-webkit-slider-thumb {
+  width: 18px;
+  height: 18px;
+  background-color: var(--accent-green);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.form-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background-color: var(--accent-green);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.form-label {
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+}
+
+/* Typography */
+.lead {
+  font-weight: 400;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+section h2 {
+  border-bottom: 2px solid var(--accent-green);
+  padding-bottom: 0.75rem;
+  display: inline-block;
+}
+
+/* Sections */
+section {
+  margin-bottom: 2rem;
+}
+
+hr {
+  border: none;
+  border-top: 2px solid var(--accent-green);
+  margin: 2rem 0;
+  opacity: 0.6;
+}
+
+/* Spinner */
+.spinner-border {
+  border-width: 3px;
+  color: var(--accent-green);
+}
+
+.spinner-border.text-success {
+  color: var(--accent-green) !important;
+}
+
+/* Helpers */
+.gap-2 { gap: 0.5rem; }
+.lead-max { max-width: 800px; margin-left: auto; margin-right: auto; }
+.media-max { max-width: 640px; width: 100%; }
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  main {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+
+  .card-body {
+    padding: 1.25rem;
+  }
+
+  .btn {
+    padding: 0.45rem 1.2rem;
+    font-size: 0.9rem;
+  }
+}
