@@ -245,7 +245,9 @@ export async function checkAndAwardAchievements(userId: string) {
     supabase.from('user_achievements').select('achievement_id').eq('user_id', userId)
   ]);
 
-  const earned = new Set(existingAchievements?.map(a => a.achievement_id) || []);
+  const earned = new Set<AchievementId>(
+    (existingAchievements ?? []).map((a: { achievement_id: AchievementId }) => a.achievement_id)
+  );
   const toAward: AchievementId[] = [];
 
   // Check topic achievements
