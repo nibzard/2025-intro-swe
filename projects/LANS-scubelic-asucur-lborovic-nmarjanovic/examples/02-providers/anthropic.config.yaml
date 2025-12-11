@@ -1,0 +1,27 @@
+# Anthropic Provider Example
+# Demonstrates Claude models with standard configuration
+# Cost: ~$0.006 per run (3 intents × claude-3-5-haiku)
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "anthropic"
+      model_name: "claude-3-5-haiku-20241022"
+      env_api_key: "ANTHROPIC_API_KEY"
+      # Uses default anthropic system prompt (see llm_answer_watcher/system_prompts/anthropic/)
+
+brands:
+  mine: ["YourBrand", "YourProduct"]
+  competitors: ["CompetitorA", "CompetitorB", "CompetitorC"]
+
+intents:
+  - id: "best-tools"
+    prompt: "What are the best project management tools?"
+
+  - id: "tool-comparison"
+    prompt: "Compare the top project management platforms for teams"
+
+  - id: "buying-guide"
+    prompt: "How do I choose the right project management software?"

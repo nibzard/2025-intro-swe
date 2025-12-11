@@ -1,0 +1,73 @@
+# LLM Answer Watcher - Default Configuration
+#
+# This is the default configuration template that demonstrates the most common
+# setup for monitoring brand mentions in LLM responses.
+#
+# Quick start:
+#   1. Copy this file: cp examples/default.config.yaml my-config.yaml
+#   2. Update brands with your company names
+#   3. Update intents with your buyer queries
+#   4. Set environment variables: export OPENAI_API_KEY=sk-...
+#   5. Run: llm-answer-watcher run --config my-config.yaml
+
+run_settings:
+  # Directory where output files will be saved
+  output_dir: "./output"
+
+  # SQLite database for historical tracking
+  sqlite_db_path: "./output/watcher.db"
+
+  # Maximum concurrent API requests (adjust based on your rate limits)
+  max_concurrent_requests: 10
+
+  # LLM models to query (add more providers as needed)
+  models:
+    # OpenAI GPT-4o-mini (fast, cheap, recommended for testing)
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+      system_prompt: "openai/gpt-4-default"
+
+# Brand definitions - customize these for your business
+brands:
+  # Your brand names and aliases (all variations people might use)
+  mine:
+    - "YourBrand"
+    - "YourProduct"
+
+  # Competitor brands to track
+  competitors:
+    - "CompetitorA"
+    - "CompetitorB"
+    - "CompetitorC"
+
+# Buyer-intent queries to monitor
+# These should be real questions your potential customers ask
+intents:
+  - id: "product-comparison"
+    prompt: "What are the best [category] tools?"
+
+  - id: "buying-decision"
+    prompt: "Which [product type] should I choose?"
+
+# Optional: Advanced extraction settings
+# Uncomment to enable LLM-based extraction for better accuracy
+# extraction_settings:
+#   extraction_model:
+#     provider: "openai"
+#     model_name: "gpt-4o-mini"
+#     env_api_key: "OPENAI_API_KEY"
+#     system_prompt: "openai/extraction-default"
+#   method: "function_calling"
+#   fallback_to_regex: true
+#   min_confidence: 0.7
+#   enable_sentiment_analysis: true
+#   enable_intent_classification: true
+
+# Optional: Budget controls to prevent runaway costs
+# Uncomment to enable cost limits
+# run_settings:
+#   budget:
+#     enabled: true
+#     max_per_run_usd: 1.00
+#     warn_threshold_usd: 0.50

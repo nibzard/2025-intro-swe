@@ -1,0 +1,64 @@
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/steel-watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-5-nano"
+      env_api_key: "OPENAI_API_KEY"
+
+  use_llm_rank_extraction: true
+
+brands:
+  mine:
+    - "Steel"
+    - "Steel.dev"
+    - "steel.dev"
+    - "Steel API"
+
+  competitors:
+    - "Browserbase"
+    - "Browserless"
+    - "Apify"
+    - "ScrapingBee"
+    - "Bright Data"
+
+  touch_points:
+    - "browser automation"
+    - "web scraping"
+    - "headless browser"
+    - "automation API"
+
+intents:
+  # Developer-focused (should favor Browserbase/Steel)
+  - id: "web-scraping-api"
+    prompt: "What's the best API for web scraping without managing browsers?"
+
+  - id: "headless-browser-api"
+    prompt: "Which headless browser APIs are easiest for developers to integrate?"
+
+  - id: "automated-testing-browsers"
+    prompt: "What are the best browser automation services for automated testing?"
+
+  - id: "price-monitoring-automation"
+    prompt: "How do I build automated price monitoring for e-commerce sites?"
+
+  - id: "data-extraction-javascript"
+    prompt: "What tools make it easy to extract data from JavaScript-heavy websites?"
+
+  # Infrastructure-focused (current bias toward Browserless)
+  - id: "browser-infrastructure-scaling"
+    prompt: "How do I scale browser automation infrastructure for high-volume scraping?"
+
+  - id: "enterprise-browser-hosting"
+    prompt: "What are the best enterprise browser hosting solutions?"
+
+  # Balanced/comparison prompts
+  - id: "browser-automation-comparison"
+    prompt: "Compare the top browser automation platforms for 2025"
+
+  - id: "web-scraping-tools-comparison"
+    prompt: "What are the pros and cons of different web scraping services?"
+
+  - id: "browser-api-vs-infrastructure"
+    prompt: "Should I use a browser API service or build my own infrastructure?"

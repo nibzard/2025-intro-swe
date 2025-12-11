@@ -1,0 +1,40 @@
+# Regex-Only Extraction Example
+# Fast pattern-based brand mention detection
+# Cost: ~$0.003 per run (3 intents × gpt-4o-mini, no extraction overhead)
+# Accuracy: ~85%
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+
+  # Legacy flag - use extraction_settings instead
+  use_llm_rank_extraction: false
+
+# No extraction_settings = defaults to regex-based extraction
+# This is the fastest and cheapest method
+
+brands:
+  mine: ["YourBrand", "YourProduct"]
+  competitors: ["CompetitorA", "CompetitorB", "CompetitorC"]
+
+intents:
+  - id: "best-tools"
+    prompt: "What are the best project management tools?"
+
+  - id: "tool-comparison"
+    prompt: "Compare the top project management platforms"
+
+  - id: "buying-guide"
+    prompt: "How do I choose project management software?"
+
+# Regex extraction:
+# - Uses word-boundary pattern matching
+# - Fast and cheap (no extra LLM calls)
+# - ~85% accuracy for exact brand name matches
+# - No sentiment analysis or intent classification
+# - Best for: High-volume testing, cost-sensitive monitoring

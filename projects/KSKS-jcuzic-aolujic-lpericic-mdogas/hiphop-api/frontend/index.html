@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classic Albums Archive 🎵</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>🎵 Classic Albums Archive</h1>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#albums" class="nav-link">Albums</a>
+                <a href="#recommendations" class="nav-link">Recommendations</a>
+                <button id="loginBtn" class="btn btn-primary">Login</button>
+                <button id="logoutBtn" class="btn btn-secondary" style="display:none;">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <h1 class="hero-title">Discover Classic Albums</h1>
+            <p class="hero-subtitle">Explore legendary albums from hip hop to progressive rock - 1960s to 2000s</p>
+            <div class="hero-buttons">
+                <button onclick="scrollToAlbums()" class="btn btn-large">Explore Albums</button>
+                <button onclick="getRandomAlbum()" class="btn btn-outline">Random Album</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Genre Tabs -->
+    <section class="genre-tabs-section">
+        <div class="container">
+            <div class="genre-tabs">
+                <button class="genre-tab active" data-genre="" onclick="selectGenre('')">All Genres</button>
+                <button class="genre-tab" data-genre="hip_hop" onclick="selectGenre('hip_hop')">Hip Hop</button>
+                <button class="genre-tab" data-genre="rnb" onclick="selectGenre('rnb')">R&B</button>
+                <button class="genre-tab" data-genre="soul" onclick="selectGenre('soul')">Soul</button>
+                <button class="genre-tab" data-genre="funk" onclick="selectGenre('funk')">Funk</button>
+                <button class="genre-tab" data-genre="jazz" onclick="selectGenre('jazz')">Jazz</button>
+                <button class="genre-tab" data-genre="blues" onclick="selectGenre('blues')">Blues</button>
+                <button class="genre-tab" data-genre="classic_rock" onclick="selectGenre('classic_rock')">Classic Rock</button>
+                <button class="genre-tab" data-genre="prog_rock" onclick="selectGenre('prog_rock')">Prog Rock</button>
+                <button class="genre-tab" data-genre="metal" onclick="selectGenre('metal')">Metal</button>
+                <button class="genre-tab" data-genre="electronic" onclick="selectGenre('electronic')">Electronic</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="filters">
+        <div class="container">
+            <div class="filter-group">
+                <label>Region:</label>
+                <select id="regionFilter" onchange="filterAlbums()">
+                    <option value="">All Regions</option>
+                    <option value="east_coast">East Coast</option>
+                    <option value="west_coast">West Coast</option>
+                    <option value="south">South</option>
+                    <option value="midwest">Midwest</option>
+                    <option value="detroit">Detroit</option>
+                    <option value="chicago">Chicago</option>
+                    <option value="minneapolis">Minneapolis</option>
+                    <option value="uk">UK</option>
+                    <option value="canada">Canada</option>
+                    <option value="australia">Australia</option>
+                    <option value="ireland">Ireland</option>
+                    <option value="france">France</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Year:</label>
+                <input type="number" id="yearFilter" placeholder="e.g. 1973" onchange="filterAlbums()">
+            </div>
+
+            <div class="filter-group">
+                <label>Artist:</label>
+                <input type="text" id="artistFilter" placeholder="Search artist..." onchange="filterAlbums()">
+            </div>
+
+            <button onclick="resetFilters()" class="btn btn-secondary">Reset</button>
+        </div>
+    </section>
+
+    <!-- Albums Grid -->
+    <section id="albums" class="albums-section">
+        <div class="container">
+            <h2 class="section-title">Classic Albums</h2>
+            <div id="loadingSpinner" class="spinner">Loading...</div>
+            <div id="albumsGrid" class="albums-grid"></div>
+            <div id="errorMessage" class="error-message" style="display:none;"></div>
+        </div>
+    </section>
+
+    <!-- Recommendations Section -->
+    <section id="recommendations" class="recommendations-section">
+        <div class="container">
+            <h2 class="section-title">Top Rated Albums</h2>
+            <div id="topRatedGrid" class="albums-grid"></div>
+        </div>
+    </section>
+
+    <!-- Album Modal -->
+    <div id="albumModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="albumDetails"></div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeLoginModal()">&times;</span>
+            <h2>Login</h2>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <input type="text" id="loginUsername" placeholder="Username" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button type="submit" class="btn btn-primary">Login</button>
+                <p class="form-hint">Demo: username: musicfan, password: password123</p>
+            </form>
+            <p class="form-footer">Don't have an account? <a href="#" onclick="showRegisterForm()">Register</a></p>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeRegisterModal()">&times;</span>
+            <h2>Register</h2>
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <input type="text" id="regUsername" placeholder="Username" required>
+                <input type="email" id="regEmail" placeholder="Email" required>
+                <input type="password" id="regPassword" placeholder="Password" required>
+                <button type="submit" class="btn btn-primary">Register</button>
+            </form>
+            <p class="form-footer">Already have an account? <a href="#" onclick="showLoginForm()">Login</a></p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Classic Albums Archive | Built with FastAPI</p>
+            <p>🎵 Preserving legendary music, one album at a time</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,299 @@
+site_name: LLM Answer Watcher
+site_description: Monitor how Large Language Models talk about your brand versus competitors in buyer-intent queries
+site_author: Nikola Balić
+site_url: https://nibzard.github.io/llm-answer-watcher/
+
+repo_name: nibzard/llm-answer-watcher
+repo_url: https://github.com/nibzard/llm-answer-watcher
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+
+plugins:
+  - search:
+      lang: en
+      separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
+  - llmstxt:
+      markdown_description: |
+        Production-ready CLI tool that monitors how large language models mention brands versus competitors in buyer-intent queries.
+
+        Key Features:
+        - Multi-provider support: OpenAI, Anthropic, Mistral, Grok, Google Gemini, Perplexity
+        - Local-first SQLite storage with historical tracking
+        - Dual-mode CLI: Beautiful Rich output for humans, structured JSON for AI agents
+        - BYOK model: Bring Your Own API Keys
+        - Word-boundary brand detection to prevent false positives
+        - Cost management and budget controls
+        - HTML reports with Jinja2
+        - Evaluation framework with metrics
+
+      full_output: llms-full.txt
+
+      sections:
+        "Quick Start":
+          - getting-started/installation.md: Install via pipx or uv
+          - getting-started/quick-start.md: Run your first monitoring query in 5 minutes
+          - getting-started/first-run.md: Step-by-step walkthrough with examples
+          - getting-started/basic-configuration.md: Configure brands, intents, and models
+
+        "Configuration":
+          - user-guide/configuration/overview.md: YAML-based config with Pydantic validation
+          - user-guide/configuration/models.md: Multi-provider LLM setup with API keys
+          - user-guide/configuration/brands.md: Define your brand and competitors with aliases
+          - user-guide/configuration/intents.md: Buyer-intent queries to monitor
+          - user-guide/configuration/budget.md: Cost limits and token budgets
+          - user-guide/configuration/web-search.md: Enable web search for Perplexity provider
+          - user-guide/configuration/operations.md: Post-intent operations and hooks
+
+        "Core Features":
+          - user-guide/features/brand-detection.md: Word-boundary regex matching to prevent false positives
+          - user-guide/features/rank-extraction.md: Pattern-based and LLM-assisted ranking
+          - user-guide/features/function-calling.md: Structured extraction via tool use
+          - user-guide/features/sentiment-analysis.md: Intent classification and sentiment scoring
+          - user-guide/features/historical-tracking.md: SQLite database for time-series analysis
+          - user-guide/features/cost-management.md: Budget controls and cost estimation
+          - user-guide/features/html-reports.md: Beautiful static reports with Jinja2
+
+        "CLI Usage":
+          - user-guide/usage/cli-commands.md: Complete command reference
+          - user-guide/usage/output-modes.md: Human (Rich), Agent (JSON), Quiet modes
+          - user-guide/usage/exit-codes.md: Status codes 0-4 for automation
+          - user-guide/usage/automation.md: CI/CD integration and scheduling
+
+        "Supported Providers":
+          - providers/overview.md: All supported LLM providers
+          - providers/openai.md: GPT-4o, GPT-4o-mini, o1-preview, o1-mini
+          - providers/anthropic.md: Claude 3.5 Sonnet, Claude 3 Opus/Haiku
+          - providers/mistral.md: Mistral Large, Mistral Small, Codestral
+          - providers/grok.md: Grok Beta, Grok Vision Beta
+          - providers/google.md: Gemini 2.0 Flash, Gemini 1.5 Pro/Flash
+          - providers/perplexity.md: Sonar Pro, Sonar with web search
+
+        "Examples":
+          - examples/basic-monitoring.md: Single-brand, single-provider setup
+          - examples/multi-provider.md: Compare results across OpenAI, Anthropic, Perplexity
+          - examples/competitor-analysis.md: Track multiple competitors
+          - examples/budget-constrained.md: Cost control strategies
+          - examples/ci-cd-integration.md: Automated monitoring in pipelines
+
+        "Data & Analytics":
+          - data-analytics/output-structure.md: Directory layout and artifact types
+          - data-analytics/sqlite-database.md: Schema design with versioning
+          - data-analytics/query-examples.md: SQL queries for analysis
+          - data-analytics/trends-analysis.md: Time-series tracking and visualization
+
+        "Evaluation Framework":
+          - evaluation/overview.md: Comprehensive testing framework
+          - evaluation/running-evals.md: Running evaluations via CLI
+          - evaluation/metrics.md: Precision, recall, F1 for brand detection
+          - evaluation/test-cases.md: Test case structure and examples
+          - evaluation/ci-integration.md: Automated evaluation in CI/CD
+
+        "Advanced Topics":
+          - advanced/architecture.md: Domain-driven design and internal structure
+          - advanced/api-contract.md: Internal API designed for future HTTP exposure
+          - advanced/extending-providers.md: Add new LLM providers
+          - advanced/custom-system-prompts.md: Override default prompts
+          - advanced/security.md: Injection prevention, secret management
+          - advanced/performance.md: Retry logic, rate limiting, optimization
+
+        "Reference":
+          - reference/cli-reference.md: Complete CLI documentation
+          - reference/configuration-schema.md: Pydantic models and validation
+          - reference/database-schema.md: SQLite tables and indexes
+          - reference/python-api.md: Programmatic usage
+
+        "Contributing":
+          - contributing/development-setup.md: Local environment with uv or pip
+          - contributing/code-standards.md: Python 3.12+, Ruff, type hints
+          - contributing/testing.md: pytest, 80%+ coverage, httpx mocking
+          - contributing/testing-utilities.md: MockLLMClient and ChaosLLMClient
+          - contributing/documentation.md: MkDocs contribution guide
+
+        "Special Optional":
+          - index.md: Home page with overview
+          - faq.md: Frequently asked questions
+          - changelog.md: Version history and release notes
+
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+
+  # Python Markdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/nibzard/llm-answer-watcher
+      name: GitHub Repository
+  analytics:
+    feedback:
+      title: Was this page helpful?
+      ratings:
+        - icon: material/emoticon-happy-outline
+          name: This page was helpful
+          data: 1
+          note: Thanks for your feedback!
+        - icon: material/emoticon-sad-outline
+          name: This page could be improved
+          data: 0
+          note: Thanks for your feedback! Help us improve by opening an issue.
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Quick Start: getting-started/quick-start.md
+      - Installation: getting-started/installation.md
+      - First Run: getting-started/first-run.md
+      - Basic Configuration: getting-started/basic-configuration.md
+  - User Guide:
+      - Configuration:
+          - Configuration Overview: user-guide/configuration/overview.md
+          - Model Configuration: user-guide/configuration/models.md
+          - Brand Configuration: user-guide/configuration/brands.md
+          - Intent Configuration: user-guide/configuration/intents.md
+          - Budget Controls: user-guide/configuration/budget.md
+          - Web Search: user-guide/configuration/web-search.md
+          - Post-Intent Operations: user-guide/configuration/operations.md
+      - Usage:
+          - CLI Commands: user-guide/usage/cli-commands.md
+          - Output Modes: user-guide/usage/output-modes.md
+          - Exit Codes: user-guide/usage/exit-codes.md
+          - Automation: user-guide/usage/automation.md
+      - Features:
+          - Brand Mention Detection: user-guide/features/brand-detection.md
+          - Rank Extraction: user-guide/features/rank-extraction.md
+          - Function Calling: user-guide/features/function-calling.md
+          - Sentiment Analysis & Intent Classification: user-guide/features/sentiment-analysis.md
+          - Historical Tracking: user-guide/features/historical-tracking.md
+          - Cost Management: user-guide/features/cost-management.md
+          - HTML Reports: user-guide/features/html-reports.md
+  - Supported Providers:
+      - providers/overview.md
+      - providers/openai.md
+      - providers/anthropic.md
+      - providers/mistral.md
+      - providers/grok.md
+      - providers/google.md
+      - providers/perplexity.md
+  - Examples:
+      - examples/basic-monitoring.md
+      - examples/multi-provider.md
+      - examples/competitor-analysis.md
+      - examples/budget-constrained.md
+      - examples/ci-cd-integration.md
+  - Data & Analytics:
+      - data-analytics/output-structure.md
+      - data-analytics/sqlite-database.md
+      - data-analytics/query-examples.md
+      - data-analytics/trends-analysis.md
+  - Evaluation Framework:
+      - evaluation/overview.md
+      - evaluation/running-evals.md
+      - evaluation/metrics.md
+      - evaluation/test-cases.md
+      - evaluation/ci-integration.md
+  - Advanced Topics:
+      - advanced/architecture.md
+      - advanced/api-contract.md
+      - advanced/extending-providers.md
+      - advanced/custom-system-prompts.md
+      - advanced/security.md
+      - advanced/performance.md
+  - Reference:
+      - reference/cli-reference.md
+      - reference/configuration-schema.md
+      - reference/database-schema.md
+      - reference/python-api.md
+  - Contributing:
+      - contributing/development-setup.md
+      - contributing/code-standards.md
+      - contributing/testing.md
+      - contributing/testing-utilities.md
+      - contributing/documentation.md
+  - FAQ: faq.md
+  - Changelog: changelog.md
