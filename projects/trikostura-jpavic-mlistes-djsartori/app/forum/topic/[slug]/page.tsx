@@ -64,44 +64,59 @@ export default async function TopicPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Get topic with all related data in ONE query
+  // Get topic with all related data in ONE query (without tags for now)
   const { data: topic, error: topicError }: { data: any; error: any } = await supabase
     .from('topics')
     .select(`
       *,
       author:profiles!topics_author_id_fkey(username, avatar_url, reputation),
-      category:categories!topics_category_id_fkey(name, slug, color, icon),
-      topic_tags(tags(id, name, slug, color))
+      category:categories!topics_category_id_fkey(name, slug, color, icon)
     `)
     .eq('slug', slug)
     .maybeSingle();
 
-  if (topicError) {
-    console.error('Topic fetch error:', topicError);
-    notFound();
-  }
-
+  // Only return 404 if topic doesn't exist, not on query errors
   if (!topic) {
     console.error('Topic not found for slug:', slug);
+    if (topicError) {
+      console.error('Topic fetch error:', topicError);
+    }
     notFound();
   }
 
-  // Get replies with authors and votes in ONE query
-  const { data: replies } = await supabase
-    .from('replies')
-    .select(`
-      *,
-      author:profiles!replies_author_id_fkey(id, username, avatar_url, reputation)
-    `)
-    .eq('topic_id', topic.id)
-    .order('is_solution', { ascending: false })
-    .order('created_at', { ascending: true });
+  // PARALLEL QUERIES: Fetch replies, tags, and categories all at once
+  const [
+    { data: replies },
+    { data: topicTags },
+    { data: categories }
+  ] = await Promise.all([
+    supabase
+      .from('replies')
+      .select(`
+        *,
+        author:profiles!replies_author_id_fkey(id, username, avatar_url, reputation)
+      `)
+      .eq('topic_id', topic.id)
+      .order('is_solution', { ascending: false })
+      .order('created_at', { ascending: true }),
+    supabase
+      .from('topic_tags')
+      .select('tags(id, name, slug, color)')
+      .eq('topic_id', topic.id),
+    supabase
+      .from('categories')
+      .select('*')
+      .order('order_index', { ascending: true })
+  ]);
 
-  // Get ALL attachments (topic + replies) in one query
+  // Attach tags to topic
+  topic.topic_tags = topicTags || [];
+
+  // Get ALL attachments (topic + replies) in one query - only if there are replies
   const { data: allAttachments } = await supabase
     .from('attachments')
     .select('*')
-    .or(`topic_id.eq.${topic.id},reply_id.in.(${replies?.map((r: any) => r.id).join(',') || '0'})`);
+    .or(`topic_id.eq.${topic.id}${replies && replies.length > 0 ? `,reply_id.in.(${replies.map((r: any) => r.id).join(',')})` : ''}`);
 
   const topicAttachments = allAttachments?.filter((a: any) => a.topic_id === topic.id) || [];
   const replyAttachments = allAttachments?.filter((a: any) => a.reply_id) || [];
@@ -127,7 +142,7 @@ export default async function TopicPage({
         .from('profiles')
         .select('role')
         .eq('id', user.id)
-        .single() as any
+        .single()
     ];
 
     if (replies && replies.length > 0) {
@@ -136,7 +151,7 @@ export default async function TopicPage({
           .from('votes')
           .select('reply_id, vote_type')
           .eq('user_id', user.id)
-          .in('reply_id', replies.map((r: any) => r.id)) as any
+          .in('reply_id', replies.map((r: any) => r.id))
       );
     } else {
       userQueries.push(Promise.resolve({ data: null }));
@@ -148,7 +163,7 @@ export default async function TopicPage({
         .select('id')
         .eq('user_id', user.id)
         .eq('topic_id', topic.id)
-        .maybeSingle() as any
+        .maybeSingle()
     );
 
     const [
@@ -164,12 +179,6 @@ export default async function TopicPage({
       userVotes[vote.reply_id] = vote.vote_type;
     });
   }
-
-  // Get all categories for move function
-  const { data: categories } = await (supabase as any)
-    .from('categories')
-    .select('*')
-    .order('order_index', { ascending: true });
 
   const isAuthor = user?.id === topic.author_id;
   const isAdmin = userProfile?.role === 'admin';
