@@ -173,7 +173,7 @@ export default async function Page({ params }: PageProps) {
   const solutionsMarked = replies?.filter((r: any) => r.is_solution).length || 0;
 
   // Topics by category (from limited set)
-  const topicsByCategoryMap = new Map<string, { name: string; color: string; count: number }>();
+  const topicsByCategoryMap = new Map<string, { category: string; color: string; count: number }>();
   topics?.forEach((topic: any) => {
     const catId = topic.category?.id;
     if (catId) {
@@ -182,7 +182,7 @@ export default async function Page({ params }: PageProps) {
         existing.count++;
       } else {
         topicsByCategoryMap.set(catId, {
-          name: topic.category.name,
+          category: topic.category.name,
           color: topic.category.color,
           count: 1
         });
