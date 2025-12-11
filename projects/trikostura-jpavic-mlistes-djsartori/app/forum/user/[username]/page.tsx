@@ -10,7 +10,7 @@ import { SendMessageButton } from '@/components/messages/send-message-button';
 import { FollowButton } from '@/components/user/follow-button';
 import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { getFollowStatus } from '../actions';
-import { getUserAchievements } from '@/lib/achievements';
+import { getUserAchievements, checkAndAwardAchievements } from '@/lib/achievements';
 import { BadgeShowcaseComponent } from '@/components/gamification/badge-showcase';
 import { ActivityCalendar } from '@/components/gamification/activity-calendar';
 import { StatsDashboard } from '@/components/gamification/stats-dashboard';
@@ -51,6 +51,11 @@ export default async function Page({ params }: PageProps) {
   }
 
   const isOwnProfile = user?.id === profile.id;
+
+  // Check and award achievements when viewing own profile
+  if (isOwnProfile) {
+    await checkAndAwardAchievements(profile.id);
+  }
 
   // Run all profile data queries in parallel
   const [
