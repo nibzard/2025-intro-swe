@@ -20,7 +20,7 @@ export function detectSpam(content: string): SpamCheckResult {
   if (linkCount > 5) {
     return {
       isSpam: true,
-      reason: 'Excessive links detected',
+      reason: 'Previše linkova u sadržaju',
       confidence: 'high',
     };
   }
@@ -30,7 +30,7 @@ export function detectSpam(content: string): SpamCheckResult {
   if (upperCaseRatio > 0.7 && trimmedContent.length > 20) {
     return {
       isSpam: true,
-      reason: 'Excessive capitalization',
+      reason: 'Previše velikih slova',
       confidence: 'medium',
     };
   }
@@ -39,7 +39,7 @@ export function detectSpam(content: string): SpamCheckResult {
   if (/(.)\1{9,}/.test(trimmedContent)) {
     return {
       isSpam: true,
-      reason: 'Repeated character spam',
+      reason: 'Ponavljanje istih znakova',
       confidence: 'high',
     };
   }
@@ -69,7 +69,7 @@ export function detectSpam(content: string): SpamCheckResult {
   if (spamKeywordCount >= 2) {
     return {
       isSpam: true,
-      reason: 'Multiple spam keywords detected',
+      reason: 'Detektirane spam ključne riječi',
       confidence: 'high',
     };
   }
@@ -79,7 +79,7 @@ export function detectSpam(content: string): SpamCheckResult {
   if (emojiRatio > 0.3 && trimmedContent.length > 20) {
     return {
       isSpam: true,
-      reason: 'Excessive emoji usage',
+      reason: 'Previše emoji simbola',
       confidence: 'low',
     };
   }
@@ -88,7 +88,7 @@ export function detectSpam(content: string): SpamCheckResult {
   if (trimmedContent.length < 10 && /^(.+)\1{2,}$/.test(trimmedContent)) {
     return {
       isSpam: true,
-      reason: 'Repetitive short content',
+      reason: 'Ponavljajući kratak sadržaj',
       confidence: 'medium',
     };
   }
@@ -128,7 +128,7 @@ export function detectDuplicate({
       if (post.content.trim() === content.trim()) {
         return {
           isSpam: true,
-          reason: 'Duplicate content posted recently',
+          reason: 'Isti sadržaj već objavljen',
           confidence: 'high',
         };
       }
@@ -138,7 +138,7 @@ export function detectDuplicate({
       if (similarity > 0.9) {
         return {
           isSpam: true,
-          reason: 'Very similar content posted recently',
+          reason: 'Vrlo sličan sadržaj već objavljen',
           confidence: 'high',
         };
       }
@@ -176,7 +176,7 @@ export function detectRapidPosting({
   if (recentCount >= maxPostsPerMinute) {
     return {
       isSpam: true,
-      reason: `Too many posts in short time (${recentCount} posts in 1 minute)`,
+      reason: `Previše objava u kratkom vremenu (${recentCount} objava u 1 minuti)`,
       confidence: 'high',
     };
   }
