@@ -27,8 +27,8 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
-// Cache profile pages for 30 seconds for better performance
-export const revalidate = 30;
+// Cache profile pages for 1 minute for better performance
+export const revalidate = 60;
 
 export default async function Page({ params }: PageProps) {
   const { username } = await params;

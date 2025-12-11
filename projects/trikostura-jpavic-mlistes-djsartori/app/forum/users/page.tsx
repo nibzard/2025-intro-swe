@@ -6,8 +6,8 @@ import { Avatar } from '@/components/ui/avatar';
 import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { Trophy, TrendingUp, Users, Star, Calendar, MessageSquare, FileText, Award } from 'lucide-react';
 
-// Revalidate every 2 minutes for better performance
-export const revalidate = 120;
+// Revalidate every 5 minutes for better performance
+export const revalidate = 300;
 
 export default async function UsersPage() {
   const supabase = await createServerSupabaseClient();
