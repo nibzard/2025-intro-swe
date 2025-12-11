@@ -16,14 +16,14 @@ export function PerformanceMonitor() {
       // Largest Contentful Paint
       const lcpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        const lastEntry = entries[entries.length - 1];
+        const lastEntry = entries[entries.length - 1] as any;
         console.log('[LCP]', lastEntry.renderTime || lastEntry.loadTime);
       });
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
 
       // First Input Delay
       const fidObserver = new PerformanceObserver((list) => {
-        list.getEntries().forEach((entry) => {
+        list.getEntries().forEach((entry: any) => {
           console.log('[FID]', entry.processingStart - entry.startTime);
         });
       });
