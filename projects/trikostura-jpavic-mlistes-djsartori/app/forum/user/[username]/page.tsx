@@ -52,10 +52,8 @@ export default async function Page({ params }: PageProps) {
 
   const isOwnProfile = user?.id === profile.id;
 
-  // Check and award achievements when viewing own profile
-  if (isOwnProfile) {
-    await checkAndAwardAchievements(profile.id);
-  }
+  // Check and award achievements for the profile being viewed
+  await checkAndAwardAchievements(profile.id);
 
   // Run all profile data queries in parallel
   const [
