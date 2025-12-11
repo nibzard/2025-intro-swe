@@ -53,7 +53,12 @@ export default async function Page({ params }: PageProps) {
   const isOwnProfile = user?.id === profile.id;
 
   // Check and award achievements for the profile being viewed
-  await checkAndAwardAchievements(profile.id);
+  try {
+    await checkAndAwardAchievements(profile.id);
+  } catch (error) {
+    console.error('Achievement check failed:', error);
+    // Continue loading profile even if achievement check fails
+  }
 
   // Run all profile data queries in parallel
   const [
