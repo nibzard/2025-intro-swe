@@ -32,6 +32,13 @@ export async function login(
     return { error: 'Nevažeći email ili lozinka' };
   }
 
+  // Check if email is verified (if email confirmation is enabled)
+  if (data.user && !data.user.email_confirmed_at) {
+    // Sign out the user since they haven't verified their email
+    await supabase.auth.signOut();
+    return { error: 'Molimo potvrdite svoj email prije prijave. Provjerite svoju poštu.' };
+  }
+
   // Check if profile exists, if not recreate it
   if (data.user) {
     const { data: profile } = await supabase
@@ -41,7 +48,7 @@ export async function login(
       .maybeSingle();
 
     if (!profile) {
-      // Profile is missing - recreate it
+      // Profile is missing - recreate it (only if email is verified)
       const adminClient = createAdminClient();
       await (adminClient as any)
         .from('profiles')
