@@ -76,6 +76,15 @@ export async function checkAndAwardAchievements(userId: string) {
     toAward.push('10_solutions');
   }
 
+  // Check helpful achievement (90%+ of replies with positive upvotes)
+  if (replies && replies.length >= 10) {
+    const helpfulReplies = replies.filter((r: any) => (r.upvotes || 0) > 0).length;
+    const helpfulPercentage = (helpfulReplies / replies.length) * 100;
+    if (helpfulPercentage >= 90 && !earned.has('helpful')) {
+      toAward.push('helpful');
+    }
+  }
+
   // Check reputation achievements
   if (profile) {
     const reputation = (profile as any).reputation || 0;
