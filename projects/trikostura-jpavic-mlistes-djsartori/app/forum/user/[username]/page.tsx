@@ -57,32 +57,35 @@ export default async function Page({ params }: PageProps) {
     await checkAndAwardAchievements(profile.id);
   } catch (error) {
     console.error('Achievement check failed:', error);
-    // Continue loading profile even if achievement check fails
-  }
+  // Check and award achievements for the profile being viewed (non-blocking)
+  checkAndAwardAchievements(profile.id).catch(err => 
+    console.error('Achievement check failed:', err)
+  );
 
-  // Run all profile data queries in parallel
+  // Get all data in minimal parallel queries
   const [
     followStatus,
-    { data: topicsData },
-    { data: repliesData },
+    { data: topics },
+    { data: replies },
     achievements,
     { data: activityData },
-    { data: allTopicsData },
-    { data: allRepliesData },
-    { data: categoriesForStats }
+    { count: totalTopics },
+    { count: totalReplies }
   ] = await Promise.all([
     !isOwnProfile && user
       ? getFollowStatus(profile.id)
       : Promise.resolve({ isFollowing: false }),
+    // Topics with category in ONE query
     supabase
       .from('topics')
-      .select('*')
+      .select('*, category:categories(id, name, slug, color)')
       .eq('author_id', profile.id)
       .order('created_at', { ascending: false })
       .limit(10),
+    // Replies with topic in ONE query
     supabase
       .from('replies')
-      .select('*')
+      .select('*, topic:topics(id, title, slug)')
       .eq('author_id', profile.id)
       .order('created_at', { ascending: false })
       .limit(10),
@@ -91,61 +94,24 @@ export default async function Page({ params }: PageProps) {
       .from('user_activity')
       .select('activity_date, topics_count, replies_count')
       .eq('user_id', profile.id)
-      .order('activity_date', { ascending: false }),
+      .order('activity_date', { ascending: false })
+      .limit(365), // Only last year for performance
+    // Count queries are cheap
     supabase
       .from('topics')
-      .select('id, view_count, category_id')
+      .select('*', { count: 'exact', head: true })
       .eq('author_id', profile.id),
     supabase
       .from('replies')
-      .select('id, upvotes, is_solution')
-      .eq('author_id', profile.id),
-    supabase
-      .from('categories')
-      .select('id, name, color')
+      .select('*', { count: 'exact', head: true })
+      .eq('author_id', profile.id)
   ]);
 
   const { isFollowing } = followStatus;
 
-  // Get categories for topics and topics for replies in parallel
-  const categoryIds = topicsData ? [...new Set(topicsData.map((t: any) => t.category_id))] : [];
-  const topicIds = repliesData ? [...new Set(repliesData.map((r: any) => r.topic_id))] : [];
-
-  const [
-    { data: categoriesData },
-    { data: topicsForReplies }
-  ] = await Promise.all([
-    categoryIds.length > 0
-      ? supabase
-          .from('categories')
-          .select('id, name, slug, color')
-          .in('id', categoryIds)
-      : Promise.resolve({ data: [] }),
-    topicIds.length > 0
-      ? supabase
-          .from('topics')
-          .select('id, title, slug')
-          .in('id', topicIds)
-      : Promise.resolve({ data: [] })
-  ]);
-
-  // Enrich topics with categories
-  const categoriesMap = new Map(categoriesData?.map((c: any) => [c.id, c]));
-  const topics = topicsData?.map((topic: any) => ({
-    ...topic,
-    category: categoriesMap.get(topic.category_id) || null,
-  })) || [];
-
-  // Enrich replies with topic data
-  const topicsMap = new Map(topicsForReplies?.map((t: any) => [t.id, t]));
-  const replies = repliesData?.map((reply: any) => ({
-    ...reply,
-    topic: topicsMap.get(reply.topic_id) || null,
-  })) || [];
-
-  // Calculate statistics
-  const topicCount = topics?.length || 0;
-  const replyCount = replies?.length || 0;
+  // Calculate statistics from limited data
+  const topicCount = totalTopics || 0;
+  const replyCount = totalReplies || 0;
 
   const profileColor = profile.profile_color || '#3B82F6';
   const skills = profile.skills ? profile.skills.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
@@ -206,29 +172,31 @@ export default async function Page({ params }: PageProps) {
   const currentStreak = calculateStreak(activityDates);
   const longestStreak = calculateLongestStreak(activityDates);
 
-  // Calculate stats for dashboard
-  const totalTopics = allTopicsData?.length || 0;
-  const totalReplies = allRepliesData?.length || 0;
-  const totalViews = allTopicsData?.reduce((sum: number, t: any) => sum + (t.view_count || 0), 0) || 0;
-  const totalUpvotes = allRepliesData?.reduce((sum: number, r: any) => sum + (r.upvotes || 0), 0) || 0;
-  const solutionsMarked = allRepliesData?.filter((r: any) => r.is_solution).length || 0;
+  // Calculate lightweight stats from limited data
+  const totalViews = topics?.reduce((sum: number, t: any) => sum + (t.view_count || 0), 0) || 0;
+  const totalUpvotes = replies?.reduce((sum: number, r: any) => sum + (r.upvotes || 0), 0) || 0;
+  const solutionsMarked = replies?.filter((r: any) => r.is_solution).length || 0;
 
-  // Topics by category
-  const categoriesMapForStats = new Map(categoriesForStats?.map((c: any) => [c.id, c]));
-  const topicsByCategoryMap = new Map<string, number>();
-  allTopicsData?.forEach((topic: any) => {
-    const count = topicsByCategoryMap.get(topic.category_id) || 0;
-    topicsByCategoryMap.set(topic.category_id, count + 1);
+  // Topics by category (from limited set)
+  const topicsByCategoryMap = new Map<string, { name: string; color: string; count: number }>();
+  topics?.forEach((topic: any) => {
+    const catId = topic.category?.id;
+    if (catId) {
+      const existing = topicsByCategoryMap.get(catId);
+      if (existing) {
+        existing.count++;
+      } else {
+        topicsByCategoryMap.set(catId, {
+          name: topic.category.name,
+          color: topic.category.color,
+          count: 1
+        });
+      }
+    }
   });
 
-  const topicsByCategory = Array.from(topicsByCategoryMap.entries()).map(([categoryId, count]) => {
-    const category = categoriesMapForStats.get(categoryId);
-    return {
-      category: category?.name || 'Nepoznato',
-      count,
-      color: category?.color || '#3B82F6',
-    };
-  }).sort((a, b) => b.count - a.count);
+  const topicsByCategory = Array.from(topicsByCategoryMap.values())
+    .sort((a, b) => b.count - a.count);
 
   const stats = {
     totalViews,
