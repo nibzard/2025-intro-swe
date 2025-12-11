@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/client';
 import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 import { processMentions } from '@/app/forum/actions';
 import { detectSpam, detectDuplicate, detectRapidPosting } from '@/lib/spam-detection';
-import { checkAndAwardAchievements } from '@/lib/achievements';
+import { checkAndAwardAchievements } from '@/app/forum/achievements/actions';
 import { toast } from 'sonner';
 import { Send, Loader2, Smile, Eye, Edit3, Lightbulb, X, Zap, Quote } from 'lucide-react';
 import { useButtonAnimation } from '@/hooks/use-button-animation';
