@@ -206,7 +206,7 @@ export default async function Page({ params }: PageProps) {
   const solutionsMarked = allRepliesData?.filter((r: any) => r.is_solution).length || 0;
 
   // Topics by category
-  const categoriesMap = new Map(categoriesForStats?.map((c: any) => [c.id, c]));
+  const categoriesMapForStats = new Map(categoriesForStats?.map((c: any) => [c.id, c]));
   const topicsByCategoryMap = new Map<string, number>();
   allTopicsData?.forEach((topic: any) => {
     const count = topicsByCategoryMap.get(topic.category_id) || 0;
@@ -214,7 +214,7 @@ export default async function Page({ params }: PageProps) {
   });
 
   const topicsByCategory = Array.from(topicsByCategoryMap.entries()).map(([categoryId, count]) => {
-    const category = categoriesMap.get(categoryId);
+    const category = categoriesMapForStats.get(categoryId);
     return {
       category: category?.name || 'Nepoznato',
       count,
