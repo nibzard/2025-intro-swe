@@ -78,6 +78,12 @@ export async function Navbar() {
                 Korisnici
               </NavLink>
               <NavLink
+                href="/forum/leaderboard"
+                className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+              >
+                Ljestvica
+              </NavLink>
+              <NavLink
                 href="/forum/search"
                 className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
               >
