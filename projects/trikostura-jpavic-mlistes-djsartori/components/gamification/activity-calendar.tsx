@@ -84,8 +84,8 @@ export function ActivityCalendar({ activity, currentStreak, longestStreak }: Act
         </div>
 
         {/* Calendar grid */}
-        <div className="overflow-x-auto">
-          <div className="inline-block min-w-full">
+        <div className="overflow-x-auto overflow-y-hidden">
+          <div className="inline-block min-w-full py-2">
             <div className="flex gap-1">
               {weeks.map((week, weekIndex) => (
                 <div key={weekIndex} className="flex flex-col gap-1">
@@ -96,7 +96,7 @@ export function ActivityCalendar({ activity, currentStreak, longestStreak }: Act
                       <div
                         key={dayIndex}
                         className={`
-                          w-3 h-3 rounded-sm transition-all hover:scale-150 cursor-pointer
+                          w-3 h-3 rounded-sm transition-all hover:scale-125 cursor-pointer
                           ${getColor(day.count)}
                           ${isToday ? 'ring-2 ring-blue-500 ring-offset-1' : ''}
                         `}

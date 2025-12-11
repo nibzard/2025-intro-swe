@@ -15,6 +15,7 @@ import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 import { generateSlug } from '@/lib/utils';
 import { processMentions } from '@/app/forum/actions';
 import { detectSpam, detectDuplicate, detectRapidPosting } from '@/lib/spam-detection';
+import { checkAndAwardAchievements } from '@/lib/achievements';
 import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -300,6 +301,23 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
 
       // Process mentions and create notifications
       await processMentions(content.trim(), user.id, topic.id);
+
+      // Check and award achievements
+      const newAchievements = await checkAndAwardAchievements(user.id);
+
+      // Show achievement notifications
+      if (newAchievements && newAchievements.length > 0) {
+        const { ACHIEVEMENTS } = await import('@/lib/achievements');
+        newAchievements.forEach(achievementId => {
+          const achievement = ACHIEVEMENTS[achievementId];
+          if (achievement) {
+            toast.success(`🏆 Novo postignuće: ${achievement.name}!`, {
+              description: achievement.description,
+              duration: 5000,
+            });
+          }
+        });
+      }
 
       // Delete draft if exists
       if (draftId) {

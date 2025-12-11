@@ -14,6 +14,7 @@ import { ReportDialog } from './report-dialog';
 import { createClient } from '@/lib/supabase/client';
 import { editReply } from '@/app/forum/reply/actions';
 import { deleteReplyAction, markSolutionAction } from '@/app/forum/actions';
+import { checkAndAwardAchievements } from '@/lib/achievements';
 import { toast } from 'sonner';
 import { useButtonAnimation } from '@/hooks/use-button-animation';
 
@@ -181,6 +182,11 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
             topic_id: reply.topic_id,
           });
         }
+      }
+
+      // Check achievements for reply author when they receive upvotes
+      if (voteType === 1 && reply.author_id !== user.id) {
+        await checkAndAwardAchievements(reply.author_id);
       }
 
       // Success feedback
