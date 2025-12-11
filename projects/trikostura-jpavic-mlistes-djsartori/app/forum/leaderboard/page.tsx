@@ -16,11 +16,13 @@ export default async function LeaderboardPage() {
   const supabase = await createServerSupabaseClient();
 
   // Get top users by reputation (all time)
-  const { data: topAllTime } = await supabase
+  const { data: topAllTimeData } = await supabase
     .from('profiles')
     .select('id, username, avatar_url, reputation')
     .order('reputation', { ascending: false })
     .limit(10);
+
+  const topAllTime = topAllTimeData || [];
 
   // Get top users this month (by activity)
   const firstDayOfMonth = new Date();
