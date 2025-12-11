@@ -22,7 +22,7 @@ export default async function LeaderboardPage() {
     .order('reputation', { ascending: false })
     .limit(10);
 
-  const topAllTime = topAllTimeData || [];
+  const topAllTime: any[] = topAllTimeData || [];
 
   // Get top users this month (by activity)
   const firstDayOfMonth = new Date();
