@@ -36,8 +36,8 @@ interface TopicWithCategoryAndAuthor extends Topic {
   author: Pick<Profile, 'username' | 'avatar_url'> | null;
 }
 
-// Revalidate every 60 seconds for frequently updated content
-export const revalidate = 60;
+// Revalidate every 2 minutes for better cache performance
+export const revalidate = 120;
 
 const TOPICS_PER_PAGE = 15;
 
@@ -65,8 +65,6 @@ export default async function ForumPage({
 
   const [
     { data: categories },
-    { data: allTopics },
-    { data: recentTopicsByCategory },
     { data: trendingTopics },
     { data: recentTopics, count: totalTopics }
   ] = await Promise.all([
@@ -76,19 +74,7 @@ export default async function ForumPage({
       .select('id, name, slug, description, icon, color, order_index')
       .order('order_index', { ascending: true }),
 
-    // Get all topics with minimal data for counting
-    supabase
-      .from('topics')
-      .select('id, category_id, created_at'),
-
-    // Get recent topics per category for "latest topic" display
-    supabase
-      .from('topics')
-      .select('id, title, slug, created_at, category_id, author:profiles!topics_author_id_fkey(username)')
-      .order('created_at', { ascending: false })
-      .limit(50), // Reduced from 100 to 50
-
-    // Get trending topics (most views + replies in last 7 days)
+    // Get trending topics (most views + replies in last 7 days) with all data
     supabase
       .from('topics')
       .select(`
@@ -105,7 +91,7 @@ export default async function ForumPage({
       .order('view_count', { ascending: false })
       .limit(5),
 
-    // Get recent topics with selective fields
+    // Get recent topics with all data in ONE query
     supabase
       .from('topics')
       .select(`
@@ -119,31 +105,43 @@ export default async function ForumPage({
         view_count,
         reply_count,
         category_id,
-        author_id,
         author:profiles!topics_author_id_fkey(username, avatar_url),
-        category:categories(name, slug, color)
+        category:categories(name, slug, color, icon)
       `, { count: 'exact' })
       .order('is_pinned', { ascending: false })
       .order('created_at', { ascending: false })
       .range(offset, offset + TOPICS_PER_PAGE - 1)
   ]);
 
+  // Get category stats in one lightweight query (count only)
+  const { data: categoryTopicCounts } = await supabase
+    .from('topics')
+    .select('category_id')
+    .order('created_at', { ascending: false });
+
   // Build maps for efficient lookup
   const topicCountByCategory = new Map<string, number>();
-  const latestTopicByCategory = new Map<string, LatestTopicData>();
+  const latestTopicByCategory = new Map<string, any>();
 
   // Count topics per category
-  allTopics?.forEach((topic: TopicMinimal) => {
+  categoryTopicCounts?.forEach((topic: { category_id: string }) => {
     topicCountByCategory.set(
       topic.category_id,
       (topicCountByCategory.get(topic.category_id) || 0) + 1
     );
   });
 
-  // Find latest topic per category
-  (recentTopicsByCategory as unknown as LatestTopicData[])?.forEach((topic) => {
+  // Find latest topic per category from recentTopics
+  recentTopics?.forEach((topic: any) => {
     if (!latestTopicByCategory.has(topic.category_id)) {
-      latestTopicByCategory.set(topic.category_id, topic);
+      latestTopicByCategory.set(topic.category_id, {
+        id: topic.id,
+        title: topic.title,
+        slug: topic.slug,
+        created_at: topic.created_at,
+        category_id: topic.category_id,
+        author: topic.author
+      });
     }
   });
 
