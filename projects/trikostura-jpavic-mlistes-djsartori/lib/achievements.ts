@@ -289,14 +289,14 @@ export async function checkAndAwardAchievements(userId: string) {
 
   // Check reputation achievements
   if (profile) {
-    const reputation = profile.reputation || 0;
+    const reputation = (profile as any).reputation || 0;
     if (reputation >= 500 && !earned.has('expert')) toAward.push('expert');
     if (reputation >= 1000 && !earned.has('legend')) toAward.push('legend');
 
     // Early adopter (joined within first month of launch)
     // Adjust this date to your forum's launch date
     const launchDate = new Date('2024-01-01');
-    const userJoinDate = new Date(profile.created_at);
+    const userJoinDate = new Date((profile as any).created_at);
     const monthAfterLaunch = new Date(launchDate);
     monthAfterLaunch.setMonth(monthAfterLaunch.getMonth() + 1);
 
@@ -319,7 +319,7 @@ export async function checkAndAwardAchievements(userId: string) {
       achievement_id: id,
     }));
 
-    await supabase.from('user_achievements').insert(achievementsToInsert);
+    await supabase.from('user_achievements').insert(achievementsToInsert as any);
   }
 
   return toAward;
@@ -368,7 +368,7 @@ export async function getUserAchievements(userId: string) {
     .eq('user_id', userId)
     .order('earned_at', { ascending: false });
 
-  return data?.map(a => ({
+  return data?.map((a: any) => ({
     ...ACHIEVEMENTS[a.achievement_id as AchievementId],
     earnedAt: a.earned_at,
   })) || [];
