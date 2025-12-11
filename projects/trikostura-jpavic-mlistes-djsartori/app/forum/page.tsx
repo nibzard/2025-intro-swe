@@ -36,8 +36,8 @@ interface TopicWithCategoryAndAuthor extends Topic {
   author: Pick<Profile, 'username' | 'avatar_url'> | null;
 }
 
-// Revalidate every 120 seconds (2 minutes) for better cache performance
-export const revalidate = 120;
+// Revalidate every 60 seconds for frequently updated content
+export const revalidate = 60;
 
 const TOPICS_PER_PAGE = 15;
 
