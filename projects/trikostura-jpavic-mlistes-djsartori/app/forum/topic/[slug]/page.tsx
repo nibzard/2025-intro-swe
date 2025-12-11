@@ -74,10 +74,15 @@ export default async function TopicPage({
       topic_tags(tags(id, name, slug, color))
     `)
     .eq('slug', slug)
-    .single();
+    .maybeSingle();
 
-  if (topicError || !topic) {
+  if (topicError) {
     console.error('Topic fetch error:', topicError);
+    notFound();
+  }
+
+  if (!topic) {
+    console.error('Topic not found for slug:', slug);
     notFound();
   }
 
