@@ -50,9 +50,9 @@ export default async function LeaderboardPage() {
         .from('profiles')
         .select('id, username, avatar_url, reputation')
         .in('id', topActiveUserIds)
-    : { data: [] };
+    : { data: [] as any[] };
 
-  const topActive = topActiveProfiles?.map(profile => ({
+  const topActive = (topActiveProfiles || []).map((profile: any) => ({
     ...profile,
     activityCount: userActivityMap.get(profile.id) || 0,
   })).sort((a, b) => b.activityCount - a.activityCount);
@@ -109,9 +109,9 @@ export default async function LeaderboardPage() {
         .from('profiles')
         .select('id, username, avatar_url, reputation')
         .in('id', topStreakUserIds)
-    : { data: [] };
+    : { data: [] as any[] };
 
-  const topStreaks = topStreakProfiles?.map(profile => ({
+  const topStreaks = (topStreakProfiles || []).map((profile: any) => ({
     ...profile,
     streak: streakMap.get(profile.id) || 0,
   })).sort((a, b) => b.streak - a.streak);
