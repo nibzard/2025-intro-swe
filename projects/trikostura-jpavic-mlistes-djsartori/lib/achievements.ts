@@ -271,7 +271,7 @@ export async function checkAndAwardAchievements(userId: string) {
 
   // Check view achievements
   if (topicWithMostViews) {
-    const views = topicWithMostViews.view_count || 0;
+    const views = (topicWithMostViews as any).view_count || 0;
     if (views >= 100 && !earned.has('topic_100_views')) toAward.push('topic_100_views');
     if (views >= 500 && !earned.has('topic_500_views')) toAward.push('topic_500_views');
   }
