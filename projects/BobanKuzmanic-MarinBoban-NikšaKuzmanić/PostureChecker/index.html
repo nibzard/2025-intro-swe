@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Posture Checker</title>
+        <meta name="theme-color" content="#2b2b2b">
+        <link rel="manifest" href="/manifest.json">
+        <link rel="icon" href="./openCV/icons/icon-192.svg">
+        <link rel="apple-touch-icon" href="./openCV/icons/icon-192.svg">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <!-- App stylesheet -->
+        <link href="./styles.css" rel="stylesheet">
+    </head>
+    <body>
+
+        <header class="py-3 text-center">
+            <div class="container">
+                <h1 class="h1 mb-0">Posture Checker</h1>
+            </div>
+        </header>
+
+        <main class="container-sm py-4" style="max-width: 50%;">
+            <section id="landing" class="mb-4">
+                <p class="lead text-center lead-max">Making you sit up straight and hold you accountable.</p>
+
+                <div class="row gx-3 gy-3 justify-content-center">
+                    <div class="col-12">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Step 1</h5>
+                                <p class="card-text">Open the app and grant camera access when prompted.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Step 2</h5>
+                                <p class="card-text">Click the start button to begin face tracking.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Step 3</h5>
+                                <p class="card-text">Align the line with the top of your head while sitting upright.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <hr>
+
+            <section id="app">
+                <div class="d-flex justify-content-center mb-3 gap-2 align-items-center">
+                    <button id="startBtn" class="btn btn-success" disabled>Start Face Tracking</button>
+                    <div id="spinner" class="spinner-border text-success" role="status" style="display:none; width: 2rem; height: 2rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+
+                <center>
+                <div id="viewer">
+                    <video id="videoInput" width="300px" style="display: none"></video>
+                    <canvas id="canvasOutput"></canvas>
+                </div>
+                </center>
+
+                <div class="mt-4">
+                    <label for="thresholdSlider" class="form-label text-center d-block">Height Threshold: <span id="thresholdValue">100</span>px</label>
+                    <input type="range" class="form-range" id="thresholdSlider" min="0" max="480" value="100" step="1">
+                </div>
+
+                <div id="postureAlert" class="alert alert-warning alert-dismissible fade" role="alert" style="display:none; margin-top: 1.5rem;">
+                    <strong>⚠️ Posture Alert!</strong> Please correct your posture and sit upright.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <audio id="beepSound" src="./warning.mp3" preload="auto" hidden></audio>
+
+            </section>
+
+            <hr>
+
+            <section id="upcoming" class="mb-4">
+                <h2 class="h4 text-center mb-4">Upcoming Features</h2>
+                <div class="row gx-3 gy-3 justify-content-center">
+                    <div class="col-12">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Calibration</h5>
+                                <p class="card-text">Personalize the posture detection to your unique body proportions.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Registration</h5>
+                                <p class="card-text">Create an account to sync your data across devices.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Saving Settings</h5>
+                                <p class="card-text">Store your preferences and custom configurations.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Advanced Head Tracking</h5>
+                                <p class="card-text">Multi-angle posture detection for comprehensive monitoring.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Analytics & Statistics</h5>
+                                <p class="card-text">Track your posture improvements over time with detailed insights.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Healthy Timers</h5>
+                                <p class="card-text">Reminders to take breaks and stretch throughout your day.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Windows Notifications</h5>
+                                <p class="card-text">Native system notifications to keep you informed of posture alerts.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <h2 id="counter" class="text-center mt-3"></h2>
+
+        <script async src="./openCV/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+        <script src="./index.js" type="text/javascript"></script>
+    </body>
+</html>
