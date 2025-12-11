@@ -1,0 +1,80 @@
+# Chained Operations Example
+# Multi-step analysis pipeline with dependencies
+# Cost: ~$0.021 per run (3 intents × [$0.001 query + $0.006 operations])
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+
+brands:
+  mine: ["YourBrand"]
+  competitors: ["CompetitorA", "CompetitorB", "CompetitorC"]
+
+intents:
+  - id: "best-tools"
+    prompt: "What are the best project management tools?"
+
+    # Intent-specific operations with dependencies
+    operations:
+      # Step 1: Extract features mentioned
+      - id: "extract-features"
+        description: "Extract features mentioned for each tool"
+        prompt: |
+          Extract the specific features mentioned for each project management tool in this response.
+
+          Response: {intent:response}
+
+          List features by tool name. Focus on concrete capabilities, not marketing language.
+        model: "gpt-4o-mini"
+        enabled: true
+
+      # Step 2: Analyze competitive positioning (depends on step 1)
+      - id: "competitive-position"
+        description: "Analyze competitive positioning"
+        prompt: |
+          Based on this feature analysis, how is {brand:mine} positioned vs competitors?
+
+          My brand: {brand:mine}
+          Competitors mentioned: {competitors:mentioned}
+
+          Feature analysis:
+          {operation:extract-features}
+
+          Provide:
+          1. Strengths: What features give us an advantage?
+          2. Gaps: What features do competitors have that we lack?
+          3. Positioning: How are we differentiated?
+        depends_on: ["extract-features"]  # Runs AFTER extract-features
+        model: "gpt-4o-mini"
+        enabled: true
+
+      # Step 3: Generate action items (depends on step 2)
+      - id: "action-items"
+        description: "Generate prioritized action items"
+        prompt: |
+          Based on this competitive analysis, generate 3 specific action items for our product and marketing teams.
+
+          Competitive Analysis:
+          {operation:competitive-position}
+
+          Format as a numbered list with priority [High/Medium/Low] and brief rationale.
+        depends_on: ["competitive-position"]  # Runs AFTER competitive-position
+        model: "gpt-4o-mini"
+        enabled: true
+
+# Operation execution order:
+# 1. extract-features (no dependencies)
+# 2. competitive-position (depends on extract-features)
+# 3. action-items (depends on competitive-position)
+#
+# Dependencies ensure:
+# - Operations run in correct order
+# - Later operations can reference earlier results
+# - Pipeline stops if earlier operation fails
+#
+# Use {operation:id} syntax to reference previous operation results

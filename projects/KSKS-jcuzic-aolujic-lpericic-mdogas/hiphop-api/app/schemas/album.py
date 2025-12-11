@@ -1,41 +1,41 @@
 from pydantic import BaseModel
 from typing import Optional
-from app.schemas.artist import Artist
-from app.schemas.producer import Producer
 
 class AlbumBase(BaseModel):
     title: str
-    artist_id: int  # ✨ PROMJENA
+    artist: str
     year: int
-    region: str
-    producer_id: Optional[int] = None  # ✨ PROMJENA
+    genre: str
+    region: Optional[str] = None
+    producer: Optional[str] = None
     label: Optional[str] = None
     cover_url: Optional[str] = None
-    story: Optional[str] = None  # ✨ NOVO
-    impact: Optional[str] = None  # ✨ NOVO
-    trivia: Optional[str] = None  # ✨ NOVO
+    description: Optional[str] = None
 
 class AlbumCreate(AlbumBase):
     pass
 
 class AlbumUpdate(BaseModel):
     title: Optional[str] = None
-    artist_id: Optional[int] = None
+    artist: Optional[str] = None
     year: Optional[int] = None
+    genre: Optional[str] = None
     region: Optional[str] = None
-    producer_id: Optional[int] = None
+    producer: Optional[str] = None
     label: Optional[str] = None
     cover_url: Optional[str] = None
-    story: Optional[str] = None
-    impact: Optional[str] = None
-    trivia: Optional[str] = None
+    description: Optional[str] = None
+    artist_bio: Optional[str] = None
+    album_story: Optional[str] = None
+    producer_bio: Optional[str] = None
 
 class Album(AlbumBase):
     id: int
     avg_rating: float
     total_ratings: int
-    artist: Optional[Artist] = None  # ✨ NOVO - relationship
-    producer: Optional[Producer] = None  # ✨ NOVO - relationship
+    artist_bio: Optional[str] = None
+    album_story: Optional[str] = None
+    producer_bio: Optional[str] = None
 
     class Config:
         from_attributes = True

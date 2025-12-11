@@ -1,0 +1,31 @@
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+
+  use_llm_rank_extraction: false
+
+brands:
+  mine:
+    - "Lemlist"
+    - "LemList"
+
+  competitors:
+    - "Warmup Inbox"
+    - "WarmupInbox"
+    - "Mailwarm"
+    - "MailReach"
+    - "Mailgun"
+    - "Gmail Warmup"
+    - "MailShake"
+
+intents:
+  - id: "best-email-warmup-tools"
+    prompt: "What are the best email warmup tools?"
+
+  - id: "email-warmup-comparison"
+    prompt: "Compare the top email warmup tools for improving deliverability"

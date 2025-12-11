@@ -1,0 +1,123 @@
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/steel-watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-5-nano"
+      env_api_key: "OPENAI_API_KEY"
+      system_prompt: "openai/gpt-5-default"
+
+    - provider: "openai"
+      model_name: "gpt-5-nano"
+      env_api_key: "OPENAI_API_KEY"
+      system_prompt: "openai/gpt-5-default"
+      tools:
+        - type: "web_search"
+      tool_choice: "required"
+
+    # Google Gemini with Google Search grounding
+    - provider: "google"
+      model_name: "gemini-2.5-flash"
+      env_api_key: "GEMINI_API_KEY"
+      system_prompt: "google/gemini-grounding"
+      tools:
+        - google_search: {}  # Enable Google Search grounding
+
+    # Google Gemini without web search
+    - provider: "google"
+      model_name: "gemini-2.5-flash-lite"
+      env_api_key: "GEMINI_API_KEY"
+      # system_prompt: "google/default"  # Optional: Uses provider default if not specified
+
+  use_llm_rank_extraction: true
+
+brands:
+  mine:
+    - "Steel"
+    - "Steel.dev"
+    - "steel.dev"
+    - "Steel API"
+    - "Steel browser"
+    - "Steel AI"
+
+  competitors:
+    - "Browserbase"
+    - "Browserless"
+    - "Apify"
+    - "ScrapingBee"
+    - "Bright Data"
+    - "Playwright"
+    - "Puppeteer"
+    - "Selenium"
+    - "OpenAI computer use"
+    - "Claude computer use"
+
+  touch_points:
+    - "remote browser"
+    - "cloud browser"
+    - "headless browser"
+    - "browser API"
+    - "headless api"
+    - "web scraping"
+    - "browser automation"
+    - "Playwright connect_over_cdp"
+    - "Puppeteer connect"
+    - "browsers for AI agents"
+    - "OpenAI computer use"
+    - "Claude computer use"
+
+intents:
+  # 1) Remote / headless / browser API
+  - id: "remote-browser-api"
+    prompt: "How can I use a remote browser over an API without installing or hosting Chrome myself?"
+
+  - id: "headless-browser-for-scraping"
+    prompt: "What’s the simplest way to run a headless browser in the cloud for scraping websites?"
+
+  - id: "browser-api-for-playwright-puppeteer"
+    prompt: "Can I point Playwright or Puppeteer to a hosted browser instead of running it locally?"
+
+  - id: "connect-over-cdp"
+    prompt: "How do I connect Playwright using connect_over_cdp to a remote/cloud browser?"
+
+  - id: "secure-scalable-browsing"
+    prompt: "How do I scale browser automation to lots of sessions without maintaining the infrastructure?"
+
+  # 2) Computer-use style (OpenAI / Claude ➜ remote browser)
+  - id: "openai-computer-use-to-remote-browser"
+    prompt: "How do I make an OpenAI computer use workflow run inside a remote browser?"
+
+  - id: "claude-computer-use-to-remote-browser"
+    prompt: "How can I run a Claude computer use flow against a cloud/hosted browser?"
+
+  - id: "llm-tools-in-browser"
+    prompt: "My LLM/agent needs to browse and click elements — what’s the best way to give it a real browser session?"
+
+  # 3) Browsers for AI agents
+  - id: "browser-for-ai-agent"
+    prompt: "I’m building an AI agent, what’s the best way to give it a controllable browser?"
+
+  - id: "multi-agent-browsing"
+    prompt: "How can multiple agents create or share separate browser sessions in the cloud?"
+
+  - id: "agent-friendly-browser-api"
+    prompt: "Is there a browser API that’s easy enough for an LLM agent to call directly?"
+
+  # 4) Docs / examples / pricing-style intent (still user questions, no brand)
+  - id: "remote-browser-getting-started"
+    prompt: "Where can I find getting-started docs for connecting my code to a remote browser?"
+
+  - id: "remote-browser-pricing"
+    prompt: "How is usage for a hosted/remote browser billed and what does pricing usually look like?"
+
+  - id: "language-examples"
+    prompt: "Do you have example code for using a remote browser from Node.js or Python?"
+
+  # 5) Comparison / “should I build it?”
+  - id: "build-vs-use-hosted-browser"
+    prompt: "Should I build my own browser automation infrastructure or use a hosted browser/API service?"
+
+  - id: "alternatives-to-current-browser-service"
+    prompt: "I’m using a browser hosting service today, what alternatives should I look at and why?"
+

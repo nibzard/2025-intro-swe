@@ -1,0 +1,103 @@
+# Content Strategy Operations Example
+# Generate actionable content recommendations
+# Cost: ~$0.018 per run (3 intents × [$0.001 query + $0.005 operations])
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+
+brands:
+  mine: ["YourBrand"]
+  competitors: ["CompetitorA", "CompetitorB", "CompetitorC"]
+
+intents:
+  - id: "best-tools"
+    prompt: "What are the best project management tools?"
+
+    operations:
+      # Identify why we're not ranking higher
+      - id: "content-gap-analysis"
+        description: "Identify content opportunities"
+        prompt: |
+          Analyze why {brand:mine} might not be ranking higher in this LLM response.
+
+          My brand: {brand:mine}
+          My current rank: {rank:mine}
+          Competitors mentioned: {competitors:mentioned}
+
+          Full response: {intent:response}
+
+          Provide 3-5 specific content recommendations:
+          1. What content should we create?
+          2. Why would it help us rank higher?
+          3. What specific topics/keywords to target?
+        model: "gpt-4o-mini"
+
+      # Generate specific blog post outline
+      - id: "blog-post-outline"
+        description: "Generate SEO-optimized blog post outline"
+        prompt: |
+          Create an outline for a blog post that would help {brand:mine} rank better for "{intent:prompt}".
+
+          Content gaps identified:
+          {operation:content-gap-analysis}
+
+          Provide:
+          - H1 title (SEO-optimized)
+          - H2/H3 structure (6-8 sections)
+          - Key points to cover in each section
+          - CTAs and internal linking opportunities
+        depends_on: ["content-gap-analysis"]
+        model: "gpt-4o-mini"
+
+  - id: "tool-comparison"
+    prompt: "Compare the top project management platforms"
+
+    operations:
+      # Extract competitor messaging
+      - id: "competitor-messaging"
+        description: "Extract competitor value propositions"
+        prompt: |
+          Extract the key value propositions and messaging used for each competitor in this response.
+
+          Competitors: {competitors:mentioned}
+          Response: {intent:response}
+
+          For each competitor, identify:
+          1. Main value proposition mentioned
+          2. Key differentiators highlighted
+          3. Use cases or target audience mentioned
+        model: "gpt-4o-mini"
+
+      # Generate counter-positioning
+      - id: "positioning-strategy"
+        description: "Develop positioning strategy"
+        prompt: |
+          Based on competitor messaging, suggest how {brand:mine} should position itself differently.
+
+          Competitor messaging:
+          {operation:competitor-messaging}
+
+          Recommend:
+          1. Positioning angles competitors aren't using
+          2. Underserved use cases we could own
+          3. Messaging that differentiates us
+        depends_on: ["competitor-messaging"]
+        model: "gpt-4o-mini"
+
+# Output:
+# - Concrete content recommendations
+# - Blog post outlines ready to write
+# - Positioning strategies for marketing
+# - Competitive messaging analysis
+#
+# Use these operations to:
+# - Build content calendar
+# - Guide product messaging
+# - Identify SEO opportunities
+# - Track competitor positioning over time
