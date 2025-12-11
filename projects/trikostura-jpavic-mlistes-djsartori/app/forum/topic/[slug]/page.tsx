@@ -96,10 +96,10 @@ export default async function TopicPage({
   const { data: allAttachments } = await supabase
     .from('attachments')
     .select('*')
-    .or(`topic_id.eq.${topic.id},reply_id.in.(${replies?.map(r => r.id).join(',') || '0'})`);
+    .or(`topic_id.eq.${topic.id},reply_id.in.(${replies?.map((r: any) => r.id).join(',') || '0'})`);
 
-  const topicAttachments = allAttachments?.filter(a => a.topic_id === topic.id) || [];
-  const replyAttachments = allAttachments?.filter(a => a.reply_id) || [];
+  const topicAttachments = allAttachments?.filter((a: any) => a.topic_id === topic.id) || [];
+  const replyAttachments = allAttachments?.filter((a: any) => a.reply_id) || [];
 
   // Record unique view (only counts once per user/session)
   // Non-blocking: page should load even if view tracking fails
@@ -125,13 +125,13 @@ export default async function TopicPage({
         .single() as any
     ];
 
-    if (repliesList && repliesList.length > 0) {
+    if (replies && replies.length > 0) {
       userQueries.push(
         supabase
           .from('votes')
           .select('reply_id, vote_type')
           .eq('user_id', user.id)
-          .in('reply_id', repliesList.map((r: any) => r.id)) as any
+          .in('reply_id', replies.map((r: any) => r.id)) as any
       );
     } else {
       userQueries.push(Promise.resolve({ data: null }));
@@ -241,7 +241,7 @@ export default async function TopicPage({
             </div>
 
             <TopicControlMenu
-              topic={enrichedTopic}
+              topic={topic}
               isAuthor={isAuthor}
               isAdmin={isAdmin}
               categories={categories || []}
