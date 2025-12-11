@@ -137,40 +137,30 @@ export default async function TopicPage({
   let userProfile: any = null;
 
   if (user) {
-    const userQueries = [
+    const [
+      { data: profile },
+      { data: votes },
+      { data: bookmark }
+    ] = await Promise.all([
       supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
-        .single()
-    ];
-
-    if (replies && replies.length > 0) {
-      userQueries.push(
-        supabase
-          .from('votes')
-          .select('reply_id, vote_type')
-          .eq('user_id', user.id)
-          .in('reply_id', replies.map((r: any) => r.id))
-      );
-    } else {
-      userQueries.push(Promise.resolve({ data: null }));
-    }
-
-    userQueries.push(
+        .single(),
+      replies && replies.length > 0
+        ? supabase
+            .from('votes')
+            .select('reply_id, vote_type')
+            .eq('user_id', user.id)
+            .in('reply_id', replies.map((r: any) => r.id))
+        : Promise.resolve({ data: null }),
       supabase
         .from('bookmarks')
         .select('id')
         .eq('user_id', user.id)
         .eq('topic_id', topic.id)
         .maybeSingle()
-    );
-
-    const [
-      { data: profile },
-      { data: votes },
-      { data: bookmark }
-    ] = await Promise.all(userQueries);
+    ]);
 
     userProfile = profile;
     isBookmarked = !!bookmark;
