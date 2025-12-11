@@ -36,8 +36,11 @@ interface TopicWithCategoryAndAuthor extends Topic {
   author: Pick<Profile, 'username' | 'avatar_url'> | null;
 }
 
-// Revalidate every 2 minutes for better cache performance
-export const revalidate = 120;
+// Revalidate every 5 minutes for better cache performance
+export const revalidate = 300;
+
+// Use edge runtime for faster response on Vercel
+export const runtime = 'nodejs';
 
 const TOPICS_PER_PAGE = 15;
 

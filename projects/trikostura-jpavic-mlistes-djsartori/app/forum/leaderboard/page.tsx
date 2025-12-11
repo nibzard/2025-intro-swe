@@ -10,7 +10,7 @@ export const metadata = {
   description: 'Najbolji doprinositelji zajednice',
 };
 
-export const revalidate = 120; // Revalidate every 2 minutes
+export const revalidate = 300; // Revalidate every 5 minutes
 
 export default async function LeaderboardPage() {
   const supabase = await createServerSupabaseClient();

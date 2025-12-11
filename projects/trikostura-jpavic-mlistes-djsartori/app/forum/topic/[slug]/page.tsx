@@ -14,8 +14,8 @@ import { recordTopicView } from '../actions';
 import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { MessageSquare, CheckCircle } from 'lucide-react';
 
-// Revalidate every 60 seconds for better cache performance
-export const revalidate = 60;
+// Revalidate every 2 minutes for better cache performance
+export const revalidate = 120;
 
 // Generate metadata for SEO
 export async function generateMetadata({
