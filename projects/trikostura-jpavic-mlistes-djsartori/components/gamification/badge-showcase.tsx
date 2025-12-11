@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ACHIEVEMENTS, type Achievement, getRarityColor } from '@/lib/achievements';
+import { ACHIEVEMENTS, type Achievement, getRarityColor } from '@/lib/achievements-definitions';
 import { Award, Lock } from 'lucide-react';
 
 interface BadgeShowcaseProps {

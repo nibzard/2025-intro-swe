@@ -307,7 +307,7 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
 
       // Show achievement notifications
       if (newAchievements && newAchievements.length > 0) {
-        const { ACHIEVEMENTS } = await import('@/lib/achievements');
+        const { ACHIEVEMENTS } = await import('@/lib/achievements-definitions');
         newAchievements.forEach(achievementId => {
           const achievement = ACHIEVEMENTS[achievementId];
           if (achievement) {

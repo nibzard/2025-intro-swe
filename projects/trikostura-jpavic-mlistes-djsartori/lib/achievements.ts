@@ -47,7 +47,7 @@ export async function checkAndAwardAchievements(userId: string) {
   // Check reply achievements
   if (replies) {
     const replyCount = replies.length;
-    const totalUpvotes = replies.reduce((sum, r: any) => sum + (r.upvotes || 0), 0);
+    const totalUpvotes = replies.reduce((sum: number, r: any) => sum + (r.upvotes || 0), 0);
 
     if (replyCount >= 1 && !earned.has('first_reply')) toAward.push('first_reply');
     if (replyCount >= 10 && !earned.has('10_replies')) toAward.push('10_replies');
