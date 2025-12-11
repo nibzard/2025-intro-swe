@@ -1,0 +1,65 @@
+# Intent Classification Example
+# Classify buyer stage and urgency for each query
+# Cost: ~$0.006 per run (adds classification before each intent)
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+
+# Extraction settings with intent classification enabled
+extraction_settings:
+  extraction_model:
+    provider: "openai"
+    model_name: "gpt-4o-mini"
+    env_api_key: "OPENAI_API_KEY"
+    system_prompt: "openai/extraction-default"
+
+  method: "function_calling"
+  fallback_to_regex: true
+  min_confidence: 0.7
+
+  # Enable sentiment for brand mentions
+  enable_sentiment_analysis: true
+
+  # FOCUS: Enable intent classification
+  # Classifies each query before execution:
+  # - intent_type: research, comparison, decision, problem-solving
+  # - buyer_stage: awareness, consideration, decision
+  # - urgency_signal: high, medium, low
+  enable_intent_classification: true
+
+brands:
+  mine: ["YourBrand", "YourProduct"]
+  competitors: ["CompetitorA", "CompetitorB", "CompetitorC"]
+
+intents:
+  # Research intent (awareness stage)
+  - id: "what-is"
+    prompt: "What is project management software?"
+
+  # Comparison intent (consideration stage)
+  - id: "compare-tools"
+    prompt: "Compare the top project management tools"
+
+  # Decision intent (decision stage)
+  - id: "which-to-buy"
+    prompt: "Which project management tool should I buy today?"
+
+# Intent classification output:
+# Stored in SQLite table: intent_classifications
+# Fields:
+# - intent_type: research/comparison/decision/problem-solving
+# - buyer_stage: awareness/consideration/decision
+# - urgency_signal: high/medium/low
+# - classification_confidence: 0.0-1.0
+# - reasoning: Why the LLM classified it this way
+#
+# Use cases:
+# - Prioritize high-urgency intents for monitoring
+# - Track brand performance at different buyer stages
+# - Optimize content for specific intent types

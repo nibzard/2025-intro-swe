@@ -1,0 +1,34 @@
+# Google Search Grounding Example
+# Demonstrates Google Gemini with Google Search grounding
+# Cost: ~$0.045 per run (3 intents × $0.015/query with grounding)
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "google"
+      model_name: "gemini-2.0-flash-exp"
+      env_api_key: "GEMINI_API_KEY"
+      system_prompt: "google/gemini-grounding"
+      tools:
+        - google_search: {}  # Google API format for Search grounding
+
+brands:
+  mine: ["YourBrand"]
+  competitors: ["CompetitorA", "CompetitorB"]
+
+intents:
+  - id: "current-tools-2025"
+    prompt: "What are the best project management tools in 2025?"
+
+  - id: "recent-launches"
+    prompt: "What are the newest project management platforms?"
+
+  - id: "current-pricing"
+    prompt: "What do project management tools cost in 2025?"
+
+# Google Search grounding provides:
+# - Real-time web data
+# - Grounded responses with source attribution
+# - Higher accuracy for current information

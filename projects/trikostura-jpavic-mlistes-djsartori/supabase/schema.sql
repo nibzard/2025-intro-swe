@@ -1,7 +1,8 @@
 -- Enable necessary extensions
 create extension if not exists "uuid-ossp";
 
--- Create enum types
+-- Create enum types (drop and recreate if exists)
+drop type if exists user_role cascade;
 create type user_role as enum ('student', 'admin');
 
 -- Profiles table (extends auth.users)
@@ -16,6 +17,9 @@ create table profiles (
   study_program text,
   role user_role default 'student',
   reputation integer default 0,
+  email_verified boolean default false,
+  follower_count integer default 0,
+  following_count integer default 0,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
