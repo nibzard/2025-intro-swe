@@ -13,31 +13,38 @@ export { ACHIEVEMENTS, getRarityColor } from './achievements-definitions';
  * Check and award achievements for a user
  */
 export async function checkAndAwardAchievements(userId: string) {
-  const supabase = await createServerSupabaseClient();
+  try {
+    const supabase = await createServerSupabaseClient();
 
-  // Get user stats
-  const [
-    { data: profile },
-    { data: topics },
-    { data: replies },
-    { data: topicWithMostViews },
-    { data: solutionCount },
-    { data: activityData },
-    { data: existingAchievements }
-  ] = await Promise.all([
-    supabase.from('profiles').select('reputation, created_at').eq('id', userId).single(),
-    supabase.from('topics').select('id, view_count').eq('author_id', userId),
-    supabase.from('replies').select('id, upvotes').eq('author_id', userId),
-    supabase.from('topics').select('view_count').eq('author_id', userId).order('view_count', { ascending: false }).limit(1).single(),
-    supabase.from('replies').select('id').eq('author_id', userId).eq('is_solution', true),
-    supabase.from('user_activity').select('activity_date').eq('user_id', userId).order('activity_date', { ascending: false }),
-    supabase.from('user_achievements').select('achievement_id').eq('user_id', userId)
-  ]);
+    // Get user stats
+    const [
+      { data: profile, error: profileError },
+      { data: topics, error: topicsError },
+      { data: replies, error: repliesError },
+      { data: topicWithMostViews, error: topicViewsError },
+      { data: solutionCount, error: solutionError },
+      { data: activityData, error: activityError },
+      { data: existingAchievements, error: achievementsError }
+    ] = await Promise.all([
+      supabase.from('profiles').select('reputation, created_at').eq('id', userId).single(),
+      supabase.from('topics').select('id, view_count').eq('author_id', userId),
+      supabase.from('replies').select('id, upvotes').eq('author_id', userId),
+      supabase.from('topics').select('view_count').eq('author_id', userId).order('view_count', { ascending: false }).limit(1).single(),
+      supabase.from('replies').select('id').eq('author_id', userId).eq('is_solution', true),
+      supabase.from('user_activity').select('activity_date').eq('user_id', userId).order('activity_date', { ascending: false }),
+      supabase.from('user_achievements').select('achievement_id').eq('user_id', userId)
+    ]);
 
-  const earned = new Set<AchievementId>(
-    (existingAchievements ?? []).map((a: { achievement_id: AchievementId }) => a.achievement_id)
-  );
-  const toAward: AchievementId[] = [];
+    // Check for critical errors
+    if (profileError) {
+      console.error('Profile fetch error:', profileError);
+      return [];
+    }
+
+    const earned = new Set<AchievementId>(
+      (existingAchievements ?? []).map((a: { achievement_id: AchievementId }) => a.achievement_id)
+    );
+    const toAward: AchievementId[] = [];
 
   // Check topic achievements
   if (topics && topics.length >= 1 && !earned.has('first_topic')) {
@@ -117,10 +124,20 @@ export async function checkAndAwardAchievements(userId: string) {
       achievement_id: id,
     }));
 
-    await supabase.from('user_achievements').insert(achievementsToInsert as any);
+    const { error: insertError } = await supabase.from('user_achievements').insert(achievementsToInsert as any);
+    
+    if (insertError) {
+      console.error('Achievement insert error:', insertError);
+      // Return achievements that would have been awarded
+      return toAward;
+    }
   }
 
   return toAward;
+  } catch (error) {
+    console.error('Achievement system error:', error);
+    return [];
+  }
 }
 
 /**
