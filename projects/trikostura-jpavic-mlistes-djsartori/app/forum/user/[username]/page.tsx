@@ -52,11 +52,6 @@ export default async function Page({ params }: PageProps) {
 
   const isOwnProfile = user?.id === profile.id;
 
-  // Check and award achievements for the profile being viewed (non-blocking)
-  checkAndAwardAchievements(profile.id).catch(err => 
-    console.error('Achievement check failed:', err)
-  );
-
   // Get all data in minimal parallel queries
   const [
     followStatus,
@@ -84,7 +79,10 @@ export default async function Page({ params }: PageProps) {
       .eq('author_id', profile.id)
       .order('created_at', { ascending: false })
       .limit(10),
-    getUserAchievements(profile.id),
+    // Check and award achievements BEFORE returning (blocking)
+    checkAndAwardAchievements(profile.id).then(() => 
+      getUserAchievements(profile.id)
+    ),
     supabase
       .from('user_activity')
       .select('activity_date, topics_count, replies_count')
