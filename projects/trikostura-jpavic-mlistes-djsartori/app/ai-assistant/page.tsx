@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChatInterface } from '@/components/ai-assistant/chat-interface';
+import { ConversationItem } from '@/components/ai-assistant/conversation-item';
 import { createConversation, getConversations, getMessages } from './actions';
 import { Bot, Plus, MessageSquare, Sparkles } from 'lucide-react';
 import Link from 'next/link';
@@ -73,20 +74,11 @@ export default async function AIAssistantPage({
                 {conversations && conversations.length > 0 ? (
                   <div className="space-y-1">
                     {conversations.map((conv: any) => (
-                      <Link
+                      <ConversationItem
                         key={conv.id}
-                        href={`/ai-assistant?conversation=${conv.id}`}
-                        className={`block p-3 rounded-lg transition-colors ${
-                          conversationId === conv.id
-                            ? 'bg-purple-100 dark:bg-purple-900 text-purple-900 dark:text-purple-100'
-                            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                        }`}
-                      >
-                        <p className="text-sm font-medium truncate">{conv.title}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {new Date(conv.updated_at).toLocaleDateString('hr-HR')}
-                        </p>
-                      </Link>
+                        conversation={conv}
+                        isActive={conversationId === conv.id}
+                      />
                     ))}
                   </div>
                 ) : (
