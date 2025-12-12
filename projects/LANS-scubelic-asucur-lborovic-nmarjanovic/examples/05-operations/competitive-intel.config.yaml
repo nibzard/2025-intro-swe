@@ -1,0 +1,108 @@
+# Competitive Intelligence Operations Example
+# Track competitor strengths and market positioning
+# Cost: ~$0.015 per run (3 intents × [$0.001 query + $0.004 operations])
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+
+brands:
+  mine: ["YourBrand"]
+  competitors: ["CompetitorA", "CompetitorB", "CompetitorC"]
+
+# Global operations for competitive analysis
+global_operations:
+  # Track which competitors appear and how
+  - id: "competitor-presence-check"
+    description: "Analyze competitor mentions and positioning"
+    prompt: |
+      Analyze how competitors are positioned in this LLM response.
+
+      Response: {intent:response}
+      Competitors to track: {competitors:all}
+
+      For each competitor mentioned:
+      1. Rank position (if ranked)
+      2. Key strengths mentioned
+      3. Target use case highlighted
+      4. Sentiment (positive/neutral/negative)
+
+      Note which competitors are NOT mentioned and why.
+    model: "gpt-4o-mini"
+    enabled: true
+
+intents:
+  - id: "best-tools"
+    prompt: "What are the best project management tools?"
+
+    operations:
+      # Extract competitive differentiators
+      - id: "competitor-strengths"
+        description: "Extract competitor value propositions"
+        prompt: |
+          Extract the specific strengths and differentiators mentioned for each competitor.
+
+          Competitors mentioned: {competitors:mentioned}
+          Response: {intent:response}
+
+          For each competitor, list:
+          - Top 3 strengths mentioned
+          - Unique differentiators highlighted
+          - Price tier (if mentioned)
+          - Target customer segment
+        model: "gpt-4o-mini"
+
+      # Compare against our brand
+      - id: "competitive-comparison"
+        description: "Compare competitors to our brand"
+        prompt: |
+          Compare how {brand:mine} is positioned vs competitors in this response.
+
+          My brand: {brand:mine}
+          My rank: {rank:mine}
+          My mentions: {brand:my_mentions}
+
+          Competitor analysis:
+          {operation:competitor-strengths}
+
+          Provide:
+          1. What competitors are doing better (and why)
+          2. Where we have advantage (if mentioned)
+          3. Market gaps neither we nor competitors fill
+          4. Recommended positioning changes
+        depends_on: ["competitor-strengths"]
+        model: "gpt-4o-mini"
+
+  - id: "alternatives-search"
+    prompt: "What are alternatives to CompetitorA?"
+
+    operations:
+      # Track if we appear as alternative
+      - id: "alternative-positioning"
+        description: "Analyze alternative positioning"
+        prompt: |
+          Did {brand:mine} appear as an alternative to CompetitorA?
+
+          Response: {intent:response}
+
+          Analyze:
+          1. Is {brand:mine} mentioned as an alternative? (Yes/No)
+          2. If yes, how is it positioned relative to CompetitorA?
+          3. If no, why might we be missing from alternatives list?
+          4. What could we do to appear in future "alternatives" queries?
+        model: "gpt-4o-mini"
+
+# Competitive intelligence use cases:
+# - Track competitor positioning over time
+# - Identify emerging competitors
+# - Monitor competitor strength trends
+# - Find market gaps
+# - Guide product roadmap
+# - Inform pricing strategy
+#
+# Run weekly to track competitive landscape changes

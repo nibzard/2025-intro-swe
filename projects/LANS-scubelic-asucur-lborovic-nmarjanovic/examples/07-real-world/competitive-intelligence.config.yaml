@@ -1,0 +1,146 @@
+# Competitive Intelligence Template
+# Weekly competitor tracking and market analysis
+# Cost: ~$0.20 per run
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/competitive-intel.db"
+
+  models:
+    # Multiple providers to see different perspectives
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+      tools:
+        - type: "web_search"
+
+    - provider: "anthropic"
+      model_name: "claude-3-5-haiku-20241022"
+      env_api_key: "ANTHROPIC_API_KEY"
+
+    - provider: "perplexity"
+      model_name: "sonar"
+      env_api_key: "PERPLEXITY_API_KEY"
+
+extraction_settings:
+  extraction_model:
+    provider: "openai"
+    model_name: "gpt-4o-mini"
+    env_api_key: "OPENAI_API_KEY"
+  method: "function_calling"
+  fallback_to_regex: true
+  enable_sentiment_analysis: true
+
+brands:
+  mine: ["YourBrand"]
+  competitors:
+    - "MarketLeader"      # Track #1 competitor closely
+    - "FastGrowing"       # Track emerging threats
+    - "DirectCompetitor"  # Similar positioning
+    - "PremiumPlayer"     # Different price tier
+    - "BudgetOption"      # Low-cost alternative
+
+# Competitive intelligence queries
+intents:
+  # Market landscape
+  - id: "market-leaders"
+    prompt: "Who are the leading companies in [YOUR_CATEGORY]?"
+
+  - id: "market-trends"
+    prompt: "What are the latest trends in [YOUR_CATEGORY]?"
+
+  # Competitor-specific
+  - id: "competitor1-strengths"
+    prompt: "What are the strengths of MarketLeader?"
+
+  - id: "competitor1-weaknesses"
+    prompt: "What are the downsides of MarketLeader?"
+
+  - id: "competitor1-alternatives"
+    prompt: "What are the best alternatives to MarketLeader?"
+
+  # Pricing intelligence
+  - id: "pricing-comparison"
+    prompt: "Compare pricing of [YOUR_CATEGORY] tools"
+
+  # Feature intelligence
+  - id: "feature-comparison"
+    prompt: "What features differentiate [YOUR_CATEGORY] tools?"
+
+  # Customer intelligence
+  - id: "who-uses-what"
+    prompt: "Which companies use which [YOUR_CATEGORY] tools?"
+
+# Competitive analysis operations
+global_operations:
+  - id: "competitive-landscape-map"
+    description: "Map competitive landscape"
+    prompt: |
+      Create a competitive landscape map from this response.
+
+      Response: {intent:response}
+      All competitors tracked: {competitors:all}
+
+      For each competitor mentioned:
+      1. Market position (leader/challenger/niche)
+      2. Key differentiators highlighted
+      3. Target customer segment
+      4. Pricing tier mentioned
+      5. Sentiment (positive/negative/neutral)
+
+      Note competitors NOT mentioned and potential reasons.
+    model: "gpt-4o-mini"
+
+intents:
+  - id: "feature-gaps"
+    prompt: "What features do users want in [YOUR_CATEGORY] tools?"
+
+    operations:
+      - id: "feature-wish-list"
+        description: "Extract desired features"
+        prompt: |
+          Extract features users want based on this response.
+
+          Response: {intent:response}
+
+          List:
+          1. Features mentioned as desirable
+          2. Which competitors offer each feature
+          3. Whether {brand:mine} offers it (if mentioned)
+          4. Underserved needs (features no one offers well)
+        model: "gpt-4o-mini"
+
+      - id: "product-roadmap-recommendations"
+        description: "Recommend features for roadmap"
+        prompt: |
+          Based on this feature analysis, recommend top 5 features {brand:mine} should prioritize.
+
+          Feature analysis:
+          {operation:feature-wish-list}
+
+          For each recommendation:
+          1. Feature name
+          2. Why users want it
+          3. Which competitors have it (if any)
+          4. Potential competitive advantage if we build it
+          5. Priority (Critical/High/Medium)
+        depends_on: ["feature-wish-list"]
+        model: "gpt-4o-mini"
+
+# How to use for competitive intelligence:
+#
+# 1. Run weekly to track competitor positioning changes
+# 2. Export to CSV for stakeholder reports
+# 3. Track metrics over time:
+#    - Competitor mention frequency
+#    - Sentiment trends per competitor
+#    - Feature gap evolution
+#    - Market positioning shifts
+# 4. Feed insights to product, marketing, sales teams
+# 5. Alert on significant changes (new competitor, negative trend, etc.)
+#
+# Key queries for tracking:
+# - Who's mentioned most often? (market leader indicator)
+# - Who's mentioned with positive sentiment? (brand strength)
+# - What features are highlighted? (differentiators)
+# - Who's missing from responses? (losing relevance)

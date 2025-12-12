@@ -1,0 +1,109 @@
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/steel-watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-5-mini"
+      env_api_key: "OPENAI_API_KEY"
+
+    - provider: "openai"
+      model_name: "gpt-5-nano"
+      env_api_key: "OPENAI_API_KEY"
+
+  use_llm_rank_extraction: true
+
+brands:
+  mine:
+    - "Steel"
+    - "Steel.dev"
+    - "steel.dev"
+    - "Steel API"
+
+  competitors:
+    - "Browserbase"
+    - "Anchorbrowser"
+    - "Hyperbrowser"
+    - "Browserless"
+    - "Bright Data"
+    - "ScrapingBee"
+    - "ZenRows"
+    - "ScraperAPI"
+    - "Apify"
+    - "Puppeteer Cloud"
+    - "Playwright Cloud"
+    - "Crawlbase"
+    - "Oxylabs"
+    - "Smartproxy"
+
+  touch_points:
+    - "browser-use"
+    - "Playwright"
+    - "Puppeteer"
+    - "Selenium"
+    - "WebDriver"
+
+intents:
+  # Core Infrastructure & Scaling
+  - id: "ai-agent-browser-infrastructure"
+    prompt: "How can I run browser automation for AI agents at scale?"
+
+  - id: "headless-browser-cloud"
+    prompt: "What's the best way to deploy headless browsers in the cloud?"
+
+  - id: "browser-api-performance"
+    prompt: "What are the fastest headless browser APIs for high-volume tasks?"
+
+  # Enterprise & Production Use
+  - id: "enterprise-browser-automation"
+    prompt: "How do I set up reliable browser automation for enterprise workflows?"
+
+  - id: "browser-automation-reliability"
+    prompt: "What makes browser automation services reliable for production use?"
+
+  - id: "puppeteer-scaling"
+    prompt: "How do I scale Puppeteer scripts to handle thousands of pages?"
+
+  # Technical Features & Capabilities
+  - id: "web-scraping-javascript"
+    prompt: "What tools work best for scraping websites that use JavaScript?"
+
+  - id: "authenticated-browser-sessions"
+    prompt: "What's the best approach for browser automation with logged-in sessions?"
+
+  - id: "browser-automation-detection"
+    prompt: "How can I automate web interactions without being detected as a bot?"
+
+  - id: "stealth-web-automation"
+    prompt: "How do I make browser automation appear human to avoid detection?"
+
+  # AI & Emerging Technologies
+  - id: "ai-agent-web-interactions"
+    prompt: "How can AI agents interact with websites autonomously?"
+
+  - id: "newest-browser-automation-apis-2025"
+    prompt: "What are the newest browser automation APIs for 2025?"
+
+  # Developer Experience & Integration
+  - id: "browser-automation-sdk-support"
+    prompt: "Which browser automation APIs have the best SDK support?"
+
+  - id: "browser-automation-debugging-tools"
+    prompt: "What headless browser services offer the best debugging tools?"
+
+  - id: "browser-automation-integration"
+    prompt: "What browser automation tools have the best integration capabilities?"
+
+  # Enterprise Features & Security
+  - id: "browser-automation-enterprise-support"
+    prompt: "Which browser automation platforms offer enterprise support?"
+
+  - id: "secure-browser-automation-services"
+    prompt: "What are the most secure browser automation services?"
+
+  # Open Source vs Commercial
+  - id: "best-open-source-browser-automation"
+    prompt: "What are the best open source tools for browser automation?"
+
+  - id: "open-source-vs-commercial-browser-automation"
+    prompt: "Compare open-source vs commercial browser automation solutions"
