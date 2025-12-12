@@ -122,3 +122,9 @@ This file lists all team projects for the SWE course. Students add their project
 * **Folder:** `stipzard/ai-git-project-stipe/`
 * **Status:** In Progress
 * **Description:** Upisivanje vaseg budžeta i sastavljanje najboljeg racunara za taj budžet.
+
+### SnapNStore - Gianna Lukić
+* **Project:** SnapNStore
+* **Folder:** `SnapNStore - glukic/`
+* **Status:** In Progress
+* **Description:** Skeniranje računa i spremanje u aplikaciju kao garancija.
