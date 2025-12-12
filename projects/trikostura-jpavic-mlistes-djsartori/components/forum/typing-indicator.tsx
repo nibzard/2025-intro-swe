@@ -59,6 +59,7 @@ export function TypingIndicator({ topicId, currentUserId, currentUsername }: Typ
                   {
                     user_id: typingUserId,
                     username: (profile as any).username,
+                    avatar_url: (profile as any).avatar_url,
                     updated_at: (payload.new as any).updated_at,
                   },
                 ];
@@ -100,9 +101,21 @@ export function TypingIndicator({ topicId, currentUserId, currentUsername }: Typ
       : `${typingUsers.length} korisnika piše...`;
 
   return (
-    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 py-2">
-      <Loader2 className="w-3 h-3 animate-spin" />
-      <span>{displayText}</span>
+    <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400 py-3 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+      <div className="flex -space-x-2">
+        {typingUsers.slice(0, 3).map((user) => (
+          <Avatar
+            key={user.user_id}
+            src={user.avatar_url}
+            alt={user.username}
+            username={user.username}
+            size="sm"
+            className="ring-2 ring-white dark:ring-gray-800"
+          />
+        ))}
+      </div>
+      <Loader2 className="w-4 h-4 animate-spin text-purple-500" />
+      <span className="font-medium">{displayText}</span>
     </div>
   );
 }
