@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Loader2 } from 'lucide-react';
+import { Avatar } from '@/components/ui/avatar';
 
 interface TypingIndicatorProps {
   topicId: string;
@@ -13,6 +14,7 @@ interface TypingIndicatorProps {
 interface TypingUser {
   user_id: string;
   username: string;
+  avatar_url: string | null;
   updated_at: string;
 }
 
@@ -22,7 +24,6 @@ export function TypingIndicator({ topicId, currentUserId, currentUsername }: Typ
   const supabase = createClient();
 
   useEffect(() => {
-    console.log('[TypingIndicator] Initializing for topic:', topicId, 'user:', currentUserId);
     if (!currentUserId) return;
 
     // Subscribe to typing indicators for this topic
@@ -43,10 +44,10 @@ export function TypingIndicator({ topicId, currentUserId, currentUsername }: Typ
             // Don't show current user's typing indicator
             if (typingUserId === currentUserId) return;
 
-            // Fetch username
+            // Fetch username and avatar
             const { data: profile } = await supabase
               .from('profiles')
-              .select('username')
+              .select('username, avatar_url')
               .eq('id', typingUserId)
               .single();
 
@@ -113,13 +114,9 @@ export function useTypingIndicator(topicId: string, currentUserId?: string) {
   const typingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const broadcastTyping = useCallback(async () => {
-    if (!currentUserId || !topicId) {
-      console.log('[useTypingIndicator] Missing IDs:', { currentUserId, topicId });
-      return;
-    }
+    if (!currentUserId || !topicId) return;
 
     try {
-      console.log('[useTypingIndicator] Broadcasting typing for:', currentUserId);
       const supabase = createClient(); // Fresh client for each call
 
       // Clear existing timeout
