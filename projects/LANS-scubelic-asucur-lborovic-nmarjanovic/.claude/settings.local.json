@@ -7,7 +7,12 @@
       "Bash(grep:*)",
       "Bash(find:*)",
       "Bash(wc:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(npm create vite:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []
