@@ -97,6 +97,14 @@ export async function sendMessage(conversationId: string, message: string) {
     return { error: 'Morate biti prijavljeni' };
   }
 
+  // Check if this is the first message (to auto-generate title)
+  const { data: existingMessages, count: messageCount } = await (supabase as any)
+    .from('ai_messages')
+    .select('id', { count: 'exact', head: false })
+    .eq('conversation_id', conversationId);
+
+  const isFirstMessage = !existingMessages || existingMessages.length === 0;
+
   // Save user message
   const { error: userMsgError } = await (supabase as any)
     .from('ai_messages')
@@ -109,6 +117,18 @@ export async function sendMessage(conversationId: string, message: string) {
   if (userMsgError) {
     console.error('Error saving user message:', userMsgError);
     return { error: 'Greška pri spremanju poruke' };
+  }
+
+  // Auto-generate conversation title from first message
+  if (isFirstMessage) {
+    const title = message.length > 60
+      ? message.substring(0, 60).trim() + '...'
+      : message;
+
+    await (supabase as any)
+      .from('ai_conversations')
+      .update({ title })
+      .eq('id', conversationId);
   }
 
   // Get conversation history for context

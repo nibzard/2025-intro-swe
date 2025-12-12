@@ -59,29 +59,44 @@ export function ConversationItem({ conversation, isActive }: ConversationItemPro
       <Link
         href={`/ai-assistant?conversation=${conversation.id}`}
         className={`block p-3 rounded-lg transition-colors ${
-          isActive
+          showConfirm
+            ? 'bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-700'
+            : isActive
             ? 'bg-purple-100 dark:bg-purple-900 text-purple-900 dark:text-purple-100'
             : 'hover:bg-gray-100 dark:hover:bg-gray-800'
         }`}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{conversation.title}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              {new Date(conversation.updated_at).toLocaleDateString('hr-HR')}
-            </p>
+            {showConfirm ? (
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-red-600 dark:text-red-400">
+                  Obrisati ovu konverzaciju?
+                </p>
+                <p className="text-xs text-red-500 dark:text-red-500">
+                  Klikni ponovno za potvrdu
+                </p>
+              </div>
+            ) : (
+              <>
+                <p className="text-sm font-medium truncate">{conversation.title}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {new Date(conversation.updated_at).toLocaleDateString('hr-HR')}
+                </p>
+              </>
+            )}
           </div>
 
           {/* Delete Button */}
           <button
             onClick={handleDelete}
             disabled={isDeleting}
-            className={`flex-shrink-0 p-1 rounded transition-colors ${
+            className={`flex-shrink-0 p-1.5 rounded transition-colors ${
               showConfirm
-                ? 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400'
+                ? 'bg-red-500 hover:bg-red-600 text-white'
                 : 'opacity-0 group-hover:opacity-100 hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-600 dark:hover:text-red-400'
             }`}
-            title={showConfirm ? 'Klikni ponovno za potvrdu' : 'Obriši konverzaciju'}
+            title={showConfirm ? 'Potvrdi brisanje' : 'Obriši konverzaciju'}
           >
             {showConfirm ? (
               <AlertCircle className="w-4 h-4" />
@@ -91,13 +106,6 @@ export function ConversationItem({ conversation, isActive }: ConversationItemPro
           </button>
         </div>
       </Link>
-
-      {/* Confirmation tooltip */}
-      {showConfirm && (
-        <div className="absolute top-full left-0 right-0 mt-1 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-xs text-red-600 dark:text-red-400 z-10">
-          Klikni ponovno za potvrdu brisanja
-        </div>
-      )}
     </div>
   );
 }
