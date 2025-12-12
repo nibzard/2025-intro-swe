@@ -33,6 +33,13 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** Aplikacija odnosno jednostavni planer za pregledno praćenje studentskih obveza, rokova i napretka kroz semestar
 
+### K&M - Katarina Pilić & Marino Bendra
+* **Project:** Calorie Tracker
+* **Folder:** calorieTracker-kpilic-mbendra
+* **Status:** In Progress
+* **Description:** Aplikacija za brojanje kalorija pomoću slike ili ručnog unosa hrane
+
+
 ### Paradižot - Karlo Ćurčija & Ela Kević & Lucija Tomić & Jere Vitaljić
 * **Project:** Promet aplikacija
 * **Folder:** `PrometApp-kcurcija-ekevic-ltomic-jvitaljic/`
