@@ -6,7 +6,6 @@ import { formatDistanceToNow } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import type { Category, Topic, Profile } from '@/types/database';
 import { TopicListClient } from '@/components/forum/topic-list-client';
-import { FloatingAssistantButton } from '@/components/ai-assistant/floating-assistant-button';
 
 interface TopicWithAuthor extends Topic {
   author: Profile | null;
@@ -270,9 +269,6 @@ export default async function ForumPage({
           unsolvedCount={unsolvedCount}
         />
       </div>
-
-      {/* Floating AI Assistant Button */}
-      <FloatingAssistantButton />
     </div>
   );
 }

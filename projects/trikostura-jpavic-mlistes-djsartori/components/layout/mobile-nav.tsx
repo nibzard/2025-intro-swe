@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, Home, Search, Settings, User, LogOut, Plus, Users, Bookmark, Mail, Trophy, Bot } from 'lucide-react';
+import { Menu, X, Home, Search, Settings, User, LogOut, Plus, Users, Bookmark, Mail, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
 import { logout } from '@/app/auth/actions';
@@ -79,15 +79,6 @@ export function MobileNav({ user, profile }: MobileNavProps) {
                     >
                       <Plus className="w-5 h-5" />
                       Nova tema
-                    </Link>
-
-                    <Link
-                      href="/ai-assistant"
-                      onClick={closeMenu}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 text-purple-600 dark:text-purple-400 font-medium transition-colors"
-                    >
-                      <Bot className="w-5 h-5" />
-                      AI Asistent
                     </Link>
 
                     <Link
