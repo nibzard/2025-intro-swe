@@ -11,22 +11,14 @@ interface FloatingAssistantButtonProps {
 }
 
 export function FloatingAssistantButton({ show = true }: FloatingAssistantButtonProps) {
-  const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
-    // Show button after a short delay
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, 2000);
-
     // Check if user has dismissed the button
     const dismissed = localStorage.getItem('ai-assistant-dismissed');
     if (dismissed === 'true') {
       setIsDismissed(true);
     }
-
-    return () => clearTimeout(timer);
   }, []);
 
   const handleDismiss = () => {
@@ -34,7 +26,7 @@ export function FloatingAssistantButton({ show = true }: FloatingAssistantButton
     localStorage.setItem('ai-assistant-dismissed', 'true');
   };
 
-  if (!show || isDismissed || !isVisible) {
+  if (!show || isDismissed) {
     return null;
   }
 
@@ -68,7 +60,7 @@ export function FloatingAssistantButton({ show = true }: FloatingAssistantButton
         </Link>
 
         {/* Pulse Animation Ring */}
-        <div className="absolute inset-0 rounded-full bg-purple-500 animate-ping opacity-20" />
+        <div className="absolute inset-0 rounded-full bg-purple-500 animate-ping opacity-20 pointer-events-none" />
       </div>
     </div>
   );
