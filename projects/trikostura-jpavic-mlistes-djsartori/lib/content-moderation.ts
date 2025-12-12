@@ -4,7 +4,6 @@
  */
 
 import { createClient } from '@/lib/supabase/client';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export type ModerationSeverity = 'low' | 'medium' | 'high' | 'critical';
 export type ModerationAction = 'approve' | 'censor' | 'flag' | 'block';
@@ -80,81 +79,10 @@ export async function checkContent(content: string): Promise<ModerationResult> {
 }
 
 /**
- * Check content for inappropriate words/phrases (server-side)
- */
-export async function checkContentServer(content: string): Promise<ModerationResult> {
-  const supabase = await createServerSupabaseClient();
-
-  try {
-    const { data, error } = await supabase.rpc('check_content_moderation', {
-      content_text: content,
-    });
-
-    if (error) {
-      console.error('Content moderation check failed:', error);
-      return {
-        hasViolations: false,
-        matchedWords: [],
-        highestSeverity: 'low',
-        recommendedAction: 'approve',
-      };
-    }
-
-    if (!data || data.length === 0) {
-      return {
-        hasViolations: false,
-        matchedWords: [],
-        highestSeverity: 'low',
-        recommendedAction: 'approve',
-      };
-    }
-
-    const result = data[0];
-    return {
-      hasViolations: result.has_violations,
-      matchedWords: result.matched_words || [],
-      highestSeverity: result.highest_severity,
-      recommendedAction: result.recommended_action,
-    };
-  } catch (error) {
-    console.error('Content moderation error:', error);
-    return {
-      hasViolations: false,
-      matchedWords: [],
-      highestSeverity: 'low',
-      recommendedAction: 'approve',
-    };
-  }
-}
-
-/**
  * Censor inappropriate content by replacing banned words with asterisks
  */
 export async function censorContent(content: string): Promise<string> {
   const supabase = createClient();
-
-  try {
-    const { data, error } = await supabase.rpc('censor_content', {
-      content_text: content,
-    });
-
-    if (error) {
-      console.error('Content censoring failed:', error);
-      return content;
-    }
-
-    return data || content;
-  } catch (error) {
-    console.error('Content censoring error:', error);
-    return content;
-  }
-}
-
-/**
- * Censor inappropriate content (server-side)
- */
-export async function censorContentServer(content: string): Promise<string> {
-  const supabase = await createServerSupabaseClient();
 
   try {
     const { data, error } = await supabase.rpc('censor_content', {
