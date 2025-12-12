@@ -1,0 +1,69 @@
+{
+  "run_id": "2025-11-02T10-15-30Z",
+  "intent_id": "sales-engagement-platforms",
+  "model_provider": "anthropic",
+  "model_name": "claude-3-5-haiku-20241022",
+  "timestamp_utc": "2025-11-02T10:16:45Z",
+  "extraction_method": "word-boundary",
+  "brands_detected": [
+    {
+      "normalized_name": "HubSpot",
+      "aliases_found": ["HubSpot", "HubSpot Sales Hub"],
+      "first_position": 1,
+      "positions": [1],
+      "context_snippets": ["**1. HubSpot Sales Hub** - Comprehensive platform combining CRM, email tracking, and sales automation."],
+      "rank_position": 1,
+      "confidence_score": 1.0
+    },
+    {
+      "normalized_name": "Apollo.io",
+      "aliases_found": ["Apollo.io"],
+      "first_position": 2,
+      "positions": [2],
+      "context_snippets": ["**2. Apollo.io** - Sales intelligence and engagement platform with excellent data enrichment capabilities."],
+      "rank_position": 2,
+      "confidence_score": 1.0
+    },
+    {
+      "normalized_name": "Instantly",
+      "aliases_found": ["Instantly"],
+      "first_position": 3,
+      "positions": [3],
+      "context_snippets": ["**3. Instantly** - User-friendly platform focused on email outreach and automation."],
+      "rank_position": 3,
+      "confidence_score": 1.0
+    },
+    {
+      "normalized_name": "Woodpecker",
+      "aliases_found": ["Woodpecker"],
+      "first_position": 4,
+      "positions": [4],
+      "context_snippets": ["**4. Woodpecker** - B2B-focused with strong agency features."],
+      "rank_position": 4,
+      "confidence_score": 1.0
+    },
+    {
+      "normalized_name": "Warmly",
+      "aliases_found": ["Warmly"],
+      "first_position": 5,
+      "positions": [5],
+      "context_snippets": ["**5. Warmly** - While newer to the market, offers innovative features for sales engagement."],
+      "rank_position": 5,
+      "confidence_score": 1.0
+    }
+  ],
+  "total_mentions": 5,
+  "my_brands_mentioned": ["Warmly"],
+  "competitor_brands_mentioned": ["HubSpot", "Apollo.io", "Instantly", "Woodpecker"],
+  "my_brand_rankings": {
+    "Warmly": 5
+  },
+  "competitor_rankings": {
+    "HubSpot": 1,
+    "Apollo.io": 2,
+    "Instantly": 3,
+    "Woodpecker": 4
+  },
+  "llm_assisted_ranking": null,
+  "extraction_confidence": "high"
+}

@@ -1,0 +1,811 @@
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/steel-watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-5-nano"
+      env_api_key: "OPENAI_API_KEY"
+      system_prompt: "openai/gpt-5-default"
+
+    - provider: "openai"
+      model_name: "gpt-5-nano"
+      env_api_key: "OPENAI_API_KEY"
+      system_prompt: "openai/gpt-5-default"
+      tools:
+        - type: "web_search"
+      tool_choice: "required"
+
+    # Google Gemini with Google Search grounding
+    - provider: "google"
+      model_name: "gemini-2.5-flash"
+      env_api_key: "GEMINI_API_KEY"
+      system_prompt: "google/gemini-grounding"
+      tools:
+        - google_search: {}  # Enable Google Search grounding
+
+    # Google Gemini without web search
+    - provider: "google"
+      model_name: "gemini-2.5-flash-lite"
+      env_api_key: "GEMINI_API_KEY"
+
+  use_llm_rank_extraction: true
+
+# Enable function calling for better extraction accuracy
+extraction_settings:
+  extraction_model:
+    provider: "openai"
+    model_name: "gpt-5-nano"
+    env_api_key: "OPENAI_API_KEY"
+    system_prompt: "openai/extraction-default"
+  method: "function_calling"
+  fallback_to_regex: true
+  min_confidence: 0.7
+  enable_sentiment_analysis: true
+  enable_intent_classification: true
+
+brands:
+  mine:
+    - "Steel"
+    - "Steel.dev"
+    - "steel.dev"
+    - "Steel API"
+    - "Steel browser"
+    - "Steel AI"
+
+  competitors:
+    - "Browserbase"
+    - "Browserless"
+    - "Apify"
+    - "ScrapingBee"
+    - "Bright Data"
+    - "Playwright"
+    - "Puppeteer"
+    - "Selenium"
+    - "OpenAI computer use"
+    - "Claude computer use"
+
+  touch_points:
+    - "remote browser"
+    - "cloud browser"
+    - "headless browser"
+    - "browser API"
+    - "headless api"
+    - "web scraping"
+    - "browser automation"
+    - "Playwright connect_over_cdp"
+    - "Puppeteer connect"
+    - "browsers for AI agents"
+    - "OpenAI computer use"
+    - "Claude computer use"
+
+# Global operations run for EVERY intent
+# These analyze Steel's positioning and generate content strategy
+global_operations:
+  - id: "steel-presence-check"
+    description: "Check if Steel is mentioned and assess positioning"
+    prompt: |
+      Analyze Steel's presence in this LLM response.
+
+      Question: {intent:prompt}
+      Response: {intent:response}
+
+      Steel brands: {brand:mine_all}
+      Steel rank (if mentioned): {rank:mine}
+      Competitors mentioned: {competitors:mentioned}
+
+      Answer these questions concisely:
+      1. Is Steel mentioned? (Yes/No)
+      2. If yes, what rank? If no, why might Steel be missing?
+      3. What sentiment is expressed about Steel (if mentioned)?
+      4. Overall assessment: Strong/Moderate/Weak/Missing positioning
+    model: "gpt-5-nano"
+    enabled: true
+
+  - id: "competitor-messaging-patterns"
+    description: "Extract how competitors are being described"
+    prompt: |
+      Extract the specific language, features, and value propositions used to describe competitors in this response.
+
+      Competitors mentioned: {competitors:mentioned}
+      Response: {intent:response}
+
+      For each competitor mentioned, extract:
+      - Key features/capabilities highlighted
+      - Value proposition language used
+      - Technical terms associated with them
+      - Use cases mentioned
+
+      Format as bullet points per competitor. Be specific and quote directly when possible.
+    model: "gpt-5-nano"
+    enabled: true
+
+intents:
+  # 1) Remote / headless / browser API
+  - id: "remote-browser-api"
+    prompt: "How can I use a remote browser over an API without installing or hosting Chrome myself?"
+
+    operations:
+      - id: "remote-api-content-gaps"
+        description: "Identify specific content gaps for Steel"
+        prompt: |
+          You are a technical content strategist for Steel.dev, a remote browser API service.
+
+          Steel's current positioning:
+          - Mentioned: {rank:mine}
+          - Competitors mentioned: {competitors:mentioned}
+
+          LLM Response Analysis:
+          {intent:response}
+
+          Competitor messaging patterns:
+          {operation:competitor-messaging-patterns}
+
+          Based on this analysis, identify 3-5 specific content gaps where Steel should create content to improve positioning for "{intent:prompt}".
+
+          For each gap, specify:
+          1. The exact topic/angle (be specific)
+          2. Why this would help Steel rank higher
+          3. What competitors are doing here that Steel should counter or differentiate from
+        model: "gpt-5-nano"
+        depends_on: ["competitor-messaging-patterns"]
+
+      - id: "remote-api-blog-outline"
+        description: "Generate blog post outline to fill content gap"
+        prompt: |
+          Generate a detailed blog post outline that would position Steel as the answer to: "{intent:prompt}"
+
+          Context:
+          - Steel is a remote browser API (connect via Playwright/Puppeteer)
+          - Competitors mentioned: {competitors:mentioned}
+          - Content gaps identified: {operation:remote-api-content-gaps}
+
+          Create an SEO-optimized blog post outline with:
+          - Compelling title (include keywords naturally)
+          - H2/H3 structure (5-7 sections)
+          - Key points to cover in each section
+          - Technical details to emphasize
+          - CTAs to Steel.dev
+          - Keywords to target
+
+          Make this actionable for a technical writer to implement immediately.
+        model: "gpt-5-nano"
+        depends_on: ["remote-api-content-gaps"]
+
+      - id: "remote-api-talking-points"
+        description: "Extract technical angles Steel should emphasize"
+        prompt: |
+          From this LLM response about "{intent:prompt}", extract the technical concepts, pain points, and requirements that users care about.
+
+          Response: {intent:response}
+          Competitors mentioned: {competitors:mentioned}
+
+          Generate a list of technical talking points Steel should emphasize in documentation, marketing, and content:
+          - Technical pain points users have
+          - Features/capabilities users are looking for
+          - Keywords and phrases users use
+          - Integration patterns mentioned
+          - Performance/reliability concerns
+
+          Format as actionable talking points Steel should incorporate.
+        model: "gpt-5-nano"
+
+      - id: "remote-api-actions"
+        description: "Generate prioritized content action items"
+        prompt: |
+          Based on these analyses, generate 5 prioritized action items for Steel's content and product teams.
+
+          Steel's Position: {rank:mine}
+          Competitors: {competitors:mentioned}
+
+          Content Gaps:
+          {operation:remote-api-content-gaps}
+
+          Blog Post Outline:
+          {operation:remote-api-blog-outline}
+
+          Technical Talking Points:
+          {operation:remote-api-talking-points}
+
+          Format as:
+          1. [Priority: High/Medium/Low] Action item with specific deliverable
+
+          Focus on quick wins that will improve Steel's ranking for this query type.
+        model: "gpt-5-nano"
+        depends_on: ["remote-api-content-gaps", "remote-api-blog-outline", "remote-api-talking-points"]
+
+  - id: "headless-browser-for-scraping"
+    prompt: "What's the simplest way to run a headless browser in the cloud for scraping websites?"
+
+    operations:
+      - id: "scraping-content-gaps"
+        description: "Identify specific content gaps for Steel"
+        prompt: |
+          You are a technical content strategist for Steel.dev, a remote browser API service.
+
+          Steel's current positioning:
+          - Mentioned: {rank:mine}
+          - Competitors mentioned: {competitors:mentioned}
+
+          LLM Response: {intent:response}
+          Competitor patterns: {operation:competitor-messaging-patterns}
+
+          Identify 3-5 specific content gaps where Steel should create content to improve positioning for "{intent:prompt}".
+          Focus on "simplicity" angle since that's what the user is asking about.
+        model: "gpt-5-nano"
+        depends_on: ["competitor-messaging-patterns"]
+
+      - id: "scraping-simplicity-positioning"
+        description: "Develop messaging around simplicity/ease-of-use"
+        prompt: |
+          The user asked for "the simplest way" to run headless browsers.
+
+          Competitors mentioned: {competitors:mentioned}
+          How they're described: {operation:competitor-messaging-patterns}
+
+          Develop Steel's counter-positioning focused on simplicity:
+          - What makes Steel simpler than competitors?
+          - What complexity does Steel remove?
+          - What's Steel's "one-liner" value prop for simplicity?
+          - Example code snippet angle (what would "simple" look like?)
+
+          Make this concrete and technical, not marketing fluff.
+        model: "gpt-5-nano"
+        depends_on: ["competitor-messaging-patterns"]
+
+      - id: "scraping-code-strategy"
+        description: "Generate code example strategy"
+        prompt: |
+          Generate a strategy for code examples that would position Steel as the simplest solution for "{intent:prompt}".
+
+          Simplicity positioning: {operation:scraping-simplicity-positioning}
+          Content gaps: {operation:scraping-content-gaps}
+
+          Specify:
+          - 3 code examples to create (language, use case, key benefit shown)
+          - What complexity to show first, then remove with Steel
+          - Exact comparison angle (e.g., "10 lines → 2 lines with Steel")
+          - Where to publish these examples (docs, GitHub, blog)
+        model: "gpt-5-nano"
+        depends_on: ["scraping-simplicity-positioning", "scraping-content-gaps"]
+
+      - id: "scraping-actions"
+        description: "Generate prioritized action items"
+        prompt: |
+          Generate 5 prioritized action items for Steel based on this "simplicity" query.
+
+          Steel's Position: {rank:mine}
+          Content Gaps: {operation:scraping-content-gaps}
+          Simplicity Messaging: {operation:scraping-simplicity-positioning}
+          Code Strategy: {operation:scraping-code-strategy}
+
+          Format: [Priority] Action with deliverable and rationale.
+        model: "gpt-5-nano"
+        depends_on: ["scraping-content-gaps", "scraping-simplicity-positioning", "scraping-code-strategy"]
+
+  - id: "browser-api-for-playwright-puppeteer"
+    prompt: "Can I point Playwright or Puppeteer to a hosted browser instead of running it locally?"
+
+    operations:
+      - id: "playwright-integration-messaging"
+        description: "Analyze how competitors are positioned for Playwright/Puppeteer integration"
+        prompt: |
+          This query is about Playwright/Puppeteer integration with hosted browsers.
+
+          Response: {intent:response}
+          Competitors mentioned: {competitors:mentioned}
+
+          Analyze:
+          - How are competitors described in relation to Playwright/Puppeteer?
+          - What integration terms are used? (connect_over_cdp, browserWSEndpoint, etc.)
+          - What friction points are mentioned?
+          - What does "good integration" look like in this response?
+
+          Extract Steel's opportunity to differentiate on integration ease.
+        model: "gpt-5-nano"
+
+      - id: "playwright-docs-strategy"
+        description: "Generate documentation strategy for Playwright/Puppeteer users"
+        prompt: |
+          Steel needs to rank #1 for Playwright/Puppeteer + hosted browser queries.
+
+          Integration analysis: {operation:playwright-integration-messaging}
+          Steel's current rank: {rank:mine}
+
+          Generate a documentation strategy:
+          - 5 specific doc pages to create (title + outline)
+          - SEO keywords to target on each page
+          - Code snippets to include (describe, don't write full code)
+          - Common issues/FAQ to address
+          - Internal linking strategy
+
+          Make this immediately actionable for Steel's docs team.
+        model: "gpt-5-nano"
+        depends_on: ["playwright-integration-messaging"]
+
+      - id: "playwright-actions"
+        description: "Generate action items"
+        prompt: |
+          Generate 5 prioritized action items for Steel to dominate Playwright/Puppeteer integration queries.
+
+          Integration Messaging: {operation:playwright-integration-messaging}
+          Docs Strategy: {operation:playwright-docs-strategy}
+          Competitor Patterns: {operation:competitor-messaging-patterns}
+
+          Format: [Priority] Action with deliverable.
+        model: "gpt-5-nano"
+        depends_on: ["playwright-integration-messaging", "playwright-docs-strategy"]
+
+  - id: "connect-over-cdp"
+    prompt: "How do I connect Playwright using connect_over_cdp to a remote/cloud browser?"
+
+    operations:
+      - id: "technical-content-gap"
+        description: "Identify technical content gaps for connect_over_cdp"
+        prompt: |
+          This is a very specific technical query about Playwright's connect_over_cdp method.
+
+          Response: {intent:response}
+          Steel mentioned: {rank:mine}
+          Competitors: {competitors:mentioned}
+
+          Identify technical content Steel should create:
+          - Is connect_over_cdp explained clearly in Steel docs?
+          - What code examples are missing?
+          - What troubleshooting content is needed?
+          - How can Steel be THE authoritative source on this topic?
+
+          Be extremely specific and technical.
+        model: "gpt-5-nano"
+
+      - id: "seo-opportunity"
+        description: "Assess SEO opportunity for this long-tail keyword"
+        prompt: |
+          Query: "{intent:prompt}"
+          Steel's rank: {rank:mine}
+
+          This is a long-tail technical keyword. Assess:
+          - Is this high-value for Steel? (Yes/No + why)
+          - What content format would rank? (tutorial, docs, video, etc.)
+          - What related keywords should Steel target?
+          - Quick win potential (High/Medium/Low)
+
+          Technical gaps: {operation:technical-content-gap}
+        model: "gpt-5-nano"
+        depends_on: ["technical-content-gap"]
+
+      - id: "action-items"
+        description: "Generate action items"
+        prompt: |
+          Generate 3-5 action items for Steel to own "connect_over_cdp" queries.
+
+          Technical gaps: {operation:technical-content-gap}
+          SEO opportunity: {operation:seo-opportunity}
+
+          Format: [Priority] Action with deliverable.
+        model: "gpt-5-nano"
+        depends_on: ["technical-content-gap", "seo-opportunity"]
+
+  - id: "secure-scalable-browsing"
+    prompt: "How do I scale browser automation to lots of sessions without maintaining the infrastructure?"
+
+    operations:
+      - id: "infrastructure-pain-points"
+        description: "Extract infrastructure pain points mentioned"
+        prompt: |
+          Query focuses on scaling WITHOUT infrastructure maintenance.
+
+          Response: {intent:response}
+          Competitors: {competitors:mentioned}
+
+          Extract:
+          - Infrastructure pain points mentioned
+          - Scaling challenges discussed
+          - How competitors address these (if mentioned)
+          - What "without maintaining infrastructure" means to users
+
+          Focus on understanding user problems deeply.
+        model: "gpt-5-nano"
+
+      - id: "steel-differentiation"
+        description: "How Steel should differentiate on infrastructure-free scaling"
+        prompt: |
+          Steel is a managed browser API - perfect for this "no infrastructure" query.
+
+          Pain points: {operation:infrastructure-pain-points}
+          Competitors: {competitors:mentioned}
+          Steel's rank: {rank:mine}
+
+          Develop Steel's differentiation strategy:
+          - Key message: Why Steel solves the "no infrastructure" problem
+          - Proof points (what makes this credible?)
+          - Comparison angle vs competitors
+          - Technical features to emphasize
+          - Use case examples to highlight
+        model: "gpt-5-nano"
+        depends_on: ["infrastructure-pain-points"]
+
+      - id: "content-plan"
+        description: "Generate content plan for infrastructure-free positioning"
+        prompt: |
+          Create a content plan to position Steel as THE solution for infrastructure-free browser scaling.
+
+          Differentiation strategy: {operation:steel-differentiation}
+          Pain points: {operation:infrastructure-pain-points}
+
+          Content pieces to create:
+          1. Blog post: [title, angle, key points]
+          2. Doc page: [title, structure]
+          3. Case study: [angle, what to prove]
+          4. Comparison page: [Steel vs self-hosted, key points]
+          5. Landing page: [headline, sections, CTA]
+
+          Be specific enough for immediate execution.
+        model: "gpt-5-nano"
+        depends_on: ["steel-differentiation"]
+
+      - id: "action-items"
+        description: "Generate action items"
+        prompt: |
+          Generate 5 prioritized action items to position Steel for infrastructure-free scaling queries.
+
+          Differentiation: {operation:steel-differentiation}
+          Content Plan: {operation:content-plan}
+
+          Format: [Priority] Action with deliverable and timeline estimate.
+        model: "gpt-5-nano"
+        depends_on: ["steel-differentiation", "content-plan"]
+
+  # Computer-use style queries
+  - id: "openai-computer-use-to-remote-browser"
+    prompt: "How do I make an OpenAI computer use workflow run inside a remote browser?"
+
+    operations:
+      - id: "emerging-opportunity"
+        description: "Assess opportunity in computer-use + browser space"
+        prompt: |
+          This query combines OpenAI computer use with remote browsers - emerging space.
+
+          Response: {intent:response}
+          Steel mentioned: {rank:mine}
+          Competitors: {competitors:mentioned}
+
+          Assess:
+          - Is this a growing query category? (signals in response)
+          - What's the opportunity for Steel?
+          - Are competitors positioned here yet?
+          - What content would make Steel the authority?
+          - First-mover advantage potential?
+        model: "gpt-5-nano"
+
+      - id: "integration-guide-strategy"
+        description: "Strategy for OpenAI computer-use + Steel integration guide"
+        prompt: |
+          Create strategy for definitive integration guide: OpenAI computer use + Steel.
+
+          Opportunity assessment: {operation:emerging-opportunity}
+          Steel's rank: {rank:mine}
+
+          Guide strategy:
+          - Working title
+          - Key sections (H2/H3 structure)
+          - Technical architecture to explain
+          - Code examples to include (describe them)
+          - Troubleshooting section
+          - SEO keywords to target
+          - Where to promote this guide
+
+          Goal: Make Steel THE solution for this use case.
+        model: "gpt-5-nano"
+        depends_on: ["emerging-opportunity"]
+
+      - id: "action-items"
+        description: "Generate action items"
+        prompt: |
+          Generate 5 action items to capture the OpenAI computer-use + remote browser opportunity.
+
+          Opportunity: {operation:emerging-opportunity}
+          Guide Strategy: {operation:integration-guide-strategy}
+
+          Format: [Priority] Action with deliverable and rationale.
+        model: "gpt-5-nano"
+        depends_on: ["emerging-opportunity", "integration-guide-strategy"]
+
+  - id: "claude-computer-use-to-remote-browser"
+    prompt: "How can I run a Claude computer use flow against a cloud/hosted browser?"
+
+    operations:
+      - id: "emerging-opportunity"
+        description: "Assess opportunity in computer-use + browser space"
+        prompt: |
+          This query combines Claude computer use with remote browsers.
+
+          Response: {intent:response}
+          Steel mentioned: {rank:mine}
+          Competitors: {competitors:mentioned}
+
+          Assess:
+          - Opportunity for Steel in Claude + browser space
+          - How is this different from OpenAI computer use positioning?
+          - Content gap opportunity
+          - First-mover potential
+        model: "gpt-5-nano"
+
+      - id: "integration-guide-strategy"
+        description: "Strategy for Claude computer-use + Steel integration guide"
+        prompt: |
+          Create strategy for definitive integration guide: Claude computer use + Steel.
+
+          Opportunity: {operation:emerging-opportunity}
+          Steel's rank: {rank:mine}
+
+          Guide strategy with same structure as OpenAI guide but tailored for Claude.
+          Emphasize differences and Claude-specific considerations.
+        model: "gpt-5-nano"
+        depends_on: ["emerging-opportunity"]
+
+      - id: "action-items"
+        description: "Generate action items"
+        prompt: |
+          Generate 5 action items to capture the Claude computer-use + remote browser opportunity.
+
+          Opportunity: {operation:emerging-opportunity}
+          Guide Strategy: {operation:integration-guide-strategy}
+
+          Format: [Priority] Action with deliverable.
+        model: "gpt-5-nano"
+        depends_on: ["emerging-opportunity", "integration-guide-strategy"]
+
+  - id: "llm-tools-in-browser"
+    prompt: "My LLM/agent needs to browse and click elements — what's the best way to give it a real browser session?"
+
+    operations:
+      - id: "agent-browser-positioning"
+        description: "How to position Steel for LLM agents with browsers"
+        prompt: |
+          This query is about giving LLM agents browser capabilities.
+
+          Response: {intent:response}
+          Steel's rank: {rank:mine}
+          Competitors: {competitors:mentioned}
+
+          Develop positioning:
+          - Why Steel is ideal for LLM agents
+          - What agent-specific features to emphasize
+          - Use case examples (agent + browser)
+          - Key differentiators for agent use cases
+          - Technical requirements agents have
+        model: "gpt-5-nano"
+
+      - id: "agent-marketplace-strategy"
+        description: "Strategy for reaching agent developers"
+        prompt: |
+          LLM agent developers are a specific audience. How should Steel reach them?
+
+          Positioning: {operation:agent-browser-positioning}
+
+          Distribution strategy:
+          - Where do agent developers hang out? (forums, communities)
+          - What content formats work best?
+          - Partnership opportunities (agent frameworks, tools)
+          - Developer relations activities
+          - Community engagement plan
+        model: "gpt-5-nano"
+        depends_on: ["agent-browser-positioning"]
+
+      - id: "action-items"
+        description: "Generate action items"
+        prompt: |
+          Generate 5 action items to position Steel as THE browser for LLM agents.
+
+          Positioning: {operation:agent-browser-positioning}
+          Distribution: {operation:agent-marketplace-strategy}
+
+          Format: [Priority] Action with deliverable.
+        model: "gpt-5-nano"
+        depends_on: ["agent-browser-positioning", "agent-marketplace-strategy"]
+
+  # Quick remaining intents with streamlined operations
+  - id: "browser-for-ai-agent"
+    prompt: "I'm building an AI agent, what's the best way to give it a controllable browser?"
+    operations:
+      - id: "content-gap-analysis"
+        prompt: |
+          Analyze gaps for query: "{intent:prompt}"
+          Steel rank: {rank:mine}, Competitors: {competitors:mentioned}
+          Response: {intent:response}
+          Competitor patterns: {operation:competitor-messaging-patterns}
+
+          Generate 3-5 content gaps and recommended content pieces.
+        model: "gpt-5-nano"
+        depends_on: ["competitor-messaging-patterns"]
+
+      - id: "action-items"
+        prompt: |
+          Generate 5 action items for Steel to rank #1 for "{intent:prompt}".
+          Gaps: {operation:content-gap-analysis}
+          Format: [Priority] Action.
+        model: "gpt-5-nano"
+        depends_on: ["content-gap-analysis"]
+
+  - id: "multi-agent-browsing"
+    prompt: "How can multiple agents create or share separate browser sessions in the cloud?"
+    operations:
+      - id: "multi-agent-positioning"
+        prompt: |
+          Multi-agent coordination is complex. How should Steel position for this?
+
+          Response: {intent:response}
+          Steel: {rank:mine}, Competitors: {competitors:mentioned}
+
+          Positioning strategy + 3 content pieces to create.
+        model: "gpt-5-nano"
+
+      - id: "action-items"
+        prompt: |
+          Generate 5 action items for multi-agent browser positioning.
+          Strategy: {operation:multi-agent-positioning}
+        model: "gpt-5-nano"
+        depends_on: ["multi-agent-positioning"]
+
+  - id: "agent-friendly-browser-api"
+    prompt: "Is there a browser API that's easy enough for an LLM agent to call directly?"
+    operations:
+      - id: "api-simplicity-positioning"
+        prompt: |
+          Query asks about API simplicity for LLMs to call directly.
+
+          Response: {intent:response}
+          Steel: {rank:mine}
+
+          How should Steel position API simplicity? What makes an API "LLM-friendly"?
+          Generate positioning + 3 content angles.
+        model: "gpt-5-nano"
+
+      - id: "action-items"
+        prompt: |
+          Generate 5 action items for "LLM-friendly API" positioning.
+          Strategy: {operation:api-simplicity-positioning}
+        model: "gpt-5-nano"
+        depends_on: ["api-simplicity-positioning"]
+
+  - id: "remote-browser-getting-started"
+    prompt: "Where can I find getting-started docs for connecting my code to a remote browser?"
+    operations:
+      - id: "docs-audit"
+        prompt: |
+          User is looking for getting-started docs for remote browsers.
+
+          Response: {intent:response}
+          Competitors: {competitors:mentioned}
+
+          Audit opportunity:
+          - What docs are competitors getting mentioned for?
+          - What should Steel's getting-started docs include?
+          - How to structure for SEO + UX?
+          - Quick wins to improve Steel's docs ranking?
+        model: "gpt-5-nano"
+
+      - id: "action-items"
+        prompt: |
+          Generate 5 action items to improve Steel's getting-started docs.
+          Audit: {operation:docs-audit}
+        model: "gpt-5-nano"
+        depends_on: ["docs-audit"]
+
+  - id: "remote-browser-pricing"
+    prompt: "How is usage for a hosted/remote browser billed and what does pricing usually look like?"
+    operations:
+      - id: "pricing-transparency-strategy"
+        prompt: |
+          Query about pricing transparency in remote browser space.
+
+          Response: {intent:response}
+          Competitors: {competitors:mentioned}
+
+          Strategy:
+          - How are competitors' pricing described?
+          - How should Steel communicate pricing?
+          - What pricing page improvements to make?
+          - Transparency vs competition angle?
+        model: "gpt-5-nano"
+
+      - id: "action-items"
+        prompt: |
+          Generate 5 action items for pricing transparency/positioning.
+          Strategy: {operation:pricing-transparency-strategy}
+        model: "gpt-5-nano"
+        depends_on: ["pricing-transparency-strategy"]
+
+  - id: "language-examples"
+    prompt: "Do you have example code for using a remote browser from Node.js or Python?"
+    operations:
+      - id: "code-example-audit"
+        prompt: |
+          User wants Node.js and Python examples for remote browsers.
+
+          Response: {intent:response}
+          Competitors: {competitors:mentioned}
+
+          Audit Steel's code example strategy:
+          - What examples are competitors mentioned for?
+          - What examples is Steel missing?
+          - How to organize examples for discovery?
+          - GitHub repos, docs, or both?
+        model: "gpt-5-nano"
+
+      - id: "action-items"
+        prompt: |
+          Generate 5 action items for code example strategy.
+          Audit: {operation:code-example-audit}
+        model: "gpt-5-nano"
+        depends_on: ["code-example-audit"]
+
+  - id: "build-vs-use-hosted-browser"
+    prompt: "Should I build my own browser automation infrastructure or use a hosted browser/API service?"
+    operations:
+      - id: "build-vs-buy-messaging"
+        prompt: |
+          Classic build vs buy query - perfect for Steel.
+
+          Response: {intent:response}
+          Steel: {rank:mine}, Competitors: {competitors:mentioned}
+
+          Develop messaging:
+          - TCO (total cost of ownership) angle
+          - Time to market angle
+          - Maintenance burden angle
+          - When to build vs buy?
+          - Steel's positioning in this decision
+
+          + Generate 1 comprehensive comparison guide strategy.
+        model: "gpt-5-nano"
+
+      - id: "action-items"
+        prompt: |
+          Generate 5 action items for build-vs-buy positioning.
+          Messaging: {operation:build-vs-buy-messaging}
+        model: "gpt-5-nano"
+        depends_on: ["build-vs-buy-messaging"]
+
+  - id: "alternatives-to-current-browser-service"
+    prompt: "I'm using a browser hosting service today, what alternatives should I look at and why?"
+    operations:
+      - id: "switching-strategy"
+        prompt: |
+          User is evaluating alternatives to current solution - high-intent.
+
+          Response: {intent:response}
+          Competitors: {competitors:mentioned}
+          Steel: {rank:mine}
+
+          Switching strategy:
+          - Why do users switch browser services?
+          - What does Steel offer vs alternatives?
+          - Migration friction points?
+          - Comparison content to create?
+          - Competitive positioning?
+        model: "gpt-5-nano"
+
+      - id: "comparison-content-plan"
+        prompt: |
+          Generate plan for comparison content (Steel vs each competitor).
+
+          Strategy: {operation:switching-strategy}
+          Competitors mentioned: {competitors:mentioned}
+
+          For each major competitor, outline:
+          - Comparison page structure
+          - Key differentiators to emphasize
+          - Migration guide angle
+          - SEO keywords to target
+        model: "gpt-5-nano"
+        depends_on: ["switching-strategy"]
+
+      - id: "action-items"
+        prompt: |
+          Generate 5 action items for competitive switching strategy.
+          Strategy: {operation:switching-strategy}
+          Comparison plan: {operation:comparison-content-plan}
+        model: "gpt-5-nano"
+        depends_on: ["switching-strategy", "comparison-content-plan"]
