@@ -342,7 +342,7 @@ export async function moderateContent(params: {
       approved: false,
       content: params.content,
       title: params.title,
-      reason: `Your content contains inappropriate language and cannot be posted. Please remove: ${allMatchedWords.join(', ')}`,
+      reason: `Vaš sadržaj sadrži neprimjeren jezik i ne može biti objavljen. Molimo uklonite: ${allMatchedWords.join(', ')}`,
       severity: highestSeverity,
     };
   }

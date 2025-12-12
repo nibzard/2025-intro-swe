@@ -36,16 +36,16 @@ export function ModerationClient({ initialBannedWords }: ModerationClientProps) 
 
   const handleAddWord = async () => {
     if (!newWord.word.trim()) {
-      toast.error('Unesite riječ ili frazu');
+      toast.error('Molimo unesite riječ ili frazu');
       return;
     }
 
-    const loadingToast = toast.loading('Dodajem riječ...');
+    const loadingToast = toast.loading('Dodajem riječ u filter...');
 
     const result = await addBannedWord(newWord);
 
     if (result.success) {
-      toast.success('Riječ uspješno dodana!', { id: loadingToast });
+      toast.success('Riječ uspješno dodana u filter!', { id: loadingToast });
       setNewWord({
         word: '',
         severity: 'medium',
@@ -156,12 +156,12 @@ export function ModerationClient({ initialBannedWords }: ModerationClientProps) 
           <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="word">Riječ/Fraza</Label>
+                <Label htmlFor="word">Riječ ili Fraza *</Label>
                 <Input
                   id="word"
                   value={newWord.word}
                   onChange={(e) => setNewWord({ ...newWord, word: e.target.value })}
-                  placeholder="npr. kurva, jebem, spam pattern..."
+                  placeholder="npr. psovka, spam, neprimjerena riječ..."
                 />
               </div>
 
@@ -246,7 +246,7 @@ export function ModerationClient({ initialBannedWords }: ModerationClientProps) 
         <div className="space-y-2">
           {bannedWords.length === 0 ? (
             <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-              Nema blokiranih riječi. Dodajte prvu riječ koristeći gumb iznad.
+              📝 Nema blokiranih riječi u filteru. Dodajte prvu riječ koristeći gumb iznad.
             </p>
           ) : (
             bannedWords.map((word) => (
@@ -312,12 +312,12 @@ export function ModerationClient({ initialBannedWords }: ModerationClientProps) 
 
         {/* Help Text */}
         <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          <h4 className="font-semibold mb-2 text-sm">Kako funkcionira:</h4>
+          <h4 className="font-semibold mb-2 text-sm">ℹ️ Kako funkcionira automatska moderacija:</h4>
           <ul className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
-            <li>• <strong>Blokiraj:</strong> Sprječava objavu sadržaja koji sadrži riječ</li>
-            <li>• <strong>Cenzuriraj:</strong> Automatski zamjenjuje riječ sa zvjezdicama (***)</li>
-            <li>• <strong>Označi:</strong> Omogućava objavu ali označava za ručni pregled</li>
-            <li>• <strong>Regex:</strong> Koristi regex pattern za napredne filtere (npr. "spam.*ovdje")</li>
+            <li>• <strong>Blokiraj:</strong> Potpuno sprječava objavu sadržaja koji sadrži zabranjenu riječ</li>
+            <li>• <strong>Cenzuriraj:</strong> Automatski zamjenjuje zabranjenu riječ sa zvjezdicama (***) i dozvoljava objavu</li>
+            <li>• <strong>Označi:</strong> Omogućava objavu ali automatski označava sadržaj za ručni pregled administratora</li>
+            <li>• <strong>Regex (napredno):</strong> Koristi regex uzorke za složene filtere (npr. "zaradi.*brzo")</li>
           </ul>
         </div>
       </CardContent>
