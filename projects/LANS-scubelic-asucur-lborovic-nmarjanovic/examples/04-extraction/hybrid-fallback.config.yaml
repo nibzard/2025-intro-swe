@@ -1,0 +1,60 @@
+# Hybrid Extraction Example (Recommended)
+# Try function calling, fall back to regex on failure
+# Cost: ~$0.005 per run (most queries use function calling)
+# Accuracy: ~95% with reliability
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+
+# Hybrid extraction settings (RECOMMENDED for production)
+extraction_settings:
+  extraction_model:
+    provider: "openai"
+    model_name: "gpt-4o-mini"
+    env_api_key: "OPENAI_API_KEY"
+    system_prompt: "openai/extraction-default"
+
+  # Method: function_calling with fallback
+  method: "function_calling"
+
+  # Fall back to regex if function calling fails
+  # This provides reliability without sacrificing accuracy
+  fallback_to_regex: true
+
+  # Minimum confidence threshold
+  min_confidence: 0.7
+
+  # Enable advanced features
+  enable_sentiment_analysis: true
+  enable_intent_classification: true
+
+brands:
+  mine: ["YourBrand", "YourProduct"]
+  competitors: ["CompetitorA", "CompetitorB", "CompetitorC"]
+
+intents:
+  - id: "best-tools"
+    prompt: "What are the best project management tools?"
+
+  - id: "tool-comparison"
+    prompt: "Compare the top project management platforms"
+
+  - id: "buying-guide"
+    prompt: "How do I choose project management software?"
+
+# Hybrid approach (RECOMMENDED):
+# - Primary: Function calling for accuracy + sentiment
+# - Fallback: Regex if LLM extraction fails
+# - Best of both: Accuracy + reliability
+# - Graceful degradation on errors
+#
+# Use this for production deployments where you need:
+# - High accuracy
+# - Reliability (won't fail if extraction LLM has issues)
+# - Sentiment and intent classification
