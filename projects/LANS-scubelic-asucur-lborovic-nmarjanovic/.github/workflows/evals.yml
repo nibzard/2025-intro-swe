@@ -1,0 +1,78 @@
+name: Evaluation Framework
+
+on:
+  workflow_dispatch:  # Manual trigger only - eval framework is optional
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.13"]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Install dependencies
+      run: |
+        uv sync
+
+    - name: Run evaluation suite
+      run: |
+        uv run llm-answer-watcher eval \
+          --fixtures llm_answer_watcher/evals/testcases/fixtures.yaml \
+          --format text \
+          --verbose
+
+    - name: Run evaluation suite in JSON mode
+      run: |
+        uv run llm-answer-watcher eval \
+          --fixtures llm_answer_watcher/evals/testcases/fixtures.yaml \
+          --format json
+
+    - name: Run pytest evaluation tests
+      run: |
+        uv run pytest tests/test_evals_integration.py -v
+
+    - name: Save evaluation results to database
+      run: |
+        # Create output directory if it doesn't exist
+        mkdir -p ./output/evals
+
+        # Run evaluation with results saving
+        uv run llm-answer-watcher eval \
+          --fixtures llm_answer_watcher/evals/testcases/fixtures.yaml \
+          --save-results \
+          --format text
+
+    - name: Upload evaluation artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: evaluation-results-${{ matrix.python-version }}
+        path: |
+          ./output/evals/
+        retention-days: 30
+
+    - name: Check evaluation database
+      run: |
+        # Verify eval database was created
+        if [ -f "./output/evals/eval_results.db" ]; then
+          echo "✅ Evaluation database created successfully"
+        else
+          echo "❌ Evaluation database not found"
+          exit 1
+        fi

@@ -1,0 +1,54 @@
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    # Google Gemini with Google Search grounding enabled
+    - provider: "google"
+      model_name: "gemini-2.5-flash"
+      env_api_key: "GEMINI_API_KEY"
+      system_prompt: "google/gemini-grounding"
+      tools:
+        - google_search: {}  # Enable Google Search grounding
+
+  use_llm_rank_extraction: false
+
+# Extraction settings (optional - enables function calling for better accuracy)
+# If not specified, defaults to regex-based extraction (backward compatible)
+extraction_settings:
+  extraction_model:
+    provider: "openai"
+    model_name: "gpt-4.1-nano"  # Fast + cheap model optimized for extraction
+    env_api_key: "OPENAI_API_KEY"
+    system_prompt: "openai/extraction-default"  # Specialized extraction prompt
+
+  # Extraction method: function_calling (recommended), regex, or hybrid
+  method: "function_calling"
+
+  # Fall back to regex if function calling fails
+  fallback_to_regex: true
+
+  # Minimum confidence threshold (0.0-1.0) for accepting function results
+  min_confidence: 0.7
+
+  # Extract sentiment and context for each brand mention (default: true)
+  enable_sentiment_analysis: true
+
+  # Classify user query intent before extraction (default: true)
+  enable_intent_classification: true
+
+brands:
+  mine:
+    - "Lemwarm"
+    - "Lemlist"
+
+  competitors:
+    - "Instantly"
+    - "Apollo.io"
+    - "Woodpecker"
+    - "Mailwarm"
+    - "Warmup Inbox"
+
+intents:
+  - id: "best-email-warmup-tools"
+    prompt: "What are the best email warmup tools?"

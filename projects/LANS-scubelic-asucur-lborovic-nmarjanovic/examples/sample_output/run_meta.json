@@ -1,0 +1,66 @@
+{
+  "run_id": "2025-11-02T10-15-30Z",
+  "config_file": "examples/watcher.config.yaml",
+  "timestamp_utc": "2025-11-02T10:15:30Z",
+  "models": [
+    {
+      "provider": "openai",
+      "model_name": "gpt-4o-mini"
+    },
+    {
+      "provider": "anthropic",
+      "model_name": "claude-3-5-haiku-20241022"
+    }
+  ],
+  "intents": [
+    {
+      "id": "best-email-warmup-tools",
+      "prompt": "What are the best email warmup tools?"
+    },
+    {
+      "id": "email-warmup-comparison",
+      "prompt": "Compare the top email warmup tools for improving deliverability"
+    },
+    {
+      "id": "sales-engagement-platforms",
+      "prompt": "What are the best sales engagement platforms?"
+    }
+  ],
+  "brands": {
+    "mine": ["Warmly", "Warmly.io"],
+    "competitors": ["Instantly", "Lemwarm", "HubSpot", "Apollo.io", "Woodpecker"]
+  },
+  "results": {
+    "total_queries": 6,
+    "successful_queries": 6,
+    "failed_queries": 0,
+    "total_cost_usd": 0.0187,
+    "total_tokens": {
+      "prompt_tokens": 1847,
+      "completion_tokens": 892,
+      "total_tokens": 2739
+    },
+    "mentions_found": {
+      "mine": {
+        "total_mentions": 3,
+        "brands": {
+          "Warmly": 2,
+          "Warmly.io": 1
+        }
+      },
+      "competitors": {
+        "total_mentions": 11,
+        "brands": {
+          "Instantly": 3,
+          "Lemwarm": 2,
+          "HubSpot": 4,
+          "Apollo.io": 1,
+          "Woodpecker": 1
+        }
+      }
+    }
+  },
+  "output_dir": "./output/2025-11-02T10-15-30Z",
+  "runtime_seconds": 42.7,
+  "sqlite_db_path": "./output/watcher.db"
+}
