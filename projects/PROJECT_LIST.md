@@ -125,6 +125,6 @@ This file lists all team projects for the SWE course. Students add their project
 
 ### SnapNStore - Gianna Lukić
 * **Project:** SnapNStore
-* **Folder:** `SnapNStore - glukic/`
+* **Folder:** `SnapNStore-glukic/`
 * **Status:** In Progress
 * **Description:** Skeniranje računa i spremanje u aplikaciju kao garancija.
