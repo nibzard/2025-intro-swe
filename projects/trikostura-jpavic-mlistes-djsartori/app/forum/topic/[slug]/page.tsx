@@ -15,6 +15,7 @@ import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { MessageSquare, CheckCircle } from 'lucide-react';
 import { ReactionPicker } from '@/components/forum/reaction-picker';
 import { PollWidget } from '@/components/forum/poll-widget';
+import { PollCreator } from '@/components/forum/poll-creator';
 import { TypingIndicator } from '@/components/forum/typing-indicator';
 import { getPollDetails } from '@/app/forum/polls/actions';
 
@@ -107,17 +108,23 @@ export default async function TopicPage({
       .from('categories')
       .select('*')
       .order('order_index', { ascending: true }),
-    supabase
+    // Reactions query - with error handling for when table doesn't exist
+    (supabase as any)
       .from('reactions')
       .select('id, emoji, user_id, created_at')
-      .eq('topic_id', topic.id),
+      .eq('topic_id', topic.id)
+      .then((res: any) => res)
+      .catch((err: any) => ({ data: null, error: err })),
     // Placeholder for reply reactions - will fetch after we have replies
     Promise.resolve({ data: null }),
-    supabase
+    // Poll query - with error handling for when table doesn't exist
+    (supabase as any)
       .from('polls')
       .select('id, topic_id, question, allow_multiple_choices, expires_at, created_at')
       .eq('topic_id', topic.id)
       .maybeSingle()
+      .then((res: any) => res)
+      .catch((err: any) => ({ data: null, error: err }))
   ]);
 
   // Extract data from results
@@ -130,12 +137,17 @@ export default async function TopicPage({
 
   // Now fetch reply reactions if we have replies
   if (replies && replies.length > 0) {
-    const { data } = await supabase
-      .from('reactions')
-      .select('id, emoji, user_id, created_at, reply_id')
-      .not('reply_id', 'is', null)
-      .in('reply_id', replies.map((r: any) => r.id));
-    replyReactionsData = data;
+    try {
+      const { data } = await (supabase as any)
+        .from('reactions')
+        .select('id, emoji, user_id, created_at, reply_id')
+        .not('reply_id', 'is', null)
+        .in('reply_id', replies.map((r: any) => r.id));
+      replyReactionsData = data;
+    } catch (err) {
+      console.error('Failed to fetch reply reactions:', err);
+      replyReactionsData = null;
+    }
   }
 
   // Attach tags to topic
@@ -164,9 +176,14 @@ export default async function TopicPage({
   // Get poll details if poll exists
   let pollDetails = null;
   if (pollData) {
-    const details = await getPollDetails((pollData as any).id);
-    if (!details.error) {
-      pollDetails = details;
+    try {
+      const details = await getPollDetails((pollData as any).id);
+      if (!details.error) {
+        pollDetails = details;
+      }
+    } catch (err) {
+      console.error('Failed to fetch poll details:', err);
+      pollDetails = null;
     }
   }
 
@@ -371,6 +388,11 @@ export default async function TopicPage({
           </div>
         </CardContent>
       </Card>
+
+      {/* Poll Creator - Only for topic author if no poll exists */}
+      {isAuthor && !pollDetails && !topic.is_locked && (
+        <PollCreator topicId={topic.id} />
+      )}
 
       {/* Poll Widget */}
       {pollDetails && (

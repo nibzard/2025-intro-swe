@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
-import { toggleReaction, REACTION_EMOJIS, type ReactionEmoji } from '@/app/forum/reactions/actions';
+import { toggleReaction } from '@/app/forum/reactions/actions';
+import { REACTION_EMOJIS, type ReactionEmoji } from '@/app/forum/reactions/constants';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
