@@ -20,7 +20,7 @@ const SyntaxHighlighter = lazy(() =>
 
 export const MarkdownRenderer = memo(function MarkdownRenderer({ content, className = '' }: MarkdownRendererProps) {
   return (
-    <div className={`prose dark:prose-invert max-w-none ${className}`}>
+    <div className={`prose dark:prose-invert max-w-none break-words ${className}`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw, rehypeSanitize]}
@@ -29,6 +29,22 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({ content, classN
           p({ children, ...props }: any) {
             const processedChildren = processTextWithMentions(children);
             return <p {...props}>{processedChildren}</p>;
+          },
+          // Wrap tables in overflow container for mobile
+          table({ children, ...props }: any) {
+            return (
+              <div className="overflow-x-auto">
+                <table {...props}>{children}</table>
+              </div>
+            );
+          },
+          // Handle pre elements (non-highlighted code blocks)
+          pre({ children, ...props }: any) {
+            return (
+              <pre className="overflow-x-auto" {...props}>
+                {children}
+              </pre>
+            );
           },
           // Syntax highlighting for code blocks
           code({ node, inline, className, children, ...props }: any) {
@@ -41,18 +57,20 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({ content, classN
                   </pre>
                 }
               >
-                <SyntaxHighlighter
-                  language={match[1]}
-                  PreTag="div"
-                  customStyle={{
-                    background: '#282c34',
-                    padding: '1rem',
-                    borderRadius: '0.375rem',
-                  }}
-                  {...props}
-                >
-                  {String(children).replace(/\n$/, '')}
-                </SyntaxHighlighter>
+                <div className="overflow-x-auto">
+                  <SyntaxHighlighter
+                    language={match[1]}
+                    PreTag="div"
+                    customStyle={{
+                      background: '#282c34',
+                      padding: '1rem',
+                      borderRadius: '0.375rem',
+                    }}
+                    {...props}
+                  >
+                    {String(children).replace(/\n$/, '')}
+                  </SyntaxHighlighter>
+                </div>
               </Suspense>
             ) : (
               <code className={className} {...props}>

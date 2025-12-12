@@ -13,6 +13,10 @@ import { TopicActions } from '@/components/forum/topic-actions';
 import { recordTopicView } from '../actions';
 import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { MessageSquare, CheckCircle } from 'lucide-react';
+import { ReactionPicker } from '@/components/forum/reaction-picker';
+import { PollWidget } from '@/components/forum/poll-widget';
+import { TypingIndicator } from '@/components/forum/typing-indicator';
+import { getPollDetails } from '@/app/forum/polls/actions';
 
 // Revalidate every 2 minutes for better cache performance
 export const revalidate = 120;
@@ -84,11 +88,14 @@ export default async function TopicPage({
     notFound();
   }
 
-  // PARALLEL QUERIES: Fetch replies, tags, and categories all at once
+  // PARALLEL QUERIES: Fetch replies, tags, categories, reactions, and poll all at once
   const [
     { data: replies },
     { data: topicTags },
-    { data: categories }
+    { data: categories },
+    { data: topicReactions },
+    { data: replyReactionsData },
+    { data: pollData }
   ] = await Promise.all([
     supabase
       .from('replies')
@@ -106,7 +113,21 @@ export default async function TopicPage({
     supabase
       .from('categories')
       .select('*')
-      .order('order_index', { ascending: true })
+      .order('order_index', { ascending: true }),
+    supabase
+      .from('reactions')
+      .select('id, emoji, user_id, created_at')
+      .eq('topic_id', topic.id),
+    supabase
+      .from('reactions')
+      .select('id, emoji, user_id, created_at, reply_id')
+      .not('reply_id', 'is', null)
+      .in('reply_id', replies?.map((r: any) => r.id) || []),
+    supabase
+      .from('polls')
+      .select('id, topic_id, question, allow_multiple_choices, expires_at, created_at')
+      .eq('topic_id', topic.id)
+      .maybeSingle()
   ]);
 
   // Attach tags to topic
@@ -125,11 +146,21 @@ export default async function TopicPage({
   // Non-blocking: page should load even if view tracking fails
   recordTopicView(topic.id).catch(err => console.error('View tracking failed:', err));
 
-  // Map attachments to replies
+  // Map attachments and reactions to replies
   const repliesWithAttachments = (replies || []).map((reply: any) => ({
     ...reply,
     attachments: replyAttachments?.filter((att: any) => att.reply_id === reply.id) || [],
+    reactions: replyReactionsData?.filter((r: any) => r.reply_id === reply.id) || [],
   }));
+
+  // Get poll details if poll exists
+  let pollDetails = null;
+  if (pollData) {
+    const details = await getPollDetails(pollData.id);
+    if (!details.error) {
+      pollDetails = details;
+    }
+  }
 
   // Get user-specific data in parallel (votes, bookmarks, profile)
   let userVotes: any = {};
@@ -179,7 +210,7 @@ export default async function TopicPage({
   return (
     <div className="space-y-6">
       {/* Breadcrumb Navigation */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <Breadcrumb
           items={[
             { label: 'Forum', href: '/forum' },
@@ -252,7 +283,7 @@ export default async function TopicPage({
             />
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-extrabold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent leading-tight">{topic.title}</h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent leading-tight break-words">{topic.title}</h1>
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/30 rounded-xl border border-gray-200 dark:border-gray-700 mb-6">
             <div className="flex items-center gap-4">
@@ -321,8 +352,37 @@ export default async function TopicPage({
             createdAt={topic.created_at}
           />
           <AdvancedAttachmentList attachments={topicAttachments || []} />
+          
+          {/* Topic Reactions */}
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <ReactionPicker
+              topicId={topic.id}
+              reactions={topicReactions || []}
+              currentUserId={user?.id}
+            />
+          </div>
         </CardContent>
       </Card>
+
+      {/* Poll Widget */}
+      {pollDetails && (
+        <PollWidget
+          poll={pollDetails.poll}
+          options={pollDetails.options}
+          totalVotes={pollDetails.totalVotes}
+          userVotes={pollDetails.userVotes}
+          currentUserId={user?.id}
+        />
+      )}
+
+      {/* Typing Indicator */}
+      {user && !topic.is_locked && (
+        <TypingIndicator
+          topicId={topic.id}
+          currentUserId={user.id}
+          currentUsername={userProfile?.username}
+        />
+      )}
 
       <TopicContent
         topic={topic}
