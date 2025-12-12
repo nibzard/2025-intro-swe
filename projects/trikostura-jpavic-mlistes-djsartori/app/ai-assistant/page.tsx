@@ -25,6 +25,9 @@ export default async function AIAssistantPage({
     redirect('/auth/login');
   }
 
+  // Using Google Gemini (free tier)
+  const aiProvider = 'Gemini';
+
   // Get user's conversations
   const { conversations, error: convsError } = await getConversations();
 
@@ -107,7 +110,7 @@ export default async function AIAssistantPage({
                     </CardTitle>
                     <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                       <Sparkles className="w-3 h-3" />
-                      Powered by Claude
+                      {aiProvider ? `Powered by ${aiProvider}` : 'AI Assistant'}
                     </div>
                   </div>
                 </CardHeader>

@@ -141,26 +141,8 @@ export async function sendMessage(conversationId: string, message: string) {
     content: msg.content,
   })) || [];
 
-  // Call AI API
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-
-  if (!apiKey) {
-    console.error('ANTHROPIC_API_KEY not set');
-    return { error: 'AI servis nije konfiguriran' };
-  }
-
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 1024,
-        system: `Ti si AI asistent za hrvatski studentski forum. Pomažeš studentima s pitanjima o učenju, domaćim zadacima i studijskim savjetima.
+  // System prompt for AI
+  const systemPrompt = `Ti si AI asistent za hrvatski studentski forum. Pomažeš studentima s pitanjima o učenju, domaćim zadacima i studijskim savjetima.
 
 Tvoje karakteristike:
 - Govoriš hrvatski jezik
@@ -174,19 +156,50 @@ Pravila:
 - Ne rješavaš domaće zadaće potpuno, već pomaže s razumijevanjem
 - Ne dajеš odgovore na ispitna pitanja
 - Upućuješ na službene izvore kad je potrebno
-- Uvijek odgovaraš na hrvatskom jeziku${contextInfo}`,
-        messages: aiMessages,
-      }),
-    });
+- Uvijek odgovaraš na hrvatskom jeziku${contextInfo}`;
+
+  // Google Gemini API (free tier)
+  const geminiKey = process.env.GOOGLE_GEMINI_API_KEY;
+
+  if (!geminiKey) {
+    console.error('GOOGLE_GEMINI_API_KEY not set');
+    return { error: 'AI servis nije konfiguriran' };
+  }
+
+  try {
+    // Prepare messages for Gemini
+    const geminiMessages = [
+      { role: 'user', parts: [{ text: systemPrompt }] },
+      { role: 'model', parts: [{ text: 'Razumijem. Spreman sam pomoći studentima na hrvatskom jeziku.' }] },
+      ...aiMessages.map((msg: any) => ({
+        role: msg.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: msg.content }],
+      })),
+    ];
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: geminiMessages,
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 1024,
+          },
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      console.error('AI API error:', response.status, errorData);
+      console.error('Gemini API error:', response.status, errorData);
       return { error: 'Greška pri komunikaciji s AI servisom' };
     }
 
-    const aiResponse = await response.json();
-    const assistantMessage = aiResponse.content[0]?.text || 'Žao mi je, ne mogu generirati odgovor.';
+    const data = await response.json();
+    const assistantMessage = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Žao mi je, ne mogu generirati odgovor.';
 
     // Save assistant response
     const { data: savedMessage, error: assistantMsgError } = await (supabase as any)
