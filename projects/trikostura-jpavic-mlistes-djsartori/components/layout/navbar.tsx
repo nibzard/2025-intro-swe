@@ -9,7 +9,7 @@ import { NavbarBookmarkButton } from './navbar-bookmark-button';
 import { MobileNav } from './mobile-nav';
 import { NavLink } from './nav-link';
 import { logout } from '@/app/auth/actions';
-import { MessageSquare, User, LogOut, Search, Settings, Bookmark, Mail, Bot } from 'lucide-react';
+import { MessageSquare, User, LogOut, Search, Settings, Bookmark, Mail } from 'lucide-react';
 import type { Notification } from '@/types/notifications';
 import type { Profile } from '@/types/database';
 
@@ -89,14 +89,6 @@ export async function Navbar() {
               >
                 Pretraži
               </NavLink>
-              {user && (
-                <NavLink
-                  href="/ai-assistant"
-                  className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 transition-colors font-medium"
-                >
-                  AI Asistent
-                </NavLink>
-              )}
               {profile?.role === 'admin' && (
                 <NavLink
                   href="/admin"
