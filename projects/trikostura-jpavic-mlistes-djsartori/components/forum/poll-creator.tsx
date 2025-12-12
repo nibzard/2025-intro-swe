@@ -20,6 +20,7 @@ export function PollCreator({ topicId, onPollCreated, onCancel }: PollCreatorPro
   const [allowMultiple, setAllowMultiple] = useState(false);
   const [hasExpiration, setHasExpiration] = useState(false);
   const [expirationDays, setExpirationDays] = useState(7);
+  const [isOpen, setIsOpen] = useState(false);
 
   const addOption = () => {
     if (options.length < 10) {
@@ -80,6 +81,25 @@ export function PollCreator({ topicId, onPollCreated, onCancel }: PollCreatorPro
       onPollCreated?.(result.pollId!);
     }
   };
+
+  // If not open, show just a button
+  if (!isOpen) {
+    return (
+      <Card className="border-dashed border-2">
+        <CardContent className="p-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsOpen(true)}
+            className="w-full gap-2"
+          >
+            <BarChart3 className="w-5 h-5" />
+            Kreiraj anketu za ovu temu
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -192,11 +212,16 @@ export function PollCreator({ topicId, onPollCreated, onCancel }: PollCreatorPro
             <Button type="submit" className="flex-1">
               Kreiraj anketu
             </Button>
-            {onCancel && (
-              <Button type="button" variant="outline" onClick={onCancel}>
-                Odustani
-              </Button>
-            )}
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => {
+                setIsOpen(false);
+                onCancel?.();
+              }}
+            >
+              Odustani
+            </Button>
           </div>
         </form>
       </CardContent>

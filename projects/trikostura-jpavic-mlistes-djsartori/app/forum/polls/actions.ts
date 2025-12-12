@@ -188,7 +188,7 @@ export async function votePoll(data: VotePollData) {
 export async function getPollDetails(pollId: string) {
   const supabase = await createServerSupabaseClient();
 
-  const { data: poll, error: pollError } = await supabase
+  const { data: poll, error: pollError } = await (supabase as any)
     .from('polls')
     .select('id, topic_id, question, allow_multiple_choices, expires_at, created_at')
     .eq('id', pollId)
@@ -199,7 +199,7 @@ export async function getPollDetails(pollId: string) {
   }
 
   // Get poll options with vote counts
-  const { data: options, error: optionsError } = await supabase
+  const { data: options, error: optionsError } = await (supabase as any)
     .from('poll_options')
     .select(
       `
@@ -218,7 +218,7 @@ export async function getPollDetails(pollId: string) {
   }
 
   // Get total vote count
-  const { count: totalVotes } = await supabase
+  const { count: totalVotes } = await (supabase as any)
     .from('poll_votes')
     .select('*', { count: 'exact', head: true })
     .eq('poll_id', pollId);
@@ -230,7 +230,7 @@ export async function getPollDetails(pollId: string) {
 
   let userVotes: string[] = [];
   if (user) {
-    const { data: votes } = await supabase
+    const { data: votes } = await (supabase as any)
       .from('poll_votes')
       .select('option_id')
       .eq('poll_id', pollId)

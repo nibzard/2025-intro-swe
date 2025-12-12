@@ -443,7 +443,7 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess, onClea
               </Button>
             )}
             {!content && replyTemplates.length > 0 && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 flex-wrap">
                 <span className="text-xs text-gray-500 dark:text-gray-400">Brzi odgovor:</span>
                 {replyTemplates.map((tpl) => (
                   <Button
