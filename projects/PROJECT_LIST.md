@@ -114,7 +114,7 @@ This file lists all team projects for the SWE course. Students add their project
 
 ### [R M] - [Karolina Mihaljević] & [Đana Rogulj]
 * **Project:** [Team connect]
-* **Folder:** `povezivanje-timova-Rogulj-Mihaljevics/`
+* **Folder:** `povezivanje-timova-Rogulj-Mihaljevic/`
 * **Status:** [In Progress]
 * **Description:** [Povezivanje timova na određenoj lokaciji]
 

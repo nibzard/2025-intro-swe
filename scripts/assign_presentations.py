@@ -59,14 +59,40 @@ def parse_project_list(file_path: str) -> List[Project]:
         status = match[4]
         description = match[5]
 
-        # Skip template entries and entries with placeholder brackets
-        if ('[Team Name]' in header or '[Student' in header or '[Project' in header or
-            '[Team connect]' in project_title or project_title.startswith('[') and project_title.endswith(']')):
+        # Skip only actual template entries (placeholders with generic names)
+        # List of patterns that indicate template/placeholder entries
+        template_patterns = [
+            '[Team Name]',  # Generic team placeholder
+            '[Student Name]', '[Student Names]',  # Generic student placeholders
+            '[Project Name]', '[Project Title]',  # Generic project placeholders
+            '[Folder Name]',  # Generic folder placeholder
+            '[Status]',  # Generic status placeholder
+            '[Description]'  # Generic description placeholder
+        ]
+
+        # Check if any template pattern is found
+        is_template = False
+        for pattern in template_patterns:
+            if pattern in header or pattern in project_title or pattern in status or pattern in description:
+                is_template = True
+                break
+
+        # Check if it's a template (all fields are brackets with generic placeholder names)
+        # Only skip if it's clearly a template with generic placeholders
+        if is_template:
             continue
 
         # Skip if no project title
         if not project_title:
             continue
+
+        # Clean up bracketed content (remove brackets but keep content)
+        header = header.replace('[', '').replace(']', '').strip()
+        project_title = project_title.replace('[', '').replace(']', '').strip()
+        if status:
+            status = status.replace('[', '').replace(']', '').strip()
+        if description:
+            description = description.replace('[', '').replace(']', '').strip()
 
         # Parse team name and students
         if ' - ' in header:
@@ -132,7 +158,7 @@ def assign_projects_to_dates(projects: List[Project], seed: Optional[int] = None
         random.seed(seed)
 
     # Validate project count
-    expected_count = 21
+    expected_count = 22
     if len(projects) != expected_count:
         raise ValueError(f"Expected {expected_count} projects, found {len(projects)}")
 
@@ -142,7 +168,7 @@ def assign_projects_to_dates(projects: List[Project], seed: Optional[int] = None
 
     # Define distribution
     distribution = {
-        'January 26, 2026': 7,
+        'January 26, 2026': 8,
         'February 2, 2026': 7,
         'February 9, 2026': 7
     }
@@ -208,7 +234,7 @@ def generate_schedule_markdown(assignments: Dict[str, List[Project]],
     lines.append("## Statistics")
     lines.append("")
     lines.append(f"- Total projects: {len(all_projects)}")
-    lines.append(f"- Projects per date: Jan 26 (7), Feb 2 (7), Feb 9 (7)")
+    lines.append(f"- Projects per date: Jan 26 (8), Feb 2 (7), Feb 9 (7)")
     lines.append(f"- Unique students: {len(unique_students)}")
     lines.append(f"- Average team size: {len(all_projects) / len(unique_students):.1f}")
     lines.append("")
