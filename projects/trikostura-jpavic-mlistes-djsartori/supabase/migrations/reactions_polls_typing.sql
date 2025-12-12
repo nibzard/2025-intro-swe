@@ -2,8 +2,11 @@
 -- EMOJI REACTIONS SYSTEM
 -- =====================================================
 
+-- Drop old reactions table if it exists
+DROP TABLE IF EXISTS reactions CASCADE;
+
 -- Reactions table (for replies and topics)
-CREATE TABLE IF NOT EXISTS reactions (
+CREATE TABLE reactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   reply_id UUID REFERENCES replies(id) ON DELETE CASCADE,
@@ -20,21 +23,11 @@ CREATE TABLE IF NOT EXISTS reactions (
   )
 );
 
--- Add emoji column if it doesn't exist (for existing tables)
-DO $$ 
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                 WHERE table_name = 'reactions' AND column_name = 'emoji') THEN
-    ALTER TABLE reactions ADD COLUMN emoji VARCHAR(10) NOT NULL DEFAULT '👍';
-    ALTER TABLE reactions ALTER COLUMN emoji DROP DEFAULT;
-  END IF;
-END $$;
-
 -- Indexes for fast reaction queries
-CREATE INDEX IF NOT EXISTS idx_reactions_reply ON reactions(reply_id) WHERE reply_id IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_reactions_topic ON reactions(topic_id) WHERE topic_id IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_reactions_user ON reactions(user_id);
-CREATE INDEX IF NOT EXISTS idx_reactions_emoji ON reactions(emoji);
+CREATE INDEX idx_reactions_reply ON reactions(reply_id) WHERE reply_id IS NOT NULL;
+CREATE INDEX idx_reactions_topic ON reactions(topic_id) WHERE topic_id IS NOT NULL;
+CREATE INDEX idx_reactions_user ON reactions(user_id);
+CREATE INDEX idx_reactions_emoji ON reactions(emoji);
 
 -- RLS Policies for reactions
 ALTER TABLE reactions ENABLE ROW LEVEL SECURITY;
@@ -58,8 +51,13 @@ CREATE POLICY "Users can delete their own reactions"
 -- POLLS SYSTEM
 -- =====================================================
 
+-- Drop old polls tables if they exist (in correct order due to foreign keys)
+DROP TABLE IF EXISTS poll_votes CASCADE;
+DROP TABLE IF EXISTS poll_options CASCADE;
+DROP TABLE IF EXISTS polls CASCADE;
+
 -- Polls table (attached to topics)
-CREATE TABLE IF NOT EXISTS polls (
+CREATE TABLE polls (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   topic_id UUID NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
   question TEXT NOT NULL,
@@ -70,25 +68,8 @@ CREATE TABLE IF NOT EXISTS polls (
   CONSTRAINT valid_poll_question CHECK (length(trim(question)) > 0)
 );
 
--- Add missing columns to polls if they don't exist
-DO $$ 
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                 WHERE table_name = 'polls' AND column_name = 'question') THEN
-    ALTER TABLE polls ADD COLUMN question TEXT NOT NULL DEFAULT '';
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                 WHERE table_name = 'polls' AND column_name = 'allow_multiple_choices') THEN
-    ALTER TABLE polls ADD COLUMN allow_multiple_choices BOOLEAN DEFAULT false;
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                 WHERE table_name = 'polls' AND column_name = 'expires_at') THEN
-    ALTER TABLE polls ADD COLUMN expires_at TIMESTAMPTZ;
-  END IF;
-END $$;
-
 -- Poll options
-CREATE TABLE IF NOT EXISTS poll_options (
+CREATE TABLE poll_options (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   poll_id UUID NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
   option_text TEXT NOT NULL,
@@ -99,21 +80,8 @@ CREATE TABLE IF NOT EXISTS poll_options (
   CONSTRAINT unique_poll_position UNIQUE(poll_id, position)
 );
 
--- Add missing columns to poll_options if they don't exist
-DO $$ 
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                 WHERE table_name = 'poll_options' AND column_name = 'option_text') THEN
-    ALTER TABLE poll_options ADD COLUMN option_text TEXT NOT NULL DEFAULT '';
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                 WHERE table_name = 'poll_options' AND column_name = 'position') THEN
-    ALTER TABLE poll_options ADD COLUMN position INTEGER NOT NULL DEFAULT 0;
-  END IF;
-END $$;
-
 -- Poll votes
-CREATE TABLE IF NOT EXISTS poll_votes (
+CREATE TABLE poll_votes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   poll_id UUID NOT NULL REFERENCES polls(id) ON DELETE CASCADE,
   option_id UUID NOT NULL REFERENCES poll_options(id) ON DELETE CASCADE,
@@ -124,23 +92,12 @@ CREATE TABLE IF NOT EXISTS poll_votes (
   CONSTRAINT unique_user_vote_single UNIQUE(poll_id, user_id, option_id)
 );
 
--- Add missing columns to poll_votes if they don't exist
-DO $$ 
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
-                 WHERE table_name = 'poll_votes' AND column_name = 'option_id') THEN
-    -- This requires a temporary default, will be removed immediately
-    ALTER TABLE poll_votes ADD COLUMN option_id UUID;
-    -- Update to set proper foreign key later if needed
-  END IF;
-END $$;
-
 -- Indexes for polls
-CREATE INDEX IF NOT EXISTS idx_polls_topic ON polls(topic_id);
-CREATE INDEX IF NOT EXISTS idx_poll_options_poll ON poll_options(poll_id, position);
-CREATE INDEX IF NOT EXISTS idx_poll_votes_poll ON poll_votes(poll_id);
-CREATE INDEX IF NOT EXISTS idx_poll_votes_option ON poll_votes(option_id);
-CREATE INDEX IF NOT EXISTS idx_poll_votes_user ON poll_votes(user_id);
+CREATE INDEX idx_polls_topic ON polls(topic_id);
+CREATE INDEX idx_poll_options_poll ON poll_options(poll_id, position);
+CREATE INDEX idx_poll_votes_poll ON poll_votes(poll_id);
+CREATE INDEX idx_poll_votes_option ON poll_votes(option_id);
+CREATE INDEX idx_poll_votes_user ON poll_votes(user_id);
 
 -- RLS Policies for polls
 ALTER TABLE polls ENABLE ROW LEVEL SECURITY;

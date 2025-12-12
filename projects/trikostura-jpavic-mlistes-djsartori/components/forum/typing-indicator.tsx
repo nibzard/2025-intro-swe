@@ -110,51 +110,68 @@ export function TypingIndicator({ topicId, currentUserId, currentUsername }: Typ
  */
 export function useTypingIndicator(topicId: string, currentUserId?: string) {
   const typingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
-  const supabase = createClient();
 
   const broadcastTyping = useCallback(async () => {
     if (!currentUserId || !topicId) return;
 
-    // Clear existing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
+    try {
+      const supabase = createClient(); // Fresh client for each call
 
-    // Upsert typing indicator
-    await (supabase as any).from('typing_indicators').upsert(
-      {
-        topic_id: topicId,
-        user_id: currentUserId,
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: 'topic_id,user_id',
+      // Clear existing timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
       }
-    );
 
-    // Auto-remove after 3 seconds of inactivity
-    typingTimeoutRef.current = setTimeout(async () => {
+      // Upsert typing indicator
+      await (supabase as any).from('typing_indicators').upsert(
+        {
+          topic_id: topicId,
+          user_id: currentUserId,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'topic_id,user_id',
+        }
+      );
+
+      // Auto-remove after 3 seconds of inactivity
+      typingTimeoutRef.current = setTimeout(async () => {
+        try {
+          const supabase = createClient();
+          await supabase
+            .from('typing_indicators')
+            .delete()
+            .eq('topic_id', topicId)
+            .eq('user_id', currentUserId);
+        } catch (err) {
+          // Silently fail on cleanup - user session may have ended
+        }
+      }, 3000);
+    } catch (err) {
+      console.error('Error broadcasting typing:', err);
+      // Don't break the form if typing indicator fails
+    }
+  }, [topicId, currentUserId]);
+
+  const stopTyping = useCallback(async () => {
+    if (!currentUserId || !topicId) return;
+
+    try {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      const supabase = createClient();
       await supabase
         .from('typing_indicators')
         .delete()
         .eq('topic_id', topicId)
         .eq('user_id', currentUserId);
-    }, 3000);
-  }, [topicId, currentUserId, supabase]);
-
-  const stopTyping = useCallback(async () => {
-    if (!currentUserId || !topicId) return;
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
+    } catch (err) {
+      console.error('Error stopping typing:', err);
+      // Don't break the form if typing indicator fails
     }
-
-    await supabase
-      .from('typing_indicators')
-      .delete()
-      .eq('topic_id', topicId)
-      .eq('user_id', currentUserId);
-  }, [topicId, currentUserId, supabase]);
+  }, [topicId, currentUserId]);
 
   useEffect(() => {
     return () => {
