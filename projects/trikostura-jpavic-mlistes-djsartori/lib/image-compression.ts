@@ -1,3 +1,5 @@
+import { IMAGE } from './constants';
+
 /**
  * Compress an image file before upload
  * Reduces file size while maintaining acceptable quality
@@ -28,10 +30,10 @@ export async function compressImage(file: File, maxSizeMB = 1): Promise<File> {
           return;
         }
 
-        // Calculate new dimensions (max 1920px width/height)
+        // Calculate new dimensions (max width/height from constants)
         let width = img.width;
         let height = img.height;
-        const maxDimension = 1920;
+        const maxDimension = IMAGE.MAX_DIMENSION;
 
         if (width > maxDimension || height > maxDimension) {
           if (width > height) {
@@ -71,7 +73,7 @@ export async function compressImage(file: File, maxSizeMB = 1): Promise<File> {
             }
           },
           file.type,
-          0.85 // Quality (0-1)
+          IMAGE.COMPRESSION_QUALITY
         );
       };
 

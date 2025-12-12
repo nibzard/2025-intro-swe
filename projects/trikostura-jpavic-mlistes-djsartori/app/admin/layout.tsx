@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { SkriptaLogo } from '@/components/branding/skripta-logo';
+import { AdminErrorBoundary } from './admin-error-boundary';
 import {
   LayoutDashboard,
   Users,
@@ -137,7 +138,11 @@ export default async function AdminLayout({
 
         {/* Main Content */}
         <main className="flex-1 lg:ml-64 pt-14 pb-16 lg:pt-0 lg:pb-0">
-          <div className="p-3 sm:p-4 md:p-6 lg:p-8">{children}</div>
+          <div className="p-3 sm:p-4 md:p-6 lg:p-8">
+            <AdminErrorBoundary>
+              {children}
+            </AdminErrorBoundary>
+          </div>
         </main>
       </div>
     </div>

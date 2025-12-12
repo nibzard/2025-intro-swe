@@ -32,29 +32,15 @@ export async function login(
     return { error: 'Nevažeći email ili lozinka' };
   }
 
-  // Check if profile exists, if not recreate it
-  if (data.user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', data.user.id)
-      .maybeSingle();
-
-    if (!profile) {
-      // Profile is missing - recreate it
-      const adminClient = createAdminClient();
-      await (adminClient as any)
-        .from('profiles')
-        .insert({
-          id: data.user.id,
-          email: data.user.email,
-          username: data.user.email?.split('@')[0] || 'user',
-          full_name: data.user.user_metadata?.full_name || '',
-        });
-    }
+  // Check if email is verified (if email confirmation is enabled)
+  if (data.user && !data.user.email_confirmed_at) {
+    // Sign out the user since they haven't verified their email
+    await supabase.auth.signOut();
+    return { error: 'Molimo potvrdite svoj email prije prijave. Provjerite svoju poštu.' };
   }
 
-  revalidatePath('/', 'layout');
+  // Revalidate forum page to show updated user state
+  revalidatePath('/forum');
   redirect('/forum');
 }
 
@@ -83,72 +69,26 @@ export async function register(
   const supabase = await createServerSupabaseClient();
   const adminClient = createAdminClient();
 
-  // Check if username or email is already taken
-  const { data: existingByUsername } = await supabase
-    .from('profiles')
-    .select('username, id, email')
-    .eq('username', username)
-    .maybeSingle();
+  // Check if username or email is already taken (single parallel query)
+  const [existingByUsername, existingByEmail] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', username)
+      .maybeSingle(),
+    supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle()
+  ]);
 
-  const { data: existingByEmail } = await supabase
-    .from('profiles')
-    .select('username, id, email')
-    .eq('email', email)
-    .maybeSingle();
-
-  // Check username
-  if (existingByUsername) {
-    const { data: authUser } = await (adminClient as any).auth.admin.getUserById((existingByUsername as any).id);
-
-    if (authUser?.user) {
-      return { error: 'Korisničko ime je već zauzeto' };
-    } else {
-      // Orphaned profile - delete it
-      await (adminClient as any)
-        .from('profiles')
-        .delete()
-        .eq('id', (existingByUsername as any).id);
-    }
+  if (existingByUsername.data) {
+    return { error: 'Korisničko ime je već zauzeto' };
   }
 
-  // Check email
-  if (existingByEmail) {
-    const { data: authUser } = await (adminClient as any).auth.admin.getUserById((existingByEmail as any).id);
-
-    if (authUser?.user) {
-      return { error: 'Email je već zauzet' };
-    } else {
-      // Orphaned profile - delete it
-      await (adminClient as any)
-        .from('profiles')
-        .delete()
-        .eq('id', (existingByEmail as any).id);
-    }
-  }
-
-  // Also check for orphaned auth users (auth exists but profile deleted)
-  try {
-    const { data: authUserByEmail } = await adminClient.auth.admin.listUsers();
-    const existingAuthUser = authUserByEmail?.users?.find((u: any) => u.email === email);
-
-    if (existingAuthUser) {
-      // Check if profile exists for this auth user
-      const { data: profileForAuth } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', existingAuthUser.id)
-        .maybeSingle();
-
-      if (!profileForAuth) {
-        // Orphaned auth user - delete it
-        await adminClient.auth.admin.deleteUser(existingAuthUser.id);
-      } else {
-        // Both auth and profile exist
-        return { error: 'Email je već zauzet' };
-      }
-    }
-  } catch (error) {
-    console.error('Error checking orphaned auth users:', error);
+  if (existingByEmail.data) {
+    return { error: 'Email je već zauzet' };
   }
 
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
@@ -188,14 +128,15 @@ export async function register(
     }
   }
 
-  revalidatePath('/', 'layout');
+  // Only revalidate auth pages, not the entire app
+  revalidatePath('/auth/verify-email');
   redirect('/auth/verify-email');
 }
 
 export async function logout() {
   const supabase = await createServerSupabaseClient();
   await supabase.auth.signOut();
-  revalidatePath('/', 'layout');
+  // No need to revalidate - redirect will clear cache
   redirect('/');
 }
 
