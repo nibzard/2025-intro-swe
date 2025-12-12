@@ -51,15 +51,16 @@ export function TypingIndicator({ topicId, currentUserId, currentUsername }: Typ
               .eq('id', typingUserId)
               .single();
 
-            if (profile && 'username' in profile) {
+            if (profile) {
               setTypingUsers((prev) => {
                 const filtered = prev.filter((u) => u.user_id !== typingUserId);
+                const typedProfile = profile as { username: string; avatar_url: string | null };
                 return [
                   ...filtered,
                   {
                     user_id: typingUserId,
-                    username: (profile as any).username,
-                    avatar_url: (profile as any).avatar_url,
+                    username: typedProfile.username,
+                    avatar_url: typedProfile.avatar_url,
                     updated_at: (payload.new as any).updated_at,
                   },
                 ];
