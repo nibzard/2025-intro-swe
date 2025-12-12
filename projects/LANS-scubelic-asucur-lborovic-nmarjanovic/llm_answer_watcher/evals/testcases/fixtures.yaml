@@ -1,0 +1,155 @@
+# Evaluation Test Cases for LLM Answer Watcher
+#
+# This file contains hand-curated test cases to validate the accuracy of
+# brand mention detection and rank extraction algorithms.
+
+test_cases:
+  # Test Case 1: Simple brand mention with clear ranking
+  - description: "Simple email warmup tools comparison with clear ranking"
+    intent_id: "best_email_warmup_tools"
+    llm_answer_text: |
+      Based on my research, here are the best email warmup tools for 2024:
+
+      1. WarmupInbox - Most comprehensive with detailed analytics
+      2. Mailwarm - Great for startups with affordable pricing
+      3. Lemwarm - Good integration with LemList
+      4. QuickMail - Reliable for agencies
+
+      I'd recommend starting with WarmupInbox if you need detailed tracking of your warmup progress.
+    brands_mine: ["WarmupInbox", "warmupinbox"]
+    brands_competitors: ["Mailwarm", "Lemwarm", "QuickMail"]
+    expected_my_mentions: ["WarmupInbox"]
+    expected_competitor_mentions: ["Mailwarm", "Lemwarm", "QuickMail"]
+    expected_ranked_list: ["WarmupInbox", "Mailwarm", "Lemwarm", "QuickMail"]
+
+  # Test Case 2: Brand name variations and aliases
+  - description: "Brand name variations and aliases in natural language"
+    intent_id: "best_email_warmup_tools"
+    llm_answer_text: |
+      When choosing an email warmup solution, you have several options:
+
+      * Warmup Inbox (the original) offers the most features
+      * mailwarm.com is popular with small businesses
+      * LemList's warmup feature (called Lemwarm) works well for existing users
+      * Quick Mail has been around the longest
+
+      Many users find that warmup inbox provides the best balance of features and ease of use.
+    brands_mine: ["WarmupInbox", "Warmup Inbox", "warmup inbox", "warmupinbox"]
+    brands_competitors: ["Mailwarm", "Lemwarm", "QuickMail", "Quick Mail"]
+    expected_my_mentions: ["Warmup Inbox", "warmup inbox"]
+    expected_competitor_mentions: ["mailwarm.com", "Lemwarm", "Quick Mail"]
+    expected_ranked_list: ["Warmup Inbox", "mailwarm.com", "Lemwarm", "Quick Mail"]
+
+  # Test Case 3: No brand mentions (negative test)
+  - description: "Answer without any target brand mentions"
+    intent_id: "best_email_warmup_tools"
+    llm_answer_text: |
+      Email warmup is an important process for improving deliverability. The key factors to consider are:
+
+      - Gradual volume increase
+      - Personalization
+      - Domain reputation monitoring
+      - Spam complaint avoidance
+
+      You should start with 10-20 emails per day and gradually increase over 2-3 weeks.
+    brands_mine: ["WarmupInbox", "warmupinbox"]
+    brands_competitors: ["Mailwarm", "Lemwarm", "QuickMail"]
+    expected_my_mentions: []
+    expected_competitor_mentions: []
+    expected_ranked_list: []
+
+  # Test Case 4: Competitor-focused answer
+  - description: "Answer focused primarily on competitors"
+    intent_id: "best_email_warmup_tools"
+    llm_answer_text: |
+      Here are the top email warmup tools I recommend:
+
+      1. Mailwarm - Best for beginners with simple interface
+      2. Lemwarm - Excellent if you already use LemList
+      3. QuickMail - Most established option
+      4. Woodpecker - Good for sales teams
+
+      Mailwarm stands out for its user-friendly approach and competitive pricing.
+    brands_mine: ["WarmupInbox", "warmupinbox"]
+    brands_competitors: ["Mailwarm", "Lemwarm", "QuickMail", "Woodpecker"]
+    expected_my_mentions: []
+    expected_competitor_mentions: ["Mailwarm", "Lemwarm", "QuickMail", "Woodpecker"]
+    expected_ranked_list: ["Mailwarm", "Lemwarm", "QuickMail", "Woodpecker"]
+
+  # Test Case 5: Complex answer with partial mentions
+  - description: "Complex answer with some brands mentioned multiple times"
+    intent_id: "best_email_warmup_tools"
+    llm_answer_text: |
+      After testing multiple email warmup tools, here's my analysis:
+
+      For most users, I recommend Mailwarm because it's the most user-friendly.
+      Mailwarm also offers the best pricing for startups.
+
+      Lemwarm is good but only if you're already invested in the LemList ecosystem.
+
+      Some users also ask about WarmupInbox - it's powerful but can be complex for beginners.
+
+      QuickMail remains a solid choice for agencies that need advanced features.
+
+      So my ranking would be: Mailwarm > QuickMail > Lemwarm > WarmupInbox
+    brands_mine: ["WarmupInbox", "warmupinbox"]
+    brands_competitors: ["Mailwarm", "Lemwarm", "QuickMail"]
+    expected_my_mentions: ["WarmupInbox"]
+    expected_competitor_mentions: ["Mailwarm", "Lemwarm", "QuickMail"]
+    expected_ranked_list: ["Mailwarm", "QuickMail", "Lemwarm", "WarmupInbox"]
+
+  # Test Case 6: Brand mention without ranking
+  - description: "Brands mentioned but no clear ranking order"
+    intent_id: "best_email_warmup_tools"
+    llm_answer_text: |
+      Several email warmup tools are worth considering:
+
+      WarmupInbox offers comprehensive analytics and detailed reporting.
+      Mailwarm focuses on simplicity and ease of use.
+      Lemwarm integrates well with existing LemList workflows.
+      QuickMail provides reliable deliverability monitoring.
+
+      Each has its strengths depending on your specific needs and technical comfort level.
+    brands_mine: ["WarmupInbox", "warmupinbox"]
+    brands_competitors: ["Mailwarm", "Lemwarm", "QuickMail"]
+    expected_my_mentions: ["WarmupInbox"]
+    expected_competitor_mentions: ["Mailwarm", "Lemwarm", "QuickMail"]
+    expected_ranked_list: []
+
+  # Test Case 7: False positive prevention
+  - description: "Contains words that might falsely match brands"
+    intent_id: "best_email_warmup_tools"
+    llm_answer_text: |
+      When warming up your email domain, consider these factors:
+
+      - Don't use a warm-up schedule that's too aggressive
+      - Monitor your inbox placement rates carefully
+      - Some mail providers like Gmail and Outlook have different warming needs
+      - Quick responses to replies help build sender reputation
+      - Avoid mail merge personalization that looks spammy
+
+      The key is gradual volume increase and consistent engagement.
+    brands_mine: ["WarmupInbox", "warmupinbox"]
+    brands_competitors: ["Mailwarm", "Lemwarm", "QuickMail"]
+    expected_my_mentions: []
+    expected_competitor_mentions: []
+    expected_ranked_list: []
+
+  # Test Case 8: Multiple brand aliases
+  - description: "Multiple mentions of the same brand with different aliases"
+    intent_id: "best_email_warmup_tools"
+    llm_answer_text: |
+      Top email warmup solutions:
+
+      1. warmupinbox.com - The industry leader
+      2. Mailwarm - Budget-friendly option
+      3. WarmupInbox - Professional features
+      4. Lemwarm - LemList integration
+
+      Many businesses choose warmupinbox for its reliability. The WarmupInbox platform
+      also offers excellent customer support. Overall, warmupinbox.com provides the best value.
+    brands_mine: ["WarmupInbox", "warmupinbox", "warmupinbox.com"]
+    brands_competitors: ["Mailwarm", "Lemwarm"]
+    expected_my_mentions: ["warmupinbox.com", "WarmupInbox", "warmupinbox"]
+    expected_competitor_mentions: ["Mailwarm", "Lemwarm"]
+    expected_ranked_list: ["warmupinbox.com", "Mailwarm", "WarmupInbox", "Lemwarm"]

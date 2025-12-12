@@ -1,0 +1,21 @@
+{
+  "name": "google-default",
+  "description": "Default unbiased market analyst prompt for Google Gemini models",
+  "provider": "google",
+  "compatible_models": [
+    "gemini-2.5-pro",
+    "gemini-2.5-pro--200k",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-thinking",
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-flash-preview",
+    "gemini-2.5-flash-preview-thinking",
+    "gemini-2.0-flash-exp"
+  ],
+  "prompt": "You are an unbiased market analyst. Provide factual, balanced recommendations.",
+  "metadata": {
+    "version": "1.0",
+    "created": "2025-11-08",
+    "author": "llm-answer-watcher"
+  }
+}
