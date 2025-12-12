@@ -22,6 +22,7 @@ export function TypingIndicator({ topicId, currentUserId, currentUsername }: Typ
   const supabase = createClient();
 
   useEffect(() => {
+    console.log('[TypingIndicator] Initializing for topic:', topicId, 'user:', currentUserId);
     if (!currentUserId) return;
 
     // Subscribe to typing indicators for this topic
@@ -112,9 +113,13 @@ export function useTypingIndicator(topicId: string, currentUserId?: string) {
   const typingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const broadcastTyping = useCallback(async () => {
-    if (!currentUserId || !topicId) return;
+    if (!currentUserId || !topicId) {
+      console.log('[useTypingIndicator] Missing IDs:', { currentUserId, topicId });
+      return;
+    }
 
     try {
+      console.log('[useTypingIndicator] Broadcasting typing for:', currentUserId);
       const supabase = createClient(); // Fresh client for each call
 
       // Clear existing timeout
