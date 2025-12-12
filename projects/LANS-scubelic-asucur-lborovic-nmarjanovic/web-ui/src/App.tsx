@@ -40,6 +40,9 @@ function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showYamlPreview, setShowYamlPreview] = useState(false);
+  const [runId, setRunId] = useState<string | null>(null);
+  const [results, setResults] = useState<any | null>(null);
+
 
   // Generate YAML config
   const generateConfig = useCallback((): WatcherConfig => {
@@ -139,11 +142,39 @@ function App() {
       return;
     }
     setIsRunning(true);
-    // Simulate running - in production this would call the backend API
-    setTimeout(() => {
-      setIsRunning(false);
+    setResults(null);
+    setRunId(null);
+    try {
+      const response = await fetch('http://127.0.0.1:8000/run_watcher', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: apiKey, yaml_config: yamlOutput }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to run watcher');
+      }
+
+      const runData = await response.json();
+      setRunId(runData.run_id);
+      
+      // Now poll for results
+      const resultsResponse = await fetch(`http://127.0.0.1:8000/results/${runData.run_id}`);
+      if(!resultsResponse.ok) {
+        const errorData = await resultsResponse.json();
+        throw new Error(errorData.detail || 'Failed to fetch results');
+      }
+      
+      const resultsData = await resultsResponse.json();
+      setResults(resultsData);
+
       setActiveTab('results');
-    }, 3000);
+    } catch (error) {
+      alert(`An error occurred: ${error.message}`);
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   const isConfigValid =
@@ -524,17 +555,41 @@ function App() {
           </div>
         ) : (
           /* Results Tab */
-          <div className="glass-card p-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800 flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-slate-500" />
-            </div>
-            <h2 className="text-xl font-semibold text-slate-200 mb-2">No Results Yet</h2>
-            <p className="text-slate-400 mb-6">
-              Configure your search settings and run a search to see results here.
-            </p>
-            <button onClick={() => setActiveTab('config')} className="btn-primary">
-              <Settings className="w-4 h-4 mr-2" /> Go to Configuration
-            </button>
+          <div className="glass-card p-8">
+            <h2 className="text-2xl font-bold text-slate-200 mb-4">Search Results for Run: <span className="text-primary-400">{runId}</span></h2>
+            {results && results.intents_data ? (
+                <div className="space-y-6">
+                    {results.intents_data.map((intentResult: any) => (
+                        <div key={intentResult.intent_id} className="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50">
+                            <h3 className="font-bold text-lg text-slate-300">{intentResult.prompt}</h3>
+                            <p className="text-sm text-slate-400 italic mt-1">{intentResult.answer}</p>
+                            <div className="mt-4">
+                                <h4 className="font-semibold text-slate-400">Mentions:</h4>
+                                <ul className="list-disc list-inside mt-2 space-y-1">
+                                    {intentResult.mentions.map((mention: any, index: number) => (
+                                        <li key={index} className={`text-sm ${mention.is_mine ? 'text-primary-400' : 'text-accent-400'}`}>
+                                            {mention.brand} (Rank: {mention.rank || 'N/A'})
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800 flex items-center justify-center">
+                  <Sparkles className="w-8 h-8 text-slate-500" />
+                </div>
+                <h2 className="text-xl font-semibold text-slate-200 mb-2">No Results Yet</h2>
+                <p className="text-slate-400 mb-6">
+                  Configure your search settings and run a search to see results here.
+                </p>
+                <button onClick={() => setActiveTab('config')} className="btn-primary">
+                  <Settings className="w-4 h-4 mr-2" /> Go to Configuration
+                </button>
+              </div>
+            )}
           </div>
         )}
       </main>
