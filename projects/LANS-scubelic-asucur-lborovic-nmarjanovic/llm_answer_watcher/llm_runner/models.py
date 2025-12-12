@@ -2,21 +2,19 @@
 LLM client abstraction and factory for LLM Answer Watcher.
 
 This module provides a provider-agnostic interface for interacting with
-different LLM providers (OpenAI, Anthropic, Mistral, etc.) through a unified
-Protocol-based design.
+Google Gemini through a unified Protocol-based design.
 
 Key components:
 - LLMResponse: Structured dataclass holding LLM response data
 - LLMClient: Protocol defining provider-agnostic interface
-- build_client: Factory function to create appropriate client instances
+- build_client: Factory function to create Gemini client instances
 
-The design follows the Protocol pattern for extensibility, allowing new
-providers to be added without modifying existing code, while maintaining
+The design follows the Protocol pattern for extensibility, while maintaining
 a stable internal contract for the Cloud product.
 
 Example:
     >>> from llm_runner.models import build_client
-    >>> client = build_client("openai", "gpt-4o-mini", api_key,
+    >>> client = build_client("google", "gemini-1.5-flash", api_key,
     ...     system_prompt="You are a helpful assistant.")
     >>> response = client.generate_answer("What are the best email warmup tools?")
     >>> print(response.answer_text)
@@ -160,46 +158,37 @@ def build_client(
     tool_choice: str = "auto",
 ) -> LLMClient:
     """
-    Factory function to create appropriate LLM client based on provider.
+    Factory function to create Google Gemini LLM client.
 
-    Implements the factory pattern to instantiate provider-specific clients
-    while returning the common LLMClient interface. This allows the rest of
-    the codebase to work with providers polymorphically.
+    Implements the factory pattern to instantiate the Gemini client
+    while returning the common LLMClient interface.
 
     Supported providers:
-    - "openai": OpenAI API (GPT models)
-    - "anthropic": Anthropic API (Claude models)
-    - "mistral": Mistral API (Mistral models)
-    - "grok": X.AI Grok API (Grok models)
     - "google": Google Gemini API (Gemini models)
-    - "perplexity": Perplexity API (Sonar models)
 
     Args:
-        provider: Provider identifier (lowercase string)
-        model_name: Model identifier (e.g., "gpt-4o-mini", "claude-3-5-haiku-20241022")
+        provider: Provider identifier (must be "google")
+        model_name: Model identifier (e.g., "gemini-1.5-flash", "gemini-1.5-pro")
         api_key: API key for authentication (NEVER logged or persisted)
         system_prompt: System message for context/instructions sent with requests
-        tools: Optional list of tool configurations (e.g., [{"type": "web_search"}])
+        tools: Optional list of tool configurations (e.g., [{"google_search": {}}])
         tool_choice: Tool selection mode ("auto", "required", "none"). Default: "auto"
 
     Returns:
-        LLMClient: Provider-specific client implementing LLMClient protocol
+        LLMClient: Gemini client implementing LLMClient protocol
 
     Raises:
-        ValueError: If provider is not supported
-        NotImplementedError: If provider support is planned but not yet implemented
+        ValueError: If provider is not "google"
 
     Example:
-        >>> client = build_client("openai", "gpt-4o-mini", "sk-...",
+        >>> client = build_client("google", "gemini-1.5-flash", "AIza...",
         ...     system_prompt="You are a helpful assistant.")
         >>> isinstance(client, LLMClient)  # Satisfies protocol
         True
         >>> response = client.generate_answer("What are the best email tools?")
         >>> # With tools enabled
-        >>> client = build_client("openai", "gpt-4o-mini", "sk-...", "...",
-        ...     tools=[{"type": "web_search"}], tool_choice="auto")
-        >>> # Grok example
-        >>> client = build_client("grok", "grok-beta", "xai-...", "...")
+        >>> client = build_client("google", "gemini-1.5-pro", "AIza...", "...",
+        ...     tools=[{"google_search": {}}], tool_choice="auto")
 
     Security:
         - NEVER log the api_key parameter in any form
@@ -208,65 +197,7 @@ def build_client(
 
     Note:
         This function is the single entry point for creating LLM clients.
-        As new providers are added, register them here to maintain the
-        stable internal contract for the Cloud product API.
     """
-    if provider == "openai":
-        # Import here to avoid circular dependencies and keep imports lazy
-        from llm_answer_watcher.llm_runner.openai_client import (
-            OpenAIClient,
-        )
-
-        return OpenAIClient(
-            model_name=model_name,
-            api_key=api_key,
-            system_prompt=system_prompt,
-            tools=tools,
-            tool_choice=tool_choice,
-        )
-
-    if provider == "anthropic":
-        # Import here to avoid circular dependencies and keep imports lazy
-        from llm_answer_watcher.llm_runner.anthropic_client import (
-            AnthropicClient,
-        )
-
-        return AnthropicClient(
-            model_name=model_name,
-            api_key=api_key,
-            system_prompt=system_prompt,
-            tools=tools,
-            tool_choice=tool_choice,
-        )
-
-    if provider == "mistral":
-        # Import here to avoid circular dependencies and keep imports lazy
-        from llm_answer_watcher.llm_runner.mistral_client import (
-            MistralClient,
-        )
-
-        return MistralClient(
-            model_name=model_name,
-            api_key=api_key,
-            system_prompt=system_prompt,
-            tools=tools,
-            tool_choice=tool_choice,
-        )
-
-    if provider == "grok":
-        # Import here to avoid circular dependencies and keep imports lazy
-        from llm_answer_watcher.llm_runner.grok_client import (
-            GrokClient,
-        )
-
-        return GrokClient(
-            model_name=model_name,
-            api_key=api_key,
-            system_prompt=system_prompt,
-            tools=tools,
-            tool_choice=tool_choice,
-        )
-
     if provider == "google":
         # Import here to avoid circular dependencies and keep imports lazy
         from llm_answer_watcher.llm_runner.gemini_client import (
@@ -281,22 +212,8 @@ def build_client(
             tool_choice=tool_choice,
         )
 
-    if provider == "perplexity":
-        # Import here to avoid circular dependencies and keep imports lazy
-        from llm_answer_watcher.llm_runner.perplexity_client import (
-            PerplexityClient,
-        )
-
-        return PerplexityClient(
-            model_name=model_name,
-            api_key=api_key,
-            system_prompt=system_prompt,
-            tools=tools,
-            tool_choice=tool_choice,
-        )
-
     # Unknown provider - clear error message
     raise ValueError(
         f"Unsupported provider: '{provider}'. "
-        f"Supported providers: openai, anthropic, mistral, grok, google, perplexity"
+        f"Supported providers: google"
     )
