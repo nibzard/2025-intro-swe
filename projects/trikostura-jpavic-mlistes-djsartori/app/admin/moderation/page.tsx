@@ -81,7 +81,7 @@ export default async function ModerationPage() {
         <div>
           <h1 className="text-2xl font-bold">Moderacija Sadržaja</h1>
           <p className="text-sm text-gray-500">
-            Upravljaj filterom neprikladnog sadržaja
+            Upravljaj automatskim filterom neprikladnog sadržaja
           </p>
         </div>
       </div>
@@ -93,7 +93,7 @@ export default async function ModerationPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-gray-600 dark:text-gray-400">
-                  Blokirani Pokušaji
+                  Blokirano Ukupno
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
                   {stats.totalBlocked}
@@ -111,7 +111,7 @@ export default async function ModerationPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-gray-600 dark:text-gray-400">
-                  Auto-Flagged
+                  Automatski Označeno
                 </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
                   {stats.totalFlagged}
