@@ -3,7 +3,8 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
-export interface CreatePollData {
+// Types moved inline to avoid "use server" export restriction
+type CreatePollData = {
   topicId: string;
   question: string;
   options: string[];
@@ -11,7 +12,7 @@ export interface CreatePollData {
   expiresAt?: Date;
 }
 
-export interface VotePollData {
+type VotePollData = {
   pollId: string;
   optionIds: string[]; // Array to support multiple choice
 }

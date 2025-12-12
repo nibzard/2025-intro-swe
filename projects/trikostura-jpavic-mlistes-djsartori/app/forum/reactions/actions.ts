@@ -3,8 +3,8 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
-// Supported emoji reactions
-export const REACTION_EMOJIS = {
+// Supported emoji reactions (moved to non-exported to avoid "use server" export restriction)
+const REACTION_EMOJIS = {
   THUMBS_UP: '👍',
   HEART: '❤️',
   LAUGH: '😂',
@@ -13,7 +13,7 @@ export const REACTION_EMOJIS = {
   CLAP: '👏',
 } as const;
 
-export type ReactionEmoji = typeof REACTION_EMOJIS[keyof typeof REACTION_EMOJIS];
+type ReactionEmoji = typeof REACTION_EMOJIS[keyof typeof REACTION_EMOJIS];
 
 /**
  * Add a reaction to a reply or topic
