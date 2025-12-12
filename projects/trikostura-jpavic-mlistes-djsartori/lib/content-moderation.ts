@@ -35,7 +35,7 @@ export async function checkContent(content: string): Promise<ModerationResult> {
   const supabase = createClient();
 
   try {
-    const { data, error } = await supabase.rpc('check_content_moderation', {
+    const { data, error } = await (supabase as any).rpc('check_content_moderation', {
       content_text: content,
     });
 
@@ -85,7 +85,7 @@ export async function censorContent(content: string): Promise<string> {
   const supabase = createClient();
 
   try {
-    const { data, error } = await supabase.rpc('censor_content', {
+    const { data, error } = await (supabase as any).rpc('censor_content', {
       content_text: content,
     });
 
@@ -117,7 +117,7 @@ export async function logModerationAction(params: {
   const supabase = createClient();
 
   try {
-    const { error } = await supabase.from('moderation_logs').insert({
+    const { error } = await (supabase as any).from('moderation_logs').insert({
       content_type: params.contentType,
       content_id: params.contentId,
       user_id: params.userId,
@@ -143,7 +143,7 @@ export async function getBannedWords(): Promise<BannedWord[]> {
   const supabase = createClient();
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('banned_words')
       .select('*')
       .order('severity', { ascending: false })
@@ -191,7 +191,7 @@ export async function addBannedWord(params: {
       return { success: false, error: 'Not authenticated' };
     }
 
-    const { error } = await supabase.from('banned_words').insert({
+    const { error } = await (supabase as any).from('banned_words').insert({
       word: params.word,
       severity: params.severity,
       category: params.category,
@@ -237,7 +237,7 @@ export async function updateBannedWord(
     if (params.isRegex !== undefined) updateData.is_regex = params.isRegex;
     if (params.isActive !== undefined) updateData.is_active = params.isActive;
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('banned_words')
       .update(updateData)
       .eq('id', id);
@@ -261,7 +261,7 @@ export async function deleteBannedWord(id: string): Promise<{ success: boolean; 
   const supabase = createClient();
 
   try {
-    const { error } = await supabase.from('banned_words').delete().eq('id', id);
+    const { error } = await (supabase as any).from('banned_words').delete().eq('id', id);
 
     if (error) {
       console.error('Failed to delete banned word:', error);

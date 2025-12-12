@@ -89,14 +89,7 @@ export default async function TopicPage({
   }
 
   // PARALLEL QUERIES: Fetch replies, tags, categories, reactions, and poll all at once
-  const [
-    { data: replies },
-    { data: topicTags },
-    { data: categories },
-    { data: topicReactions },
-    { data: replyReactionsData },
-    { data: pollData }
-  ] = await Promise.all([
+  const results = await Promise.all([
     supabase
       .from('replies')
       .select(`
@@ -118,17 +111,32 @@ export default async function TopicPage({
       .from('reactions')
       .select('id, emoji, user_id, created_at')
       .eq('topic_id', topic.id),
-    supabase
-      .from('reactions')
-      .select('id, emoji, user_id, created_at, reply_id')
-      .not('reply_id', 'is', null)
-      .in('reply_id', replies?.map((r: any) => r.id) || []),
+    // Placeholder for reply reactions - will fetch after we have replies
+    Promise.resolve({ data: null }),
     supabase
       .from('polls')
       .select('id, topic_id, question, allow_multiple_choices, expires_at, created_at')
       .eq('topic_id', topic.id)
       .maybeSingle()
   ]);
+
+  // Extract data from results
+  const replies = results[0].data;
+  const topicTags = results[1].data;
+  const categories = results[2].data;
+  const topicReactions = results[3].data;
+  let replyReactionsData: any = results[4].data;
+  const pollData = results[5].data;
+
+  // Now fetch reply reactions if we have replies
+  if (replies && replies.length > 0) {
+    const { data } = await supabase
+      .from('reactions')
+      .select('id, emoji, user_id, created_at, reply_id')
+      .not('reply_id', 'is', null)
+      .in('reply_id', replies.map((r: any) => r.id));
+    replyReactionsData = data;
+  }
 
   // Attach tags to topic
   topic.topic_tags = topicTags || [];
@@ -156,7 +164,7 @@ export default async function TopicPage({
   // Get poll details if poll exists
   let pollDetails = null;
   if (pollData) {
-    const details = await getPollDetails(pollData.id);
+    const details = await getPollDetails((pollData as any).id);
     if (!details.error) {
       pollDetails = details;
     }
@@ -367,10 +375,10 @@ export default async function TopicPage({
       {/* Poll Widget */}
       {pollDetails && (
         <PollWidget
-          poll={pollDetails.poll}
-          options={pollDetails.options}
-          totalVotes={pollDetails.totalVotes}
-          userVotes={pollDetails.userVotes}
+          poll={(pollDetails as any).poll}
+          options={(pollDetails as any).options}
+          totalVotes={(pollDetails as any).totalVotes}
+          userVotes={(pollDetails as any).userVotes}
           currentUserId={user?.id}
         />
       )}
