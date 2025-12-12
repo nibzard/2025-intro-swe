@@ -10,4 +10,4 @@ Na početnom ekranu nalazit će se kratko objašnjenje aplikacije i kategorija t
 Po završetku igre prikazuje se ekran s pohvalama i bodovima koji služi kao motivacija. Na tom ekranu korisnik može odabrati jednu od tri opcije: vratiti se u istu kategoriju i nastaviti igrati igre u odabranoj kategoriji, vratiti se na odabir kategorije ili se vratiti na početni ekran.
 
 ## Hipoteza i cilj projekta
-Djeca koja redovito koriste aplikaciju „Matesfera“ pokazat će napredak u razumijevanju brojeva, osnovnim matematičkim pojmovima i kognitivnim sposobnostima poput pažnje i logičkog razmišljanja. Aplikacija će potaknuti učenje kroz igru te pridonijeti većem samopouzdanju i pozitivnom stavu prema matematici. jel ovo ok
+Djeca koja redovito koriste aplikaciju „Matesfera“ pokazat će napredak u razumijevanju brojeva, osnovnim matematičkim pojmovima i kognitivnim sposobnostima poput pažnje i logičkog razmišljanja. Aplikacija će potaknuti učenje kroz igru te pridonijeti većem samopouzdanju i pozitivnom stavu prema matematici. 
