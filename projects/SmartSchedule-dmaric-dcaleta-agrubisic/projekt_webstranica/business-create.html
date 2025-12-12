@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <title>SmartSchedule – Izrada poslovnog rasporeda</title>
+    <link rel="stylesheet" href="global.css">
+</head>
+
+<body>
+
+<!-- TOP NAVIGATION -->
+<div class="topnav" style="position:relative;">
+
+    <!-- LOGO LEFT -->
+    <div class="logo-box">
+        <div class="logo-icon">SS</div>
+        <div class="logo-text">SmartSchedule</div>
+    </div>
+
+    <!-- CENTERED NAVIGATION -->
+    <div class="nav-links" style="
+        position:absolute;
+        left:50%;
+        transform:translateX(-50%);
+    ">
+        <a href="index.html" data-link="index">Početna</a>
+        <a href="dashboard.html" data-link="dashboard">Dashboard</a>
+
+    </div>
+</div>
+
+<!-- FIXED NAVIGATION SCRIPT -->
+<script>
+// mapiranje datoteka → logički koraci
+const pageMap = {
+    "index": "index",
+    "dashboard": "dashboard",
+    "personal": "personal",
+    "business-create": "create",
+    "business-final": "final"
+};
+
+// ime trenutne html datoteke
+let rawName = document.location.pathname.split("/").pop().replace(".html", "");
+if (rawName === "") rawName = "index";
+
+// logički naziv stranice
+const currentPage = pageMap[rawName] || "index";
+
+// redoslijed stranica
+const steps = ["index", "dashboard", "personal", "create", "final"];
+const currentIndex = steps.indexOf(currentPage);
+
+// primjena zaključavanja
+document.querySelectorAll(".nav-links a").forEach(a => {
+    const page = a.getAttribute("data-link");
+    const pageIndex = steps.indexOf(page);
+
+    if (pageIndex !== -1 && pageIndex <= currentIndex) {
+        a.style.pointerEvents = "auto";
+        a.style.opacity = "1";
+    } else {
+        a.style.pointerEvents = "none";
+        a.style.opacity = "0.35";
+    }
+});
+</script>
+
+
+<!-- PAGE TITLE BAR -->
+<div class="topbar" style="
+    padding:18px 28px;
+    background:var(--bg-alt);
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+">
+    <h2 style="margin:0;">Izrada poslovnog rasporeda</h2>
+    <span style="color:var(--text-soft); font-size:15px;">Tjedan 6.1 – 12.1</span>
+</div>
+
+
+<div class="container">
+
+    <!-- PODACI TVRTKE -->
+    <div class="card">
+        <h3>Podaci tvrtke</h3>
+        <p style="margin-top:8px; color:var(--text-soft);">
+            Ovo su podaci uneseni pri registraciji poslodavca.
+        </p>
+
+        <div style="margin-top:15px; line-height:1.8;">
+            <p>Naziv: <b>Vaša Firma</b></p>
+            <p>OIB: <b>12345678901</b></p>
+            <p>Adresa: <b>Industrijska 12, Split</b></p>
+        </div>
+    </div>
+
+    <!-- RADNICI -->
+    <h2 style="margin-top:35px;">Radnici</h2>
+    <p style="color:var(--text-soft); margin-bottom:15px;">
+        Dodajte sve radnike i njihove bilješke. AI će pokušati zadovoljiti sve uvjete.
+    </p>
+
+    <div id="workersPanel">
+
+        <!-- DEFAULT WORKER BOX -->
+        <div class="worker-box">
+            <input type="text" placeholder="Ime radnika">
+            <textarea placeholder="Zahtjevi / bilješke (npr. utorak popodne slobodno)" 
+                      style="height:80px;"></textarea>
+        </div>
+
+    </div>
+
+    <!-- ADD WORKER -->
+    <button class="btn" style="margin-top:10px;" onclick="addWorker()">+ Dodaj radnika</button>
+
+    <!-- SUBMIT -->
+    <button class="btn" style="margin-top:30px;" onclick="location.href='business-final.html'">
+        Pošalji
+    </button>
+
+</div>
+
+<script>
+function addWorker() {
+    const panel = document.getElementById("workersPanel");
+
+    const worker = document.createElement("div");
+    worker.className = "worker-box";
+
+    worker.innerHTML = `
+        <input type="text" placeholder="Ime radnika">
+        <textarea placeholder="Zahtjevi / bilješke (npr. utorak popodne slobodno)" 
+                  style="height:80px;"></textarea>
+    `;
+
+    panel.appendChild(worker);
+}
+</script>
+
+</body>
+</html>
