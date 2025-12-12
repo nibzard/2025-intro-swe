@@ -10,6 +10,8 @@ import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 import { processMentions } from '@/app/forum/actions';
 import { detectSpam, detectDuplicate, detectRapidPosting } from '@/lib/spam-detection';
 import { checkAndAwardAchievements } from '@/app/forum/achievements/actions';
+import { moderateContent } from '@/lib/content-moderation';
+import { useTypingIndicator } from '@/components/forum/typing-indicator';
 import { toast } from 'sonner';
 import { Send, Loader2, Smile, Eye, Edit3, Lightbulb, X, Zap, Quote } from 'lucide-react';
 import { useButtonAnimation } from '@/hooks/use-button-animation';
@@ -37,11 +39,30 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess, onClea
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [showTips, setShowTips] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string>();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const initialContentRef = useRef(content);
   const { triggerAnimation, animationClasses } = useButtonAnimation();
+  
+  // Typing indicator hook
+  const { broadcastTyping, stopTyping } = useTypingIndicator(topicId, currentUserId);
+
+  // Get current user ID
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setCurrentUserId(data.user?.id);
+    });
+  }, []);
+
+  // Broadcast typing when content changes
+  useEffect(() => {
+    if (content.trim() && content !== initialContentRef.current) {
+      broadcastTyping();
+    }
+  }, [content, broadcastTyping]);
 
   // Update content when quote is added
   useEffect(() => {
@@ -197,12 +218,30 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess, onClea
         }
       }
 
+      // Content moderation - check for inappropriate content
+      const moderationResult = await moderateContent({
+        content: content.trim(),
+        userId: user.id,
+        contentType: 'reply',
+      });
+
+      if (!moderationResult.approved) {
+        toast.error(moderationResult.reason || 'Sadržaj sadrži neprimjeren jezik', { id: toastId });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Use moderated content (censored if needed)
+      const finalContent = moderationResult.content || content.trim();
+
       const { error: insertError, data: newReply } = await (supabase as any)
         .from('replies')
         .insert({
-          content: content.trim(),
+          content: finalContent,
           topic_id: topicId,
           author_id: user.id,
+          auto_flagged: moderationResult.severity ? true : false,
+          moderation_status: moderationResult.severity && moderationResult.severity !== 'low' ? 'flagged' : 'approved',
         })
         .select()
         .single();

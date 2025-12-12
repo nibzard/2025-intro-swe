@@ -16,6 +16,7 @@ import { generateSlug } from '@/lib/utils';
 import { processMentions } from '@/app/forum/actions';
 import { detectSpam, detectDuplicate, detectRapidPosting } from '@/lib/spam-detection';
 import { checkAndAwardAchievements } from '@/app/forum/achievements/actions';
+import { moderateContent } from '@/lib/content-moderation';
 import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -244,15 +245,35 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
         }
       }
 
+      // Content moderation - check for inappropriate content
+      const moderationResult = await moderateContent({
+        content: content.trim(),
+        title: title.trim(),
+        userId: user.id,
+        contentType: 'topic',
+      });
+
+      if (!moderationResult.approved) {
+        toast.error(moderationResult.reason || 'Sadržaj sadrži neprimjeren jezik', { id: loadingToast });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Use moderated content (censored if needed)
+      const finalTitle = moderationResult.title || title.trim();
+      const finalContent = moderationResult.content || content.trim();
+
       // Create topic
       const { data: topic, error: topicError } = await (supabase as any)
         .from('topics')
         .insert({
-          title: title.trim(),
-          slug: generateSlug(title.trim()),
-          content: content.trim(),
+          title: finalTitle,
+          slug: generateSlug(finalTitle),
+          content: finalContent,
           category_id: categoryId,
           author_id: user.id,
+          auto_flagged: moderationResult.severity ? true : false,
+          moderation_status: moderationResult.severity && moderationResult.severity !== 'low' ? 'flagged' : 'approved',
         })
         .select()
         .single();
