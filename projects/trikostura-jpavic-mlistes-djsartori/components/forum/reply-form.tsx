@@ -8,6 +8,10 @@ import { AdvancedFileUpload } from '@/components/forum/advanced-file-upload';
 import { createClient } from '@/lib/supabase/client';
 import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 import { processMentions } from '@/app/forum/actions';
+import { detectSpam, detectDuplicate, detectRapidPosting } from '@/lib/spam-detection';
+import { checkAndAwardAchievements } from '@/app/forum/achievements/actions';
+import { moderateContent } from '@/lib/content-moderation';
+import { useTypingIndicator } from '@/components/forum/typing-indicator';
 import { toast } from 'sonner';
 import { Send, Loader2, Smile, Eye, Edit3, Lightbulb, X, Zap, Quote } from 'lucide-react';
 import { useButtonAnimation } from '@/hooks/use-button-animation';
@@ -35,11 +39,30 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess, onClea
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [showTips, setShowTips] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string>();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const initialContentRef = useRef(content);
   const { triggerAnimation, animationClasses } = useButtonAnimation();
+  
+  // Typing indicator hook
+  const { broadcastTyping, stopTyping } = useTypingIndicator(topicId, currentUserId);
+
+  // Get current user ID
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setCurrentUserId(data.user?.id);
+    });
+  }, []);
+
+  // Broadcast typing when content changes
+  useEffect(() => {
+    if (content.trim() && content !== initialContentRef.current) {
+      broadcastTyping();
+    }
+  }, [content, broadcastTyping]);
 
   // Update content when quote is added
   useEffect(() => {
@@ -150,12 +173,75 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess, onClea
         return;
       }
 
+      // Spam detection - check content
+      const spamCheck = detectSpam(content.trim());
+      if (spamCheck.isSpam) {
+        toast.error(`Sadržaj je označen kao spam: ${spamCheck.reason}`, { id: toastId });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Fetch recent posts by this user for duplicate/rate limit checks
+      const { data: recentReplies } = await (supabase as any)
+        .from('replies')
+        .select('content, created_at')
+        .eq('author_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (recentReplies && recentReplies.length > 0) {
+        // Check for duplicate content
+        const duplicateCheck = detectDuplicate({
+          content: content.trim(),
+          userId: user.id,
+          recentPosts: recentReplies,
+          timeWindowMinutes: 5,
+        });
+
+        if (duplicateCheck.isSpam) {
+          toast.error(`${duplicateCheck.reason}. Molimo pričekajte prije ponovnog objavljivanja.`, { id: toastId });
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Check for rapid posting
+        const rateCheck = detectRapidPosting({
+          userId: user.id,
+          recentPosts: recentReplies,
+          maxPostsPerMinute: 3,
+        });
+
+        if (rateCheck.isSpam) {
+          toast.error(`${rateCheck.reason}. Molimo usporite.`, { id: toastId });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // Content moderation - check for inappropriate content
+      const moderationResult = await moderateContent({
+        content: content.trim(),
+        userId: user.id,
+        contentType: 'reply',
+      });
+
+      if (!moderationResult.approved) {
+        toast.error(moderationResult.reason || 'Sadržaj sadrži neprimjeren jezik', { id: toastId });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Use moderated content (censored if needed)
+      const finalContent = moderationResult.content || content.trim();
+
       const { error: insertError, data: newReply } = await (supabase as any)
         .from('replies')
         .insert({
-          content: content.trim(),
+          content: finalContent,
           topic_id: topicId,
           author_id: user.id,
+          auto_flagged: moderationResult.severity ? true : false,
+          moderation_status: moderationResult.severity && moderationResult.severity !== 'low' ? 'flagged' : 'approved',
         })
         .select()
         .single();
@@ -195,6 +281,23 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess, onClea
 
       // Process mentions and create notifications
       await processMentions(content.trim(), user.id, topicId, newReply.id);
+
+      // Check and award achievements
+      const newAchievements = await checkAndAwardAchievements(user.id);
+
+      // Show achievement notifications
+      if (newAchievements && newAchievements.length > 0) {
+        const { ACHIEVEMENTS } = await import('@/lib/achievements-definitions');
+        newAchievements.forEach(achievementId => {
+          const achievement = ACHIEVEMENTS[achievementId];
+          if (achievement) {
+            toast.success(`🏆 Novo postignuće: ${achievement.name}!`, {
+              description: achievement.description,
+              duration: 5000,
+            });
+          }
+        });
+      }
 
       triggerAnimation();
       toast.success('Odgovor uspješno objavljen!', { id: toastId });
@@ -340,7 +443,7 @@ export function ReplyForm({ topicId, quotedText, quotedAuthor, onSuccess, onClea
               </Button>
             )}
             {!content && replyTemplates.length > 0 && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 flex-wrap">
                 <span className="text-xs text-gray-500 dark:text-gray-400">Brzi odgovor:</span>
                 {replyTemplates.map((tpl) => (
                   <Button
