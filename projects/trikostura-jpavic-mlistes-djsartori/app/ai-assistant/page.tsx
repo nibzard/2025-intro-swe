@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ChatInterface } from '@/components/ai-assistant/chat-interface';
 import { ConversationItem } from '@/components/ai-assistant/conversation-item';
 import { createConversation, getConversations, getMessages } from './actions';
-import { Bot, Plus, MessageSquare, Sparkles } from 'lucide-react';
+import { Bot, Plus, MessageSquare, Sparkles, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -96,10 +96,18 @@ export default async function AIAssistantPage({
               <Card className="h-full">
                 <CardHeader className="border-b dark:border-gray-700">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <Bot className="w-6 h-6 text-purple-500" />
-                      AI Studijski Asistent
-                    </CardTitle>
+                    <div className="flex items-center gap-3">
+                      <Link href="/forum" title="Natrag na forum">
+                        <Button variant="ghost" size="sm" className="gap-2">
+                          <ArrowLeft className="w-4 h-4" />
+                          <span className="hidden sm:inline">Natrag</span>
+                        </Button>
+                      </Link>
+                      <CardTitle className="flex items-center gap-2">
+                        <Bot className="w-6 h-6 text-purple-500" />
+                        AI Studijski Asistent
+                      </CardTitle>
+                    </div>
                     <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                       <Sparkles className="w-3 h-3" />
                       {aiProvider ? `Powered by ${aiProvider}` : 'AI Assistant'}
