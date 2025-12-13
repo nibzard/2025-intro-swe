@@ -1,0 +1,18 @@
+# Minimal LLM Answer Watcher Configuration
+# This is the absolute simplest config that will work
+# Cost: ~$0.001 per run | Time: ~5 seconds
+
+run_settings:
+  output_dir: "./output"
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+
+brands:
+  mine: ["YourBrand"]
+  competitors: ["CompetitorA", "CompetitorB"]
+
+intents:
+  - id: "best-tools"
+    prompt: "What are the best email marketing tools?"

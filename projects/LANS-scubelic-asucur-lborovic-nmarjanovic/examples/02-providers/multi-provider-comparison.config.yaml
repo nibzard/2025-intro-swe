@@ -1,0 +1,58 @@
+# Multi-Provider Comparison
+# Query all 6 supported providers with identical prompts to compare results
+# Cost: ~$0.037 per run (3 intents × 6 providers)
+# Time: ~15 seconds (parallel execution)
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+  max_concurrent_requests: 10  # Process multiple providers in parallel
+
+  models:
+    # OpenAI - Fast and reliable
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+      system_prompt: "openai/gpt-4-default"
+
+    # Anthropic Claude - High quality responses
+    - provider: "anthropic"
+      model_name: "claude-3-5-haiku-20241022"
+      env_api_key: "ANTHROPIC_API_KEY"
+
+    # Google Gemini - Very fast, free tier available
+    - provider: "google"
+      model_name: "gemini-2.0-flash-exp"
+      env_api_key: "GEMINI_API_KEY"
+
+    # Mistral - European provider
+    - provider: "mistral"
+      model_name: "mistral-large-latest"
+      env_api_key: "MISTRAL_API_KEY"
+
+    # Grok - X.AI model
+    - provider: "grok"
+      model_name: "grok-beta"
+      env_api_key: "GROK_API_KEY"
+
+    # Perplexity - Always includes citations
+    - provider: "perplexity"
+      model_name: "sonar"
+      env_api_key: "PERPLEXITY_API_KEY"
+
+brands:
+  mine: ["YourBrand", "YourProduct"]
+  competitors: ["CompetitorA", "CompetitorB", "CompetitorC"]
+
+intents:
+  - id: "best-tools"
+    prompt: "What are the best project management tools?"
+
+  - id: "tool-comparison"
+    prompt: "Compare the top project management platforms for teams"
+
+  - id: "buying-guide"
+    prompt: "How do I choose the right project management software?"
+
+# Result: You'll see how each provider answers the same questions
+# and which ones consistently mention your brand

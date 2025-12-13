@@ -1,0 +1,89 @@
+# Ruff configuration for LLM Answer Watcher
+# Enforces Python 3.12+ patterns and code quality standards
+
+# Target Python 3.12+
+target-version = "py312"
+
+# Line length set to 100 for better readability on modern displays
+line-length = 100
+
+[lint]
+# Enable recommended rules plus additional quality checks
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort (import sorting)
+    "N",      # pep8-naming
+    "UP",     # pyupgrade (enforce modern Python patterns)
+    "B",      # flake8-bugbear (find likely bugs)
+    "A",      # flake8-builtins (avoid shadowing builtins)
+    "C4",     # flake8-comprehensions
+    "DTZ",    # flake8-datetimez (enforce timezone-aware datetimes)
+    "T20",    # flake8-print (catch print statements)
+    "RET",    # flake8-return (return statement issues)
+    "SIM",    # flake8-simplify
+    "ARG",    # flake8-unused-arguments
+    "PTH",    # flake8-use-pathlib (prefer pathlib over os.path)
+    "PL",     # pylint
+    "RUF",    # ruff-specific rules
+]
+
+# Ignore specific rules that conflict with our patterns
+ignore = [
+    "T201",   # Allow print() statements (we use Rich console)
+    "PLR0913", # Allow more than 5 function arguments (Pydantic models)
+    "B008",   # Allow function calls in default arguments (Pydantic defaults)
+    "PLR0915", # Allow more than 50 statements (CLI functions can be complex)
+    "PLR0912", # Allow more than 12 branches (error handling requires many branches)
+    "PLR2004", # Allow magic values (small constants are clearer than named constants)
+    "ARG002",  # Allow unused method arguments (fixture arguments)
+    "PLC0415", # Allow imports at module level (conditional imports for error handling)
+    "A002",    # Allow shadowing builtins in specific cases (format parameter)
+    "B904",    # Allow raise without from in exception handling (CLI error handling)
+    "E501",    # Allow long lines (some lines are naturally long in test files)
+    "F841",    # Allow assigned but unused variables (progress_callback)
+    "B007",    # Allow unused loop variables (pricing validation loops)
+    "PTH",     # Allow os.path usage (keeping existing os.path patterns)
+    "N801",    # Allow private class with underscore prefix
+    "N806",    # Allow uppercase variable in function (threshold constants)
+    "RET504",  # Allow unnecessary assignment before return
+    "A001",    # Allow variable 'id' shadowing builtin (common in intent validation)
+    "ARG001",  # Allow unused function arguments (LLM client parameter)
+    "DTZ001",  # Allow datetime without tzinfo in test cases
+    "RUF012",  # Allow mutable class attributes without ClassVar
+    "B023",    # Allow function definition not binding loop variable
+    "RUF059",  # Allow unpacked variables that are never used (test values)
+    "RUF005",  # Allow list concatenation instead of unpacking
+    "RUF043",  # Allow unescaped regex patterns in pytest match
+    "SIM117",  # Allow nested with statements
+    "RUF003",  # Allow multiplication sign in comments
+]
+
+# Exclude generated files and virtual environments
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "*.pyc",
+    ".pytest_cache",
+    ".ruff_cache",
+    "build",
+    "dist",
+]
+
+[lint.isort]
+# Group imports: stdlib, third-party, first-party
+known-first-party = ["llm_answer_watcher"]
+
+[lint.pyupgrade]
+# Enforce Python 3.12+ patterns (use | for Union, not typing.Union)
+keep-runtime-typing = false
+
+[format]
+# Use Black-compatible formatting
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

@@ -1,0 +1,42 @@
+# OpenAI Web Search Example
+# Demonstrates OpenAI Responses API with web search enabled
+# Cost: ~$0.030 per run (3 intents × $0.010/query with web search)
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    # WITH web search - real-time data
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+      system_prompt: "openai/gpt-4-default"
+      tools:
+        - type: "web_search"  # Enable web search
+      tool_choice: "auto"  # Let model decide when to search
+
+    # WITHOUT web search - for comparison
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+      system_prompt: "openai/gpt-4-default"
+      # No tools - uses training data only
+
+brands:
+  mine: ["YourBrand"]
+  competitors: ["CompetitorA", "CompetitorB"]
+
+intents:
+  - id: "current-tools-2025"
+    prompt: "What are the best project management tools in 2025?"
+
+  - id: "recent-launches"
+    prompt: "What are the newest project management platforms?"
+
+  - id: "current-pricing"
+    prompt: "What do project management tools cost in 2025?"
+
+# Web search results are saved in:
+# - JSON: intent_*_raw_*.json (web_search_results field)
+# - SQLite: answers_raw table (web_search_results_json column)
