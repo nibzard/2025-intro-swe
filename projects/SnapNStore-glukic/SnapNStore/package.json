@@ -1,0 +1,26 @@
+{
+  "name": "ocr-receipt-processor",
+  "version": "1.0.0",
+  "description": "OCR aplikacija za automatsko prepoznavanje i pohranu računa",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "keywords": [
+    "ocr",
+    "receipt",
+    "csv"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "tesseract.js": "^5.0.4",
+    "@google/generative-ai": "^0.2.1",
+    "csv-writer": "^1.6.0",
+    "dotenv": "^16.3.1"
+  }
+}
+
