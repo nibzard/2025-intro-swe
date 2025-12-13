@@ -14,6 +14,9 @@ import { createClient } from '@/lib/supabase/client';
 import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 import { generateSlug } from '@/lib/utils';
 import { processMentions } from '@/app/forum/actions';
+import { detectSpam, detectDuplicate, detectRapidPosting } from '@/lib/spam-detection';
+import { checkAndAwardAchievements } from '@/app/forum/achievements/actions';
+import { moderateContent } from '@/lib/content-moderation';
 import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -187,15 +190,90 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
         throw new Error('Morate biti prijavljeni');
       }
 
+      // Spam detection - check title and content
+      const titleSpamCheck = detectSpam(title.trim());
+      if (titleSpamCheck.isSpam) {
+        toast.error(`Naslov je označen kao spam: ${titleSpamCheck.reason}`, { id: loadingToast });
+        setIsSubmitting(false);
+        return;
+      }
+
+      const contentSpamCheck = detectSpam(content.trim());
+      if (contentSpamCheck.isSpam) {
+        toast.error(`Sadržaj je označen kao spam: ${contentSpamCheck.reason}`, { id: loadingToast });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Fetch recent topics by this user for duplicate/rate limit checks
+      const { data: recentTopics } = await (supabase as any)
+        .from('topics')
+        .select('title, content, created_at')
+        .eq('author_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (recentTopics && recentTopics.length > 0) {
+        // Check for duplicate content
+        const duplicateCheck = detectDuplicate({
+          content: title.trim() + ' ' + content.trim(),
+          userId: user.id,
+          recentPosts: recentTopics.map((t: any) => ({
+            content: t.title + ' ' + t.content,
+            created_at: t.created_at,
+          })),
+          timeWindowMinutes: 10,
+        });
+
+        if (duplicateCheck.isSpam) {
+          toast.error(`${duplicateCheck.reason}. Molimo pričekajte prije ponovnog objavljivanja.`, { id: loadingToast });
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Check for rapid posting
+        const rateCheck = detectRapidPosting({
+          userId: user.id,
+          recentPosts: recentTopics,
+          maxPostsPerMinute: 2, // Stricter for topics
+        });
+
+        if (rateCheck.isSpam) {
+          toast.error(`${rateCheck.reason}. Molimo usporite.`, { id: loadingToast });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // Content moderation - check for inappropriate content
+      const moderationResult = await moderateContent({
+        content: content.trim(),
+        title: title.trim(),
+        userId: user.id,
+        contentType: 'topic',
+      });
+
+      if (!moderationResult.approved) {
+        toast.error(moderationResult.reason || 'Sadržaj sadrži neprimjeren jezik', { id: loadingToast });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Use moderated content (censored if needed)
+      const finalTitle = moderationResult.title || title.trim();
+      const finalContent = moderationResult.content || content.trim();
+
       // Create topic
       const { data: topic, error: topicError } = await (supabase as any)
         .from('topics')
         .insert({
-          title: title.trim(),
-          slug: generateSlug(title.trim()),
-          content: content.trim(),
+          title: finalTitle,
+          slug: generateSlug(finalTitle),
+          content: finalContent,
           category_id: categoryId,
           author_id: user.id,
+          auto_flagged: moderationResult.severity ? true : false,
+          moderation_status: moderationResult.severity && moderationResult.severity !== 'low' ? 'flagged' : 'approved',
         })
         .select()
         .single();
@@ -244,6 +322,23 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
 
       // Process mentions and create notifications
       await processMentions(content.trim(), user.id, topic.id);
+
+      // Check and award achievements
+      const newAchievements = await checkAndAwardAchievements(user.id);
+
+      // Show achievement notifications
+      if (newAchievements && newAchievements.length > 0) {
+        const { ACHIEVEMENTS } = await import('@/lib/achievements-definitions');
+        newAchievements.forEach(achievementId => {
+          const achievement = ACHIEVEMENTS[achievementId];
+          if (achievement) {
+            toast.success(`🏆 Novo postignuće: ${achievement.name}!`, {
+              description: achievement.description,
+              duration: 5000,
+            });
+          }
+        });
+      }
 
       // Delete draft if exists
       if (draftId) {
