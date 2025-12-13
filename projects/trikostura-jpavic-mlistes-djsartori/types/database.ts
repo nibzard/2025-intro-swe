@@ -372,6 +372,64 @@ export interface CategoryWithStats extends Category {
 }
 
 /**
+ * Attachment types
+ */
+export interface Attachment {
+  id: string;
+  topic_id?: string;
+  reply_id?: string;
+  file_name: string;
+  file_url: string;
+  file_type: string;
+  file_size: number;
+  uploaded_by: string;
+  created_at: string;
+}
+
+/**
+ * Reply with full relations and attachments
+ */
+export interface ReplyWithRelations extends Reply {
+  author: Profile;
+  attachments?: Attachment[];
+  user_vote?: {
+    vote_type: number;
+  } | null;
+  parent_reply?: ReplyWithAuthor | null;
+}
+
+/**
+ * Search result types
+ */
+export interface SearchResult {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  created_at: string;
+  reply_count: number;
+  view_count: number;
+  has_solution: boolean;
+  author: {
+    username: string;
+    avatar_url: string | null;
+  };
+  category: {
+    name: string;
+    slug: string;
+    color: string | null;
+  };
+}
+
+export interface SearchFilters {
+  query: string;
+  category?: string;
+  author?: string;
+  hasSolution?: boolean;
+  sortBy?: 'relevance' | 'recent' | 'popular';
+}
+
+/**
  * API response types
  */
 export interface ApiResponse<T = unknown> {
