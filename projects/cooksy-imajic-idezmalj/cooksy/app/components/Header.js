@@ -12,7 +12,7 @@ export default function Header() {
         <span className="text-[#6E5430]">o</span>
         <span className="text-[#5B3705]">ksy</span>
       </p>
-      <nav className="hidden md:flex space-x-8">
+      <nav className="space-x-8">
         <Link href={"/"} className={pathname === "/" ? "text-[#5B3705]" : "text-black"}>HOME</Link>
         <Link href={"/recipes"} className={pathname === "/recipes" ? "text-[#5B3705]" : "text-black"}>RECIPES</Link>
         <Link href={"/favorites"} className={pathname === "/favorites" ? "text-[#5B3705]" : "text-black"}>FAVORITES</Link>
