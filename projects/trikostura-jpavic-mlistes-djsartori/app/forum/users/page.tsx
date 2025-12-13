@@ -6,48 +6,39 @@ import { Avatar } from '@/components/ui/avatar';
 import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { Trophy, TrendingUp, Users, Star, Calendar, MessageSquare, FileText, Award } from 'lucide-react';
 
-// Revalidate every 5 minutes
+// Revalidate every 5 minutes for better performance
 export const revalidate = 300;
 
 export default async function UsersPage() {
   const supabase = await createServerSupabaseClient();
 
-  // Get total stats
-  const { count: totalUsers } = await supabase
-    .from('profiles')
-    .select('*', { count: 'exact', head: true });
-
-  const { count: totalTopics } = await supabase
-    .from('topics')
-    .select('*', { count: 'exact', head: true });
-
-  const { count: totalReplies } = await supabase
-    .from('replies')
-    .select('*', { count: 'exact', head: true });
-
-  // Top contributors by reputation
-  const { data: topByReputation } = await supabase
-    .from('profiles')
-    .select('id, username, full_name, avatar_url, reputation, role, created_at')
-    .order('reputation', { ascending: false })
-    .limit(10);
-
-  // Fetch recent users for "Newest Members" (limited to 50 most recent)
-  const { data: recentUsers } = await supabase
-    .from('profiles')
-    .select('id, username, full_name, avatar_url, reputation, role, created_at')
-    .order('created_at', { ascending: false })
-    .limit(50);
-
-  // Get topic counts grouped by author (for most active calculation)
-  const { data: topicCounts } = await (supabase as any)
-    .from('topics')
-    .select('author_id');
-
-  // Get reply counts grouped by author
-  const { data: replyCounts } = await (supabase as any)
-    .from('replies')
-    .select('author_id');
+  // PARALLEL QUERIES: Fetch all data at once
+  const [
+    { count: totalUsers },
+    { count: totalTopics },
+    { count: totalReplies },
+    { data: topByReputation },
+    { data: recentUsers },
+    { data: topicCounts },
+    { data: replyCounts }
+  ] = await Promise.all([
+    supabase.from('profiles').select('*', { count: 'exact', head: true }),
+    supabase.from('topics').select('*', { count: 'exact', head: true }),
+    supabase.from('replies').select('*', { count: 'exact', head: true }),
+    supabase
+      .from('profiles')
+      .select('id, username, full_name, avatar_url, reputation, role, created_at')
+      .order('reputation', { ascending: false })
+      .limit(10),
+    supabase
+      .from('profiles')
+      .select('id, username, full_name, avatar_url, reputation, role, created_at')
+      .order('created_at', { ascending: false })
+      .limit(50),
+    // Only select author_id for counting - much lighter query
+    supabase.from('topics').select('author_id'),
+    supabase.from('replies').select('author_id')
+  ]);
 
   // Aggregate counts per user
   const activityMap = new Map<string, { topics: number; replies: number }>();

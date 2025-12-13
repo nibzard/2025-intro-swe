@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <title>SmartSchedule – Poslovni Raspored</title>
+    <link rel="stylesheet" href="global.css">
+</head>
+
+<body>
+
+<!-- TOP NAVIGATION -->
+<div class="topnav" style="position:relative;">
+
+    <!-- LOGO LEFT -->
+    <div class="logo-box">
+        <div class="logo-icon">SS</div>
+        <div class="logo-text">SmartSchedule</div>
+    </div>
+
+    <!-- CENTERED NAVIGATION -->
+    <div class="nav-links" style="
+        position:absolute;
+        left:50%;
+        transform:translateX(-50%);
+    ">
+        <a href="index.html" data-link="index">Početna</a>
+        <a href="dashboard.html" data-link="dashboard">Dashboard</a>
+
+    </div>
+</div>
+
+<!-- FIXED JS SCRIPT – radi na svim stranicama -->
+<script>
+// mapiranje naziva datoteka na korake
+const pageMap = {
+    "index": "index",
+    "dashboard": "dashboard",
+    "personal": "personal",
+    "business-create": "create",
+    "business-final": "final"
+};
+
+// dohvati trenutnu html datoteku
+let rawName = document.location.pathname.split("/").pop().replace(".html", "");
+
+if (rawName === "") rawName = "index";
+
+// prevedi datoteku u logički naziv
+const currentPage = pageMap[rawName] || "index";
+
+// redoslijed stranica
+const steps = ["index", "dashboard", "personal", "create", "final"];
+
+const currentIndex = steps.indexOf(currentPage);
+
+// prolaz kroz sve linkove
+document.querySelectorAll(".nav-links a").forEach(a => {
+    const page = a.getAttribute("data-link");
+    const pageIndex = steps.indexOf(page);
+
+    if (pageIndex !== -1 && pageIndex <= currentIndex) {
+        a.style.pointerEvents = "auto";
+        a.style.opacity = "1";
+    } else {
+        a.style.pointerEvents = "none";
+        a.style.opacity = "0.35";
+    }
+});
+</script>
+
+
+<!-- PAGE CONTENT -->
+<div class="container">
+
+    <h1>Poslovni raspored</h1>
+    <p style="color:var(--text-soft); margin-top:6px;">Pregled i AI optimizirani tjedni raspored</p>
+
+    <!-- STATUS -->
+    <div id="statusBadge" 
+         style="margin-top:18px; color:var(--accent); font-weight:600;">
+        ⚠ Sadržaj nije spremljen
+    </div>
+
+    <!-- RASPORED (placeholder) -->
+    <div class="card" style="margin-top:20px;">
+
+        <h2>Tjedni raspored (placeholder)</h2>
+        <p style="color:var(--text-soft); margin-top:5px;">Prikaz radnih smjena</p>
+
+        <div style="
+            width:100%;
+            height:260px;
+            margin-top:20px;
+            background: var(--surface-light);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            color:var(--text-soft);">
+            Ovdje ide vizualni prikaz smjena
+        </div>
+
+    </div>
+
+    <!-- GUMBI -->
+    <div style="margin-top:25px;" class="flex">
+        <button class="btn-gray" onclick="startEditing()">Uredi</button>
+        <button class="btn" onclick="saveSchedule()">Spremi</button>
+    </div>
+
+    <!-- AI POVRATNA INFORMACIJA -->
+    <div class="ai-box">
+        <h3>Povratna informacija AI</h3>
+
+        <p>• Zadovoljeno 5 od 6 radnika.</p>
+        <p>• Nezadovoljeno: Marko – utorak popodne.</p>
+        <p>• Optimizacija: preraspodjela smjena.</p>
+    </div>
+
+</div>
+
+<script>
+let editing = false;
+
+function startEditing() {
+    editing = true;
+    document.getElementById("statusBadge").textContent = "✎ Raspored se uređuje";
+    document.getElementById("statusBadge").style.color = "#facc15"; 
+}
+
+function saveSchedule() {
+    editing = false;
+    document.getElementById("statusBadge").textContent = "✔ Raspored je spremljen – Šifra: W92KDL";
+    document.getElementById("statusBadge").style.color = "var(--accent)";
+}
+</script>
+
+</body>
+</html>

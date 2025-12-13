@@ -28,45 +28,74 @@ export async function getConversations() {
     return { conversations: [], error: 'Greska pri dohvacanju razgovora' };
   }
 
-  // Get other participant's profile and unread count for each conversation
-  const conversationsWithDetails = await Promise.all(
-    (conversations || []).map(async (conv: any) => {
-      const otherUserId = conv.participant1_id === user.id
-        ? conv.participant2_id
-        : conv.participant1_id;
+  if (!conversations || conversations.length === 0) {
+    return { conversations: [] };
+  }
 
-      // Get other user's profile
-      const { data: otherUser } = await supabase
-        .from('profiles')
-        .select('id, username, avatar_url, full_name')
-        .eq('id', otherUserId)
-        .single();
-
-      // Get last message
-      const { data: lastMessage } = await (supabase as any)
-        .from('messages')
-        .select('content, sender_id, created_at')
-        .eq('conversation_id', conv.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      // Get unread count
-      const { count: unreadCount } = await (supabase as any)
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('conversation_id', conv.id)
-        .eq('is_read', false)
-        .neq('sender_id', user.id);
-
-      return {
-        ...conv,
-        other_user: otherUser,
-        last_message: lastMessage,
-        unread_count: unreadCount || 0,
-      };
-    })
+  // Get all other participant IDs
+  const otherUserIds = conversations.map((conv: any) => 
+    conv.participant1_id === user.id ? conv.participant2_id : conv.participant1_id
   );
+
+  // PARALLEL QUERIES: Fetch all profiles, messages, and unread counts at once
+  const [
+    { data: allProfiles },
+    { data: allLastMessages },
+    { data: allUnreadMessages }
+  ] = await Promise.all([
+    // Get all other users' profiles in one query
+    supabase
+      .from('profiles')
+      .select('id, username, avatar_url, full_name')
+      .in('id', otherUserIds),
+    // Get last message for each conversation in one query
+    supabase
+      .from('messages')
+      .select('conversation_id, content, sender_id, created_at')
+      .in('conversation_id', conversations.map((c: any) => c.id))
+      .order('created_at', { ascending: false }),
+    // Get unread counts
+    supabase
+      .from('messages')
+      .select('conversation_id, is_read')
+      .in('conversation_id', conversations.map((c: any) => c.id))
+      .eq('is_read', false)
+      .neq('sender_id', user.id)
+  ]);
+
+  // Create lookup maps for efficient access
+  const profileMap = new Map((allProfiles || []).map((p: any) => [p.id, p]));
+  
+  // Group messages by conversation and get last message
+  const lastMessageMap = new Map();
+  (allLastMessages || []).forEach((msg: any) => {
+    if (!lastMessageMap.has(msg.conversation_id)) {
+      lastMessageMap.set(msg.conversation_id, msg);
+    }
+  });
+
+  // Count unread messages per conversation
+  const unreadCountMap = new Map();
+  (allUnreadMessages || []).forEach((msg: any) => {
+    unreadCountMap.set(
+      msg.conversation_id,
+      (unreadCountMap.get(msg.conversation_id) || 0) + 1
+    );
+  });
+
+  // Combine all data
+  const conversationsWithDetails = conversations.map((conv: any) => {
+    const otherUserId = conv.participant1_id === user.id
+      ? conv.participant2_id
+      : conv.participant1_id;
+
+    return {
+      ...conv,
+      other_user: profileMap.get(otherUserId) || null,
+      last_message: lastMessageMap.get(conv.id) || null,
+      unread_count: unreadCountMap.get(conv.id) || 0,
+    };
+  });
 
   return { conversations: conversationsWithDetails };
 }

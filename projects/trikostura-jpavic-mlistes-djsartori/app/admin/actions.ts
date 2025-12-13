@@ -85,6 +85,20 @@ export async function banUser(userId: string, reason?: string) {
     return { success: false, error: error.message };
   }
 
+  // Create notification for the user
+  const { error: notificationError } = await (adminClient as any)
+    .from('notifications')
+    .insert({
+      user_id: userId,
+      actor_id: adminId,
+      type: 'ban',
+      content: `Vaš račun je baniran: ${reason || 'Bez razloga'}`,
+    });
+
+  if (notificationError) {
+    console.error('Failed to create ban notification:', notificationError);
+  }
+
   revalidatePath('/admin/users');
   return { success: true };
 }
@@ -173,6 +187,21 @@ export async function warnUser(userId: string, reason: string) {
     return { success: false, error: warningError.message };
   }
 
+  // Create notification for the user
+  const { error: notificationError } = await (adminClient as any)
+    .from('notifications')
+    .insert({
+      user_id: userId,
+      actor_id: adminId,
+      type: 'warning',
+      content: `Primili ste upozorenje: ${reason}`,
+    });
+
+  if (notificationError) {
+    console.error('Failed to create warning notification:', notificationError);
+    // Don't fail the warning if notification creation fails
+  }
+
   revalidatePath('/admin/users');
   return { success: true };
 }
@@ -228,6 +257,20 @@ export async function timeoutUser(userId: string, reason: string, durationHours:
 
   if (warningError) {
     return { success: false, error: warningError.message };
+  }
+
+  // Create notification for the user
+  const { error: notificationError } = await (adminClient as any)
+    .from('notifications')
+    .insert({
+      user_id: userId,
+      actor_id: adminId,
+      type: 'timeout',
+      content: `Stavljen ste u timeout na ${durationHours} sati: ${reason}`,
+    });
+
+  if (notificationError) {
+    console.error('Failed to create timeout notification:', notificationError);
   }
 
   revalidatePath('/admin/users');

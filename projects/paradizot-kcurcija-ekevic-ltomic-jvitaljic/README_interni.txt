@@ -26,3 +26,18 @@ NAPOMENA: da bi vam radilo, vaš laptop/PC i mob sa kojim ste skenirali apk,
 	-Tribalo bi izbaciti footer u aplikaciji, jer nam ne triba realno, 
 	 jer sve funkcionalnosti imamo u ovim kvadratima. tako da nam je navigation footer nepotreban
 	-Maknut footer, kvadrat i pravokutnik na HomePage-u prebacen u novi component
+
+(2.12.2025.)(Lucija)
+	-Polušaj implementacije Vercela za hostanje umjesto Expo-a
+**(Reply)(Karlo)
+	-Expo nije program za hostanje, nego za development mobilnih aplikacija (Android/IOS) uz pomoć React-Native-a. 
+	Tako da zamjena baš nema smisla. Ja sam generalno za da koristimo Vercel za server kasnije. Prestat
+	upotrebljavat Expo mi ima smisla jedino ako ćemo ispočetka počet raditi samo web aplikaciju, onda 
+	nam on ne triba.
+	-Možda preporuka da koristimo Firebase, jer Vercel nije baš pogodan za mobile.
+**(Reply)(Lucija)
+	-Pokušala sam koristiti Firebase, nije se pokazao najoptimalnijim
+	-Uspjela sam hostati s Vercelom
+	-Potrebno je prilagoditi neke elemente stranice
+(7.12.2025.)(Lucija)
+	-Izrađena web aplikacija - potrebno ju je prilagoditi za mobitel
