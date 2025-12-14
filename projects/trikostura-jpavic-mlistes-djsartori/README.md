@@ -193,15 +193,34 @@ Nakon registracije:
 
 **✅ Production Ready** - All core features implemented and optimized
 
-### 🆕 Najnovija Ažuriranja
-- ✨ Dodan Markdown editor sa live preview i syntax highlighting
-- ✨ Integrirani notification sistem sa real-time updates
-- ✨ Admin panel potpuno funkcionalan
-- ✨ Dodano uređivanje profila
-- 🐛 Riješen middleware deprecation error (Next.js 16)
-- 🐛 Riješen supabase.rpc() error na topic stranicama
+### 🆕 Najnovija Ažuriranja (V2.5.1 - 13. prosinac 2025.)
+
+**Najnovije značajke:**
+- ✨ **Sustav gamifikacije** - Postignuća, ljestvice (svih vremena i tjedne), praćenje aktivnosti
+- ✨ **Moderacija sadržaja** - Detekcija spam-a, ograničavanje stope, filtriranje sadržaja (hrvatski)
+- ✨ **Ankete i reakcije** - Kreiranje anketa i reakcijski sustav za postove
+- ✨ **Vercel Analytics** - Praćenje performansi i jedinstvenih pregleda po korisniku
+- ✨ **Poboljšana registracija** - Real-time provjera e-maila, brojač znakova, persisted form data
+- ✨ **Email verifikacija** - Obavezna verifikacija prije pristupa forumu
+- ✨ **Uvjeti i privatnost** - Stranice uvjeta korištenja i politike privatnosti
+- ✨ **Breadcrumb navigacija** - Navigacijski putevi kroz sve stranice foruma
+- ✨ **Privatne poruke** - Sustav privatnih poruka i praćenja korisnika
+- ✨ **Bookmarks** - Spremanje omiljenih tema
+- ✨ **Resetiranje lozinke** - Potpuni custom sustav resetiranja lozinke putem e-maila
+
+**Optimizacije:**
+- ⚡ Masivna optimizacija performansi - 60-85% brže učitavanje stranica
+- ⚡ Paralelni database upiti - 3-5x brže izvršavanje upita
+- ⚡ Dark mode s dropdown birač tema
+- ⚡ Responzivne animacije i vizualni feedback
+
+**Popravci:**
+- 🐛 TypeScript greške kroz cijelu aplikaciju
+- 🐛 RLS pravila za server-side operacije
+- 🐛 Middleware deprecation (Next.js 16)
+- 🐛 Supabase client inicijalizacija
+- 🐛 Email template rendering i kompatibilnost
 
 ---
 
-Za više detalja o optimizacijama, pogledaj [OPTIMIZATIONS.md](OPTIMIZATIONS.md)
-Za detaljnije upute, pogledaj [SETUP.md](SETUP.md)
+**Napomena:** Za detaljne upute o postavljanju projekta, pogledaj sekciju "📦 Instalacija" iznad.
