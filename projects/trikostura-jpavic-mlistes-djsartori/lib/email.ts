@@ -325,10 +325,8 @@ export async function sendEmailVerification(email: string, verificationCode: str
       `,
     });
 
-    console.log('Email sent successfully:', result.messageId);
     return { success: true, id: result.messageId };
   } catch (error) {
-    console.error('Email send error:', error);
     return { success: false, error };
   }
 }
@@ -633,10 +631,8 @@ export async function sendPasswordResetEmail(email: string, resetCode: string) {
       `,
     });
 
-    console.log('Password reset email sent:', result.messageId);
     return { success: true, id: result.messageId };
   } catch (error) {
-    console.error('Password reset email error:', error);
     return { success: false, error };
   }
 }

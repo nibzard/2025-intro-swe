@@ -31,33 +31,19 @@ export async function Navbar() {
       .single();
     profile = data as Profile | null;
 
-    // Fetch notifications
+    // Fetch notifications with actor data in a single query (eliminates N+1)
     const { data: notificationData } = await supabase
       .from('notifications')
-      .select('*')
+      .select(`
+        *,
+        actor:profiles!actor_id(id, username, avatar_url)
+      `)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(20);
 
     if (notificationData) {
-      // Get unique actor IDs
-      const actorIds = [...new Set(notificationData.map((n: any) => n.actor_id).filter(Boolean))];
-
-      // Fetch actors separately
-      const { data: actorsData } = await supabase
-        .from('profiles')
-        .select('id, username, avatar_url')
-        .in('id', actorIds);
-
-      // Create a map for quick lookup
-      const actorsMap = new Map((actorsData || []).map((a: any) => [a.id, a]));
-
-      // Combine notifications with actor data
-      notifications = notificationData.map((n: any) => ({
-        ...n,
-        actor: n.actor_id ? actorsMap.get(n.actor_id) : null,
-      })) as Notification[];
-
+      notifications = notificationData as Notification[];
       unreadCount = notifications.filter((n) => !n.is_read).length;
     }
   }
@@ -90,6 +76,12 @@ export async function Navbar() {
                 className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
               >
                 Korisnici
+              </NavLink>
+              <NavLink
+                href="/forum/leaderboard"
+                className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+              >
+                Ljestvica
               </NavLink>
               <NavLink
                 href="/forum/search"

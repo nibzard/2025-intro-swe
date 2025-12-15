@@ -1,82 +1,131 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
 import os
+import json
+from dotenv import load_dotenv # Nova linija za učitavanje .env
+from flask import Flask, request, jsonify
+from flask_cors import CORS # Nova linija za CORS
+from openai import OpenAI
 
+# Učitavanje varijabli iz .env datoteke
+load_dotenv() 
+
+# ===================================================
+# INICIJALIZACIJA (KLJUČ IZ .ENV)
+# ===================================================
 app = Flask(__name__)
-CORS(app) 
 
-# -------------------- KONFIGURACIJA --------------------
-# Kreiranje foldera za slike (iako je isključen, neka ostane)
-UPLOAD_FOLDER = 'uploads'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# Konfiguracija CORS-a: Omogućuje komunikaciju s frontendom na portu 8080
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:8080"}})
 
-# --- FUNKCIJA: DOHVAT PODATAKA (SIMULACIJA ZA PRETRAŽIVANJE) ---
-def _get_simulated_data(query_term):
-    # Simulirani podaci (SVE VRIJEDNOSTI SU ZA 100g)
-    db = {
-        "piletina": {"name": "Pileća prsa", "calories": 165, "protein": 31.0, "fat": 3.6, "carbs": 0.0},
-        "riza": {"name": "Kuhana riža", "calories": 130, "protein": 2.7, "fat": 0.3, "carbs": 28.2},
-        "jabuka": {"name": "Jabuka", "calories": 52, "protein": 0.3, "fat": 0.2, "carbs": 13.8},
-        "losos": {"name": "Filet lososa", "calories": 208, "protein": 20.4, "fat": 13.4, "carbs": 0.0}
-    }
-    
-    normalized_query = query_term.lower()
-    for key, value in db.items():
-        if normalized_query in key or key in normalized_query:
-            return value
-    return None
+# Inicijalizacija OpenAI klijenta s ključem iz .env datoteke
+openai_api_key = os.getenv("OPENAI_API_KEY")
+if not openai_api_key:
+    raise ValueError("OPENAI_API_KEY nije pronađen u .env datoteci")
 
-# --- RUTE API-ja (FOKUS NA RUČNI UNOS) ---
+client = OpenAI(api_key=openai_api_key)
 
-# ---------------------- 1. RUTA: Analiza Slike (ISKLJUČENA) ----------------------
+# ===================================================
+# SIMULACIJA BAZE PODATAKA ZA PRETRAŽIVANJE (lookup_meal)
+# ===================================================
+MEAL_DB = {
+    "piletina": {"calories_per_100g": 165, "protein": 31, "fat": 3.6, "carbs": 0},
+    "riza": {"calories_per_100g": 130, "protein": 2.7, "fat": 0.3, "carbs": 28},
+    "pizza": {"calories_per_100g": 266, "protein": 11, "fat": 10, "carbs": 33},
+    "jaja": {"calories_per_100g": 155, "protein": 13, "fat": 11, "carbs": 1.1},
+    "brokula": {"calories_per_100g": 34, "protein": 2.8, "fat": 0.4, "carbs": 6.6},
+}
+
+# ===================================================
+# FUNKCIJE RUTA
+# ===================================================
+
 @app.route('/api/analyze_meal', methods=['POST'])
 def analyze_meal():
-    return jsonify({'success': False, 'error': 'Analiza slike je isključena.'}), 400
+    """Ruta za analizu slike pomoću OpenAI Vision API-ja."""
+    if 'image' not in request.files:
+        return jsonify({"success": False, "error": "Nije priložena slika"}), 400
 
-# ---------------------- 2. RUTA: Barkod (ISKLJUČENA) ----------------------
-@app.route('/api/lookup_barcode', methods=['POST'])
-def lookup_barcode():
-    return jsonify({'success': False, 'error': 'Barkod funkcionalnost je isključena.'}), 400
-
-# ---------------------- 3. RUTA: Ručni unos / Pretraživanje Naziva (OSTAJE AKTIVNO) ----------------------
-@app.route('/api/lookup_meal', methods=['POST'])
-def lookup_meal():
-    if not request.json: 
-        return jsonify({'success': False, 'error': 'Nema poslanih podataka.'}), 400
-
-    data = request.json
-    meal_name = data.get('meal_name', '')
+    image_file = request.files['image']
     
     try:
-        grams = float(data.get('grams', 100)) 
-    except (ValueError, TypeError):
-        grams = 100.0 
-    
-    if not meal_name:
-        return jsonify({'success': False, 'error': 'Naziv obroka je obavezan.'}), 400
+        # Preuzimanje podataka iz datoteke i konvertiranje u base64
+        import base64
+        encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+        image_mime = image_file.mimetype or 'image/jpeg' # Pretpostavljamo jpeg ako nema mime tipa
 
-    meal_data = _get_simulated_data(meal_name) 
-    
-    if meal_data:
-        # PRERAČUNAVANJE GRAMAŽE
-        if grams > 0:
-            factor = grams / 100.0
+        # Kreiranje poruke za Vision model
+        prompt = (
+            "Detaljno analiziraj ovu sliku obroka. Identificiraj glavne namirnice, procijeni njihovu težinu "
+            "i zatim procjeni ukupan broj kalorija (kcal), proteina (g), masti (g) i ugljikohidrata (g) za cijeli obrok. "
+            "Odgovor MORA biti striktno u JSON formatu i MORA sadržavati polja: 'name' (kratki opis obroka), 'calories', 'protein', 'fat' i 'carbs'."
+            "Koristi razumne procjene. Pazi na format. Primjer: {'name': 'Jaja i tost', 'calories': 350.5, 'protein': 25.1, 'fat': 15.0, 'carbs': 30.2}"
+        )
+
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {"type": "image_url", "image_url": {"url": f"data:{image_mime};base64,{encoded_image}"}}
+                    ],
+                }
+            ],
+            max_tokens=300,
+            response_format={"type": "json_object"} # Nalažemo JSON izlaz
+        )
+
+        # Parsiranje JSON odgovora
+        json_string = response.choices[0].message.content
+        meal_data = json.loads(json_string)
+
+        # Provjera i vraćanje podataka
+        required_keys = ['name', 'calories', 'protein', 'fat', 'carbs']
+        if all(k in meal_data for k in required_keys):
+            return jsonify({
+                "success": True,
+                "name": meal_data['name'],
+                "calories": float(meal_data['calories']),
+                "protein": float(meal_data['protein']),
+                "fat": float(meal_data['fat']),
+                "carbs": float(meal_data['carbs'])
+            })
         else:
-            factor = 0.0 
-        
-        # Skaliranje svih vrijednosti
-        meal_data['name'] = f"{meal_data['name']} ({grams:.0f}g)"
-        meal_data['calories'] = round(meal_data['calories'] * factor, 0)
-        meal_data['protein'] = round(meal_data['protein'] * factor, 1)
-        meal_data['fat'] = round(meal_data['fat'] * factor, 1)
-        meal_data['carbs'] = round(meal_data['carbs'] * factor, 1)
-        
-        return jsonify({'success': True, **meal_data})
-    else:
-        return jsonify({'success': False, 'error': f'Kalorije za "{meal_name}" nisu pronađene (Pokušajte ručni unos broja)'}), 404
+            return jsonify({"success": False, "error": "AI nije vratio ispravan JSON format."}), 500
 
+    except Exception as e:
+        print(f"Greška u AI analizi: {e}")
+        return jsonify({"success": False, "error": f"Interna serverska greška: {str(e)}"}), 500
+
+
+@app.route('/api/lookup_meal', methods=['POST'])
+def lookup_meal():
+    """Ruta za pretraživanje simulirane baze podataka."""
+    data = request.json
+    meal_name = data.get('meal_name', '').lower()
+    grams = data.get('grams', 100)
+
+    if meal_name in MEAL_DB:
+        base_data = MEAL_DB[meal_name]
+        factor = grams / 100.0
+
+        result = {
+            "success": True,
+            "name": f"{meal_name.capitalize()} ({grams}g)",
+            "calories": base_data['calories_per_100g'] * factor,
+            "protein": base_data['protein'] * factor,
+            "fat": base_data['fat'] * factor,
+            "carbs": base_data['carbs'] * factor
+        }
+        return jsonify(result)
+    else:
+        return jsonify({"success": False, "error": "Namirnica nije pronađena."}), 404
+
+# ===================================================
+# POKRETANJE APLIKACIJE
+# ===================================================
 
 if __name__ == '__main__':
+    # Flask će se pokrenuti na http://localhost:5000/
+    print("Flask aplikacija se pokreće na http://localhost:5000/")
     app.run(debug=True, port=5000)

@@ -3,28 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calorie Tracker AI - Ručni Unos</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Calorie Tracker App (Offline Mod)</title>
+    <link rel="stylesheet" href="style.css"> 
 </head>
 <body>
 
-    <div class="container">
-        <h1>Calorie Tracker App 🥗</h1>
-        
-        <div class="input-sections">
+    <header>
+        <h1>🥗 Calorie Tracker App</h1>
+        <div class="user-info">
+            <span id="user-display">Aplikacija spremna (Offline Mod)</span>
+        </div>
+    </header>
+    
+    <div id="app-container" class="container" style="display:block;">
 
-            <div class="section barcode-section">
-                <h2>1. Barkod Skeniranje</h2>
-                <p>Funkcionalnost je privremeno isključena.</p>
-                <div class="input-group">
-                    <label for="barcode">Barkod (UPC/EAN):</label>
-                    <input type="text" id="barcode" placeholder="Npr. 049000030045">
+        <section id="daily-stats">
+            <h2>Dnevna Statistika 📊</h2>
+            <div class="stats-grid">
+                <div>
+                    <p>Dnevni Cilj (kcal):</p>
+                    <input type="number" id="daily-goal" value="2000" min="500">
+                </div>
+                <div>
+                    <p>Ukupno Kalorija</p>
+                    <span id="total-calories">0.0</span> kcal
+                </div>
+                <div>
+                    <p>Protein</p>
+                    <span id="total-protein">0.0</span> g
+                </div>
+                <div>
+                    <p>Ugljikohidrati</p>
+                    <span id="total-carbs">0.0</span> g
+                </div>
+                 <div>
+                    <p>Masti</p>
+                    <span id="total-fat">0.0</span> g
                 </div>
             </div>
+            <p id="goal-status">Preostalo: 2000 kcal.</p>
+        </section>
 
-            <div class="section manual-section">
-                <h2>2. Ručni Unos / Pretraživanje</h2>
-                <p>Unos i preračunavanje kalorija po gramaži.</p>
+        <section id="meal-input">
+            <h2>1. Unos Obroka</h2>
+
+            <fieldset>
+                <legend>Pretraživanje i preračunavanje kalorija po gramaži</legend>
+                
                 <div class="input-group">
                     <label for="meal-name">Naziv Obroka:</label>
                     <input type="text" id="meal-name" placeholder="Npr. Piletina, Riža, Pizza">
@@ -32,68 +57,36 @@
                 
                 <div class="input-group">
                     <label for="grams">Količina (g):</label>
-                    <input type="number" id="grams" placeholder="Npr. 150">
+                    <input type="number" id="grams" value="150" min="1">
                 </div>
-
+                
                 <div class="input-group">
                     <label for="calories">Kalorije (kcal / 100g):</label>
-                    <input type="number" id="calories" placeholder=" - Unesite ručno za prilagođeni obrok" >
+                    <input type="number" id="calories" placeholder="Unesite ručno za prilagođeni obrok" min="0">
                 </div>
-            </div>
+                
+                <button id="add-meal-btn">Dodaj Obrok / Pretraži</button>
+                <p id="analysis-result"></p>
+            </fieldset>
+
+            <fieldset>
+                <legend>2. Analiza Obroka Putem Slike 📸</legend>
+                <div class="input-group">
+                    <label for="meal-image-file">Odaberite sliku:</label>
+                    <input type="file" id="meal-image-file" accept="image/*">
+                </div>
+                <button id="analyze-btn">Analiziraj Sliku</button>
+                <p id="analysis-result-image"></p>
+            </fieldset>
             
-            <div class="section image-section">
-                <h2>3. Analiza Obroka Putem Slike</h2>
-                <p>Funkcionalnost je privremeno isključena.</p>
-                <input type="file" id="meal-image-file">
-            </div>
+        </section>
 
-        </div> <button id="add-meal-btn" class="primary-btn">Dodaj Obrok / Pretraži</button>
-        <button id="analyze-btn" class="primary-btn">Analiziraj Sliku</button>
-        <div id="analysis-result"></div>
-        
-        <hr>
-
-        <div class="stats-section">
-            <h2>Dnevna Statistika 📊</h2>
-            <div class="input-group goal-input">
-                <label for="daily-goal">Dnevni Cilj (kcal):</label>
-                <input type="number" id="daily-goal" value="2000" min="1" >
-            </div>
-            <p id="goal-status" class="status-message"></p> <div class="macro-grid">
-                <div>
-                    <p class="stat-label">🔥 Ukupno Kalorija</p>
-                    <p class="stat-value" id="total-calories">0</p>
-                    <p class="stat-unit">kcal</p>
-                </div>
-                <div>
-                    <p class="stat-label">🥩 Proteina</p>
-                    <p class="stat-value" id="total-protein">0</p>
-                    <p class="stat-unit">g</p>
-                </div>
-                <div>
-                    <p class="stat-label">🍚 Ugljikohidrata</p>
-                    <p class="stat-value" id="total-carbs">0</p>
-                    <p class="stat-unit">g</p>
-                </div>
-                <div>
-                    <p class="stat-label">🧈 Masti</p>
-                    <p class="stat-value" id="total-fat">0</p>
-                    <p class="stat-unit">g</p>
-                </div>
-            </div>
-        </div>
-        
-        <hr>
-
-        <div class="log-section">
-            <div class="log-header">
-                <h2>Dnevnik Obroka 📝</h2>
-                <button id="clear-log-btn" class="secondary-btn">Očisti Dnevnik</button>
-            </div>
+        <section id="meal-log-section">
+            <h2>3. Dnevnik Obroka</h2>
             <ul id="meal-log">
                 </ul>
-        </div>
-
+            <button id="clear-log-btn">Očisti Dnevnik</button>
+        </section>
     </div>
 
     <script src="script.js"></script>

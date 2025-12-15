@@ -23,14 +23,13 @@ Cilj projekta je stvoriti digitalno okruženje gdje glazba postaje način upozna
 ---
 
 ## Ključne funkcionalnosti
-- Registracija i prijava korisnika (e-mail ili GitHub login)
+- Registracija i prijava korisnika (e-mail)
 - Unos omiljenih izvođača i žanrova
 - Preporuke korisnika sa sličnim glazbenim ukusom
-- Prikaz korisnika u blizini (geolokacija)
+- Prikaz korisnika u blizini
 - Prikaz i preporuka koncerata / festivala
 - Chat s “matchanim” korisnicima
 - Moderni, responzivni UI u Reactu
-- Integracija s GitHubom za autentikaciju i verzioniranje
 
 ---
 

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@radix-ui/react-progress": "^1.1.8",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-tabs": "^1.1.13",
     "@supabase/ssr": "^0.8.0",
@@ -38,11 +39,14 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/hast": "^3.0.4",
+    "@types/mdast": "^4.0.4",
+    "@types/node": "^20.19.26",
     "@types/nodemailer": "^7.0.4",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "@types/unist": "^3.0.3",
     "autoprefixer": "^10.0.1",
     "eslint": "^9.39.1",
     "eslint-config-next": "^16.0.7",
