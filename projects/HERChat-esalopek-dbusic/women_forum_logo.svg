@@ -1,0 +1,86 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#FFF9F5"/>
+  
+  <!-- Main logo design - Women in a circle holding hands/connected -->
+  <g transform="translate(400, 220)">
+    <!-- Woman 1 - Left -->
+    <g transform="translate(-90, 0)">
+      <!-- Head -->
+      <circle cx="0" cy="0" r="28" fill="#F5D5D8"/>
+      <!-- Hair -->
+      <path d="M -20 -15 Q -28 -20, -28 -28 Q -25 -35, -15 -38 Q 0 -40, 15 -38 Q 25 -35, 28 -28 Q 28 -20, 20 -15 L 15 -5 Q 10 0, 5 3 L 0 5 L -5 3 Q -10 0, -15 -5 Z" 
+            fill="#E8B8BB"/>
+      <!-- Body/shoulders -->
+      <ellipse cx="0" cy="40" rx="25" ry="15" fill="#F5D5D8"/>
+      <!-- Arm reaching right -->
+      <path d="M 20 35 Q 40 30, 60 25 L 75 22" stroke="#F5D5D8" stroke-width="12" fill="none" stroke-linecap="round"/>
+    </g>
+    
+    <!-- Woman 2 - Top center -->
+    <g transform="translate(0, -70)">
+      <!-- Head -->
+      <circle cx="0" cy="0" r="28" fill="#D4BFD4"/>
+      <!-- Hair -->
+      <path d="M -22 -12 Q -30 -18, -30 -26 Q -28 -34, -18 -38 Q 0 -42, 18 -38 Q 28 -34, 30 -26 Q 30 -18, 22 -12 L 18 -2 Q 12 3, 6 6 L 0 8 L -6 6 Q -12 3, -18 -2 Z" 
+            fill="#C2A8C4"/>
+      <!-- Body/shoulders -->
+      <ellipse cx="0" cy="40" rx="25" ry="15" fill="#D4BFD4"/>
+      <!-- Arms reaching down -->
+      <path d="M -18 35 Q -35 50, -50 70" stroke="#D4BFD4" stroke-width="12" fill="none" stroke-linecap="round"/>
+      <path d="M 18 35 Q 35 50, 50 70" stroke="#D4BFD4" stroke-width="12" fill="none" stroke-linecap="round"/>
+    </g>
+    
+    <!-- Woman 3 - Right -->
+    <g transform="translate(90, 0)">
+      <!-- Head -->
+      <circle cx="0" cy="0" r="28" fill="#C8D9E3"/>
+      <!-- Hair -->
+      <path d="M -20 -15 Q -28 -20, -28 -28 Q -25 -35, -15 -38 Q 0 -40, 15 -38 Q 25 -35, 28 -28 Q 28 -20, 20 -15 L 15 -5 Q 10 0, 5 3 L 0 5 L -5 3 Q -10 0, -15 -5 Z" 
+            fill="#B5C9D8"/>
+      <!-- Body/shoulders -->
+      <ellipse cx="0" cy="40" rx="25" ry="15" fill="#C8D9E3"/>
+      <!-- Arm reaching left -->
+      <path d="M -20 35 Q -40 30, -60 25 L -75 22" stroke="#C8D9E3" stroke-width="12" fill="none" stroke-linecap="round"/>
+    </g>
+    
+    <!-- Woman 4 - Bottom left -->
+    <g transform="translate(-50, 70)">
+      <!-- Head -->
+      <circle cx="0" cy="0" r="26" fill="#F5E2D1"/>
+      <!-- Hair -->
+      <path d="M -19 -14 Q -26 -18, -26 -26 Q -24 -32, -14 -35 Q 0 -37, 14 -35 Q 24 -32, 26 -26 Q 26 -18, 19 -14 L 14 -5 Q 9 0, 5 2 L 0 4 L -5 2 Q -9 0, -14 -5 Z" 
+            fill="#E8CEB9"/>
+      <!-- Body/shoulders -->
+      <ellipse cx="0" cy="35" rx="23" ry="13" fill="#F5E2D1"/>
+      <!-- Arms reaching -->
+      <path d="M -18 30 Q -35 15, -45 0" stroke="#F5E2D1" stroke-width="11" fill="none" stroke-linecap="round"/>
+      <path d="M 18 30 Q 35 20, 48 10" stroke="#F5E2D1" stroke-width="11" fill="none" stroke-linecap="round"/>
+    </g>
+    
+    <!-- Woman 5 - Bottom right -->
+    <g transform="translate(50, 70)">
+      <!-- Head -->
+      <circle cx="0" cy="0" r="26" fill="#E6D4C8"/>
+      <!-- Hair -->
+      <path d="M -19 -14 Q -26 -18, -26 -26 Q -24 -32, -14 -35 Q 0 -37, 14 -35 Q 24 -32, 26 -26 Q 26 -18, 19 -14 L 14 -5 Q 9 0, 5 2 L 0 4 L -5 2 Q -9 0, -14 -5 Z" 
+            fill="#D4C0B3"/>
+      <!-- Body/shoulders -->
+      <ellipse cx="0" cy="35" rx="23" ry="13" fill="#E6D4C8"/>
+      <!-- Arms reaching -->
+      <path d="M -18 30 Q -35 20, -48 10" stroke="#E6D4C8" stroke-width="11" fill="none" stroke-linecap="round"/>
+      <path d="M 18 30 Q 35 15, 45 0" stroke="#E6D4C8" stroke-width="11" fill="none" stroke-linecap="round"/>
+    </g>
+    
+    <!-- Center connecting circle -->
+    <circle cx="0" cy="0" r="18" fill="#FFF9F5" stroke="#F5E6D3" stroke-width="3"/>
+    <circle cx="0" cy="0" r="8" fill="#F5E6D3" opacity="0.5"/>
+  </g>
+  
+  <!-- HERChat text -->
+  <g transform="translate(280, 480)">
+    <text x="0" y="0" font-family="Georgia, serif" font-size="65" font-weight="300" letter-spacing="3">
+      <tspan fill="#E8B8BB">HER</tspan><tspan fill="#C8D9E3">Chat</tspan>
+    </text>
+  </g>
+</svg>
