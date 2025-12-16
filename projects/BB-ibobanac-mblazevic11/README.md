@@ -12,7 +12,7 @@
 - označavanje izvršenih zadataka
 - praćenje napretka kroz semestar
 - organizaciju učenja po kolegijima
-
+...
 Na početku svakog mjeseca aplikacija generira **sažetak obveza** kako bi student imao jasnu sliku nad svojim rasporedom i ciljevima.
 
 ## 🧠 Project Motivation
