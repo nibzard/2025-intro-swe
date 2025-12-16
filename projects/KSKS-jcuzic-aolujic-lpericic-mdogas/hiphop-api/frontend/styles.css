@@ -5,22 +5,32 @@
 }
 
 :root {
-    --primary: #00d4ff;
-    --secondary: #7b2cbf;
-    --dark: #0a0e27;
+    --primary: #ff6b35;
+    --secondary: #004e89;
+    --dark: #1a1a1d;
     --light: #f5f5f5;
-    --accent: #ffd60a;
-    --gradient-1: #667eea;
-    --gradient-2: #764ba2;
-    --success: #06ffa5;
+    --accent: #ffd23f;
+    --bg-primary: #1a1a1d;
+    --bg-secondary: #2d2d30;
+    --text-primary: #f5f5f5;
+    --text-secondary: #ccc;
+}
+
+body.light-mode {
+    --bg-primary: #f5f5f5;
+    --bg-secondary: #ffffff;
+    --text-primary: #1a1a1d;
+    --text-secondary: #666;
+    --dark: #f5f5f5;
+    --light: #1a1a1d;
 }
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, var(--dark) 0%, #1a1d3a 50%, #2d1b4e 100%);
-    color: var(--light);
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+    color: var(--text-primary);
     line-height: 1.6;
-    min-height: 100vh;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 .container {
@@ -31,13 +41,14 @@ body {
 
 /* Navbar */
 .navbar {
-    background: rgba(0, 0, 0, 0.9);
+    background: var(--bg-secondary);
     padding: 1rem 0;
     position: sticky;
     top: 0;
     z-index: 100;
     backdrop-filter: blur(10px);
     border-bottom: 2px solid var(--primary);
+    transition: background 0.3s ease;
 }
 
 .navbar .container {
@@ -269,14 +280,19 @@ body {
 }
 
 .album-card {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-secondary);
     border-radius: 15px;
     overflow: hidden;
     transition: all 0.3s;
     cursor: pointer;
-    border: 2px solid transparent;
-    position: relative;
+    border: 2px solid rgba(255,255,255,0.1);
 }
+
+body.light-mode .album-card {
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border: 2px solid rgba(0,0,0,0.1);
+}   
 
 .album-card::before {
     content: '';
@@ -409,17 +425,24 @@ body {
 }
 
 .modal-content {
-    background: var(--dark);
-    margin: 2% auto;  
+    background: var(--bg-secondary);
+    margin: 2% auto;
     padding: 2rem;
     border: 2px solid var(--primary);
     border-radius: 15px;
     width: 90%;
     max-width: 600px;
-    max-height: 90vh;  
-    overflow-y: auto;  
+    max-height: 90vh;
+    overflow-y: auto;
     position: relative;
     animation: slideDown 0.3s;
+    color: var(--text-primary);
+    transition: background 0.3s ease;
+}
+
+body.light-mode .modal-content {
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
 }
 
 @keyframes slideDown {
@@ -566,6 +589,7 @@ form input:focus {
     margin-top: 1rem;
 }
 
+
 /* Responsive */
 @media (max-width: 768px) {
     .hero-title {
@@ -594,4 +618,38 @@ form input:focus {
     .genre-tab {
         flex: 0 1 auto;
     }
+}
+
+/* Light Mode Additional Styles */
+body.light-mode .hero {
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(0, 78, 137, 0.1) 100%);
+}
+
+body.light-mode .filters {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+body.light-mode .filter-group select,
+body.light-mode .filter-group input {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-primary);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+body.light-mode .album-title,
+body.light-mode .album-artist {
+    color: var(--text-primary);
+}
+
+body.light-mode .album-meta {
+    color: #666;
+}
+
+body.light-mode .nav-link {
+    color: var(--text-primary);
+}
+
+body.light-mode .footer {
+    background: var(--bg-secondary);
+    border-top: 2px solid var(--primary);
 }

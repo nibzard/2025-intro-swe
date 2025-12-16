@@ -1,14 +1,44 @@
 const API_BASE_URL = 'http://localhost:8000/api/v1';
 let currentToken = localStorage.getItem('token');
 let currentUser = null;
-let currentGenre = '';  // Track selected genre
+// Theme Toggle
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-mode');
+        document.getElementById('themeToggle').textContent = '☀️';
+    }
+}
 
-// Initialize
+function toggleTheme() {
+    document.body.classList.toggle('light-mode');
+    const isLight = document.body.classList.contains('light-mode');
+    
+    // Update button icon
+    document.getElementById('themeToggle').textContent = isLight ? '☀️' : '🌙';
+    
+    // Save preference
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+}
+
+// Initialize theme on load
 document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
     loadAlbums();
+    //loadArtists();
+    //loadProducers();
     loadTopRated();
     checkAuth();
+    
+    // Add theme toggle listener
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
 });
+
+
+
+
+let currentGenre = '';  // Track selected genre
+
 
 // Auth Check
 function checkAuth() {
