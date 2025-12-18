@@ -7,44 +7,60 @@
 [![Tests](https://github.com/nibzard/llm-answer-watcher/workflows/Tests/badge.svg)](https://github.com/nibzard/llm-answer-watcher/actions/workflows/test.yml)
 [![Coverage](https://codecov.io/gh/nibzard/llm-answer-watcher/branch/main/graph/badge.svg)](https://codecov.io/gh/nibzard/llm-answer-watcher)
 
-**Monitor how Large Language Models talk about your brand versus competitors in buyer-intent queries**
+**Pratite kako veliki jezični modeli govore o vašem brendu u usporedbi s konkurencijom.**
 
-[Get Started](getting-started/quick-start.md){ .md-button .md-button--primary }
-[View on GitHub](https://github.com/nibzard/llm-answer-watcher){ .md-button }
+[Započnite (Engleski)](getting-started/quick-start.md){ .md-button .md-button--primary }
+[Pogledaj na GitHub-u](https://github.com/nibzard/llm-answer-watcher){ .md-button }
 
 </div>
 
 ---
 
-## What is LLM Answer Watcher?
+## Što je LLM Answer Watcher?
 
-LLM Answer Watcher is a production-ready CLI tool that helps you understand how AI models like ChatGPT, Claude, and others represent your brand when users ask buyer-intent questions.
+LLM Answer Watcher je CLI alat koji vam pomaže razumjeti kako AI modeli poput ChatGPT-a, Claude-a i drugih predstavljaju vaš brend kada korisnici postavljaju pitanja s namjerom kupnje.
 
-As AI-powered search becomes mainstream, monitoring your brand's presence in LLM responses is crucial for:
+Kako pretraga potpomognuta umjetnom inteligencijom postaje sveprisutna, praćenje prisutnosti vašeg brenda u odgovorima LLM-a ključno je za:
 
-- **Brand Visibility**: Track if your product appears in AI recommendations
-- **Competitive Intelligence**: See which competitors are mentioned alongside you
-- **Market Positioning**: Understand your ranking compared to alternatives
-- **Trend Analysis**: Historical data shows how your presence changes over time
+- **Vidljivost brenda**: Pratite pojavljuje li se vaš proizvod u preporukama umjetne inteligencije.
+- **Konkurentska analiza**: Pogledajte koji se konkurenti spominju uz vas.
+- **Pozicioniranje na tržištu**: Shvatite svoj rang u usporedbi s alternativama.
+- **Analiza trendova**: Povijesni podaci pokazuju kako se vaša prisutnost mijenja tijekom vremena.
 
-## Demo
+## Brzi početak na hrvatskom
 
-See LLM Answer Watcher in action:
+### 1. Instalacija
 
-<div align="center" markdown>
+Otvorite terminal i instalirajte potrebne pakete:
 
-![LLM Answer Watcher Demo](assets/demo.gif)
+```bash
+pip install -r requirements.txt
+```
 
-</div>
+### 2. Konfiguracija
 
-**What you're seeing:**
+Kopirajte primjer konfiguracijske datoteke:
 
-- Configuration validation with brand and competitor definitions
-- Real-time progress bars showing query execution across LLM providers
-- Brand mention extraction and ranking from AI responses
-- Cost tracking and results summary
+```bash
+cp examples/default.config.yaml moja-konfiguracija.yaml
+```
 
-**Try it yourself:** Run `llm-answer-watcher demo` for an interactive demo (no API keys needed!)
+Uredite `moja-konfiguracija.yaml` i definirajte svoje brendove, konkurente i upite koje želite pratiti. Ne zaboravite postaviti svoje API ključeve kao varijable okruženja.
+
+Na primjer, za Google Gemini:
+```bash
+export GEMINI_API_KEY="vas-api-kljuc"
+```
+
+### 3. Pokretanje
+
+Pokrenite praćenje pomoću svoje konfiguracijske datoteke:
+
+```bash
+llm-answer-watcher run --config moja-konfiguracija.yaml
+```
+
+Rezultati će biti spremljeni u `output` direktorij, uključujući HTML izvještaj i SQLite bazu podataka.
 
 ---
 

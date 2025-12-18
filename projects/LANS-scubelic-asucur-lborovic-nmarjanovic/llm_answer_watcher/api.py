@@ -1,20 +1,27 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 import yaml
 import os
 import sqlite3
-import datetime
+import logging
 
-from llm_answer_watcher.storage.db import init_db_if_needed, insert_run, insert_answer_raw, insert_mention, get_run_summary
-from llm_answer_watcher.utils.time import utc_timestamp
+from llm_answer_watcher.storage.db import init_db_if_needed, get_run_summary
+from llm_answer_watcher.config.schema import (
+    WatcherConfig,
+    RuntimeConfig,
+    RuntimeModel,
+    Brands,
+    Intent,
+    RunSettings,
+    ModelConfig,
+)
+from llm_answer_watcher.llm_runner.runner import run_all
+from llm_answer_watcher.system_prompts import get_provider_default
 
-# Assuming these are available in the project structure
-# from llm_answer_watcher.llm_runner.gemini_client import GeminiClient
-# from llm_answer_watcher.extractor.mention_detector import MentionDetector
-# from llm_answer_watcher.config.schema import WatcherConfig as WatcherConfigSchema # To validate config
+logger = logging.getLogger(__name__)
 
-app = FastAPI()
+app = FastAPI(title="LLM Answer Watcher API", version="0.2.0")
 
 # CORS configuration
 origins = [
@@ -35,141 +42,127 @@ class ConfigData(BaseModel):
     api_key: str
     yaml_config: str
 
+
+def build_runtime_config_from_dict(raw_config: dict, api_key: str) -> RuntimeConfig:
+    """
+    Build a RuntimeConfig from a parsed YAML dict and API key.
+
+    This is similar to load_config() but works from an in-memory dict
+    instead of a file, and takes the API key directly.
+    """
+    # Validate with WatcherConfig first
+    try:
+        watcher_config = WatcherConfig.model_validate(raw_config)
+    except ValidationError as e:
+        error_messages = []
+        for error in e.errors():
+            loc = ".".join(str(x) for x in error["loc"])
+            msg = error["msg"]
+            error_messages.append(f"  - {loc}: {msg}")
+        raise ValueError(
+            "Configuration validation failed:\n" + "\n".join(error_messages)
+        )
+
+    # Build resolved models with the provided API key
+    resolved_models = []
+    for model_config in watcher_config.run_settings.models:
+        # Get system prompt
+        try:
+            prompt_obj = get_provider_default(model_config.provider)
+            system_prompt_text = prompt_obj.prompt
+        except Exception:
+            system_prompt_text = "You are a helpful AI assistant."
+
+        runtime_model = RuntimeModel(
+            provider=model_config.provider,
+            model_name=model_config.model_name,
+            api_key=api_key,
+            system_prompt=system_prompt_text,
+            tools=model_config.tools,
+            tool_choice=model_config.tool_choice,
+        )
+        resolved_models.append(runtime_model)
+
+    # Build RuntimeConfig
+    return RuntimeConfig(
+        run_settings=watcher_config.run_settings,
+        extraction_settings=None,  # Simplified - no extraction settings for now
+        brands=watcher_config.brands,
+        intents=watcher_config.intents,
+        models=resolved_models,
+        operation_models=[],
+        runner_configs=None,
+        global_operations=[],
+    )
+
+
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return {"message": "LLM Answer Watcher API", "version": "0.2.0"}
+
 
 @app.post("/run_watcher")
-async def run_watcher(config_data: ConfigData):
+async def run_watcher_endpoint(config_data: ConfigData):
+    """
+    Run the LLM Answer Watcher with the provided configuration.
+
+    This endpoint:
+    1. Parses the YAML configuration
+    2. Builds a RuntimeConfig with the provided API key
+    3. Calls the core run_all() function
+    4. Returns the run results
+    """
+    # Parse YAML configuration
     try:
-        config = yaml.safe_load(config_data.yaml_config)
-        # TODO: Add Pydantic validation for the config using WatcherConfigSchema
+        raw_config = yaml.safe_load(config_data.yaml_config)
     except yaml.YAMLError as e:
         raise HTTPException(status_code=400, detail=f"Invalid YAML configuration: {e}")
 
-    # Extract relevant parts of the configuration
-    run_settings = config.get("run_settings")
-    if not run_settings:
-        raise HTTPException(status_code=400, detail="Configuration missing 'run_settings'.")
-    
-    models = run_settings.get("models")
-    if not models or not isinstance(models, list) or not models:
-        raise HTTPException(status_code=400, detail="Configuration 'run_settings' must contain a non-empty list of 'models'.")
-
-    brands = config.get("brands")
-    if not brands:
-        raise HTTPException(status_code=400, detail="Configuration missing 'brands'.")
-    
-    my_brands = brands.get("mine")
-    competitor_brands = brands.get("competitors")
-
-    if not my_brands or not isinstance(my_brands, list) or not any(b.strip() for b in my_brands):
-        raise HTTPException(status_code=400, detail="Configuration 'brands.mine' must contain at least one non-empty brand.")
-    
-    # Competitors can be empty
-    if not competitor_brands or not isinstance(competitor_brands, list):
-        competitor_brands = []
-
-    intents = config.get("intents")
-    if not intents or not isinstance(intents, list) or not any(i.get("id") and i.get("prompt") for i in intents):
-        raise HTTPException(status_code=400, detail="Configuration 'intents' must contain at least one valid intent with 'id' and 'prompt'.")
+    if not raw_config:
+        raise HTTPException(status_code=400, detail="Configuration cannot be empty")
 
     if not config_data.api_key:
         raise HTTPException(status_code=400, detail="Gemini API key is required.")
-    
-    # Set the API key as an environment variable for the Gemini client
-    os.environ['GEMINI_API_KEY'] = config_data.api_key
 
-    # Determine SQLite DB path
-    sqlite_db_path = run_settings.get("sqlite_db_path", "./output/watcher.db")
-
-    # Initialize DB and get connection
+    # Build RuntimeConfig from the parsed YAML
     try:
-        init_db_if_needed(sqlite_db_path)
-        with sqlite3.connect(sqlite_db_path) as conn:
-            # Generate a run ID
-            run_id = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%SZ") # Simpler run_id for now
-
-            # Insert run record
-            insert_run(
-                conn,
-                run_id=run_id,
-                timestamp_utc=utc_timestamp(),
-                total_intents=len(intents),
-                total_models=len(models)
-            )
-
-            results = []
-            for intent in intents:
-                intent_id = intent.get("id")
-                prompt = intent.get("prompt")
-                
-                # Already validated that intents are valid, but defensive check
-                if not intent_id or not prompt:
-                    continue
-                
-                # Assume a single model for simplicity for now
-                model_config = models[0]
-                model_provider = model_config.get("provider")
-                model_name = model_config.get("model_name")
-
-                if not model_provider or not model_name:
-                    raise HTTPException(status_code=400, detail="Model configuration requires 'provider' and 'model_name'.")
-
-                # Simulate Gemini API call
-                response_text = f"This is a simulated response for '{prompt}'. It mentions {my_brands[0] if my_brands else 'my_brand'} and {competitor_brands[0] if competitor_brands else 'competitor_brand'}."
-                
-                # Insert raw answer
-                insert_answer_raw(
-                    conn,
-                    run_id=run_id,
-                    intent_id=intent_id,
-                    model_provider=model_provider,
-                    model_name=model_name,
-                    timestamp_utc=utc_timestamp(),
-                    prompt=prompt,
-                    answer_text=response_text,
-                    estimated_cost_usd=0.001 # Simulated cost
-                )
-
-                # Simulate brand mention detection and insert
-                simulated_mentions = []
-                all_brands = my_brands + competitor_brands
-                for brand in all_brands:
-                    if brand.strip() and brand.lower() in response_text.lower():
-                        normalized_brand = brand.lower().replace(" ", "-")
-                        is_mine = brand in my_brands
-                        insert_mention(
-                            conn,
-                            run_id=run_id,
-                            timestamp_utc=utc_timestamp(),
-                            intent_id=intent_id,
-                            model_provider=model_provider,
-                            model_name=model_name,
-                            brand_name=brand,
-                            normalized_name=normalized_brand,
-                            is_mine=is_mine,
-                            match_type="simulated"
-                        )
-                        simulated_mentions.append({"brand": brand, "is_mine": is_mine, "rank": 1, "context": response_text})
-
-                # Append results for frontend response
-                results.append({
-                    "intent_id": intent_id,
-                    "prompt": prompt,
-                    "answer": response_text,
-                    "mentions": simulated_mentions,
-                    "model": model_name,
-                    "tokens_used": 0, # Placeholder
-                    "cost_usd": 0.0 # Placeholder
-                })
-            conn.commit() # Commit all changes for the run
-    except sqlite3.Error as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+        runtime_config = build_runtime_config_from_dict(raw_config, config_data.api_key)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
-    
-    return {"message": "Watcher logic executed and results stored", "run_id": run_id, "results": results}
+        logger.error(f"Failed to build runtime config: {e}", exc_info=True)
+        raise HTTPException(status_code=400, detail=f"Configuration error: {e}")
+
+    # Ensure output directory exists and DB is initialized
+    sqlite_db_path = runtime_config.run_settings.sqlite_db_path
+    try:
+        os.makedirs(os.path.dirname(sqlite_db_path) or ".", exist_ok=True)
+        init_db_if_needed(sqlite_db_path)
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Database initialization error: {e}")
+
+    # Run the watcher - call the actual run_all() function
+    try:
+        logger.info("Starting run_all() execution...")
+        result = await run_all(runtime_config)
+        logger.info(f"run_all() completed: run_id={result['run_id']}, success={result['success_count']}/{result['total_queries']}")
+    except Exception as e:
+        logger.error(f"run_all() failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Watcher execution error: {e}")
+
+    # Return the result directly
+    return {
+        "message": "Watcher execution completed",
+        "run_id": result["run_id"],
+        "timestamp_utc": result["timestamp_utc"],
+        "output_dir": result["output_dir"],
+        "total_queries": result["total_queries"],
+        "success_count": result["success_count"],
+        "error_count": result["error_count"],
+        "total_cost_usd": result["total_cost_usd"],
+        "errors": result.get("errors", []),
+    }
 
 @app.get("/results/{run_id}")
 async def get_run_results(run_id: str):

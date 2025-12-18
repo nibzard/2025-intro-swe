@@ -557,7 +557,7 @@ function App() {
           /* Results Tab */
           <div className="glass-card p-8">
             <h2 className="text-2xl font-bold text-slate-200 mb-4">Search Results for Run: <span className="text-primary-400">{runId}</span></h2>
-            {results && results.intents_data ? (
+            {results && results.intents_data && results.intents_data.length > 0 ? (
                 <div className="space-y-6">
                     {results.intents_data.map((intentResult: any) => (
                         <div key={intentResult.intent_id} className="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50">
@@ -576,6 +576,23 @@ function App() {
                         </div>
                     ))}
                 </div>
+            ) : results && results.intents_data && results.intents_data.length === 0 ? (
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-900/30 flex items-center justify-center">
+                  <AlertCircle className="w-8 h-8 text-amber-500" />
+                </div>
+                <h2 className="text-xl font-semibold text-slate-200 mb-2">No Answers Retrieved</h2>
+                <p className="text-slate-400 mb-4">
+                  The run completed but no answers were retrieved from the LLM.
+                </p>
+                <p className="text-sm text-amber-400 mb-6">
+                  This usually means the API key has exceeded its quota (429 error) or there was a connection issue.
+                  Please check your API key and try again.
+                </p>
+                <button onClick={() => setActiveTab('config')} className="btn-primary">
+                  <Settings className="w-4 h-4 mr-2" /> Go to Configuration
+                </button>
+              </div>
             ) : (
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800 flex items-center justify-center">
