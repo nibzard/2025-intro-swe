@@ -17,7 +17,8 @@
       "Bash(curl:*)",
       "Bash(python -m json.tool:*)",
       "Bash(sqlite3:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
