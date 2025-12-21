@@ -136,6 +136,31 @@ class PeerReviewSystem:
 
             return teams
 
+        except ImportError:
+            # Fallback to manual CSV parsing if pandas not available
+            import csv
+            teams = {}
+            with open(csv_path, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    team = row.get('project_team', 'No Team')
+                    if team and team.strip() and team != 'No Team':
+                        student = {
+                            'student_id': row.get('student_id'),
+                            'full_name': row.get('full_name'),
+                            'github_username': row.get('github_username'),
+                            'project_title': row.get('project_title'),
+                            'project_folder': row.get('project_folder')
+                        }
+                        if team not in teams:
+                            teams[team] = []
+                        teams[team].append(student)
+
+            # Remove empty teams
+            teams = {k: v for k, v in teams.items() if v and k != 'No Team'}
+
+            return teams
+
         except Exception as e:
             print(f"Error loading student teams: {e}")
             return {}

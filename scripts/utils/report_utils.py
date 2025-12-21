@@ -5,8 +5,17 @@ import csv
 import os
 from datetime import datetime
 from typing import Dict, List, Any, Optional
-import matplotlib.pyplot as plt
-import pandas as pd
+try:
+    import matplotlib.pyplot as plt
+    MATPLOTLIB_AVAILABLE = True
+except ImportError:
+    MATPLOTLIB_AVAILABLE = False
+
+try:
+    import pandas as pd
+    PANDAS_AVAILABLE = True
+except ImportError:
+    PANDAS_AVAILABLE = False
 
 
 def save_json_report(data: Dict[str, Any], filepath: str) -> None:
@@ -139,9 +148,9 @@ def create_commit_heatmap(
         output_dir: Directory to save the visualization
 
     Returns:
-        Path to the generated image file
+        Path to the generated image file (empty string if matplotlib unavailable)
     """
-    if not commits_by_day:
+    if not commits_by_day or not MATPLOTLIB_AVAILABLE or not PANDAS_AVAILABLE:
         return ""
 
     # Convert to pandas DataFrame for easier plotting
@@ -276,8 +285,11 @@ def create_grade_distribution_chart(
         output_dir: Directory to save the chart
 
     Returns:
-        Path to the generated image file
+        Path to the generated image file (empty string if matplotlib unavailable)
     """
+    if not MATPLOTLIB_AVAILABLE:
+        return ""
+
     grades = list(grade_distribution.keys())
     counts = list(grade_distribution.values())
     colors = ['#4CAF50', '#8BC34A', '#FFEB3B', '#FF9800', '#F44336']

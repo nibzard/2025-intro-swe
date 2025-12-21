@@ -1,0 +1,366 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git and GitHub Knowledge Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .quiz-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .quiz-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .question {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+        }
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .options {
+            margin-left: 20px;
+        }
+        .option {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .option:hover {
+            background-color: #e3f2fd;
+        }
+        .option.selected {
+            background-color: #bbdefb;
+            border-color: #2196F3;
+        }
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            display: block;
+            margin: 30px auto;
+        }
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+        .timer {
+            text-align: center;
+            font-size: 18px;
+            color: #666;
+            margin: 20px 0;
+        }
+        .results {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e8f5e9;
+            border-radius: 8px;
+        }
+        .score {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .answer-review {
+            margin: 20px 0;
+        }
+        .correct {
+            color: #4CAF50;
+        }
+        .incorrect {
+            color: #f44336;
+        }
+        .explanation {
+            margin-top: 5px;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1>Git and GitHub Knowledge Quiz</h1>
+            <p>Select the best answer for each question.</p>
+            <p><strong>Time Limit:</strong> 20 minutes</p>
+            <p><strong>Total Questions:</strong> 5</p>
+            <p><strong>Points per Question:</strong> 2.0</p>
+        </div>
+
+        <div class="timer" id="timer">
+            Time remaining: <span id="time-left">20:00</span>
+        </div>
+
+        <form id="quiz-form">
+
+            <div class="question">
+                <div class="question-text">
+                    1. Which command creates a new local repository?
+                </div>
+                <div class="options">
+
+                    <div class="option" onclick="selectOption(0, 0, this)">
+                        <input type="radio" name="q0" value="0" style="display: none;">
+                        A) git init
+                    </div>
+
+                    <div class="option" onclick="selectOption(0, 1, this)">
+                        <input type="radio" name="q0" value="1" style="display: none;">
+                        B) git clone
+                    </div>
+
+                    <div class="option" onclick="selectOption(0, 2, this)">
+                        <input type="radio" name="q0" value="2" style="display: none;">
+                        C) git create
+                    </div>
+
+                    <div class="option" onclick="selectOption(0, 3, this)">
+                        <input type="radio" name="q0" value="3" style="display: none;">
+                        D) git new
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-text">
+                    2. Which command shows the commit history?
+                </div>
+                <div class="options">
+
+                    <div class="option" onclick="selectOption(1, 0, this)">
+                        <input type="radio" name="q1" value="0" style="display: none;">
+                        A) git status
+                    </div>
+
+                    <div class="option" onclick="selectOption(1, 1, this)">
+                        <input type="radio" name="q1" value="1" style="display: none;">
+                        B) git history
+                    </div>
+
+                    <div class="option" onclick="selectOption(1, 2, this)">
+                        <input type="radio" name="q1" value="2" style="display: none;">
+                        C) git log
+                    </div>
+
+                    <div class="option" onclick="selectOption(1, 3, this)">
+                        <input type="radio" name="q1" value="3" style="display: none;">
+                        D) git commits
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-text">
+                    3. What does git commit -m "message" do?
+                </div>
+                <div class="options">
+
+                    <div class="option" onclick="selectOption(2, 0, this)">
+                        <input type="radio" name="q2" value="0" style="display: none;">
+                        A) Creates a commit with the message "message"
+                    </div>
+
+                    <div class="option" onclick="selectOption(2, 1, this)">
+                        <input type="radio" name="q2" value="1" style="display: none;">
+                        B) Adds all files and commits with message
+                    </div>
+
+                    <div class="option" onclick="selectOption(2, 2, this)">
+                        <input type="radio" name="q2" value="2" style="display: none;">
+                        C) Pushes commit with message to remote
+                    </div>
+
+                    <div class="option" onclick="selectOption(2, 3, this)">
+                        <input type="radio" name="q2" value="3" style="display: none;">
+                        D) Creates a new branch with message
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-text">
+                    4. What is a pull request?
+                </div>
+                <div class="options">
+
+                    <div class="option" onclick="selectOption(3, 0, this)">
+                        <input type="radio" name="q3" value="0" style="display: none;">
+                        A) A request to pull changes from remote
+                    </div>
+
+                    <div class="option" onclick="selectOption(3, 1, this)">
+                        <input type="radio" name="q3" value="1" style="display: none;">
+                        B) A mechanism to propose and review changes
+                    </div>
+
+                    <div class="option" onclick="selectOption(3, 2, this)">
+                        <input type="radio" name="q3" value="2" style="display: none;">
+                        C) A command to merge branches
+                    </div>
+
+                    <div class="option" onclick="selectOption(3, 3, this)">
+                        <input type="radio" name="q3" value="3" style="display: none;">
+                        D) A way to download code
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-text">
+                    5. You made changes but forgot to create a new branch. What should you do?
+                </div>
+                <div class="options">
+
+                    <div class="option" onclick="selectOption(4, 0, this)">
+                        <input type="radio" name="q4" value="0" style="display: none;">
+                        A) Delete all changes and start over
+                    </div>
+
+                    <div class="option" onclick="selectOption(4, 1, this)">
+                        <input type="radio" name="q4" value="1" style="display: none;">
+                        B) git stash; git checkout -b new-branch; git stash pop
+                    </div>
+
+                    <div class="option" onclick="selectOption(4, 2, this)">
+                        <input type="radio" name="q4" value="2" style="display: none;">
+                        C) Just commit to main branch
+                    </div>
+
+                    <div class="option" onclick="selectOption(4, 3, this)">
+                        <input type="radio" name="q4" value="3" style="display: none;">
+                        D) git reset --hard HEAD
+                    </div>
+
+                </div>
+            </div>
+
+        </form>
+
+        <button class="submit-btn" onclick="submitQuiz()">Submit Quiz</button>
+
+        <div class="results" id="results">
+            <h2>Quiz Results</h2>
+            <div class="score" id="score"></div>
+            <div class="answer-review" id="review"></div>
+        </div>
+    </div>
+
+    <script>
+        const quizData = {"title": "Git and GitHub Knowledge Quiz", "instructions": "Select the best answer for each question.", "time_limit": 20, "total_questions": 5, "points_per_question": 2.0, "generated_at": "2025-12-12T17:10:32.632245", "questions": [{"question": "Which command creates a new local repository?", "type": "multiple_choice", "options": ["git init", "git clone", "git create", "git new"], "correct": 0, "explanation": "git init initializes a new Git repository in the current directory."}, {"question": "Which command shows the commit history?", "type": "multiple_choice", "options": ["git status", "git history", "git log", "git commits"], "correct": 2, "explanation": "git log displays the commit history for the current branch."}, {"question": "What does git commit -m \"message\" do?", "type": "multiple_choice", "options": ["Creates a commit with the message \"message\"", "Adds all files and commits with message", "Pushes commit with message to remote", "Creates a new branch with message"], "correct": 0, "explanation": "git commit -m creates a new commit with the specified commit message."}, {"question": "What is a pull request?", "type": "multiple_choice", "options": ["A request to pull changes from remote", "A mechanism to propose and review changes", "A command to merge branches", "A way to download code"], "correct": 1, "explanation": "A pull request is a mechanism to propose changes and request review before merging."}, {"question": "You made changes but forgot to create a new branch. What should you do?", "type": "scenario", "options": ["Delete all changes and start over", "git stash; git checkout -b new-branch; git stash pop", "Just commit to main branch", "git reset --hard HEAD"], "correct": 1, "explanation": "Use git stash to save changes, create and checkout new branch, then git stash pop to apply changes."}]};
+        const userAnswers = {};
+        let timeRemaining = 20 * 60; // seconds
+
+        // Timer functionality
+        function updateTimer() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            document.getElementById('time-left').textContent =
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            if (timeRemaining <= 0) {
+                submitQuiz();
+            } else {
+                timeRemaining--;
+            }
+        }
+
+        setInterval(updateTimer, 1000);
+
+        function selectOption(questionIndex, optionIndex, element) {
+            // Clear previous selection
+            const options = element.parentElement.querySelectorAll('.option');
+            options.forEach(opt => opt.classList.remove('selected'));
+
+            // Mark selected option
+            element.classList.add('selected');
+
+            // Store answer
+            userAnswers[questionIndex] = optionIndex;
+
+            // Check radio button
+            const radio = element.querySelector('input[type="radio"]');
+            radio.checked = true;
+        }
+
+        function submitQuiz() {
+            // Calculate score
+            let correct = 0;
+            let reviewHTML = '';
+
+            for (let i = 0; i < quizData.questions.length; i++) {
+                const question = quizData.questions[i];
+                const userAnswer = userAnswers[i];
+                const correctAnswer = question.correct;
+
+                const isCorrect = userAnswer === correctAnswer;
+                if (isCorrect) correct++;
+
+                // Generate review
+                reviewHTML += `
+                    <div style="margin: 15px 0; padding: 15px; border-radius: 5px;
+                         background-color: ${isCorrect ? '#e8f5e9' : '#ffebee'};">
+                        <p><strong>Question ${i + 1}:</strong> ${question.question}</p>
+                        <p><strong>Your answer:</strong>
+                            <span class="${isCorrect ? 'correct' : 'incorrect'}">
+                                ${userAnswer !== undefined ? question.options[userAnswer] : 'Not answered'}
+                            </span>
+                        </p>
+                        ${!isCorrect ? `
+                            <p><strong>Correct answer:</strong>
+                                <span class="correct">${question.options[correctAnswer]}</span>
+                            </p>
+                        ` : ''}
+                        <p class="explanation"><strong>Explanation:</strong> ${question.explanation}</p>
+                    </div>
+                `;
+            }
+
+            // Display results
+            const score = (correct / quizData.questions.length) * 10;
+            document.getElementById('score').innerHTML =
+                `Your Score: ${score.toFixed(1)}/10 (${correct}/${quizData.questions.length} correct)`;
+            document.getElementById('review').innerHTML = reviewHTML;
+            document.getElementById('results').style.display = 'block';
+
+            // Scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+            // Disable quiz
+            const options = document.querySelectorAll('.option');
+            options.forEach(opt => opt.style.pointerEvents = 'none');
+        }
+    </script>
+</body>
+</html>

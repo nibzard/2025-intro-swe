@@ -1,0 +1,70 @@
+{
+  "title": "Git and GitHub Knowledge Quiz",
+  "instructions": "Select the best answer for each question.",
+  "time_limit": 20,
+  "total_questions": 5,
+  "points_per_question": 2.0,
+  "generated_at": "2025-12-12T17:10:32.632245",
+  "questions": [
+    {
+      "question": "Which command creates a new local repository?",
+      "type": "multiple_choice",
+      "options": [
+        "git init",
+        "git clone",
+        "git create",
+        "git new"
+      ],
+      "correct": 0,
+      "explanation": "git init initializes a new Git repository in the current directory."
+    },
+    {
+      "question": "Which command shows the commit history?",
+      "type": "multiple_choice",
+      "options": [
+        "git status",
+        "git history",
+        "git log",
+        "git commits"
+      ],
+      "correct": 2,
+      "explanation": "git log displays the commit history for the current branch."
+    },
+    {
+      "question": "What does git commit -m \"message\" do?",
+      "type": "multiple_choice",
+      "options": [
+        "Creates a commit with the message \"message\"",
+        "Adds all files and commits with message",
+        "Pushes commit with message to remote",
+        "Creates a new branch with message"
+      ],
+      "correct": 0,
+      "explanation": "git commit -m creates a new commit with the specified commit message."
+    },
+    {
+      "question": "What is a pull request?",
+      "type": "multiple_choice",
+      "options": [
+        "A request to pull changes from remote",
+        "A mechanism to propose and review changes",
+        "A command to merge branches",
+        "A way to download code"
+      ],
+      "correct": 1,
+      "explanation": "A pull request is a mechanism to propose changes and request review before merging."
+    },
+    {
+      "question": "You made changes but forgot to create a new branch. What should you do?",
+      "type": "scenario",
+      "options": [
+        "Delete all changes and start over",
+        "git stash; git checkout -b new-branch; git stash pop",
+        "Just commit to main branch",
+        "git reset --hard HEAD"
+      ],
+      "correct": 1,
+      "explanation": "Use git stash to save changes, create and checkout new branch, then git stash pop to apply changes."
+    }
+  ]
+}

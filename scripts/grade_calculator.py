@@ -11,7 +11,7 @@ import json
 import os
 import sys
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 
 # Add utils to path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
@@ -56,6 +56,15 @@ class GradeCalculator:
             df = pd.read_csv(csv_path)
             self.grading_data = df.to_dict('records')
             print(f"Loaded {len(self.grading_data)} student records from {csv_path}")
+        except ImportError:
+            # Fallback to manual CSV parsing if pandas not available
+            import csv
+            self.grading_data = []
+            with open(csv_path, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    self.grading_data.append(row)
+            print(f"Loaded {len(self.grading_data)} student records from {csv_path} (without pandas)")
         except Exception as e:
             print(f"Error loading CSV file: {e}")
             sys.exit(1)
@@ -70,16 +79,25 @@ class GradeCalculator:
         Returns:
             Updated dictionary with calculated final grade
         """
+        # Helper function to convert grade to float
+        def to_float(value, default=0):
+            try:
+                if value is None or value == '':
+                    return default
+                return float(value)
+            except (ValueError, TypeError):
+                return default
+
         # Extract component grades
         grades = {
-            'seminar': student_data.get('seminar_grade', 0),
-            'code_quality': student_data.get('code_quality_grade', 0),
-            'innovation': student_data.get('innovation_grade', 0),
-            'documentation': student_data.get('documentation_grade', 0),
-            'attendance': student_data.get('attendance_grade', 0),
-            'git_activity': student_data.get('git_activity_grade', 0),
-            'peer_review': student_data.get('peer_review_grade', 0),
-            'git_quiz': student_data.get('git_quiz_grade', 0)
+            'seminar': to_float(student_data.get('seminar_grade')),
+            'code_quality': to_float(student_data.get('code_quality_grade')),
+            'innovation': to_float(student_data.get('innovation_grade')),
+            'documentation': to_float(student_data.get('documentation_grade')),
+            'attendance': to_float(student_data.get('attendance_grade')),
+            'git_activity': to_float(student_data.get('git_activity_grade')),
+            'peer_review': to_float(student_data.get('peer_review_grade')),
+            'git_quiz': to_float(student_data.get('git_quiz_grade'))
         }
 
         # Validate grades
@@ -99,12 +117,10 @@ class GradeCalculator:
         elif final_numeric >= 80:
             status = 'Good'
 
-        # Update student data
-        student_data.update({
-            'final_grade': final_numeric,
-            'final_grade_letter': final_letter,
-            'status': status
-        })
+        # Update student data with proper types
+        student_data['final_grade'] = final_numeric
+        student_data['final_grade_letter'] = final_letter
+        student_data['status'] = status
 
         # Add grade breakdown for reporting
         student_data['grade_breakdown'] = {
@@ -115,6 +131,17 @@ class GradeCalculator:
                 for comp, grade in grades.items()
             }
         }
+
+        # Ensure all grade fields are properly typed
+        for field in ['seminar_grade', 'code_quality_grade', 'innovation_grade',
+                     'documentation_grade', 'attendance_grade', 'git_activity_grade',
+                     'git_commits', 'peer_review_grade', 'git_quiz_grade']:
+            if field in student_data and student_data[field] == '':
+                student_data[field] = 0
+                if field == 'git_commits':
+                    student_data[field] = 0
+                else:
+                    student_data[field] = 0
 
         return student_data
 
@@ -136,7 +163,42 @@ class GradeCalculator:
             calculated_grades.append(calculated)
 
         # Calculate class statistics
-        self.class_statistics = calculate_class_statistics(calculated_grades)
+        if calculated_grades:
+            final_grades = [s.get('final_grade', 0) for s in calculated_grades if isinstance(s.get('final_grade', 0), (int, float))]
+            if final_grades:
+                import math
+                n = len(final_grades)
+                mean = sum(final_grades) / n
+                variance = sum((x - mean) ** 2 for x in final_grades) / n
+                std_dev = math.sqrt(variance)
+
+                # Grade distribution
+                grade_counts = {'A': 0, 'B': 0, 'C': 0, 'D': 0, 'F': 0}
+                for student in calculated_grades:
+                    letter = student.get('final_grade_letter', 'F')
+                    grade_counts[letter] += 1
+
+                self.class_statistics = {
+                    'mean': round(mean, 2),
+                    'median': round(sorted(final_grades)[n // 2], 2),
+                    'std_dev': round(std_dev, 2),
+                    'min': round(min(final_grades), 2),
+                    'max': round(max(final_grades), 2),
+                    'grade_distribution': grade_counts,
+                    'pass_rate': round(sum(grade_counts[g] for g in ['A', 'B', 'C', 'D']) / n * 100, 1)
+                }
+            else:
+                self.class_statistics = {
+                    'mean': 0, 'median': 0, 'std_dev': 0, 'min': 0, 'max': 0,
+                    'grade_distribution': {'A': 0, 'B': 0, 'C': 0, 'D': 0, 'F': 0},
+                    'pass_rate': 0
+                }
+        else:
+            self.class_statistics = {
+                'mean': 0, 'median': 0, 'std_dev': 0, 'min': 0, 'max': 0,
+                'grade_distribution': {'A': 0, 'B': 0, 'C': 0, 'D': 0, 'F': 0},
+                'pass_rate': 0
+            }
 
         return calculated_grades
 
@@ -165,14 +227,14 @@ class GradeCalculator:
         # Sort by final grade descending
         sorted_students = sorted(
             self.grading_data,
-            key=lambda x: x.get('final_grade', 0),
+            key=lambda x: float(x.get('final_grade', 0)),
             reverse=True
         )
 
         return [
             (
                 s.get('full_name', 'Unknown'),
-                s.get('final_grade', 0),
+                float(s.get('final_grade', 0)),
                 s.get('final_grade_letter', 'F')
             )
             for s in sorted_students
@@ -190,7 +252,7 @@ class GradeCalculator:
         """
         return [
             student for student in self.grading_data
-            if student.get('final_grade', 0) < passing_grade
+            if float(student.get('final_grade', 0)) < passing_grade
         ]
 
     def get_component_averages(self) -> Dict[str, float]:
@@ -322,6 +384,35 @@ class GradeCalculator:
             df.to_csv(output_path, index=False)
             return output_path
 
+        except ImportError:
+            # Fallback to manual CSV processing if pandas not available
+            import csv
+
+            # Read original template
+            updated_rows = []
+            with open(template_path, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                fieldnames = reader.fieldnames
+
+                for row in reader:
+                    # Update row with calculated grades
+                    student_id = row.get('student_id')
+                    for student in self.grading_data:
+                        if student.get('student_id') == student_id:
+                            for col in ['final_grade', 'final_grade_letter', 'status']:
+                                if col in student:
+                                    row[col] = student[col]
+                            break
+                    updated_rows.append(row)
+
+            # Write updated file
+            with open(output_path, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(updated_rows)
+
+            return output_path
+
         except Exception as e:
             print(f"Error updating template: {e}")
             return template_path
@@ -398,14 +489,22 @@ def main():
     ranking = calculator.get_student_ranking()
     print("\nTop 5 Performers:")
     for i, (name, grade, letter) in enumerate(ranking[:5], 1):
-        print(f"  {i}. {name}: {grade:.1f} ({letter})")
+        try:
+            print(f"  {i}. {name}: {float(grade):.1f} ({letter})")
+        except (ValueError, TypeError):
+            print(f"  {i}. {name}: {grade} ({letter})")
 
     # Show failing students
     failing = calculator.get_failing_students()
     if failing:
         print(f"\nFailing Students ({len(failing)}):")
         for student in failing[:5]:  # Show first 5
-            print(f"  - {student.get('full_name', 'Unknown')}: {student.get('final_grade', 0):.1f}")
+            grade = student.get('final_grade', 0)
+            try:
+                grade_str = f"{float(grade):.1f}"
+            except (ValueError, TypeError):
+                grade_str = str(grade)
+            print(f"  - {student.get('full_name', 'Unknown')}: {grade_str}")
         if len(failing) > 5:
             print(f"  ... and {len(failing) - 5} more")
 
