@@ -50,13 +50,7 @@ CACHE_DURATION = timedelta(hours=24)
 
 # Provider name mapping (our names -> llm-prices.com vendor names)
 PROVIDER_MAPPING = {
-    "openai": "openai",
-    "anthropic": "anthropic",
-    "mistral": "mistral",
     "google": "google",
-    "amazon": "amazon",
-    "deepseek": "deepseek",
-    "xai": "xai",
 }
 
 

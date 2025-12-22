@@ -1,43 +1,35 @@
-# Stage 1: Build the React frontend
-FROM node:20-alpine AS frontend-builder
+# Backend Dockerfile for LLM Answer Watcher API
+# Python 3.12 + FastAPI + uvicorn
+
+FROM python:3.12-slim
+
 WORKDIR /app
 
-# Copy package.json and install dependencies
-COPY frontend/package.json ./frontend/
-# Create an empty package-lock.json to satisfy npm ci, if no lock file is present
-RUN if [ ! -f frontend/package-lock.json ]; then echo '{ "version": 1, "lockfileVersion": 1 }' > frontend/package-lock.json; fi
-RUN cd frontend && npm install --ci --silent
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy the rest of the frontend source code
-COPY frontend/ ./frontend/
-
-# Build the frontend
-RUN cd frontend && npm run build
-
-# Stage 2: Build the Python backend
-FROM python:3.11-slim AS backend
-
-# Set the working directory
-WORKDIR /app
-
-# Install dependencies
-# We use uv for faster installation
-RUN pip install uv
+# Copy requirements first for better caching
 COPY requirements.txt .
-RUN uv pip install --system -r requirements.txt
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code
-COPY llm_answer_watcher ./llm_answer_watcher
-COPY server.py .
+COPY llm_answer_watcher/ ./llm_answer_watcher/
+COPY pyproject.toml .
+COPY README.md .
 
-# Copy example configs to be used by the server
-COPY examples ./examples
+# Install the package in editable mode
+RUN pip install --no-cache-dir -e .
 
-# Copy the built frontend from the builder stage
-COPY --from=frontend-builder /app/frontend/build ./build
+# Create output directory for SQLite and results
+RUN mkdir -p /app/output
 
-# Expose the port the app runs on
-EXPOSE 5000
+# Expose the API port
+EXPOSE 8000
 
-# Define the command to run the application
-CMD ["python", "-u", "server.py"]
+# Run the FastAPI server
+CMD ["uvicorn", "llm_answer_watcher.api:app", "--host", "0.0.0.0", "--port", "8000"]

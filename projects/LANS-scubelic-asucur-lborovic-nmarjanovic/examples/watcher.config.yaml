@@ -4,20 +4,12 @@ run_settings:
 
   # Maximum concurrent API requests (default: 10)
   # Conservative limit respects provider rate limits while enabling parallelism
-  # Based on research: OpenAI ~5-10, Anthropic limited, Gemini ~3 per key
+  # Based on research: Gemini ~3 per key
   # Increase for higher quotas, decrease if hitting rate limits
   max_concurrent_requests: 10
 
   models:
-    - provider: "openai"
-      model_name: "gpt-4o-mini"
-      env_api_key: "OPENAI_API_KEY"
-      system_prompt: "openai/gpt-4-default"  # Optional: Uses provider default if not specified
-
     # Google Gemini with Google Search grounding
-    # NOTE: Google uses 'google_search: {}' format (dictionary with tool name as key)
-    # This differs from OpenAI's format: 'type: "web_search"' (typed specification)
-    # Each provider has different API requirements - config does direct passthrough
     - provider: "google"
       model_name: "gemini-2.0-flash-exp"
       env_api_key: "GEMINI_API_KEY"
@@ -25,26 +17,16 @@ run_settings:
       tools:
         - google_search: {}  # Google API format for Search grounding
 
-    # - provider: "anthropic"
-    #   model_name: "claude-3-5-haiku-20241022"
-    #   env_api_key: "ANTHROPIC_API_KEY"
-    #   # No system_prompt specified - will use anthropic/default.json
-
-    # - provider: "mistral"
-    #   model_name: "mistral-large-latest"
-    #   env_api_key: "MISTRAL_API_KEY"
-    #   # No system_prompt specified - will use mistral/default.json
-
   use_llm_rank_extraction: false
 
 # Extraction settings (optional - enables function calling for better accuracy)
 # If not specified, defaults to regex-based extraction (backward compatible)
 extraction_settings:
   extraction_model:
-    provider: "openai"
-    model_name: "gpt-4o-mini"  # Fast + cheap model optimized for extraction
-    env_api_key: "OPENAI_API_KEY"
-    system_prompt: "openai/extraction-default"  # Specialized extraction prompt
+    provider: "google"
+    model_name: "gemini-1.5-flash"  # Fast + cheap model optimized for extraction
+    env_api_key: "GEMINI_API_KEY"
+    system_prompt: "google/default"
 
   # Extraction method: function_calling (recommended), regex, or hybrid
   method: "function_calling"

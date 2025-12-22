@@ -33,21 +33,18 @@ class ModelConfig(BaseModel):
     Specifies which LLM to call and where to find its API key in the environment.
 
     Attributes:
-        provider: LLM provider name (openai, anthropic, google, mistral)
-        model_name: Specific model identifier (e.g., "gpt-4o-mini")
+        provider: LLM provider name (google only)
+        model_name: Specific model identifier (e.g., "gemini-1.5-flash")
         env_api_key: Environment variable name containing the API key
-        system_prompt: Optional relative path to system prompt JSON (e.g., "openai/gpt-4-default")
-                      If not specified, uses provider default (e.g., "openai/default")
-        tools: Optional list of tool configurations. Format differs by provider:
-               - OpenAI: [{"type": "web_search"}] (typed tool specification)
-               - Google: [{"google_search": {}}] (dictionary with tool name as key)
-               - Perplexity: Not needed (native web search)
+        system_prompt: Optional relative path to system prompt JSON (e.g., "google/default")
+                      If not specified, uses provider default
+        tools: Optional list of tool configurations.
+               Google format: [{"google_search": {}}] (dictionary with tool name as key)
                Config is passed directly to provider API without translation.
         tool_choice: Tool selection mode ("auto", "required", "none"). Default: "auto"
-                    Note: Only used by OpenAI. Google auto-decides when to use tools.
     """
 
-    provider: Literal["openai", "anthropic", "google", "mistral", "grok", "perplexity"]
+    provider: Literal["google"]
     model_name: str
     env_api_key: str
     system_prompt: str | None = None
@@ -169,13 +166,13 @@ class ExtractionModelConfig(BaseModel):
     Separate from answer-generating models for cost/latency optimization.
 
     Attributes:
-        provider: LLM provider name (openai, anthropic, google, mistral)
-        model_name: Specific model identifier (e.g., "gpt-5-nano")
+        provider: LLM provider name (google only)
+        model_name: Specific model identifier (e.g., "gemini-1.5-flash")
         env_api_key: Environment variable name containing the API key
         system_prompt: Optional relative path to system prompt JSON
     """
 
-    provider: Literal["openai", "anthropic", "google", "mistral", "grok", "perplexity"]
+    provider: Literal["google"]
     model_name: str
     env_api_key: str
     system_prompt: str | None = None
@@ -251,6 +248,9 @@ class RunSettings(BaseModel):
         sqlite_db_path: Path to SQLite database for historical tracking
         max_concurrent_requests: Maximum number of parallel API requests (default: 10)
                                 Respects provider rate limits. Range: 1-50.
+        request_delay_seconds: Delay between consecutive API requests in seconds (default: 0)
+                              Use to avoid rate limiting (429 errors). Range: 0-60.
+                              Recommended: 1-2 seconds for Google Gemini free tier.
         models: List of LLM models to query for each intent (LEGACY - use runners instead)
                Optional when using the new runners format
         operation_models: List of LLM models used ONLY for operations, not intent queries
@@ -263,6 +263,7 @@ class RunSettings(BaseModel):
     output_dir: str
     sqlite_db_path: str
     max_concurrent_requests: int = 10
+    request_delay_seconds: float = 0.0
     models: list[ModelConfig] = []  # Now optional with default empty list
     operation_models: list[ModelConfig] = []  # Models used only for operations
     use_llm_rank_extraction: bool = False
@@ -299,6 +300,21 @@ class RunSettings(BaseModel):
         if not 1 <= v <= 50:
             raise ValueError(
                 f"max_concurrent_requests must be between 1 and 50 (got: {v})"
+            )
+        return v
+
+    @field_validator("request_delay_seconds")
+    @classmethod
+    def validate_request_delay_seconds(cls, v: float) -> float:
+        """
+        Validate request_delay_seconds is within reasonable limits.
+
+        A delay between requests helps avoid rate limiting (429 errors).
+        Range: 0-60 seconds. Recommended: 1-2 seconds for free tier APIs.
+        """
+        if not 0 <= v <= 60:
+            raise ValueError(
+                f"request_delay_seconds must be between 0 and 60 (got: {v})"
             )
         return v
 

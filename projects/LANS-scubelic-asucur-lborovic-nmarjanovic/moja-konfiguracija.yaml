@@ -1,0 +1,17 @@
+run_settings:
+  output_dir: ./output
+  sqlite_db_path: ./output/watcher.db
+  max_concurrent_requests: 1
+  request_delay_seconds: 2.0  # Delay between API requests to avoid 429 rate limiting
+  models:
+    - provider: google
+      model_name: models/gemini-2.5-flash
+      env_api_key: GEMINI_API_KEY
+brands:
+  mine:
+    - Tommy
+  competitors:
+    - Konzum
+intents:
+  - id: bestsm
+    prompt: What is the best supermarket in Croatia
