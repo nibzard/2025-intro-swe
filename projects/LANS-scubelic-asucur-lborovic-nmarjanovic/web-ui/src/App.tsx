@@ -24,8 +24,15 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
-import { WatcherConfig, Intent, GEMINI_MODELS } from './types.ts';
+import type { WatcherConfig, Intent } from './types.ts';
+import { GEMINI_MODELS } from './types.ts';
 import yaml from 'js-yaml';
+
+// API base URL: use environment variable or default based on environment
+// In Docker (production): uses /api/ which nginx proxies to backend
+// In development: uses direct backend URL
+const API_BASE_URL = import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD ? '/api' : 'http://127.0.0.1:8000');
 
 function App() {
   // State
@@ -145,7 +152,7 @@ function App() {
     setResults(null);
     setRunId(null);
     try {
-      const response = await fetch('http://127.0.0.1:8000/run_watcher', {
+      const response = await fetch(`${API_BASE_URL}/run_watcher`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ api_key: apiKey, yaml_config: yamlOutput }),
@@ -160,7 +167,7 @@ function App() {
       setRunId(runData.run_id);
       
       // Now poll for results
-      const resultsResponse = await fetch(`http://127.0.0.1:8000/results/${runData.run_id}`);
+      const resultsResponse = await fetch(`${API_BASE_URL}/results/${runData.run_id}`);
       if(!resultsResponse.ok) {
         const errorData = await resultsResponse.json();
         throw new Error(errorData.detail || 'Failed to fetch results');
@@ -171,7 +178,8 @@ function App() {
 
       setActiveTab('results');
     } catch (error) {
-      alert(`An error occurred: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      alert(`An error occurred: ${message}`);
     } finally {
       setIsRunning(false);
     }

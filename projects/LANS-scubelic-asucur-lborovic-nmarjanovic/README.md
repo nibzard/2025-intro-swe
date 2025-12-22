@@ -6,6 +6,29 @@ Ovaj projekt nadograđuje postojeći CLI (Command-Line Interface) alat s grafič
 
 ## Instalacija
 
+### Opcija 1: Docker (preporučeno)
+
+Najjednostavniji način pokretanja je korištenjem Dockera. Ova opcija automatski pokreće API server i web sučelje.
+
+```bash
+# Pokretanje s docker-compose
+docker-compose up --build
+
+# Ili u pozadini
+docker-compose up -d --build
+```
+
+Nakon pokretanja:
+- **Web UI**: http://localhost:3000
+- **API**: http://localhost:8000
+
+Za zaustavljanje:
+```bash
+docker-compose down
+```
+
+### Opcija 2: Ručna instalacija
+
 Za pokretanje alata, potrebno je instalirati sve ovisnosti definirane u `requirements.txt` datoteci.
 
 ```bash

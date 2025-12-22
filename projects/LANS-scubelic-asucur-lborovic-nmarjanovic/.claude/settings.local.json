@@ -18,7 +18,8 @@
       "Bash(python -m json.tool:*)",
       "Bash(sqlite3:*)",
       "Bash(python:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(docker-compose build:*)"
     ],
     "deny": [],
     "ask": []
