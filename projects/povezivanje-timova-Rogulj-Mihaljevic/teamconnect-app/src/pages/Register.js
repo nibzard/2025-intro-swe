@@ -1,41 +1,65 @@
 import React, { useState } from 'react';
-import './Register.css';
+import { useNavigate } from 'react-router-dom';
+import { authAPI } from '../services/api';
+import './Auth.css';
 
 function Register() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
+    email: '',
     password: '',
-    sport: '',
-    location: ''
+    confirmPassword: ''
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!formData.username || !formData.password || !formData.sport || !formData.location) {
-      alert('Popuni sva polja!');
+    setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Lozinke se ne podudaraju!');
       return;
     }
 
-    // Spremi korisnika
-    localStorage.setItem('currentUser', JSON.stringify(formData));
-    
-    alert('Registracija uspješna! 🎉');
-    window.location.href = '/dashboard';
+    if (formData.password.length < 6) {
+      setError('Lozinka mora imati minimalno 6 znakova!');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await authAPI.register({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        sport: 'temp', // Privremeno, birat će kasnije
+        location: 'temp'
+      });
+
+      localStorage.setItem('tempUserId', response.data.userId);
+      navigate('/verify');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Greška pri registraciji');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="register-container">
-      <div className="register-card">
-        <h1>TeamConnect</h1>
-        <h2>Registracija</h2>
+    <div className="auth-container">
+      <div className="auth-card card">
+        <h1 className="auth-title">🏀 TeamConnect</h1>
+        <h2>Kreiraj račun</h2>
+        
+        {error && <div className="error-message">{error}</div>}
+        
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Korisničko ime</label>
@@ -44,7 +68,21 @@ function Register() {
               name="username"
               value={formData.username}
               onChange={handleChange}
-              placeholder="Upiši svoje ime..."
+              placeholder="Odaberi svoje korisničko ime"
+              required
+              minLength={3}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="tvoj@email.com"
+              required
             />
           </div>
 
@@ -55,40 +93,30 @@ function Register() {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Upiši lozinku..."
+              placeholder="Minimalno 6 znakova"
+              required
+              minLength={6}
             />
           </div>
 
           <div className="form-group">
-            <label>Odaberi sport</label>
-            <select name="sport" value={formData.sport} onChange={handleChange}>
-              <option value="">-- Odaberi sport --</option>
-              <option value="nogomet">⚽ Nogomet</option>
-              <option value="kosarka">🏀 Košarka</option>
-              <option value="odbojka">🏐 Odbojka</option>
-              <option value="tenis">🎾 Tenis</option>
-              <option value="rukomet">🤾 Rukomet</option>
-            </select>
+            <label>Potvrdi lozinku</label>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder="Ponovno upiši lozinku"
+              required
+            />
           </div>
 
-          <div className="form-group">
-            <label>Odaberi lokaciju</label>
-            <select name="location" value={formData.location} onChange={handleChange}>
-              <option value="">-- Odaberi kvart --</option>
-              <option value="split-centar">Split - Centar</option>
-              <option value="split-spinut">Split - Spinut</option>
-              <option value="split-poljud">Split - Poljud</option>
-              <option value="split-meje">Split - Meje</option>
-              <option value="split-gripe">Split - Gripe</option>
-            </select>
-          </div>
-
-          <button type="submit" className="btn-primary">
-            Registriraj se
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? 'Registracija...' : 'Registriraj se'}
           </button>
         </form>
 
-        <p className="login-link">
+        <p className="auth-link">
           Već imaš račun? <a href="/login">Prijavi se</a>
         </p>
       </div>

@@ -1,43 +1,58 @@
 import React, { useState } from 'react';
-import './Register.css';
+import { useNavigate } from 'react-router-dom';
+import { authAPI } from '../services/api';
+import './Auth.css';
 
 function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    username: '',
+    password: ''
+  });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    const savedUser = localStorage.getItem('currentUser');
-    
-    if (!savedUser) {
-      alert('Korisnik ne postoji! Registriraj se prvo.');
-      return;
-    }
+    setError('');
+    setLoading(true);
 
-    const user = JSON.parse(savedUser);
-    
-    if (user.username === username && user.password === password) {
-      alert('Uspješna prijava! 🎉');
-      window.location.href = '/dashboard';
-    } else {
-      alert('Pogrešno korisničko ime ili lozinka!');
+    try {
+      const response = await authAPI.login(formData);
+
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Greška pri prijavi');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="register-container">
-      <div className="register-card">
-        <h1>TeamConnect</h1>
-        <h2>Prijava</h2>
-        <form onSubmit={handleLogin}>
+    <div className="auth-container">
+      <div className="auth-card card">
+        <h1 className="auth-title">🏀 TeamConnect</h1>
+        <h2>Dobrodošao/la natrag!</h2>
+
+        {error && <div className="error-message">{error}</div>}
+
+        <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Korisničko ime</label>
             <input
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Upiši svoje ime..."
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              placeholder="Tvoje korisničko ime"
+              required
             />
           </div>
 
@@ -45,18 +60,20 @@ function Login() {
             <label>Lozinka</label>
             <input
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Upiši lozinku..."
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Tvoja lozinka"
+              required
             />
           </div>
 
-          <button type="submit" className="btn-primary">
-            Prijavi se
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? 'Prijavljivanje...' : 'Prijavi se'}
           </button>
         </form>
 
-        <p className="login-link">
+        <p className="auth-link">
           Nemaš račun? <a href="/">Registriraj se</a>
         </p>
       </div>

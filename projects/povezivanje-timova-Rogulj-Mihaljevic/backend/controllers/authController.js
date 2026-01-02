@@ -57,13 +57,14 @@ exports.register = async (req, res) => {
       password: hashedPassword,
       sport,
       location,
-      verificationCode
+      verificationCode,
+      
     });
 
     await user.save();
 
     // Pošalji email
-    await sendVerificationEmail(email, verificationCode);
+   await sendVerificationEmail(email, verificationCode);
 
     res.status(201).json({ 
       message: 'Registracija uspješna! Provjeri email za verifikacijski kod.',
