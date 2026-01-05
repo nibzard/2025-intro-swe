@@ -7,13 +7,13 @@ import ProfileSetup from './pages/ProfileSetup';
 import Dashboard from './pages/Dashboard';
 import CreateTeam from './pages/CreateTeam';
 import MyTeams from './pages/MyTeams';
+import Profile from './pages/Profile';
+import ActivityFeed from './pages/ActivityFeed';
 import './App.css';
 
 function App() {
   const token = localStorage.getItem('token');
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
   
-  // Ako nije prijavljen, preusmjeri na login
   const PrivateRoute = ({ children }) => {
     return token ? children : <Navigate to="/login" />;
   };
@@ -29,6 +29,8 @@ function App() {
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/create-team" element={<PrivateRoute><CreateTeam /></PrivateRoute>} />
           <Route path="/my-teams" element={<PrivateRoute><MyTeams /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/activity" element={<PrivateRoute><ActivityFeed /></PrivateRoute>} />
         </Routes>
       </div>
     </Router>

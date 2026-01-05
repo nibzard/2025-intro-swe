@@ -18,6 +18,9 @@
 }
 
 .navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-size: 1.5rem;
   font-weight: 700;
   color: #667eea;
@@ -25,8 +28,16 @@
   transition: transform 0.3s;
 }
 
+.navbar-brand svg {
+  transition: transform 0.3s;
+}
+
 .navbar-brand:hover {
   transform: scale(1.05);
+}
+
+.navbar-brand:hover svg {
+  transform: rotate(360deg);
 }
 
 .navbar-menu {
@@ -58,9 +69,34 @@
   gap: 15px;
 }
 
+.user-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.user-avatar:hover {
+  transform: scale(1.1) rotate(10deg);
+}
+
 .user-name {
   color: #333;
   font-weight: 600;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.user-name:hover {
+  color: #667eea;
 }
 
 .btn-logout {

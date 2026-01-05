@@ -1,6 +1,9 @@
 .my-teams-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: 
+    linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%),
+    url('https://images.unsplash.com/photo-1517649763962-0c623066013b?w=1920&q=80') center/cover no-repeat fixed;
+  background-blend-mode: overlay;
 }
 
 .my-teams-container {
@@ -13,17 +16,107 @@
   text-align: center;
   color: white;
   margin-bottom: 40px;
+  animation: fadeInDown 0.6s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .my-teams-header h1 {
   font-size: 3rem;
   margin-bottom: 10px;
-  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+  text-shadow: 2px 4px 12px rgba(0, 0, 0, 0.4);
+  font-weight: 800;
 }
 
 .my-teams-header p {
+  font-size: 1.3rem;
+  opacity: 0.95;
+  text-shadow: 1px 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.teams-count {
+  margin-bottom: 20px;
+  color: white;
   font-size: 1.2rem;
-  opacity: 0.9;
+  text-shadow: 1px 2px 6px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.8s ease-out 0.2s both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.teams-count strong {
+  font-size: 1.4rem;
+  color: #ffd700;
+}
+
+.teams-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+  animation: fadeIn 0.8s ease-out 0.4s both;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: white;
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 20px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  font-size: 1.2rem;
+  text-shadow: 1px 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 40px;
+  max-width: 550px;
+  margin: 40px auto;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.empty-state h2 {
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 2rem;
+}
+
+.empty-state p {
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 1.1rem;
 }
 
 .empty-actions {
@@ -36,6 +129,14 @@
 @media (max-width: 768px) {
   .my-teams-header h1 {
     font-size: 2rem;
+  }
+
+  .my-teams-header p {
+    font-size: 1rem;
+  }
+
+  .teams-grid {
+    grid-template-columns: 1fr;
   }
 
   .empty-actions {

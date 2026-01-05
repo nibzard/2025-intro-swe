@@ -1,0 +1,247 @@
+.activity-feed-page {
+  min-height: 100vh;
+  background: 
+    linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%),
+    url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&q=80') center/cover no-repeat fixed;
+  background-blend-mode: overlay;
+}
+
+.activity-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.activity-header {
+  text-align: center;
+  color: white;
+  margin-bottom: 40px;
+  animation: fadeInDown 0.6s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.activity-header h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  text-shadow: 2px 4px 12px rgba(0, 0, 0, 0.4);
+  font-weight: 800;
+}
+
+.activity-header p {
+  font-size: 1.3rem;
+  opacity: 0.95;
+  text-shadow: 1px 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.activity-content {
+  margin-bottom: 30px;
+}
+
+.empty-feed {
+  text-align: center;
+  padding: 80px 40px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.empty-icon {
+  font-size: 5rem;
+  display: block;
+  margin-bottom: 20px;
+}
+
+.empty-feed h2 {
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.empty-feed p {
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 1.1rem;
+}
+
+.timeline {
+  position: relative;
+  padding-left: 40px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.timeline-section {
+  margin-bottom: 40px;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.timeline-date {
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-transform: capitalize;
+  text-shadow: 1px 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.activity-item {
+  position: relative;
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  animation: slideInLeft 0.5s ease-out;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.activity-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 3px solid white;
+  position: relative;
+  z-index: 1;
+  margin-left: -30px;
+}
+
+.activity-content-box {
+  flex: 1;
+  padding: 20px;
+  transition: all 0.3s;
+}
+
+.activity-content-box:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.activity-main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.activity-user {
+  font-weight: 700;
+  color: #667eea;
+}
+
+.activity-action {
+  color: #333;
+}
+
+.activity-target {
+  font-weight: 600;
+  color: #764ba2;
+}
+
+.activity-time {
+  color: #999;
+  font-size: 0.85rem;
+}
+
+.activity-stats {
+  margin-top: 40px;
+  animation: fadeIn 1s ease-out;
+}
+
+.activity-stats h3 {
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 15px;
+  color: white;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+  .activity-header h1 {
+    font-size: 2rem;
+  }
+
+  .timeline {
+    padding-left: 30px;
+  }
+
+  .timeline::before {
+    left: 15px;
+  }
+
+  .activity-icon {
+    margin-left: -25px;
+    width: 35px;
+    height: 35px;
+    font-size: 1.2rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

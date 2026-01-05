@@ -1,0 +1,218 @@
+.notification-bell {
+  position: relative;
+}
+
+.bell-button {
+  position: relative;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.3s;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bell-button:hover {
+  background: rgba(102, 126, 234, 0.1);
+  transform: scale(1.1);
+}
+
+.bell-button:active {
+  animation: ring 0.5s ease-in-out;
+}
+
+@keyframes ring {
+  0%, 100% { transform: rotate(0deg); }
+  10%, 30% { transform: rotate(-10deg); }
+  20%, 40% { transform: rotate(10deg); }
+}
+
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #f44336;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+  border: 2px solid white;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.notification-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 360px;
+  max-height: 500px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  animation: slideDown 0.3s ease-out;
+  overflow: hidden;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.notification-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.clear-all {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.clear-all:hover {
+  text-decoration: underline;
+}
+
+.notification-list {
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.notification-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 10px;
+}
+
+.no-notifications {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 15px;
+}
+
+.no-notifications p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.notification-item {
+  display: flex;
+  gap: 15px;
+  padding: 15px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.3s;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background: #f9f9f9;
+}
+
+.notification-item.unread {
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.notif-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.notif-content {
+  flex: 1;
+}
+
+.notif-message {
+  margin: 0 0 5px 0;
+  color: #333;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.notif-time {
+  color: #999;
+  font-size: 0.8rem;
+}
+
+.notification-footer {
+  padding: 15px;
+  text-align: center;
+  border-top: 2px solid #f0f0f0;
+}
+
+.notification-footer button {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.notification-footer button:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .notification-dropdown {
+    width: 95vw;
+    right: 2.5vw;
+    left: 2.5vw;
+  }
+}

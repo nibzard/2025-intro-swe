@@ -23,6 +23,17 @@ function TeamCard({ team, onUpdate }) {
   const handleJoin = async () => {
     try {
       await teamsAPI.join(team._id);
+       const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+    const newNotif = {
+      id: Date.now(),
+      type: 'team_join',
+      message: `Uspješno si se pridružio timu "${team.name}"! 🎉`,
+      timestamp: new Date().toISOString(),
+      read: false
+    };
+    notifications.unshift(newNotif);
+    localStorage.setItem('notifications', JSON.stringify(notifications));
+    
       showToast('Uspješno si se pridružio timu! 🎉', 'success');
       if (onUpdate) onUpdate();
     } catch (err) {
@@ -33,10 +44,20 @@ function TeamCard({ team, onUpdate }) {
   const handleLeaveConfirm = async () => {
     try {
       await teamsAPI.leave(team._id);
-      setShowLeaveModal(false);
-      showToast('Uspješno si napustio tim', 'success');
-      if (onUpdate) onUpdate();
-    } catch (err) {
+       const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+    const newNotif = {
+      id: Date.now(),
+      type: 'team_leave',
+      message: `Napustio si tim "${team.name}" 👋`,
+      timestamp: new Date().toISOString(),
+      read: false
+    };
+    notifications.unshift(newNotif);
+    localStorage.setItem('notifications', JSON.stringify(notifications));
+    setShowLeaveModal(false);
+    showToast('Uspješno si napustio tim', 'success');
+    if (onUpdate) onUpdate();
+  } catch (err) {
       setShowLeaveModal(false);
       showToast(err.response?.data?.message || 'Greška', 'error');
     }
