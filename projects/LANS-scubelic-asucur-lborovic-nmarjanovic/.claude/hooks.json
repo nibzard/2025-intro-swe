@@ -1,0 +1,59 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "file=$(jq -r '.tool_input.file_path // empty'); protected_files=('SPECS.md' '.claude/agents/developer.md' '.claude/agents/tester.md' '.claude/agents/reviewer.md'); for pf in \"${protected_files[@]}\"; do if [[ \"$file\" == *\"$pf\" ]]; then echo \"\\n⚠️  WARNING: Modifying protected file: $file\"; echo \"💡 This file is critical to the project. Make sure changes are intentional.\"; break; fi; done"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "file=$(jq -r '.tool_input.file_path // empty'); if [ -n \"$file\" ] && [ -f \"$file\" ] && [[ \"$file\" == *.py ]]; then if command -v ruff &> /dev/null; then echo \"\\n🔍 Running ruff on $file...\"; if ruff check \"$file\" --fix --quiet; then echo \"✅ Ruff check passed\"; else echo \"⚠️  Ruff found issues - review the file\"; fi; else echo \"ℹ️  Ruff not installed yet (run: pip install ruff)\"; fi; fi"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if git rev-parse --git-dir > /dev/null 2>&1; then changed=$(git status --porcelain 2>/dev/null | wc -l); if [ \"$changed\" -gt 0 ]; then echo \"\\n📝 Git Status: $changed file(s) modified\"; git status --short 2>/dev/null | head -5; if [ \"$changed\" -gt 5 ]; then echo \"   ... and $((changed - 5)) more\"; fi; echo \"\"; echo \"💡 Conventional commit format:\"; echo \"   feat: add new feature\"; echo \"   fix: bug fix\"; echo \"   docs: documentation changes\"; echo \"   refactor: code refactoring\"; echo \"   test: add or update tests\"; echo \"   chore: maintenance tasks\"; echo \"\"; echo \"📌 Tip: Use 'git add -p' to stage changes interactively\"; fi; fi"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"\\n🚀 LLM Answer Watcher Development Session\"; echo \"📋 Project hooks active: ruff linting, git reminders, TODO tracking\"; if git rev-parse --git-dir > /dev/null 2>&1; then branch=$(git branch --show-current 2>/dev/null); echo \"🌿 Git branch: $branch\"; fi; if [ -f SPECS.md ]; then echo \"📄 SPECS.md found\"; fi; if [ -d .claude/agents ]; then agent_count=$(ls -1 .claude/agents/*.md 2>/dev/null | wc -l); echo \"🤖 $agent_count subagent(s) available\"; fi; if [ -f TODO.md ]; then echo \"\"; echo \"📋 TODO.md Status:\"; pending=$(grep -c '\\- \\[ \\]' TODO.md 2>/dev/null || echo 0); completed=$(grep -c '\\- \\[x\\]' TODO.md 2>/dev/null || echo 0); total=$((pending + completed)); if [ $total -gt 0 ]; then percent=$((completed * 100 / total)); echo \"   ✅ Completed: $completed/$total tasks ($percent%)\"; echo \"   ⏳ Pending: $pending tasks\"; echo \"\"; echo \"💡 Next pending tasks:\"; grep -n '\\- \\[ \\]' TODO.md 2>/dev/null | head -3 | while IFS=: read -r line_num content; do task=$(echo \"$content\" | sed 's/^[[:space:]]*- \\[ \\] //'); echo \"   Line $line_num: $task\" | head -c 80; echo; done; else echo \"   No tasks tracked yet\"; fi; echo \"\"; echo \"💡 Tip: Read TODO.md to pick your next task\"; fi; echo \"\""
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f TODO.md ]; then echo \"\\n📋 Subagent work complete!\"; echo \"💡 Remember to update TODO.md:\"; echo \"   - Mark completed tasks with [x]\"; echo \"   - Update progress in milestone checklists\"; echo \"   - Commit TODO.md with your changes\"; echo \"\"; pending=$(grep -c '\\- \\[ \\]' TODO.md 2>/dev/null || echo 0); completed=$(grep -c '\\- \\[x\\]' TODO.md 2>/dev/null || echo 0); total=$((pending + completed)); if [ $total -gt 0 ]; then percent=$((completed * 100 / total)); echo \"📊 Current progress: $completed/$total tasks ($percent%)\"; fi; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

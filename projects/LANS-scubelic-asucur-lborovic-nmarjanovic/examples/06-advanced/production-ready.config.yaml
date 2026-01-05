@@ -1,0 +1,121 @@
+# Production-Ready Configuration
+# All features enabled with best practices
+# Cost: ~$0.15 per run (comprehensive monitoring)
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  # Balanced concurrency (safe for mixed providers)
+  max_concurrent_requests: 10
+
+  # Multi-provider setup for comprehensive coverage
+  models:
+    # OpenAI with web search
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+      system_prompt: "openai/gpt-4-default"
+      tools:
+        - type: "web_search"
+      tool_choice: "auto"
+
+    # Anthropic for quality
+    - provider: "anthropic"
+      model_name: "claude-3-5-haiku-20241022"
+      env_api_key: "ANTHROPIC_API_KEY"
+
+    # Google Gemini with grounding
+    - provider: "google"
+      model_name: "gemini-2.0-flash-exp"
+      env_api_key: "GEMINI_API_KEY"
+      system_prompt: "google/gemini-grounding"
+      tools:
+        - google_search: {}
+
+  # Budget controls (RECOMMENDED)
+  budget:
+    enabled: true
+    max_per_run_usd: 5.00
+    max_per_intent_usd: 0.50
+    warn_threshold_usd: 2.00
+
+# Hybrid extraction (accuracy + reliability)
+extraction_settings:
+  extraction_model:
+    provider: "openai"
+    model_name: "gpt-4o-mini"
+    env_api_key: "OPENAI_API_KEY"
+    system_prompt: "openai/extraction-default"
+
+  method: "function_calling"
+  fallback_to_regex: true  # Reliability
+  min_confidence: 0.7
+
+  # Full feature set
+  enable_sentiment_analysis: true
+  enable_intent_classification: true
+
+brands:
+  mine: ["YourBrand", "YourProduct", "YourCompany"]
+  competitors:
+    - "CompetitorA"
+    - "CompetitorB"
+    - "CompetitorC"
+    - "CompetitorD"
+    - "CompetitorE"
+
+# Comprehensive intent coverage
+intents:
+  # Top-of-funnel (awareness)
+  - id: "what-is-category"
+    prompt: "What is project management software?"
+
+  # Mid-funnel (consideration)
+  - id: "best-tools"
+    prompt: "What are the best project management tools in 2025?"
+
+  - id: "tool-comparison"
+    prompt: "Compare the top project management platforms for teams"
+
+  # Bottom-funnel (decision)
+  - id: "which-to-buy"
+    prompt: "Which project management tool should I choose for my startup?"
+
+  - id: "alternatives"
+    prompt: "What are the best alternatives to CompetitorA?"
+
+# Global operations for insights
+global_operations:
+  - id: "quality-score"
+    description: "Rate response quality"
+    prompt: |
+      Rate this response 1-10 for accuracy and completeness:
+      Question: {intent:prompt}
+      Response: {intent:response}
+
+      Provide score and one-sentence justification.
+    model: "gpt-4o-mini"
+    enabled: true
+
+# Production deployment checklist:
+#
+# ✅ Multi-provider coverage (OpenAI, Anthropic, Google)
+# ✅ Web search enabled (real-time data)
+# ✅ Budget controls (prevent runaway costs)
+# ✅ Hybrid extraction (accuracy + reliability)
+# ✅ Sentiment tracking (monitor brand perception)
+# ✅ Intent classification (understand query types)
+# ✅ Quality scoring (track response quality)
+# ✅ Comprehensive intents (all funnel stages)
+# ✅ Conservative concurrency (avoid rate limits)
+#
+# Run daily or weekly for continuous monitoring:
+# crontab -e
+# 0 9 * * 1 llm-answer-watcher run --config production-ready.yaml
+#
+# Monitor via:
+# - HTML reports: ./output/*/report.html
+# - SQLite queries: sqlite3 ./output/watcher.db
+# - CSV exports: python code-examples/export_to_csv.py
+# - Custom dashboards: python code-examples/dashboard_integration.py

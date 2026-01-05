@@ -1,0 +1,43 @@
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/steel-watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-5-mini"
+      env_api_key: "OPENAI_API_KEY"
+
+    - provider: "openai"
+      model_name: "gpt-5-nano"
+      env_api_key: "OPENAI_API_KEY"
+
+  use_llm_rank_extraction: true
+
+brands:
+  mine:
+    - "Steel"
+    - "Steel.dev"
+    - "steel.dev"
+    - "Steel API"
+
+  competitors:
+    - "Browserbase"
+    - "Anchorbrowser"
+    - "Hyperbrowser"
+    - "Browserless"
+
+  touch_points:
+    - "browser-use"
+    - "Playwright"
+    - "Puppeteer"
+
+intents:
+  # Just 3 intents for quick testing
+  - id: "ai-agent-browser-infrastructure"
+    prompt: "How can I run browser automation for AI agents at scale?"
+
+  - id: "headless-browser-cloud"
+    prompt: "What's the best way to deploy headless browsers in the cloud?"
+
+  - id: "browser-api-performance"
+    prompt: "What are the fastest headless browser APIs for high-volume tasks?"

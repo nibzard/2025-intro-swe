@@ -1,0 +1,73 @@
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/steel-watcher.db"
+  max_concurrent_requests: 5
+
+  models:
+    # # OpenAI with web search
+    # - provider: "openai"
+    #   model_name: "gpt-5-nano"
+    #   env_api_key: "OPENAI_API_KEY"
+    #   system_prompt: "openai/gpt-5-default"
+    #   tools:
+    #     - type: "web_search"
+    #   tool_choice: "required"
+
+    # Google Gemini with Google Search grounding
+    - provider: "google"
+      model_name: "gemini-2.5-flash"
+      env_api_key: "GEMINI_API_KEY"
+      system_prompt: "google/gemini-grounding"
+      tools:
+        - google_search: {}
+
+  operation_models:
+    # OpenAI o3-mini reasoning model for operations only (no web search)
+    - provider: "openai"
+      model_name: "o3-mini"
+      env_api_key: "OPENAI_API_KEY"
+      system_prompt: "openai/gpt-5-default"
+
+  use_llm_rank_extraction: true
+
+brands:
+  mine:
+    - "Steel"
+    - "Steel.dev"
+    - "steel.dev"
+    - "Steel API"
+
+  competitors:
+    - "Browserbase"
+    - "Browserless"
+    - "Apify"
+    - "ScrapingBee"
+    - "Playwright"
+    - "Puppeteer"
+
+# Global operation runs for every intent
+global_operations:
+  - id: "steel-presence-analysis"
+    description: "Analyze Steel's presence and positioning"
+    prompt: |
+      Analyze Steel's presence in this LLM response.
+
+      Question: {intent:prompt}
+      Response: {intent:response}
+
+      Steel brands: Steel, Steel.dev, Steel API
+      Steel rank (if mentioned): {rank:mine}
+      Competitors mentioned: {competitors:mentioned}
+
+      Provide concise analysis:
+      1. Is Steel mentioned? (Yes/No)
+      2. If yes, what rank and sentiment? If no, why might Steel be missing?
+      3. Top 3 competitors mentioned and their positioning
+      4. Overall assessment: Strong/Moderate/Weak/Missing
+      5. One specific content recommendation to improve Steel's ranking
+    model: "o3-mini"
+    enabled: true
+
+intents:
+  - id: "ai-agent-browser"
+    prompt: "How can I use a remote browser over an API without installing or hosting Chrome myself?"
