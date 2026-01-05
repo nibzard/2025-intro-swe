@@ -1,5 +1,65 @@
 const Team = require('../models/Team');
 const User = require('../models/User');
+const nodemailer = require('nodemailer');
+
+// Funkcija za slanje emaila kada se pridružiš timu
+const sendTeamJoinEmail = async (userEmail, teamName, teamDate, teamTime, teamLocation) => {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: userEmail,
+    subject: '🏀 TeamConnect - Uspješno si se pridružio timu!',
+    html: `
+      <h1>Čestitamo! 🎉</h1>
+      <p>Uspješno si se pridružio timu:</p>
+      <h2 style="color: #667eea;">${teamName}</h2>
+      <p><strong>📅 Datum:</strong> ${new Date(teamDate).toLocaleDateString('hr-HR')}</p>
+      <p><strong>🕐 Vrijeme:</strong> ${teamTime}</p>
+      <p><strong>📍 Lokacija:</strong> ${teamLocation}</p>
+      <br>
+      <p>Vidimo se na terenu! 💪</p>
+      <p style="color: #999; font-size: 12px;">TeamConnect © 2025</p>
+    `
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+// Funkcija za slanje emaila kada napustiš tim
+const sendTeamLeaveEmail = async (userEmail, teamName, teamDate, teamTime) => {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: userEmail,
+    subject: '🏀 TeamConnect - Napustio si tim',
+    html: `
+      <h1>Napustio si tim</h1>
+      <p>Potvrdujemo da si napustio tim:</p>
+      <h2 style="color: #667eea;">${teamName}</h2>
+      <p><strong>📅 Datum:</strong> ${new Date(teamDate).toLocaleDateString('hr-HR')}</p>
+      <p><strong>🕐 Vrijeme:</strong> ${teamTime}</p>
+      <br>
+      <p>Nadamo se da ćeš se pridružiti drugim timovima uskoro!</p>
+      <p style="color: #999; font-size: 12px;">TeamConnect © 2025</p>
+    `
+  };
+
+  await transporter.sendMail(mailOptions);
+};
 
 // Kreiraj novi tim
 exports.createTeam = async (req, res) => {
@@ -48,9 +108,6 @@ exports.getTeams = async (req, res) => {
     if (sport) filter.sport = sport;
     if (city) filter.city = city;
     if (location) filter.location = location;
-
-    // Prikaži samo timove koji nisu puni
-    filter.currentPlayers = { $lt: maxPlayers };
 
     const teams = await Team.find(filter)
       .populate('creator', 'username')
@@ -108,6 +165,20 @@ exports.joinTeam = async (req, res) => {
     team.currentPlayers += 1;
     await team.save();
 
+    // Pošalji email
+    try {
+      await sendTeamJoinEmail(
+        req.user.email,
+        team.name,
+        team.date,
+        team.time,
+        `${team.city}, ${team.location}`
+      );
+    } catch (emailErr) {
+      console.error('Greška pri slanju emaila:', emailErr);
+      // Nastavi dalje iako email nije poslan
+    }
+
     res.json({ 
       message: 'Uspješno si se pridružio timu!',
       team 
@@ -142,6 +213,19 @@ exports.leaveTeam = async (req, res) => {
     team.players = team.players.filter(player => !player.equals(req.user._id));
     team.currentPlayers -= 1;
     await team.save();
+
+    // Pošalji email
+    try {
+      await sendTeamLeaveEmail(
+        req.user.email,
+        team.name,
+        team.date,
+        team.time
+      );
+    } catch (emailErr) {
+      console.error('Greška pri slanju emaila:', emailErr);
+      // Nastavi dalje iako email nije poslan
+    }
 
     res.json({ 
       message: 'Napustio si tim',

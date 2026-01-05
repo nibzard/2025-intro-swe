@@ -44,6 +44,7 @@ function Register() {
       });
 
       localStorage.setItem('tempUserId', response.data.userId);
+      alert("USPJELO! ID: " + response.data.userId);
       navigate('/verify');
     } catch (err) {
       setError(err.response?.data?.message || 'Greška pri registraciji');

@@ -27,9 +27,12 @@ function Login() {
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
 
+      alert("LOGIN USPJEŠAN! Username: " + response.data.user.username);
+
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Greška pri prijavi');
+      alert("LOGIN GREŠKA: " + (err.response?.data?.message || 'Greška'));
     } finally {
       setLoading(false);
     }

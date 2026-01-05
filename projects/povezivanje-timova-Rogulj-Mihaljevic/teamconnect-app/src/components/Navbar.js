@@ -32,7 +32,7 @@ function Navbar() {
         </div>
 
         <div className="navbar-user">
-          <span className="user-name">{user.username}</span>
+          <span className="user-name">Pozdrav, {user.username}!</span>
           <button className="btn-logout" onClick={handleLogout}>
             Odjava
           </button>

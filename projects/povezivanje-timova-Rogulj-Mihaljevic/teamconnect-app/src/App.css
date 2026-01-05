@@ -36,13 +36,15 @@ body {
 }
 
 .btn-secondary {
-  background: rgba(255,255,255,0.2);
+  background: #ff9800;
   color: white;
-  backdrop-filter: blur(10px);
+  border: none;
 }
 
 .btn-secondary:hover {
-  background: rgba(255,255,255,0.3);
+  background: #f57c00;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(245, 124, 0, 0.4);
 }
 
 /* Cards */
