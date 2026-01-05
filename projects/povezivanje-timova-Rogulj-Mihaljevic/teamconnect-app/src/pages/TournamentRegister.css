@@ -1,0 +1,133 @@
+.tournament-register-page {
+  min-height: 100vh;
+  background: 
+    linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%),
+    url('https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=1920&q=80') center/cover no-repeat fixed;
+  background-blend-mode: overlay;
+}
+
+.register-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.register-card {
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.register-header {
+  text-align: center;
+  padding-bottom: 30px;
+  border-bottom: 3px solid #f0f0f0;
+  margin-bottom: 40px;
+}
+
+.register-header h1 {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.register-header h2 {
+  font-size: 1.8rem;
+  color: #667eea;
+  margin: 15px 0 10px 0;
+}
+
+.register-header p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.form-section {
+  margin-bottom: 40px;
+}
+
+.form-section h3 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #667eea;
+}
+
+.player-field {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  align-items: center;
+}
+
+.player-field input {
+  flex: 1;
+}
+
+.btn-remove {
+  background: #f44336;
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.btn-remove:hover {
+  background: #d32f2f;
+  transform: scale(1.1);
+}
+
+.fee-notice {
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+  padding: 20px;
+  border-radius: 15px;
+  border-left: 5px solid #ff9800;
+  margin-bottom: 30px;
+}
+
+.fee-notice p {
+  margin: 0 0 5px 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.fee-notice strong {
+  color: #ff9800;
+  font-size: 1.3rem;
+}
+
+.fee-notice small {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .register-header h1 {
+    font-size: 2rem;
+  }
+
+  .register-header h2 {
+    font-size: 1.4rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}

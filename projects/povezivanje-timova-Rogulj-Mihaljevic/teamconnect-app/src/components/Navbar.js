@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NotificationBell from './NotificationBell';
 import './Navbar.css';
@@ -6,6 +6,7 @@ import './Navbar.css';
 function Navbar() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [showMenu, setShowMenu] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -24,18 +25,56 @@ function Navbar() {
           <span>TeamConnect</span>
         </div>
 
-        <div className="navbar-menu">
-          <button className="nav-link" onClick={() => navigate('/dashboard')}>
-            Svi timovi
+        <button 
+          className="menu-toggle"
+          onClick={() => setShowMenu(!showMenu)}
+        >
+          ☰
+        </button>
+
+        <div className={`navbar-menu ${showMenu ? 'show' : ''}`}>
+          <button className="nav-link" onClick={() => { navigate('/dashboard'); setShowMenu(false); }}>
+            🏠 Dashboard
           </button>
-          <button className="nav-link" onClick={() => navigate('/my-teams')}>
-            Moji timovi
+          
+          <button className="nav-link" onClick={() => { navigate('/my-teams'); setShowMenu(false); }}>
+            👥 Moji timovi
           </button>
-          <button className="nav-link" onClick={() => navigate('/activity')}>
+          
+          <button className="nav-link" onClick={() => { navigate('/tournaments'); setShowMenu(false); }}>
+            🏆 Turniri
+          </button>
+          
+          <button className="nav-link" onClick={() => { navigate('/ratings'); setShowMenu(false); }}>
+            ⭐ Ratings
+          </button>
+          
+          <button className="nav-link" onClick={() => { navigate('/fields'); setShowMenu(false); }}>
+            📍 Tereni
+          </button>
+          
+          <button className="nav-link" onClick={() => { navigate('/friends'); setShowMenu(false); }}>
+            👫 Prijatelji
+          </button>
+          
+          <button className="nav-link" onClick={() => { navigate('/statistics'); setShowMenu(false); }}>
+            📊 Statistika
+          </button>
+          
+          <button className="nav-link" onClick={() => { navigate('/events'); setShowMenu(false); }}>
+            🎫 Eventi
+          </button>
+          
+          <button className="nav-link" onClick={() => { navigate('/rewards'); setShowMenu(false); }}>
+            🏅 Rewards
+          </button>
+          
+          <button className="nav-link" onClick={() => { navigate('/highlights'); setShowMenu(false); }}>
+            📹 Highlights
+          </button>
+          
+          <button className="nav-link" onClick={() => { navigate('/activity'); setShowMenu(false); }}>
             📰 Aktivnosti
-          </button>
-          <button className="nav-link" onClick={() => navigate('/create-team')}>
-            + Kreiraj tim
           </button>
         </div>
 

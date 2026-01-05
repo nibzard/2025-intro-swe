@@ -1,0 +1,337 @@
+.rating-system-page {
+  min-height: 100vh;
+  background: 
+    linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%),
+    url('https://images.unsplash.com/photo-1517649763962-0c623066013b?w=1920&q=80') center/cover no-repeat fixed;
+  background-blend-mode: overlay;
+}
+
+.rating-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.rating-header {
+  text-align: center;
+  color: white;
+  margin-bottom: 40px;
+  animation: fadeInDown 0.6s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rating-header h1 {
+  font-size: 3.5rem;
+  margin-bottom: 15px;
+  text-shadow: 2px 4px 12px rgba(0, 0, 0, 0.4);
+  font-weight: 800;
+}
+
+.rating-header p {
+  font-size: 1.4rem;
+  opacity: 0.95;
+  text-shadow: 1px 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.rating-filters {
+  margin-bottom: 40px;
+  padding: 30px;
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+  align-items: center;
+  animation: fadeIn 0.8s ease-out 0.2s both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filter-section {
+  flex: 1;
+  min-width: 250px;
+}
+
+.filter-section label {
+  display: block;
+  margin-bottom: 12px;
+  color: #333;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 10px 20px;
+  background: #f0f0f0;
+  border: 2px solid #e0e0e0;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.filter-btn:hover {
+  background: #e0e0e0;
+  transform: translateY(-2px);
+}
+
+.filter-btn.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-color: #667eea;
+}
+
+.leaderboard {
+  display: grid;
+  gap: 25px;
+  margin-bottom: 40px;
+  animation: fadeIn 0.8s ease-out 0.4s both;
+}
+
+.player-card {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto auto auto;
+  gap: 25px;
+  align-items: center;
+  padding: 25px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.player-card:hover {
+  transform: translateY(-5px) translateX(10px);
+  box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+}
+
+.player-rank {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #667eea;
+  min-width: 60px;
+  text-align: center;
+}
+
+.player-avatar-large {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.player-info h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 1.4rem;
+}
+
+.player-sport {
+  color: #666;
+  font-size: 1rem;
+}
+
+.player-rating {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rating-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.2rem;
+}
+
+.rating-number {
+  font-weight: 800;
+  color: #667eea;
+  font-size: 1.5rem;
+}
+
+.skill-level {
+  padding: 6px 14px;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.player-stats {
+  display: flex;
+  gap: 25px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #333;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #999;
+  text-transform: uppercase;
+}
+
+.player-achievements {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.achievement-badge {
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+  cursor: help;
+  transition: transform 0.3s;
+}
+
+.achievement-badge:hover {
+  transform: scale(1.2) rotate(10deg);
+}
+
+.btn-small {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+}
+
+.empty-leaderboard {
+  text-align: center;
+  padding: 80px 40px;
+}
+
+.achievement-list {
+  padding: 40px;
+  animation: fadeIn 1s ease-out 0.6s both;
+}
+
+.achievement-list h2 {
+  color: #333;
+  margin-bottom: 30px;
+  font-size: 2rem;
+  text-align: center;
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.achievement-item {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 15px;
+  transition: all 0.3s;
+}
+
+.achievement-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+}
+
+.ach-icon {
+  font-size: 2.5rem;
+}
+
+.achievement-item h4 {
+  margin: 0 0 5px 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.achievement-item p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 1200px) {
+  .player-card {
+    grid-template-columns: auto 1fr;
+    gap: 15px;
+  }
+
+  .player-stats {
+    grid-column: 1 / -1;
+    justify-content: space-around;
+  }
+
+  .player-achievements {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .rating-header h1 {
+    font-size: 2.5rem;
+  }
+
+  .rating-filters {
+    flex-direction: column;
+  }
+
+  .player-card {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .player-rank {
+    font-size: 2rem;
+  }
+
+  .player-avatar-large {
+    margin: 0 auto;
+  }
+
+  .achievements-grid {
+    grid-template-columns: 1fr;
+  }
+}
