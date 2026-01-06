@@ -27,6 +27,9 @@
         <a href="dashboard.html" data-link="dashboard">Dashboard</a>
 
     </div>
+
+    <!-- USER AREA -->
+    <div id="userArea" style="position:absolute; right:12px; top:12px;"></div>
 </div>
 
 
@@ -86,25 +89,58 @@ document.querySelectorAll(".nav-links a").forEach(a => {
         <!-- GRID MJESECI -->
         <div class="month-grid">
 
-            <div class="month-box">Siječanj</div>
-            <div class="month-box">Veljača</div>
-            <div class="month-box">Ožujak</div>
-            <div class="month-box">Travanj</div>
-            <div class="month-box">Svibanj</div>
-            <div class="month-box">Lipanj</div>
-            <div class="month-box">Srpanj</div>
-            <div class="month-box">Kolovoz</div>
-            <div class="month-box">Rujan</div>
-            <div class="month-box">Listopad</div>
-            <div class="month-box">Studeni</div>
-            <div class="month-box">Prosinac</div>
+            <div class="month-box" data-month="0">Siječanj</div>
+            <div class="month-box" data-month="1">Veljača</div>
+            <div class="month-box" data-month="2">Ožujak</div>
+            <div class="month-box" data-month="3">Travanj</div>
+            <div class="month-box" data-month="4">Svibanj</div>
+            <div class="month-box" data-month="5">Lipanj</div>
+            <div class="month-box" data-month="6">Srpanj</div>
+            <div class="month-box" data-month="7">Kolovoz</div>
+            <div class="month-box" data-month="8">Rujan</div>
+            <div class="month-box" data-month="9">Listopad</div>
+            <div class="month-box" data-month="10">Studeni</div>
+            <div class="month-box" data-month="11">Prosinac</div>
 
         </div>
 
-        <button class="btn" style="margin-top:30px;">AI – Pronađi najbolje vrijeme</button>
+        <button id="personalAiBtn" class="btn" style="margin-top:30px;">AI – Pronađi najbolje vrijeme</button>
+        <div id="personalAiResult" style="margin-top:10px; color:var(--text-soft);"></div>
     </div>
 
 </div>
+
+<script src="auth.js"></script>
+<script src="personal.js"></script>
+<script>
+// require login
+const user = ssAuth.requireAuth('index.html');
+// show in participants list
+const ul = document.querySelector('.card ul');
+if (ul) {
+    ul.innerHTML = `<li><strong>${user.name}</strong> (vi)</li>` + ul.innerHTML;
+}
+// show user area
+const ua = document.getElementById('userArea');
+if (ua) ua.innerHTML = `<span style="color:var(--text-soft); margin-right:10px;">${user.name}</span> <button class="btn-gray" onclick="ssAuth.logout(); location.href='index.html';">Odjava</button>`;
+
+// attach month click handlers
+document.querySelectorAll('.month-box').forEach(el=>{
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', ()=>{
+        const mi = parseInt(el.dataset.month, 10);
+        ssPersonal.openMonthEditor(mi);
+    });
+});
+
+// AI button
+document.getElementById('personalAiBtn').addEventListener('click', ()=>{
+    const rec = ssPersonal.aiRecommendForPersonal(user.id);
+    const el = document.getElementById('personalAiResult');
+    if (!rec || !rec.length) el.innerText = 'Nema preporuka';
+    else el.innerHTML = rec.map(r=>`• Preporučeno: ${r.day}. ${r.month}.`).join('<br>');
+});
+</script>
 
 </body>
 </html>

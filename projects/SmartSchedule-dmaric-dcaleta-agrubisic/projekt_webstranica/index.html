@@ -26,6 +26,9 @@
         <a href="index.html" data-link="index">Početna</a>
         <a href="dashboard.html" data-link="dashboard">Dashboard</a>
     </div>
+
+    <!-- USER AREA (prijava/odjava) -->
+    <div id="userArea" style="position:absolute; right:12px; top:12px;"></div>
 </div>
 
 
@@ -81,15 +84,16 @@ document.querySelectorAll(".nav-links a").forEach(a => {
 
                 <!-- LOGIN FORM -->
                 <form id="loginForm">
-                    <input type="text" placeholder="Ime" required>
-                    <input type="password" placeholder="Lozinka" required>
-                    <button class="btn" style="margin-top:18px;">Prijava</button>
-                </form>
+                    <input id="loginName" type="text" placeholder="Ime" required>
+                    <input id="loginPassword" type="password" placeholder="Lozinka" required>
+                    <div id="loginMsg" style="color:#c33; margin-top:8px; min-height:18px;"></div>
+                    <button class="btn" style="margin-top:8px;">Prijava</button>
+                </form> 
 
                 <!-- SIGNUP FORM -->
                 <form id="signupForm" style="display:none;">
-                    <input type="text" placeholder="Ime" required>
-                    <input type="password" placeholder="Lozinka" required>
+                    <input id="signupName" type="text" placeholder="Ime" required>
+                    <input id="signupPassword" type="password" placeholder="Lozinka" required>
 
                     <div class="checkbox-row">
                         <input id="bossCheck" type="checkbox">
@@ -97,13 +101,14 @@ document.querySelectorAll(".nav-links a").forEach(a => {
                     </div>
 
                     <div id="companyFields" style="display:none;">
-                        <input type="text" placeholder="Ime tvrtke">
-                        <input type="text" placeholder="OIB">
-                        <input type="text" placeholder="Adresa tvrtke">
+                        <input id="companyName" type="text" placeholder="Ime tvrtke">
+                        <input id="companyOIB" type="text" placeholder="OIB">
+                        <input id="companyAddress" type="text" placeholder="Adresa tvrtke">
                     </div>
 
-                    <button class="btn" style="margin-top:18px;">Registracija</button>
-                </form>
+                    <div id="signupMsg" style="color:#c33; margin-top:8px; min-height:18px;"></div>
+                    <button class="btn" style="margin-top:8px;">Registracija</button>
+                </form> 
 
             </div>
         </div>
@@ -116,6 +121,9 @@ document.querySelectorAll(".nav-links a").forEach(a => {
     </div>
 
 </div>
+
+<!-- include auth helper -->
+<script src="auth.js"></script>
 
 <script>
 /* TAB SWITCHING */
@@ -145,15 +153,61 @@ bossCheck.onchange = () => {
     companyFields.style.display = bossCheck.checked ? "block" : "none";
 };
 
-/* REDIRECTS */
-loginForm.onsubmit = e => {
+/* UI: user area */
+function showUserArea() {
+    const u = ssAuth.getCurrentUser();
+    const el = document.getElementById('userArea');
+    if (u) {
+        el.innerHTML = `<span style="color:var(--text-soft); margin-right:10px;">${u.name}</span> <button class="btn-gray" onclick="ssLogout()">Odjava</button>`;
+    } else el.innerHTML = '';
+}
+
+function ssLogout(){
+    ssAuth.logout();
+    showUserArea();
+    location.href = 'index.html';
+}
+
+showUserArea();
+
+/* AUTHENTICATION HANDLERS */
+loginForm.onsubmit = async e => {
     e.preventDefault();
-    location.href = "dashboard.html";
+    const name = document.getElementById('loginName').value;
+    const pass = document.getElementById('loginPassword').value;
+    const msg = document.getElementById('loginMsg');
+    msg.innerText = '';
+
+    try {
+        await ssAuth.loginUser({name, password: pass});
+        showUserArea();
+        location.href = 'dashboard.html';
+    } catch (err) {
+        msg.innerText = err.message || 'Greška pri prijavi';
+    }
 };
 
-signupForm.onsubmit = e => {
+signupForm.onsubmit = async e => {
     e.preventDefault();
-    location.href = "dashboard.html";
+    const name = document.getElementById('signupName').value;
+    const pass = document.getElementById('signupPassword').value;
+    const isBoss = document.getElementById('bossCheck').checked;
+    const company = isBoss ? {
+        name: document.getElementById('companyName').value,
+        oib: document.getElementById('companyOIB').value,
+        address: document.getElementById('companyAddress').value
+    } : null;
+
+    const msg = document.getElementById('signupMsg');
+    msg.innerText = '';
+
+    try {
+        await ssAuth.registerUser({name, password: pass, isBoss, company});
+        showUserArea();
+        location.href = 'dashboard.html';
+    } catch (err) {
+        msg.innerText = err.message || 'Greška pri registraciji';
+    }
 };
 </script>
 
