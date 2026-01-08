@@ -25,18 +25,20 @@ function VerifyEmail() {
       const response = await authAPI.verify({ userId, code });
 
       // Spremi token i korisnika
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      localStorage.removeItem('tempUserId');
+     localStorage.clear();  // ✅ Clear first
+    localStorage.setItem('token', response.data.accessToken);  // ✅ accessToken, ne token
+    localStorage.setItem('refreshToken', response.data.refreshToken);  // ✅ Dodaj refresh token
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+    localStorage.removeItem('tempUserId');
 
       // Preusmjeri na profile setup
-      navigate('/profile-setup');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Pogrešan kod!');
-    } finally {
-      setLoading(false);
-    }
-  };
+  window.location.href = '/dashboard';  // ✅ window.location umjesto navigate
+  } catch (err) {
+    setError(err.response?.data?.message || 'Pogrešan kod!');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="auth-container">

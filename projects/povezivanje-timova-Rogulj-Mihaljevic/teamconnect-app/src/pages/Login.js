@@ -21,18 +21,48 @@ function Login() {
     setError('');
     setLoading(true);
 
+    console.log('🔐 Attempting login with:', formData.email);
+
     try {
       const response = await authAPI.login(formData);
 
-      localStorage.setItem('token', response.data.token);
+      console.log('✅ Login response:', response.data);
+
+      // ✅ Check if we got tokens
+      if (!response.data.accessToken) {
+        throw new Error('No access token received from server');
+      }
+
+      // ✅ Clear old data first
+      localStorage.clear();
+
+      // ✅ Save new tokens and user data
+      localStorage.setItem('token', response.data.accessToken);
+      localStorage.setItem('refreshToken', response.data.refreshToken);
       localStorage.setItem('user', JSON.stringify(response.data.user));
 
-      alert("LOGIN USPJEŠAN! Email: " + response.data.user.email);
+      console.log('💾 Tokens saved to localStorage');
+      console.log('👤 User:', response.data.user.username);
 
-      navigate('/dashboard');
+      // ✅ Verify tokens were saved
+      const savedToken = localStorage.getItem('token');
+      if (!savedToken) {
+        throw new Error('Failed to save token to localStorage');
+      }
+
+      console.log('✅ Token verified in localStorage');
+
+      // ✅ PROMJENA OVDJE - LINIJA 56
+      // Koristi window.location.href umjesto navigate
+      window.location.href = '/dashboard';
+
     } catch (err) {
-      setError(err.response?.data?.message || 'Greška pri prijavi');
-      alert("LOGIN GREŠKA: " + (err.response?.data?.message || 'Greška'));
+      console.error('❌ Login error:', err);
+      
+      const errorMessage = err.response?.data?.message || err.message || 'Greška pri prijavi';
+      setError(errorMessage);
+      
+      alert('❌ Login greška: ' + errorMessage);
     } finally {
       setLoading(false);
     }

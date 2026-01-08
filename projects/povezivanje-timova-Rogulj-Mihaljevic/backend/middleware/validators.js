@@ -29,9 +29,19 @@ const registerValidator = [
   
   body('password')
     .isLength({ min: 6 })
-    .withMessage('Lozinka mora imati minimalno 6 karaktera')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Lozinka mora sadržavati: veliko slovo, malo slovo, i broj'),
+    .withMessage('Lozinka mora imati minimalno 6 karaktera'),
+    // ✅ Uklonio sam strogi .matches() - sada prihvaća bilo koju lozinku 6+ karaktera
+  
+  // ✅ NOVO - sport i location kao optional:
+  body('sport')
+    .optional()
+    .trim()
+    .escape(),
+  
+  body('location')
+    .optional()
+    .trim()
+    .escape(),
   
   validate
 ];
@@ -56,7 +66,7 @@ const createTeamValidator = [
     .trim()
     .isLength({ min: 3, max: 50 })
     .withMessage('Ime tima mora biti između 3-50 karaktera')
-    .escape(), // XSS protection
+    .escape(),
   
   body('sport')
     .trim()

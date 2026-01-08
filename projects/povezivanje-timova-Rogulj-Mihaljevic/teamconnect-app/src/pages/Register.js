@@ -35,18 +35,28 @@ function Register() {
     setLoading(true);
 
     try {
+      // ✅ PROMJENA: Dodao sport i location (backend sada ih prihvaća)
       const response = await authAPI.register({
         username: formData.username,
         email: formData.email,
         password: formData.password,
-        sport: 'temp', // Privremeno, birat će kasnije
-        location: 'temp'
+        sport: 'Football', // Možeš promijeniti ili dodati dropdown
+        location: 'Zagreb'  // Možeš promijeniti ili dodati input
       });
 
-      localStorage.setItem('tempUserId', response.data.userId);
-      alert("USPJELO! ID: " + response.data.userId);
+      // ✅ Spremi userId i accessToken
+      if (response.data.userId) {
+        localStorage.setItem('tempUserId', response.data.userId);
+      }
+      
+      if (response.data.accessToken) {
+        localStorage.setItem('token', response.data.accessToken);
+      }
+
+      alert('✅ Registracija uspješna! Provjeri email za verifikacijski kod.');
       navigate('/verify');
     } catch (err) {
+      console.error('Register error:', err);
       setError(err.response?.data?.message || 'Greška pri registraciji');
     } finally {
       setLoading(false);

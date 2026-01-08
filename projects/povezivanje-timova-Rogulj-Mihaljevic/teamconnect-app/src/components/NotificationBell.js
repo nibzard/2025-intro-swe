@@ -38,19 +38,38 @@ function NotificationBell() {
       if (!silent) setLoading(true);
       
       const token = localStorage.getItem('token');
+      
+      // ✅ Check token exists
+      if (!token) {
+        console.log('NotificationBell: No token found');
+        // Don't redirect here - user might not be logged in yet
+        return;
+      }
+      
       const response = await fetch('http://localhost:5000/api/notifications?limit=10', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
+      // ✅ Handle 401 Unauthorized
+      if (response.status === 401) {
+        console.log('NotificationBell: Token expired, clearing localStorage...');
+        localStorage.clear();
+        navigate('/login');
+        return;
+      }
+
       if (response.ok) {
         const data = await response.json();
-        setNotifications(data.notifications);
-        setUnreadCount(data.unreadCount);
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
+      } else {
+        console.error('NotificationBell: Failed to load notifications', response.status);
       }
     } catch (error) {
-      console.error('Load notifications error:', error);
+      console.error('NotificationBell: Load error:', error);
+      // Don't show error to user for notifications - not critical
     } finally {
       if (!silent) setLoading(false);
     }
@@ -58,8 +77,13 @@ function NotificationBell() {
 
   const handleNotificationClick = async (notification) => {
     try {
-      // Označi kao pročitano
       const token = localStorage.getItem('token');
+      
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      
       await fetch(`http://localhost:5000/api/notifications/${notification._id}/read`, {
         method: 'PUT',
         headers: {
@@ -67,12 +91,10 @@ function NotificationBell() {
         }
       });
 
-      // Navigate ako ima link
       if (notification.link) {
         navigate(notification.link);
       }
 
-      // Refresh notifications
       loadNotifications();
       setShowDropdown(false);
     } catch (error) {
@@ -83,6 +105,12 @@ function NotificationBell() {
   const handleMarkAllAsRead = async () => {
     try {
       const token = localStorage.getItem('token');
+      
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      
       await fetch('http://localhost:5000/api/notifications/read-all', {
         method: 'PUT',
         headers: {
@@ -101,6 +129,12 @@ function NotificationBell() {
     
     try {
       const token = localStorage.getItem('token');
+      
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      
       await fetch(`http://localhost:5000/api/notifications/${notificationId}`, {
         method: 'DELETE',
         headers: {
@@ -134,18 +168,22 @@ function NotificationBell() {
   };
 
   const formatTime = (timestamp) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Upravo sada';
-    if (diffMins < 60) return `Prije ${diffMins} min`;
-    if (diffHours < 24) return `Prije ${diffHours}h`;
-    if (diffDays < 7) return `Prije ${diffDays} dana`;
-    return date.toLocaleDateString('hr-HR');
+      if (diffMins < 1) return 'Upravo sada';
+      if (diffMins < 60) return `Prije ${diffMins} min`;
+      if (diffHours < 24) return `Prije ${diffHours}h`;
+      if (diffDays < 7) return `Prije ${diffDays} dana`;
+      return date.toLocaleDateString('hr-HR');
+    } catch (error) {
+      return '';
+    }
   };
 
   return (
