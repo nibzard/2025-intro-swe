@@ -14,5 +14,8 @@ router.put('/', auth, updateProfile);
 router.post('/password', auth, changePassword);
 router.post('/avatar', auth, uploadAvatar);
 router.get('/:userId/activity', auth, getUserActivity);
+const { updateProfileValidator, mongoIdValidator } = require('../middleware/validators'); // NOVO
 
+router.put('/', auth, updateProfileValidator, updateProfile); // DODAJ validator
+router.get('/:userId', mongoIdValidator, getProfile); // DODAJ validator
 module.exports = router;

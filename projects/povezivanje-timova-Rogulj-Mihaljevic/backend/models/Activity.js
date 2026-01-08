@@ -59,5 +59,6 @@ const activitySchema = new mongoose.Schema({
 // Index za brži query
 activitySchema.index({ user: 1, createdAt: -1 });
 activitySchema.index({ createdAt: -1 });
-
+activitySchema.index({ type: 1 });
+activitySchema.index({ visibility: 1 });
 module.exports = mongoose.model('Activity', activitySchema);

@@ -95,5 +95,11 @@ matchSchema.pre('save', function(next) {
   this.updatedAt = new Date();
   next();
 });
-
+// Indexi
+matchSchema.index({ sport: 1 });
+matchSchema.index({ status: 1 });
+matchSchema.index({ scheduledDate: 1 });
+matchSchema.index({ createdBy: 1 });
+matchSchema.index({ 'team1.players': 1 });
+matchSchema.index({ 'team2.players': 1 });
 module.exports = mongoose.model('Match', matchSchema);

@@ -1,3 +1,4 @@
+import api from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -31,9 +32,7 @@ function Friends() {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5000/api/friends', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
       if (response.ok) {
@@ -49,9 +48,7 @@ function Friends() {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5000/api/friends/requests', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
       if (response.ok) {
@@ -71,19 +68,16 @@ function Friends() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(
-        `http://localhost:5000/api/friends/search?query=${encodeURIComponent(searchQuery)}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+      const res = await fetch(`http://localhost:5000/api/friends/search?query=${searchQuery}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (res.ok) {
+        const data = await res.json();
         setSearchResults(data);
         setActiveTab('search');
+      } else {
+        setToast({ message: 'Greška pri pretrazi', type: 'error' });
       }
     } catch (error) {
       console.error('Search error:', error);
@@ -97,29 +91,27 @@ function Friends() {
   };
 
   const confirmSendRequest = async () => {
+    if (!selectedUser) return;
+
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(
-        `http://localhost:5000/api/friends/request/${selectedUser._id}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ message: friendRequestMessage })
-        }
-      );
+      const res = await fetch(`http://localhost:5000/api/friends/request/${selectedUser._id}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: friendRequestMessage })
+      });
 
-      const data = await response.json();
+      const data = await res.json();
 
-      if (response.ok) {
+      if (res.ok) {
         setToast({ message: '✉️ Zahtjev poslan!', type: 'success' });
         setShowMessageModal(false);
         setFriendRequestMessage('');
         setSelectedUser(null);
-        // Refresh search results
-        handleSearch();
+        handleSearch(); // refresh search results
       } else {
         setToast({ message: data.message, type: 'error' });
       }
@@ -132,19 +124,14 @@ function Friends() {
   const handleAcceptRequest = async (requestId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(
-        `http://localhost:5000/api/friends/accept/${requestId}`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+      const res = await fetch(`http://localhost:5000/api/friends/accept/${requestId}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
 
-      const data = await response.json();
+      const data = await res.json();
 
-      if (response.ok) {
+      if (res.ok) {
         setToast({ message: '🎉 ' + data.message, type: 'success' });
         loadRequests();
         loadFriends();
@@ -160,17 +147,12 @@ function Friends() {
   const handleRejectRequest = async (requestId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(
-        `http://localhost:5000/api/friends/reject/${requestId}`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+      const res = await fetch(`http://localhost:5000/api/friends/reject/${requestId}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
 
-      if (response.ok) {
+      if (res.ok) {
         setToast({ message: 'Zahtjev odbijen', type: 'info' });
         loadRequests();
       }
@@ -183,17 +165,12 @@ function Friends() {
   const handleRemoveFriend = async (friendId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(
-        `http://localhost:5000/api/friends/${friendId}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+      const res = await fetch(`http://localhost:5000/api/friends/${friendId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
 
-      if (response.ok) {
+      if (res.ok) {
         setToast({ message: 'Prijatelj uklonjen', type: 'info' });
         loadFriends();
       }
@@ -219,13 +196,15 @@ function Friends() {
   return (
     <div className="friends-page">
       <Navbar />
-      
+
       <div className="friends-container">
+        {/* Header */}
         <div className="friends-header">
           <h1>👥 Prijatelji</h1>
           <p>Povežite se s igračima</p>
         </div>
 
+        {/* Search */}
         <div className="search-section card">
           <h3>🔍 Pretraži korisnike</h3>
           <div className="search-bar">
@@ -242,14 +221,15 @@ function Friends() {
           </div>
         </div>
 
+        {/* Tabs */}
         <div className="friends-tabs">
-          <button 
+          <button
             className={`tab ${activeTab === 'friends' ? 'active' : ''}`}
             onClick={() => setActiveTab('friends')}
           >
             Prijatelji ({friends.length})
           </button>
-          <button 
+          <button
             className={`tab ${activeTab === 'requests' ? 'active' : ''}`}
             onClick={() => setActiveTab('requests')}
           >
@@ -257,7 +237,7 @@ function Friends() {
             {requests.length > 0 && <span className="notification-dot"></span>}
           </button>
           {searchResults.length > 0 && (
-            <button 
+            <button
               className={`tab ${activeTab === 'search' ? 'active' : ''}`}
               onClick={() => setActiveTab('search')}
             >
@@ -266,7 +246,9 @@ function Friends() {
           )}
         </div>
 
+        {/* Content */}
         <div className="friends-content">
+          {/* Friends Tab */}
           {activeTab === 'friends' && (
             <div className="friends-list">
               {friends.length === 0 ? (
@@ -292,13 +274,13 @@ function Friends() {
                       </div>
 
                       <div className="friend-actions">
-                        <button 
+                        <button
                           className="btn btn-secondary btn-small"
                           onClick={() => navigate(`/profile/${friend._id}`)}
                         >
                           Vidi profil
                         </button>
-                        <button 
+                        <button
                           className="btn btn-danger btn-small"
                           onClick={() => handleRemoveFriend(friend._id)}
                         >
@@ -312,6 +294,7 @@ function Friends() {
             </div>
           )}
 
+          {/* Requests Tab */}
           {activeTab === 'requests' && (
             <div className="requests-list">
               {requests.length === 0 ? (
@@ -333,22 +316,18 @@ function Friends() {
                         </div>
                       </div>
 
-                      {request.message && (
-                        <p className="request-message">"{request.message}"</p>
-                      )}
+                      {request.message && <p className="request-message">"{request.message}"</p>}
 
-                      <p className="request-time">
-                        {formatDate(request.sentAt)}
-                      </p>
+                      <p className="request-time">{formatDate(request.sentAt)}</p>
 
                       <div className="request-actions">
-                        <button 
+                        <button
                           className="btn btn-primary"
                           onClick={() => handleAcceptRequest(request._id)}
                         >
                           ✓ Prihvati
                         </button>
-                        <button 
+                        <button
                           className="btn btn-secondary"
                           onClick={() => handleRejectRequest(request._id)}
                         >
@@ -362,6 +341,7 @@ function Friends() {
             </div>
           )}
 
+          {/* Search Tab */}
           {activeTab === 'search' && (
             <div className="search-results">
               {searchResults.length === 0 ? (
@@ -394,7 +374,7 @@ function Friends() {
                             ✉️ Zahtjev poslan
                           </button>
                         ) : (
-                          <button 
+                          <button
                             className="btn btn-primary"
                             onClick={() => handleSendFriendRequest(user)}
                           >
@@ -429,7 +409,7 @@ function Friends() {
             </div>
 
             <div className="modal-actions">
-              <button 
+              <button
                 className="btn btn-secondary"
                 onClick={() => {
                   setShowMessageModal(false);
@@ -439,10 +419,7 @@ function Friends() {
               >
                 Odustani
               </button>
-              <button 
-                className="btn btn-primary"
-                onClick={confirmSendRequest}
-              >
+              <button className="btn btn-primary" onClick={confirmSendRequest}>
                 Pošalji zahtjev
               </button>
             </div>

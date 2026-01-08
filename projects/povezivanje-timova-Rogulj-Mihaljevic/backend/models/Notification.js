@@ -55,5 +55,6 @@ const notificationSchema = new mongoose.Schema({
 
 // Index za brži query
 notificationSchema.index({ recipient: 1, read: 1, createdAt: -1 });
-
+notificationSchema.index({ sender: 1 });
+notificationSchema.index({ type: 1 });
 module.exports = mongoose.model('Notification', notificationSchema);

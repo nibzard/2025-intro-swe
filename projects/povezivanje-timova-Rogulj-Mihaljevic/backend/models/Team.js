@@ -39,5 +39,12 @@ messages: [{
 }],
   createdAt: { type: Date, default: Date.now }
 });
-
+// Indexi
+teamSchema.index({ sport: 1 });
+teamSchema.index({ city: 1 });
+teamSchema.index({ date: 1 });
+teamSchema.index({ creator: 1 });
+teamSchema.index({ status: 1 });
+teamSchema.index({ date: 1, city: 1, sport: 1 }); // Compound za filter
+teamSchema.index({ name: 'text', description: 'text' }); // Full-text search
 module.exports = mongoose.model('Team', teamSchema);

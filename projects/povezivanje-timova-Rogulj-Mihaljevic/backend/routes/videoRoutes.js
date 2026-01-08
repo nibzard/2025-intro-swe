@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
+
 const {
-  uploadVideo,
+  uploadVideo: uploadVideoController,
   getVideos,
   getVideo,
   streamVideo,
@@ -9,12 +10,22 @@ const {
   addComment,
   deleteVideo
 } = require('../controllers/videoController');
-const auth = require('../middleware/auth');
-const { uploadVideo: videoUpload } = require('../middleware/upload'); // ← PROMJENA
-const { uploadLimiter } = require('../middleware/ratelimiter');
 
-router.post('/upload', auth, uploadLimiter, uploadVideo.single('video'), uploadVideoController); // NOVO
-router.post('/upload', auth, videoUpload.single('video'), uploadVideo);
+const auth = require('../middleware/auth');
+const { uploadLimiter } = require('../middleware/ratelimiter');
+const { uploadVideo, checkStorageLimit } = require('../middleware/upload');
+
+// UPLOAD VIDEO
+router.post(
+  '/upload',
+  auth,
+  uploadLimiter,
+  checkStorageLimit,
+  uploadVideo.single('video'), // Multer middleware za upload
+  uploadVideoController // tvoja funkcija iz videoController
+);
+
+// Ostale rute
 router.get('/', getVideos);
 router.get('/:videoId', getVideo);
 router.get('/:videoId/stream', streamVideo);

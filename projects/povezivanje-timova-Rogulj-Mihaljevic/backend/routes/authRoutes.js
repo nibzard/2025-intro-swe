@@ -1,18 +1,18 @@
 const express = require('express');
 const router = express.Router();
+
 const authController = require('../controllers/authController');
 const { authLimiter, emailLimiter } = require('../middleware/ratelimiter');
-// POST /api/auth/register
-router.post('/register', authController.register);
+const { registerValidator, loginValidator } = require('../middleware/validators');
+const auth = require('../middleware/auth');
 
-// POST /api/auth/verify
-router.post('/verify', authController.verifyCode);
+// Auth routes
+router.post('/refresh-token', authController.refreshToken);
+router.post('/logout', auth, authController.logout);
+router.post('/register', authLimiter, registerValidator, authController.register);
+router.post('/login', authLimiter, loginValidator, authController.login);
+router.post('/verify-code', authLimiter, authController.verifyCode);
+router.post('/resend-code', emailLimiter, authController.resendVerificationCode);
+router.post('/forgot-password', emailLimiter, authController.forgotPassword);
 
-// POST /api/auth/login
-router.post('/login', authController.login);
-router.post('/register', authLimiter, register);
-router.post('/login', authLimiter, login);
-router.post('/verify-code', authLimiter, verifyCode);
-router.post('/resend-code', emailLimiter, resendVerificationCode);
-router.post('/forgot-password', emailLimiter, forgotPassword);
 module.exports = router;

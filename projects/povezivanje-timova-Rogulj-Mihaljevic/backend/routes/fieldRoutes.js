@@ -8,7 +8,14 @@ const {
   deleteField
 } = require('../controllers/fieldController');
 const auth = require('../middleware/auth');
-const { uploadFieldImages } = require('../middleware/upload');
+const { uploadFieldImages, compressImage } = require('../middleware/upload'); // AŽURIRAJ
+
+router.post('/', 
+  auth, 
+  uploadFieldImages.array('images', 5), 
+  compressImage, // NOVO - compress images
+  createField
+);
 
 router.get('/', getFields);
 router.get('/:fieldId', getField);

@@ -57,5 +57,12 @@ fieldSchema.pre('save', function(next) {
   this.updatedAt = new Date();
   next();
 });
-
+// Indexi
+fieldSchema.index({ sport: 1 });
+fieldSchema.index({ city: 1 });
+fieldSchema.index({ availability: 1 });
+fieldSchema.index({ rating: -1 });
+fieldSchema.index({ addedBy: 1 });
+fieldSchema.index({ name: 'text', description: 'text' });
+fieldSchema.index({ 'coordinates.lat': 1, 'coordinates.lng': 1 }); // Geospatial
 module.exports = mongoose.model('Field', fieldSchema);

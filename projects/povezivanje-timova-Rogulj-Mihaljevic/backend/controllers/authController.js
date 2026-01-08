@@ -3,7 +3,24 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 
-// Funkcija za slanje emaila
+// Funkcija za generiranje access i refresh tokena
+const generateTokens = (userId) => {
+  const accessToken = jwt.sign(
+    { id: userId },
+    process.env.JWT_SECRET,
+    { expiresIn: '15m' }
+  );
+
+  const refreshToken = jwt.sign(
+    { id: userId },
+    process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET + '_refresh',
+    { expiresIn: '7d' }
+  );
+
+  return { accessToken, refreshToken };
+};
+
+// Funkcija za slanje verifikacijskog emaila
 const sendVerificationEmail = async (email, code) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -28,49 +45,32 @@ const sendVerificationEmail = async (email, code) => {
   await transporter.sendMail(mailOptions);
 };
 
+// ----------------- CONTROLLER FUNKCIJE -----------------
+
 // Registracija
 exports.register = async (req, res) => {
   try {
     const { username, email, password, sport, location } = req.body;
 
-    // Provjeri postoji li username
-    const existingUser = await User.findOne({ 
-      $or: [{ username }, { email }] 
-    });
+    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    if (existingUser) return res.status(400).json({ message: 'Username ili email već postoje!' });
 
-    if (existingUser) {
-      return res.status(400).json({ 
-        message: 'Username ili email već postoje!' 
-      });
-    }
-
-    // Hashiraj lozinku
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Generiraj verifikacijski kod (6 brojeva)
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Kreiraj korisnika
     const user = new User({
       username,
       email,
       password: hashedPassword,
       sport,
       location,
-      verificationCode,
-      
+      verificationCode
     });
 
     await user.save();
+    await sendVerificationEmail(email, verificationCode);
 
-    // Pošalji email
-   await sendVerificationEmail(email, verificationCode);
-
-    res.status(201).json({ 
-      message: 'Registracija uspješna! Provjeri email za verifikacijski kod.',
-      userId: user._id 
-    });
-
+    res.status(201).json({ message: 'Registracija uspješna! Provjeri email za verifikacijski kod.', userId: user._id });
   } catch (error) {
     console.error('Greška pri registraciji:', error);
     res.status(500).json({ message: 'Greška na serveru' });
@@ -81,29 +81,18 @@ exports.register = async (req, res) => {
 exports.verifyCode = async (req, res) => {
   try {
     const { userId, code } = req.body;
-
     const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'Korisnik ne postoji' });
 
-    if (!user) {
-      return res.status(404).json({ message: 'Korisnik ne postoji' });
-    }
-
-    if (user.verificationCode !== code) {
-      return res.status(400).json({ message: 'Pogrešan kod!' });
-    }
+    if (user.verificationCode !== code) return res.status(400).json({ message: 'Pogrešan kod!' });
 
     user.isVerified = true;
     user.verificationCode = undefined;
     await user.save();
 
-    // Generiraj JWT token
-    const token = jwt.sign(
-      { userId: user._id }, 
-      process.env.JWT_SECRET, 
-      { expiresIn: '7d' }
-    );
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    res.json({ 
+    res.json({
       message: 'Email verificiran!',
       token,
       user: {
@@ -114,7 +103,6 @@ exports.verifyCode = async (req, res) => {
         location: user.location
       }
     });
-
   } catch (error) {
     console.error('Greška pri verifikaciji:', error);
     res.status(500).json({ message: 'Greška na serveru' });
@@ -124,43 +112,80 @@ exports.verifyCode = async (req, res) => {
 // Login
 exports.login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ message: 'Nevažeći email ili lozinka' });
+    if (!user.isVerified) return res.status(401).json({ message: 'Email nije verificiran. Provjerite inbox.' });
 
-    const user = await User.findOne({ username });
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) return res.status(401).json({ message: 'Nevažeći email ili lozinka' });
 
-    if (!user) {
-      return res.status(400).json({ message: 'Pogrešno korisničko ime ili lozinka' });
-    }
+    const { accessToken, refreshToken } = generateTokens(user._id);
 
-    if (!user.isVerified) {
-      return res.status(400).json({ message: 'Email nije verificiran!' });
-    }
+    user.refreshToken = refreshToken;
+    user.refreshTokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    user.lastActive = new Date();
+    await user.save();
 
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Pogrešno korisničko ime ili lozinka' });
-    }
-
-    const token = jwt.sign(
-      { userId: user._id }, 
-      process.env.JWT_SECRET, 
-      { expiresIn: '7d' }
-    );
-
-    res.json({ 
-      token,
+    res.json({
+      message: 'Uspješna prijava!',
+      accessToken,
+      refreshToken,
       user: {
         id: user._id,
         username: user.username,
         email: user.email,
-        sport: user.sport,
-        location: user.location
+        avatar: user.avatar,
+        sport: user.sport
       }
     });
-
   } catch (error) {
-    console.error('Greška pri loginu:', error);
-    res.status(500).json({ message: 'Greška na serveru' });
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
+};
+
+// Refresh token
+exports.refreshToken = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) return res.status(401).json({ message: 'Refresh token je obavezan' });
+
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET + '_refresh');
+    const user = await User.findById(decoded.id);
+
+    if (!user || user.refreshToken !== refreshToken) return res.status(401).json({ message: 'Nevažeći refresh token' });
+    if (new Date() > user.refreshTokenExpiry) return res.status(401).json({ message: 'Refresh token je istekao' });
+
+    const tokens = generateTokens(user._id);
+    user.refreshToken = tokens.refreshToken;
+    user.refreshTokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    await user.save();
+
+    res.json({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken });
+  } catch (error) {
+    console.error('Refresh token error:', error);
+    res.status(401).json({ message: 'Nevažeći refresh token' });
+  }
+};
+
+// Logout
+exports.logout = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    await User.findByIdAndUpdate(userId, { refreshToken: null, refreshTokenExpiry: null });
+    res.json({ message: 'Uspješna odjava' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ----------------- PLACEHOLDER FUNKCIJE -----------------
+exports.resendVerificationCode = async (req, res) => {
+  res.status(200).json({ message: 'Resend verification code route works!' });
+};
+
+exports.forgotPassword = async (req, res) => {
+  res.status(200).json({ message: 'Forgot password route works!' });
 };

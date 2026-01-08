@@ -12,5 +12,7 @@ router.get('/', auth, getStats);
 router.post('/', auth, upsertStats);
 router.post('/match', auth, addMatch);
 router.delete('/match/:matchId', auth, deleteMatch);
+const { addMatchValidator } = require('../middleware/validators'); // NOVO
 
+router.post('/match', auth, addMatchValidator, addMatch); // DODAJ validator
 module.exports = router;

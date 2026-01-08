@@ -32,5 +32,12 @@ const videoSchema = new mongoose.Schema({
   trending: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
-
+// Indexi
+videoSchema.index({ author: 1 });
+videoSchema.index({ category: 1 });
+videoSchema.index({ createdAt: -1 });
+videoSchema.index({ views: -1 });
+videoSchema.index({ 'likes': 1 });
+videoSchema.index({ trending: 1 });
+videoSchema.index({ title: 'text', description: 'text' });
 module.exports = mongoose.model('Video', videoSchema);

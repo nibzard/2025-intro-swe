@@ -6,7 +6,7 @@ import './Auth.css';
 function Login() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
   const [error, setError] = useState('');
@@ -27,7 +27,7 @@ function Login() {
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
 
-      alert("LOGIN USPJEŠAN! Username: " + response.data.user.username);
+      alert("LOGIN USPJEŠAN! Email: " + response.data.user.email);
 
       navigate('/dashboard');
     } catch (err) {
@@ -48,13 +48,13 @@ function Login() {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Korisničko ime</label>
+            <label>Email</label>
             <input
-              type="text"
-              name="username"
-              value={formData.username}
+              type="email"
+              name="email"
+              value={formData.email}
               onChange={handleChange}
-              placeholder="Tvoje korisničko ime"
+              placeholder="Tvoj email"
               required
             />
           </div>

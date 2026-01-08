@@ -82,5 +82,18 @@ rank: {
   createdAt: { type: Date, default: Date.now },
   lastActive: { type: Date, default: Date.now }
 });
+refreshToken: { type: String }
+refreshTokenExpiry: { type: Date }
+// Indexi za performance
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ username: 1 }, { unique: true });
+userSchema.index({ 'rating.overall': -1 }); // Za leaderboard
+userSchema.index({ rank: 1 });
+userSchema.index({ sport: 1 });
+userSchema.index({ city: 1 });
+userSchema.index({ lastActive: -1 });
+userSchema.index({ createdAt: -1 });
 
+// Compound index za search
+userSchema.index({ username: 'text', email: 'text' });
 module.exports = mongoose.model('User', userSchema);

@@ -62,6 +62,13 @@ const tournamentSchema = new mongoose.Schema({
 tournamentSchema.pre('save', function(next) {
   this.updatedAt = new Date();
   next();
-});
+});// Indexi
+tournamentSchema.index({ sport: 1 });
+tournamentSchema.index({ city: 1 });
+tournamentSchema.index({ startDate: 1 });
+tournamentSchema.index({ status: 1 });
+tournamentSchema.index({ creator: 1 });
+tournamentSchema.index({ startDate: 1, city: 1, sport: 1 });
+tournamentSchema.index({ name: 'text', description: 'text' });
 
 module.exports = mongoose.model('Tournament', tournamentSchema);
