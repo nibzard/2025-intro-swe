@@ -428,3 +428,38 @@
     grid-template-columns: 1fr;
   }
 }
+.friend-message-modal {
+  background: white;
+  border-radius: 25px;
+  padding: 40px;
+  max-width: 500px;
+  width: 95%;
+  animation: slideUp 0.4s ease-out;
+}
+
+.friend-message-modal h2 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 2rem;
+}
+
+.friend-message-modal p {
+  margin: 0 0 25px 0;
+  color: #666;
+  font-size: 1.05rem;
+}
+
+.friend-email,
+.request-email,
+.result-email {
+  color: #999;
+  font-size: 0.85rem;
+  margin: 3px 0;
+}
+
+.friend-location,
+.result-location {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 3px 0;
+}

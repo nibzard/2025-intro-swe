@@ -2,19 +2,113 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Toast from '../components/Toast';
 import './FieldMap.css';
+import { addCustomCity } from '../data/cities';
 
 function FieldMap() {
   const [fields, setFields] = useState([]);
   const [selectedField, setSelectedField] = useState(null);
   const [filter, setFilter] = useState({ sport: '', city: '' });
   const [toast, setToast] = useState(null);
+  const [showAddFieldModal, setShowAddFieldModal] = useState(false);
+  const [fieldForm, setFieldForm] = useState({
+    name: '',
+    sport: '',
+    city: '',
+    country: 'Hrvatska',
+    address: '',
+    price: '',
+    facilities: [],
+    description: '',
+    images: []
+  });
+
+  const [selectedImages, setSelectedImages] = useState([]);
+
+  // Dodane nedostajuće varijable
+  const currentUser = { username: 'Gost' }; // ili dohvati iz context/props ako imaš auth sistem
+
+  const sportsList = [
+    { id: 1, name: '⚽ Nogomet', popular: true },
+    { id: 2, name: '🏀 Košarka', popular: true },
+    { id: 3, name: '🏐 Odbojka', popular: true },
+    { id: 4, name: '🎾 Tenis', popular: true }
+  ];
+
+  const countries = ['Hrvatska', 'Srbija', 'Bosna i Hercegovina', 'Slovenija', 'Crna Gora'];
+
+  const europeanCities = {
+    'Hrvatska': ['Zagreb', 'Split', 'Rijeka', 'Osijek', 'Zadar', 'Pula', 'Šibenik', 'Dubrovnik'],
+    'Srbija': ['Beograd', 'Novi Sad', 'Niš', 'Kragujevac'],
+    'Bosna i Hercegovina': ['Sarajevo', 'Banja Luka', 'Mostar', 'Tuzla'],
+    'Slovenija': ['Ljubljana', 'Maribor', 'Celje', 'Kranj'],
+    'Crna Gora': ['Podgorica', 'Nikšić', 'Bar', 'Budva']
+  };
 
   const sportovi = ['⚽ Nogomet', '🏀 Košarka', '🏐 Odbojka', '🎾 Tenis'];
   const gradovi = ['Zagreb', 'Split', 'Rijeka', 'Osijek', 'Zadar'];
 
+  const availableFacilities = [
+    'Parking', 'Tuš', 'Svlačionice', 'Rasvjeta', 'WiFi', 
+    'Klima', 'Kafić', 'Restoran', 'Tribine', 'Ozvučenje'
+  ];
+
   useEffect(() => {
     loadFields();
   }, []);
+
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const imageUrls = files.map(file => URL.createObjectURL(file));
+    setSelectedImages([...selectedImages, ...imageUrls]);
+  };
+
+  const handleAddField = () => {
+    if (!fieldForm.name || !fieldForm.sport || !fieldForm.city) {
+      setToast({ message: 'Popuni sva obavezna polja!', type: 'error' });
+      return;
+    }
+
+    const newField = {
+      id: Date.now(),
+      ...fieldForm,
+      image: selectedImages[0] || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800',
+      images: selectedImages,
+      rating: 0,
+      reviews: 0,
+      availability: 'Dostupno',
+      coordinates: { lat: 45.8150, lng: 15.9819 }, // Default Zagreb
+      addedBy: currentUser.username,
+      addedAt: new Date().toISOString()
+    };
+
+    const updated = [newField, ...fields];
+    setFields(updated);
+    localStorage.setItem('sportsFields', JSON.stringify(updated));
+
+    setShowAddFieldModal(false);
+    setFieldForm({
+      name: '',
+      sport: '',
+      city: '',
+      country: 'Hrvatska',
+      address: '',
+      price: '',
+      facilities: [],
+      description: '',
+      images: []
+    });
+    setSelectedImages([]);
+    setToast({ message: 'Teren uspješno dodan! 🎉', type: 'success' });
+  };
+
+  const handleToggleFacility = (facility) => {
+    const facilities = fieldForm.facilities || [];
+    if (facilities.includes(facility)) {
+      setFieldForm({ ...fieldForm, facilities: facilities.filter(f => f !== facility) });
+    } else {
+      setFieldForm({ ...fieldForm, facilities: [...facilities, facility] });
+    }
+  };
 
   const loadFields = () => {
     const saved = localStorage.getItem('sportsFields');
@@ -93,7 +187,170 @@ function FieldMap() {
         <div className="map-header">
           <h1>📍 Mapa Terena</h1>
           <p>Pronađi savršeni teren za svoju utakmicu</p>
+          <button 
+            className="btn btn-primary"
+            onClick={() => setShowAddFieldModal(true)}
+          >
+            + Dodaj novi teren
+          </button>
         </div>
+
+        {showAddFieldModal && (
+          <div className="modal-overlay" onClick={() => setShowAddFieldModal(false)}>
+            <div className="add-field-modal" onClick={(e) => e.stopPropagation()}>
+              <h2>🏟️ Dodaj novi teren</h2>
+              
+              <div className="form-group">
+                <label>Naziv terena *</label>
+                <input
+                  type="text"
+                  value={fieldForm.name}
+                  onChange={(e) => setFieldForm({ ...fieldForm, name: e.target.value })}
+                  placeholder="npr. Stadion Poljud"
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Sport *</label>
+                  <select 
+                    value={fieldForm.sport}
+                    onChange={(e) => setFieldForm({ ...fieldForm, sport: e.target.value })}
+                  >
+                    <option value="">Odaberi</option>
+                    {sportsList.filter(s => s.popular).map(sport => (
+                      <option key={sport.id} value={sport.name}>{sport.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Cijena (€/h)</label>
+                  <input
+                    type="number"
+                    value={fieldForm.price}
+                    onChange={(e) => setFieldForm({ ...fieldForm, price: e.target.value })}
+                    placeholder="0.00"
+                    step="0.01"
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Država *</label>
+                  <select 
+                    value={fieldForm.country}
+                    onChange={(e) => setFieldForm({ ...fieldForm, country: e.target.value, city: '' })}
+                  >
+                    {countries.map(country => (
+                      <option key={country} value={country}>{country}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Grad *</label>
+                  <select 
+                    value={fieldForm.city}
+                    onChange={(e) => setFieldForm({ ...fieldForm, city: e.target.value })}
+                  >
+                    <option value="">Odaberi</option>
+                    {fieldForm.country && europeanCities[fieldForm.country]?.map(city => (
+                      <option key={city} value={city}>{city}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Adresa *</label>
+                <input
+                  type="text"
+                  value={fieldForm.address}
+                  onChange={(e) => setFieldForm({ ...fieldForm, address: e.target.value })}
+                  placeholder="npr. Mediteranskih igara 2"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Opis</label>
+                <textarea
+                  value={fieldForm.description}
+                  onChange={(e) => setFieldForm({ ...fieldForm, description: e.target.value })}
+                  rows="3"
+                  placeholder="Dodaj opis terena..."
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Sadržaji</label>
+                <div className="facilities-checkboxes">
+                  {availableFacilities.map(facility => (
+                    <label key={facility} className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={(fieldForm.facilities || []).includes(facility)}
+                        onChange={() => handleToggleFacility(facility)}
+                      />
+                      <span>{facility}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Slike terena</label>
+                <div className="image-upload-area">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageUpload}
+                    style={{ display: 'none' }}
+                    id="field-images"
+                  />
+                  <label htmlFor="field-images" className="image-upload-label">
+                    <div className="upload-icon">📷</div>
+                    <p>Klikni za dodavanje slika</p>
+                    <small>Možeš dodati više slika</small>
+                  </label>
+                  
+                  {selectedImages.length > 0 && (
+                    <div className="image-preview-grid">
+                      {selectedImages.map((img, index) => (
+                        <div key={index} className="image-preview">
+                          <img src={img} alt={`Preview ${index + 1}`} />
+                          <button 
+                            className="remove-image"
+                            onClick={() => setSelectedImages(selectedImages.filter((_, i) => i !== index))}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="modal-actions">
+                <button 
+                  className="btn btn-secondary"
+                  onClick={() => setShowAddFieldModal(false)}
+                >
+                  Odustani
+                </button>
+                <button 
+                  className="btn btn-primary"
+                  onClick={handleAddField}
+                >
+                  Dodaj teren
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="map-layout">
           <div className="fields-sidebar">
@@ -179,7 +436,10 @@ function FieldMap() {
 
                       <button 
                         className="btn btn-primary btn-small"
-                        onClick={() => setToast({ message: 'Rezervacija dolazi uskoro!', type: 'info' })}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setToast({ message: 'Rezervacija dolazi uskoro!', type: 'info' });
+                        }}
                       >
                         Rezerviraj
                       </button>

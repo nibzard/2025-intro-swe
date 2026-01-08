@@ -2,96 +2,198 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Toast from '../components/Toast';
+import { getAllSports } from '../data/sports';
 import './Statistics.css';
 
 function Statistics() {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
-  const [timeRange, setTimeRange] = useState('all'); // all, month, week
+  const [selectedSport, setSelectedSport] = useState('');
   const [toast, setToast] = useState(null);
+  const [showAddMatchModal, setShowAddMatchModal] = useState(false);
+  const [showEditStatsModal, setShowEditStatsModal] = useState(false);
+  
+  const [matchForm, setMatchForm] = useState({
+    date: new Date().toISOString().split('T')[0],
+    opponent: '',
+    result: 'win',
+    score: '',
+    goalsScored: 0,
+    assists: 0,
+    position: 'Napadač'
+  });
+
+  const [editForm, setEditForm] = useState({
+    totalMatches: 0,
+    wins: 0,
+    losses: 0,
+    draws: 0,
+    goalsScored: 0,
+    assists: 0,
+    cleanSheets: 0,
+    yellowCards: 0,
+    redCards: 0
+  });
+
+  const sportsList = getAllSports();
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
-    loadStatistics();
-  }, [timeRange]);
+    loadStats();
+  }, [selectedSport]);
 
-  const loadStatistics = () => {
-    const saved = localStorage.getItem('playerStatistics');
-    if (saved) {
-      setStats(JSON.parse(saved));
-    } else {
-      // Demo statistika
-      const demoStats = {
-        overview: {
-          totalMatches: 67,
-          wins: 42,
-          losses: 18,
-          draws: 7,
-          winRate: 62.7,
-          goalsScored: 124,
-          goalsAgainst: 89,
-          assists: 45,
-          cleanSheets: 12
-        },
-        form: [
-          { match: 1, result: 'win', score: '3-1', opponent: 'Crveni Tigrovi' },
-          { match: 2, result: 'win', score: '2-0', opponent: 'Zeleni Zmajevi' },
-          { match: 3, result: 'loss', score: '1-2', opponent: 'Plavi Orlovi' },
-          { match: 4, result: 'win', score: '4-1', opponent: 'Žuti Lavovi' },
-          { match: 5, result: 'draw', score: '2-2', opponent: 'Bijeli Tigrovi' }
-        ],
-        monthlyPerformance: [
-          { month: 'Siječanj', matches: 8, wins: 5, losses: 2, draws: 1 },
-          { month: 'Veljača', matches: 10, wins: 7, losses: 2, draws: 1 },
-          { month: 'Ožujak', matches: 12, wins: 8, losses: 3, draws: 1 },
-          { month: 'Travanj', matches: 9, wins: 6, losses: 2, draws: 1 },
-          { month: 'Svibanj', matches: 11, wins: 7, losses: 3, draws: 1 },
-          { month: 'Lipanj', matches: 10, wins: 6, losses: 3, draws: 1 },
-          { month: 'Srpanj', matches: 7, wins: 3, losses: 3, draws: 1 }
-        ],
-        topPerformances: [
-          { stat: 'Golovi u jednoj utakmici', value: 4, match: 'vs Žuti Lavovi', date: '2026-12-15' },
-          { stat: 'Asistencije u jednoj utakmici', value: 3, match: 'vs Zeleni Zmajevi', date: '2026-12-01' },
-          { stat: 'Najduža pobjeda', value: '5-0', match: 'vs Bijeli Tigrovi', date: '2026-11-20' },
-          { stat: 'Najduži niz pobjeda', value: 7, match: 'Studeni-Prosinac', date: '2026-11' }
-        ],
-        positionStats: {
-          forward: { matches: 45, goals: 89, assists: 12 },
-          midfielder: { matches: 15, goals: 18, assists: 25 },
-          defender: { matches: 5, goals: 2, assists: 5 },
-          goalkeeper: { matches: 2, goals: 0, assists: 0 }
-        },
-        predictions: [
-          { opponent: 'Crveni Tigrovi', winProbability: 72, drawProbability: 18, lossProbability: 10 },
-          { opponent: 'Plavi Orlovi', winProbability: 45, drawProbability: 30, lossProbability: 25 },
-          { opponent: 'Zeleni Zmajevi', winProbability: 68, drawProbability: 20, lossProbability: 12 }
-        ]
-      };
-      setStats(demoStats);
-      localStorage.setItem('playerStatistics', JSON.stringify(demoStats));
+  const loadStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const url = selectedSport 
+        ? `http://localhost:5000/api/stats?sport=${encodeURIComponent(selectedSport)}`
+        : 'http://localhost:5000/api/stats';
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.length > 0) {
+          setStats(data[0]); // Uzmi prvu statistiku (za odabrani sport)
+          setEditForm({
+            totalMatches: data[0].totalMatches || 0,
+            wins: data[0].wins || 0,
+            losses: data[0].losses || 0,
+            draws: data[0].draws || 0,
+            goalsScored: data[0].goalsScored || 0,
+            assists: data[0].assists || 0,
+            cleanSheets: data[0].cleanSheets || 0,
+            yellowCards: data[0].yellowCards || 0,
+            redCards: data[0].redCards || 0
+          });
+        } else {
+          setStats(null);
+        }
+      }
+    } catch (error) {
+      console.error('Load stats error:', error);
     }
   };
 
-  const getFormIcon = (result) => {
-    if (result === 'win') return '🟢';
-    if (result === 'loss') return '🔴';
-    return '🟡';
+  const handleAddMatch = async () => {
+    if (!selectedSport) {
+      setToast({ message: 'Odaberi sport!', type: 'error' });
+      return;
+    }
+
+    if (!matchForm.opponent || !matchForm.score) {
+      setToast({ message: 'Popuni sva obavezna polja!', type: 'error' });
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/stats/match', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          sport: selectedSport,
+          matchData: matchForm
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setToast({ message: '✅ Utakmica dodana!', type: 'success' });
+        setShowAddMatchModal(false);
+        setMatchForm({
+          date: new Date().toISOString().split('T')[0],
+          opponent: '',
+          result: 'win',
+          score: '',
+          goalsScored: 0,
+          assists: 0,
+          position: 'Napadač'
+        });
+        loadStats();
+      } else {
+        setToast({ message: data.message, type: 'error' });
+      }
+    } catch (error) {
+      console.error('Add match error:', error);
+      setToast({ message: 'Greška pri dodavanju utakmice', type: 'error' });
+    }
   };
 
-  const getFormClass = (result) => {
-    if (result === 'win') return 'form-win';
-    if (result === 'loss') return 'form-loss';
-    return 'form-draw';
+  const handleEditStats = async () => {
+    if (!selectedSport) {
+      setToast({ message: 'Odaberi sport!', type: 'error' });
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/stats', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          sport: selectedSport,
+          stats: editForm
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setToast({ message: '✅ Statistika ažurirana!', type: 'success' });
+        setShowEditStatsModal(false);
+        loadStats();
+      } else {
+        setToast({ message: data.message, type: 'error' });
+      }
+    } catch (error) {
+      console.error('Edit stats error:', error);
+      setToast({ message: 'Greška pri ažuriranju statistike', type: 'error' });
+    }
   };
 
-  if (!stats) {
-    return (
-      <div className="statistics-page">
-        <Navbar />
-        <div className="loading">Učitavanje statistike...</div>
-      </div>
-    );
-  }
+  const handleDeleteMatch = async (matchId) => {
+    if (!window.confirm('Jesi li siguran da želiš obrisati ovu utakmicu?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(
+        `http://localhost:5000/api/stats/match/${matchId}?sport=${encodeURIComponent(selectedSport)}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.ok) {
+        setToast({ message: 'Utakmica obrisana', type: 'info' });
+        loadStats();
+      }
+    } catch (error) {
+      console.error('Delete match error:', error);
+      setToast({ message: 'Greška pri brisanju utakmice', type: 'error' });
+    }
+  };
+
+  const calculateWinRate = () => {
+    if (!stats || stats.totalMatches === 0) return 0;
+    return ((stats.wins / stats.totalMatches) * 100).toFixed(1);
+  };
 
   return (
     <div className="statistics-page">
@@ -99,353 +201,381 @@ function Statistics() {
       
       <div className="statistics-container">
         <div className="statistics-header">
-          <h1>📊 Statistika & Analytics</h1>
-          <p>Analiziraj svoje performanse i predvidi buduće rezultate</p>
+          <h1>📊 Moja Statistika</h1>
+          <p>Prati svoj napredak i performanse</p>
         </div>
 
-        <div className="time-range-selector">
-          <button 
-            className={`time-btn ${timeRange === 'week' ? 'active' : ''}`}
-            onClick={() => setTimeRange('week')}
-          >
-            Ovaj tjedan
-          </button>
-          <button 
-            className={`time-btn ${timeRange === 'month' ? 'active' : ''}`}
-            onClick={() => setTimeRange('month')}
-          >
-            Ovaj mjesec
-          </button>
-          <button 
-            className={`time-btn ${timeRange === 'all' ? 'active' : ''}`}
-            onClick={() => setTimeRange('all')}
-          >
-            Sve vrijeme
-          </button>
-        </div>
-
-        <div className="overview-stats">
-          <div className="stat-card card">
-            <div className="stat-icon">⚽</div>
-            <div className="stat-content">
-              <h3>{stats.overview.totalMatches}</h3>
-              <p>Ukupno utakmica</p>
-            </div>
-          </div>
-
-          <div className="stat-card card win-card">
-            <div className="stat-icon">🏆</div>
-            <div className="stat-content">
-              <h3>{stats.overview.wins}</h3>
-              <p>Pobjede</p>
-            </div>
-          </div>
-
-          <div className="stat-card card loss-card">
-            <div className="stat-icon">❌</div>
-            <div className="stat-content">
-              <h3>{stats.overview.losses}</h3>
-              <p>Porazi</p>
-            </div>
-          </div>
-
-          <div className="stat-card card draw-card">
-            <div className="stat-icon">🤝</div>
-            <div className="stat-content">
-              <h3>{stats.overview.draws}</h3>
-              <p>Neriješeno</p>
-            </div>
-          </div>
-
-          <div className="stat-card card rate-card">
-            <div className="stat-icon">📈</div>
-            <div className="stat-content">
-              <h3>{stats.overview.winRate}%</h3>
-              <p>Win Rate</p>
-            </div>
-          </div>
-
-          <div className="stat-card card">
-            <div className="stat-icon">⚽</div>
-            <div className="stat-content">
-              <h3>{stats.overview.goalsScored}</h3>
-              <p>Golovi</p>
-            </div>
-          </div>
-
-          <div className="stat-card card">
-            <div className="stat-icon">🎯</div>
-            <div className="stat-content">
-              <h3>{stats.overview.assists}</h3>
-              <p>Asistencije</p>
-            </div>
-          </div>
-
-          <div className="stat-card card">
-            <div className="stat-icon">🛡️</div>
-            <div className="stat-content">
-              <h3>{stats.overview.cleanSheets}</h3>
-              <p>Clean Sheets</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="statistics-content">
-          <div className="form-section card">
-            <h2>📉 Forma (zadnjih 5 utakmica)</h2>
-            <div className="form-visualization">
-              {stats.form.map((match, index) => (
-                <div key={index} className={`form-item ${getFormClass(match.result)}`}>
-                  <div className="form-icon">{getFormIcon(match.result)}</div>
-                  <div className="form-details">
-                    <span className="form-score">{match.score}</span>
-                    <span className="form-opponent">{match.opponent}</span>
-                  </div>
-                </div>
+        <div className="stats-controls card">
+          <div className="form-group">
+            <label>Odaberi sport</label>
+            <select 
+              value={selectedSport}
+              onChange={(e) => setSelectedSport(e.target.value)}
+            >
+              <option value="">-- Odaberi sport --</option>
+              {sportsList.map(sport => (
+                <option key={sport.id} value={sport.name}>{sport.name}</option>
               ))}
-            </div>
-            
-            <div className="form-summary">
-              <div className="summary-item">
-                <span className="summary-label">Pobjede:</span>
-                <span className="summary-value">{stats.form.filter(m => m.result === 'win').length}</span>
-              </div>
-              <div className="summary-item">
-                <span className="summary-label">Porazi:</span>
-                <span className="summary-value">{stats.form.filter(m => m.result === 'loss').length}</span>
-              </div>
-              <div className="summary-item">
-                <span className="summary-label">Neriješeno:</span>
-                <span className="summary-value">{stats.form.filter(m => m.result === 'draw').length}</span>
-              </div>
-            </div>
+            </select>
           </div>
 
-          <div className="monthly-performance card">
-            <h2>📅 Mjesečne performanse</h2>
-            <div className="performance-chart">
-              {stats.monthlyPerformance.map((month, index) => {
-                const winPercentage = (month.wins / month.matches) * 100;
-                return (
-                  <div key={index} className="month-bar">
-                    <div className="month-label">{month.month}</div>
-                    <div className="month-bar-container">
-                      <div 
-                        className="month-bar-fill"
-                        style={{ height: `${winPercentage}%` }}
-                        title={`${month.wins}/${month.matches} pobjeda`}
-                      >
-                        <span className="bar-value">{month.wins}</span>
+          {selectedSport && (
+            <div className="stats-action-buttons">
+              <button 
+                className="btn btn-primary"
+                onClick={() => setShowAddMatchModal(true)}
+              >
+                + Dodaj utakmicu
+              </button>
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setShowEditStatsModal(true)}
+              >
+                ✏️ Uredi statistiku
+              </button>
+            </div>
+          )}
+        </div>
+
+        {!selectedSport ? (
+          <div className="empty-stats card">
+            <span className="empty-icon">📊</span>
+            <h3>Odaberi sport</h3>
+            <p>Odaberi sport gore da vidiš svoju statistiku</p>
+          </div>
+        ) : !stats ? (
+          <div className="empty-stats card">
+            <span className="empty-icon">📊</span>
+            <h3>Nema statistike</h3>
+            <p>Dodaj svoju prvu utakmicu ili unesi statistiku ručno</p>
+            <button 
+              className="btn btn-primary"
+              onClick={() => setShowAddMatchModal(true)}
+            >
+              + Dodaj utakmicu
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="overview-stats">
+              <div className="stat-card card">
+                <div className="stat-icon">⚽</div>
+                <div className="stat-content">
+                  <h3>{stats.totalMatches}</h3>
+                  <p>Ukupno utakmica</p>
+                </div>
+              </div>
+
+              <div className="stat-card card win-card">
+                <div className="stat-icon">🏆</div>
+                <div className="stat-content">
+                  <h3>{stats.wins}</h3>
+                  <p>Pobjede</p>
+                </div>
+              </div>
+
+              <div className="stat-card card loss-card">
+                <div className="stat-icon">❌</div>
+                <div className="stat-content">
+                  <h3>{stats.losses}</h3>
+                  <p>Porazi</p>
+                </div>
+              </div>
+
+              <div className="stat-card card draw-card">
+                <div className="stat-icon">🤝</div>
+                <div className="stat-content">
+                  <h3>{stats.draws}</h3>
+                  <p>Neriješeno</p>
+                </div>
+              </div>
+
+              <div className="stat-card card rate-card">
+                <div className="stat-icon">📈</div>
+                <div className="stat-content">
+                  <h3>{calculateWinRate()}%</h3>
+                  <p>Win Rate</p>
+                </div>
+              </div>
+
+              <div className="stat-card card">
+                <div className="stat-icon">⚽</div>
+                <div className="stat-content">
+                  <h3>{stats.goalsScored}</h3>
+                  <p>Golovi</p>
+                </div>
+              </div>
+
+              <div className="stat-card card">
+                <div className="stat-icon">🎯</div>
+                <div className="stat-content">
+                  <h3>{stats.assists}</h3>
+                  <p>Asistencije</p>
+                </div>
+              </div>
+
+              <div className="stat-card card">
+                <div className="stat-icon">🛡️</div>
+                <div className="stat-content">
+                  <h3>{stats.cleanSheets}</h3>
+                  <p>Clean Sheets</p>
+                </div>
+              </div>
+            </div>
+
+            {stats.matchHistory && stats.matchHistory.length > 0 && (
+              <div className="match-history card">
+                <h2>📅 Povijest utakmica</h2>
+                <div className="matches-list">
+                  {stats.matchHistory.slice().reverse().map((match) => (
+                    <div key={match._id} className="match-item">
+                      <div className="match-date">
+                        {new Date(match.date).toLocaleDateString('hr-HR')}
                       </div>
+                      <div className="match-details">
+                        <div className={`match-result ${match.result}`}>
+                          {match.result === 'win' && '🏆 Pobjeda'}
+                          {match.result === 'loss' && '❌ Poraz'}
+                          {match.result === 'draw' && '🤝 Neriješeno'}
+                        </div>
+                        <div className="match-opponent">vs {match.opponent}</div>
+                        <div className="match-score">{match.score}</div>
+                        {match.goalsScored > 0 && (
+                          <div className="match-stats">
+                            ⚽ {match.goalsScored} {match.assists > 0 && `| 🎯 ${match.assists}`}
+                          </div>
+                        )}
+                      </div>
+                      <button 
+                        className="btn-delete-match"
+                        onClick={() => handleDeleteMatch(match._id)}
+                      >
+                        🗑️
+                      </button>
                     </div>
-                    <div className="month-matches">{month.matches} utakmica</div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        <div className="position-stats card">
-          <h2>🎯 Statistika po pozicijama</h2>
-          <div className="positions-grid">
-            <div className="position-item">
-              <div className="position-header">
-                <span className="position-icon">⚽</span>
-                <h3>Napadač</h3>
-              </div>
-              <div className="position-stats-grid">
-                <div className="pos-stat">
-                  <span className="pos-stat-value">{stats.positionStats.forward.matches}</span>
-                  <span className="pos-stat-label">Utakmica</span>
-                </div>
-                <div className="pos-stat">
-                  <span className="pos-stat-value">{stats.positionStats.forward.goals}</span>
-                  <span className="pos-stat-label">Golovi</span>
-                </div>
-                <div className="pos-stat">
-                  <span className="pos-stat-value">{stats.positionStats.forward.assists}</span>
-                  <span className="pos-stat-label">Asistencije</span>
+                  ))}
                 </div>
               </div>
-              <div className="position-bar">
-                <div 
-                  className="position-bar-fill forward"
-                  style={{ width: `${(stats.positionStats.forward.matches / stats.overview.totalMatches) * 100}%` }}
-                />
-              </div>
-            </div>
-
-            <div className="position-item">
-              <div className="position-header">
-                <span className="position-icon">🎨</span>
-                <h3>Vezni</h3>
-              </div>
-              <div className="position-stats-grid">
-                <div className="pos-stat">
-                  <span className="pos-stat-value">{stats.positionStats.midfielder.matches}</span>
-                  <span className="pos-stat-label">Utakmica</span>
-                </div>
-                <div className="pos-stat">
-                  <span className="pos-stat-value">{stats.positionStats.midfielder.goals}</span>
-                  <span className="pos-stat-label">Golovi</span>
-                </div>
-                <div className="pos-stat">
-                  <span className="pos-stat-value">{stats.positionStats.midfielder.assists}</span>
-                  <span className="pos-stat-label">Asistencije</span>
-                </div>
-              </div>
-              <div className="position-bar">
-                <div 
-                  className="position-bar-fill midfielder"
-                  style={{ width: `${(stats.positionStats.midfielder.matches / stats.overview.totalMatches) * 100}%` }}
-                />
-              </div>
-            </div>
-
-            <div className="position-item">
-              <div className="position-header">
-                <span className="position-icon">🛡️</span>
-                <h3>Obrambeni</h3>
-              </div>
-              <div className="position-stats-grid">
-                <div className="pos-stat">
-                  <span className="pos-stat-value">{stats.positionStats.defender.matches}</span>
-                  <span className="pos-stat-label">Utakmica</span>
-                </div>
-                <div className="pos-stat">
-                  <span className="pos-stat-value">{stats.positionStats.defender.goals}</span>
-                  <span className="pos-stat-label">Golovi</span>
-                </div>
-                <div className="pos-stat">
-                  <span className="pos-stat-value">{stats.positionStats.defender.assists}</span>
-                  <span className="pos-stat-label">Asistencije</span>
-                </div>
-              </div>
-              <div className="position-bar">
-                <div 
-                  className="position-bar-fill defender"
-                  style={{ width: `${(stats.positionStats.defender.matches / stats.overview.totalMatches) * 100}%` }}
-                />
-              </div>
-            </div>
-
-            <div className="position-item">
-              <div className="position-header">
-                <span className="position-icon">🥅</span>
-                <h3>Golman</h3>
-              </div>
-              <div className="position-stats-grid">
-                <div className="pos-stat">
-                  <span className="pos-stat-value">{stats.positionStats.goalkeeper.matches}</span>
-                  <span className="pos-stat-label">Utakmica</span>
-                </div>
-                <div className="pos-stat">
-                  <span className="pos-stat-value">{stats.positionStats.goalkeeper.goals}</span>
-                  <span className="pos-stat-label">Golovi</span>
-                </div>
-                <div className="pos-stat">
-                  <span className="pos-stat-value">{stats.positionStats.goalkeeper.assists}</span>
-                  <span className="pos-stat-label">Asistencije</span>
-                </div>
-              </div>
-              <div className="position-bar">
-                <div 
-                  className="position-bar-fill goalkeeper"
-                  style={{ width: `${(stats.positionStats.goalkeeper.matches / stats.overview.totalMatches) * 100}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="top-performances card">
-          <h2>🏆 Top Performanse</h2>
-          <div className="performances-list">
-            {stats.topPerformances.map((perf, index) => (
-              <div key={index} className="performance-item">
-                <div className="performance-rank">#{index + 1}</div>
-                <div className="performance-details">
-                  <h4>{perf.stat}</h4>
-                  <p className="performance-value">{perf.value}</p>
-                  <p className="performance-match">{perf.match}</p>
-                  <p className="performance-date">
-                    {new Date(perf.date).toLocaleDateString('hr-HR')}
-                  </p>
-                </div>
-                <div className="performance-medal">
-                  {index === 0 && '🥇'}
-                  {index === 1 && '🥈'}
-                  {index === 2 && '🥉'}
-                  {index === 3 && '🏅'}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="predictions-section card">
-          <h2>🔮 AI Predikcije</h2>
-          <p className="predictions-subtitle">Predviđanja ishoda na temelju povijesti i forme</p>
-          
-          <div className="predictions-grid">
-            {stats.predictions.map((pred, index) => (
-              <div key={index} className="prediction-card">
-                <h4>vs {pred.opponent}</h4>
-                
-                <div className="prediction-bars">
-                  <div className="prediction-bar-item">
-                    <span className="prediction-label">Pobjeda</span>
-                    <div className="prediction-bar">
-                      <div 
-                        className="prediction-bar-fill win-fill"
-                        style={{ width: `${pred.winProbability}%` }}
-                      />
-                    </div>
-                    <span className="prediction-value">{pred.winProbability}%</span>
-                  </div>
-
-                  <div className="prediction-bar-item">
-                    <span className="prediction-label">Neriješeno</span>
-                    <div className="prediction-bar">
-                      <div 
-                        className="prediction-bar-fill draw-fill"
-                        style={{ width: `${pred.drawProbability}%` }}
-                      />
-                    </div>
-                    <span className="prediction-value">{pred.drawProbability}%</span>
-                  </div>
-
-                  <div className="prediction-bar-item">
-                    <span className="prediction-label">Poraz</span>
-                    <div className="prediction-bar">
-                      <div 
-                        className="prediction-bar-fill loss-fill"
-                        style={{ width: `${pred.lossProbability}%` }}
-                      />
-                    </div>
-                    <span className="prediction-value">{pred.lossProbability}%</span>
-                  </div>
-                </div>
-
-                <div className="prediction-recommendation">
-                  {pred.winProbability > 60 ? (
-                    <span className="rec-positive">✓ Preporučena utakmica</span>
-                  ) : pred.winProbability > 40 ? (
-                    <span className="rec-neutral">⚠ Izjednačena utakmica</span>
-                  ) : (
-                    <span className="rec-negative">⚡ Izazovna utakmica</span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="prediction-disclaimer">
-            <small>* Predikcije su bazirane na AI analizi povijesti utakmica, trenutne forme i drugih faktora</small>
-          </div>
-        </div>
+            )}
+          </>
+        )}
       </div>
+
+      {/* Modal za dodavanje utakmice */}
+      {showAddMatchModal && (
+        <div className="modal-overlay" onClick={() => setShowAddMatchModal(false)}>
+          <div className="add-match-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>⚽ Dodaj utakmicu</h2>
+
+            <div className="form-group">
+              <label>Datum *</label>
+              <input
+                type="date"
+                value={matchForm.date}
+                onChange={(e) => setMatchForm({ ...matchForm, date: e.target.value })}
+                max={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Protivnik *</label>
+              <input
+                type="text"
+                value={matchForm.opponent}
+                onChange={(e) => setMatchForm({ ...matchForm, opponent: e.target.value })}
+                placeholder="npr. Crveni Tigrovi"
+              />
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Rezultat *</label>
+                <select
+                  value={matchForm.result}
+                  onChange={(e) => setMatchForm({ ...matchForm, result: e.target.value })}
+                >
+                  <option value="win">🏆 Pobjeda</option>
+                  <option value="loss">❌ Poraz</option>
+                  <option value="draw">🤝 Neriješeno</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Rezultat *</label>
+                <input
+                  type="text"
+                  value={matchForm.score}
+                  onChange={(e) => setMatchForm({ ...matchForm, score: e.target.value })}
+                  placeholder="npr. 3-2"
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Golovi</label>
+                <input
+                  type="number"
+                  value={matchForm.goalsScored}
+                  onChange={(e) => setMatchForm({ ...matchForm, goalsScored: parseInt(e.target.value) || 0 })}
+                  min="0"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Asistencije</label>
+                <input
+                  type="number"
+                  value={matchForm.assists}
+                  onChange={(e) => setMatchForm({ ...matchForm, assists: parseInt(e.target.value) || 0 })}
+                  min="0"
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Pozicija</label>
+              <select
+                value={matchForm.position}
+                onChange={(e) => setMatchForm({ ...matchForm, position: e.target.value })}
+              >
+                <option value="Napadač">Napadač</option>
+                <option value="Vezni">Vezni</option>
+                <option value="Obrambeni">Obrambeni</option>
+                <option value="Golman">Golman</option>
+              </select>
+            </div>
+
+            <div className="modal-actions">
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setShowAddMatchModal(false)}
+              >
+                Odustani
+              </button>
+              <button 
+                className="btn btn-primary"
+                onClick={handleAddMatch}
+              >
+                Dodaj utakmicu
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal za uređivanje statistike */}
+      {showEditStatsModal && (
+        <div className="modal-overlay" onClick={() => setShowEditStatsModal(false)}>
+          <div className="edit-stats-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>✏️ Uredi statistiku</h2>
+            <p>Ručno unesi ili ažuriraj svoju statistiku</p>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Ukupno utakmica</label>
+                <input
+                  type="number"
+                  value={editForm.totalMatches}
+                  onChange={(e) => setEditForm({ ...editForm, totalMatches: parseInt(e.target.value) || 0 })}
+                  min="0"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Pobjede</label>
+                <input
+                  type="number"
+                  value={editForm.wins}
+                  onChange={(e) => setEditForm({ ...editForm, wins: parseInt(e.target.value) || 0 })}
+                  min="0"
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Porazi</label>
+                <input
+                  type="number"
+                  value={editForm.losses}
+                  onChange={(e) => setEditForm({ ...editForm, losses: parseInt(e.target.value) || 0 })}
+                  min="0"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Neriješeno</label>
+                <input
+                  type="number"
+                  value={editForm.draws}
+                  onChange={(e) => setEditForm({ ...editForm, draws: parseInt(e.target.value) || 0 })}
+                  min="0"
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Golovi</label>
+                <input
+                  type="number"
+                  value={editForm.goalsScored}
+                  onChange={(e) => setEditForm({ ...editForm, goalsScored: parseInt(e.target.value) || 0 })}
+                  min="0"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Asistencije</label>
+                <input
+                  type="number"
+                  value={editForm.assists}
+                  onChange={(e) => setEditForm({ ...editForm, assists: parseInt(e.target.value) || 0 })}
+                  min="0"
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Clean Sheets</label>
+                <input
+                  type="number"
+                  value={editForm.cleanSheets}
+                  onChange={(e) => setEditForm({ ...editForm, cleanSheets: parseInt(e.target.value) || 0 })}
+                  min="0"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Žuti kartoni</label>
+                <input
+                  type="number"
+                  value={editForm.yellowCards}
+                  onChange={(e) => setEditForm({ ...editForm, yellowCards: parseInt(e.target.value) || 0 })}
+                  min="0"
+                />
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setShowEditStatsModal(false)}
+              >
+                Odustani
+              </button>
+              <button 
+                className="btn btn-primary"
+                onClick={handleEditStats}
+              >
+                Spremi promjene
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>

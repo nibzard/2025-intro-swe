@@ -142,3 +142,25 @@
 .btn-disabled:hover {
   transform: none;
 }
+.team-waitlist-badge {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #ff9800, #ffa726);
+  color: white;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+  animation: pulse 2s infinite;
+}
+
+.waitlist-info {
+  padding: 12px;
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 600;
+  color: #333;
+  margin: 15px 0;
+  border-left: 4px solid #ff9800;
+}

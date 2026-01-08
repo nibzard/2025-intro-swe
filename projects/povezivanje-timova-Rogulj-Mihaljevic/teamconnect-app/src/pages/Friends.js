@@ -7,213 +7,213 @@ import './Friends.css';
 
 function Friends() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('friends'); // friends, rivals, requests, search
+  const [activeTab, setActiveTab] = useState('friends');
   const [friends, setFriends] = useState([]);
-  const [rivals, setRivals] = useState([]);
   const [requests, setRequests] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [toast, setToast] = useState(null);
-  const [showChallengeModal, setShowChallengeModal] = useState(false);
-  const [selectedRival, setSelectedRival] = useState(null);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [friendRequestMessage, setFriendRequestMessage] = useState('');
+
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = () => {
-    // Učitaj prijatelje
-    const savedFriends = localStorage.getItem('friends');
-    if (savedFriends) {
-      setFriends(JSON.parse(savedFriends));
-    } else {
-      const demoFriends = [
-        {
-          id: 1,
-          username: 'marko123',
-          avatar: '🧑',
-          sport: '⚽ Nogomet',
-          status: 'online',
-          wins: 45,
-          losses: 12,
-          winRate: 78.9,
-          lastPlayed: new Date(Date.now() - 3600000).toISOString()
-        },
-        {
-          id: 2,
-          username: 'ana_kos',
-          avatar: '👩',
-          sport: '🏀 Košarka',
-          status: 'offline',
-          wins: 38,
-          losses: 15,
-          winRate: 71.7,
-          lastPlayed: new Date(Date.now() - 86400000).toISOString()
-        }
-      ];
-      setFriends(demoFriends);
-      localStorage.setItem('friends', JSON.stringify(demoFriends));
+    if (activeTab === 'friends') {
+      loadFriends();
+    } else if (activeTab === 'requests') {
+      loadRequests();
     }
+  }, [activeTab]);
 
-    // Učitaj rivalske timove
-    const savedRivals = localStorage.getItem('rivals');
-    if (savedRivals) {
-      setRivals(JSON.parse(savedRivals));
-    } else {
-      const demoRivals = [
-        {
-          id: 1,
-          teamName: 'Crveni Tigrovi',
-          logo: '🐯',
-          sport: '⚽ Nogomet',
-          captain: 'petar456',
-          headToHead: {
-            wins: 5,
-            losses: 3,
-            draws: 2
-          },
-          lastMatch: {
-            date: new Date(Date.now() - 604800000).toISOString(),
-            result: 'win',
-            score: '3-2'
-          }
+  const loadFriends = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/friends', {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-      ];
-      setRivals(demoRivals);
-      localStorage.setItem('rivals', JSON.stringify(demoRivals));
-    }
+      });
 
-    // Učitaj zahtjeve
-    const savedRequests = localStorage.getItem('friendRequests');
-    if (savedRequests) {
-      setRequests(JSON.parse(savedRequests));
-    } else {
-      const demoRequests = [
-        {
-          id: 1,
-          username: 'luka789',
-          avatar: '👨',
-          sport: '🏐 Odbojka',
-          message: 'Vidio sam te na utakmici prošli tjedan, odlično si igrao!',
-          timestamp: new Date(Date.now() - 7200000).toISOString()
-        }
-      ];
-      setRequests(demoRequests);
-      localStorage.setItem('friendRequests', JSON.stringify(demoRequests));
+      if (response.ok) {
+        const data = await response.json();
+        setFriends(data);
+      }
+    } catch (error) {
+      console.error('Load friends error:', error);
     }
   };
 
-  const handleSearch = () => {
-    if (!searchQuery.trim()) {
-      setToast({ message: 'Upiši korisničko ime!', type: 'error' });
+  const loadRequests = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/friends/requests', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setRequests(data);
+      }
+    } catch (error) {
+      console.error('Load requests error:', error);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim() || searchQuery.trim().length < 2) {
+      setToast({ message: 'Upiši barem 2 znaka!', type: 'error' });
       return;
     }
 
-    // Simulacija pretrage (u pravoj app bi ovo bilo API call)
-    const results = [
-      {
-        id: 3,
-        username: searchQuery,
-        avatar: '🧑‍🦱',
-        sport: '🎾 Tenis',
-        mutualFriends: 2,
-        teams: 5
-      },
-      {
-        id: 4,
-        username: `${searchQuery}_pro`,
-        avatar: '👨‍🦳',
-        sport: '⚽ Nogomet',
-        mutualFriends: 0,
-        teams: 8
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(
+        `http://localhost:5000/api/friends/search?query=${encodeURIComponent(searchQuery)}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setSearchResults(data);
+        setActiveTab('search');
       }
-    ];
-    setSearchResults(results);
-    setActiveTab('search');
-  };
-
-  const handleAddFriend = (user) => {
-    const newFriend = {
-      ...user,
-      status: 'offline',
-      wins: 0,
-      losses: 0,
-      winRate: 0,
-      lastPlayed: new Date().toISOString()
-    };
-    
-    const updated = [...friends, newFriend];
-    setFriends(updated);
-    localStorage.setItem('friends', JSON.stringify(updated));
-    
-    setToast({ message: `${user.username} dodan u prijatelje! 🤝`, type: 'success' });
-    setSearchResults([]);
-    setSearchQuery('');
-  };
-
-  const handleRemoveFriend = (friendId) => {
-    const updated = friends.filter(f => f.id !== friendId);
-    setFriends(updated);
-    localStorage.setItem('friends', JSON.stringify(updated));
-    setToast({ message: 'Prijatelj uklonjen', type: 'info' });
-  };
-
-  const handleAcceptRequest = (requestId) => {
-    const request = requests.find(r => r.id === requestId);
-    if (request) {
-      const newFriend = {
-        id: Date.now(),
-        username: request.username,
-        avatar: request.avatar,
-        sport: request.sport,
-        status: 'offline',
-        wins: 0,
-        losses: 0,
-        winRate: 0,
-        lastPlayed: new Date().toISOString()
-      };
-      
-      const updatedFriends = [...friends, newFriend];
-      const updatedRequests = requests.filter(r => r.id !== requestId);
-      
-      setFriends(updatedFriends);
-      setRequests(updatedRequests);
-      
-      localStorage.setItem('friends', JSON.stringify(updatedFriends));
-      localStorage.setItem('friendRequests', JSON.stringify(updatedRequests));
-      
-      setToast({ message: `${request.username} je sada tvoj prijatelj! 🎉`, type: 'success' });
+    } catch (error) {
+      console.error('Search error:', error);
+      setToast({ message: 'Greška pri pretrazi', type: 'error' });
     }
   };
 
-  const handleRejectRequest = (requestId) => {
-    const updated = requests.filter(r => r.id !== requestId);
-    setRequests(updated);
-    localStorage.setItem('friendRequests', JSON.stringify(updated));
-    setToast({ message: 'Zahtjev odbijen', type: 'info' });
+  const handleSendFriendRequest = (user) => {
+    setSelectedUser(user);
+    setShowMessageModal(true);
   };
 
-  const handleChallengeRival = (rival) => {
-    setSelectedRival(rival);
-    setShowChallengeModal(true);
+  const confirmSendRequest = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(
+        `http://localhost:5000/api/friends/request/${selectedUser._id}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ message: friendRequestMessage })
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setToast({ message: '✉️ Zahtjev poslan!', type: 'success' });
+        setShowMessageModal(false);
+        setFriendRequestMessage('');
+        setSelectedUser(null);
+        // Refresh search results
+        handleSearch();
+      } else {
+        setToast({ message: data.message, type: 'error' });
+      }
+    } catch (error) {
+      console.error('Send request error:', error);
+      setToast({ message: 'Greška pri slanju zahtjeva', type: 'error' });
+    }
   };
 
-  const handleSendChallenge = () => {
-    setShowChallengeModal(false);
-    setToast({ message: `Challenge poslan timu ${selectedRival.teamName}! ⚔️`, type: 'success' });
-    setSelectedRival(null);
+  const handleAcceptRequest = async (requestId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(
+        `http://localhost:5000/api/friends/accept/${requestId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setToast({ message: '🎉 ' + data.message, type: 'success' });
+        loadRequests();
+        loadFriends();
+      } else {
+        setToast({ message: data.message, type: 'error' });
+      }
+    } catch (error) {
+      console.error('Accept request error:', error);
+      setToast({ message: 'Greška pri prihvaćanju zahtjeva', type: 'error' });
+    }
   };
 
-  const formatLastPlayed = (timestamp) => {
+  const handleRejectRequest = async (requestId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(
+        `http://localhost:5000/api/friends/reject/${requestId}`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.ok) {
+        setToast({ message: 'Zahtjev odbijen', type: 'info' });
+        loadRequests();
+      }
+    } catch (error) {
+      console.error('Reject request error:', error);
+      setToast({ message: 'Greška pri odbijanju zahtjeva', type: 'error' });
+    }
+  };
+
+  const handleRemoveFriend = async (friendId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(
+        `http://localhost:5000/api/friends/${friendId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.ok) {
+        setToast({ message: 'Prijatelj uklonjen', type: 'info' });
+        loadFriends();
+      }
+    } catch (error) {
+      console.error('Remove friend error:', error);
+      setToast({ message: 'Greška pri uklanjanju prijatelja', type: 'error' });
+    }
+  };
+
+  const formatDate = (timestamp) => {
     const date = new Date(timestamp);
     const now = new Date();
     const diffMs = now - date;
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
+    if (diffHours < 1) return 'Prije manje od 1h';
     if (diffHours < 24) return `Prije ${diffHours}h`;
-    return `Prije ${diffDays} dana`;
+    if (diffDays < 7) return `Prije ${diffDays} dana`;
+    return date.toLocaleDateString('hr-HR');
   };
 
   return (
@@ -222,18 +222,18 @@ function Friends() {
       
       <div className="friends-container">
         <div className="friends-header">
-          <h1>👥 Prijatelji & Rivali</h1>
-          <p>Povežite se s igračima i izazovite rivale</p>
+          <h1>👥 Prijatelji</h1>
+          <p>Povežite se s igračima</p>
         </div>
 
         <div className="search-section card">
-          <h3>🔍 Pretraži igrače</h3>
+          <h3>🔍 Pretraži korisnike</h3>
           <div className="search-bar">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Upiši korisničko ime..."
+              placeholder="Pretraži po korisničkom imenu ili emailu..."
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             />
             <button className="btn btn-primary" onClick={handleSearch}>
@@ -250,18 +250,20 @@ function Friends() {
             Prijatelji ({friends.length})
           </button>
           <button 
-            className={`tab ${activeTab === 'rivals' ? 'active' : ''}`}
-            onClick={() => setActiveTab('rivals')}
-          >
-            Rivali ({rivals.length})
-          </button>
-          <button 
             className={`tab ${activeTab === 'requests' ? 'active' : ''}`}
             onClick={() => setActiveTab('requests')}
           >
             Zahtjevi ({requests.length})
             {requests.length > 0 && <span className="notification-dot"></span>}
           </button>
+          {searchResults.length > 0 && (
+            <button 
+              className={`tab ${activeTab === 'search' ? 'active' : ''}`}
+              onClick={() => setActiveTab('search')}
+            >
+              Rezultati ({searchResults.length})
+            </button>
+          )}
         </div>
 
         <div className="friends-content">
@@ -271,122 +273,38 @@ function Friends() {
                 <div className="empty-state card">
                   <span className="empty-icon">👥</span>
                   <h3>Nemaš prijatelja</h3>
-                  <p>Pretraži igrače i dodaj ih u prijatelje!</p>
+                  <p>Pretraži korisnike i dodaj ih u prijatelje!</p>
                 </div>
               ) : (
                 <div className="friends-grid">
                   {friends.map(friend => (
-                    <div key={friend.id} className="friend-card card">
+                    <div key={friend._id} className="friend-card card">
                       <div className="friend-header">
                         <div className="friend-avatar-wrapper">
                           <div className="friend-avatar">{friend.avatar}</div>
-                          <div className={`status-indicator ${friend.status}`}></div>
                         </div>
                         <div className="friend-info">
                           <h4>{friend.username}</h4>
-                          <p className="friend-sport">{friend.sport}</p>
+                          <p className="friend-email">{friend.email}</p>
+                          {friend.sport && <p className="friend-sport">{friend.sport}</p>}
+                          {friend.location && <p className="friend-location">📍 {friend.location}</p>}
                         </div>
-                      </div>
-
-                      <div className="friend-stats">
-                        <div className="stat-box">
-                          <span className="stat-value">{friend.wins}</span>
-                          <span className="stat-label">Pobjede</span>
-                        </div>
-                        <div className="stat-box">
-                          <span className="stat-value">{friend.losses}</span>
-                          <span className="stat-label">Porazi</span>
-                        </div>
-                        <div className="stat-box">
-                          <span className="stat-value">{friend.winRate.toFixed(1)}%</span>
-                          <span className="stat-label">Win Rate</span>
-                        </div>
-                      </div>
-
-                      <div className="friend-last-played">
-                        Zadnja igra: {formatLastPlayed(friend.lastPlayed)}
                       </div>
 
                       <div className="friend-actions">
-                        <button className="btn btn-secondary btn-small">
-                          💬 Poruka
+                        <button 
+                          className="btn btn-secondary btn-small"
+                          onClick={() => navigate(`/profile/${friend._id}`)}
+                        >
+                          Vidi profil
                         </button>
                         <button 
                           className="btn btn-danger btn-small"
-                          onClick={() => handleRemoveFriend(friend.id)}
+                          onClick={() => handleRemoveFriend(friend._id)}
                         >
                           Ukloni
                         </button>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'rivals' && (
-            <div className="rivals-list">
-              {rivals.length === 0 ? (
-                <div className="empty-state card">
-                  <span className="empty-icon">⚔️</span>
-                  <h3>Nemaš rivalskih timova</h3>
-                  <p>Izazovi druge timove i kreiraj rivalstva!</p>
-                </div>
-              ) : (
-                <div className="rivals-grid">
-                  {rivals.map(rival => (
-                    <div key={rival.id} className="rival-card card">
-                      <div className="rival-header">
-                        <div className="rival-logo">{rival.logo}</div>
-                        <div className="rival-info">
-                          <h3>{rival.teamName}</h3>
-                          <p className="rival-sport">{rival.sport}</p>
-                          <p className="rival-captain">Kapetan: {rival.captain}</p>
-                        </div>
-                      </div>
-
-                      <div className="head-to-head">
-                        <h4>Head-to-Head</h4>
-                        <div className="h2h-stats">
-                          <div className="h2h-item win">
-                            <span className="h2h-value">{rival.headToHead.wins}</span>
-                            <span className="h2h-label">Pobjede</span>
-                          </div>
-                          <div className="h2h-item draw">
-                            <span className="h2h-value">{rival.headToHead.draws}</span>
-                            <span className="h2h-label">Neriješeno</span>
-                          </div>
-                          <div className="h2h-item loss">
-                            <span className="h2h-value">{rival.headToHead.losses}</span>
-                            <span className="h2h-label">Porazi</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {rival.lastMatch && (
-                        <div className="last-match">
-                          <h5>Zadnja utakmica</h5>
-                          <div className="match-result">
-                            <span className={`result-badge ${rival.lastMatch.result}`}>
-                              {rival.lastMatch.result === 'win' && '🏆 Pobjeda'}
-                              {rival.lastMatch.result === 'loss' && '❌ Poraz'}
-                              {rival.lastMatch.result === 'draw' && '🤝 Neriješeno'}
-                            </span>
-                            <span className="match-score">{rival.lastMatch.score}</span>
-                          </div>
-                          <p className="match-date">
-                            {new Date(rival.lastMatch.date).toLocaleDateString('hr-HR')}
-                          </p>
-                        </div>
-                      )}
-
-                      <button 
-                        className="btn btn-primary"
-                        onClick={() => handleChallengeRival(rival)}
-                      >
-                        ⚔️ Izazovi
-                      </button>
                     </div>
                   ))}
                 </div>
@@ -405,12 +323,13 @@ function Friends() {
               ) : (
                 <div className="requests-grid">
                   {requests.map(request => (
-                    <div key={request.id} className="request-card card">
+                    <div key={request._id} className="request-card card">
                       <div className="request-header">
-                        <div className="request-avatar">{request.avatar}</div>
+                        <div className="request-avatar">{request.from.avatar}</div>
                         <div className="request-info">
-                          <h4>{request.username}</h4>
-                          <p className="request-sport">{request.sport}</p>
+                          <h4>{request.from.username}</h4>
+                          <p className="request-email">{request.from.email}</p>
+                          {request.from.sport && <p className="request-sport">{request.from.sport}</p>}
                         </div>
                       </div>
 
@@ -419,19 +338,19 @@ function Friends() {
                       )}
 
                       <p className="request-time">
-                        {formatLastPlayed(request.timestamp)}
+                        {formatDate(request.sentAt)}
                       </p>
 
                       <div className="request-actions">
                         <button 
                           className="btn btn-primary"
-                          onClick={() => handleAcceptRequest(request.id)}
+                          onClick={() => handleAcceptRequest(request._id)}
                         >
                           ✓ Prihvati
                         </button>
                         <button 
                           className="btn btn-secondary"
-                          onClick={() => handleRejectRequest(request.id)}
+                          onClick={() => handleRejectRequest(request._id)}
                         >
                           ✕ Odbij
                         </button>
@@ -448,32 +367,41 @@ function Friends() {
               {searchResults.length === 0 ? (
                 <div className="empty-state card">
                   <span className="empty-icon">🔍</span>
-                  <h3>Pretraži igrače</h3>
-                  <p>Upiši korisničko ime gore i klikni Pretraži</p>
+                  <h3>Nema rezultata</h3>
+                  <p>Pokušaj s drugim pojmom za pretragu</p>
                 </div>
               ) : (
                 <div className="search-results-grid">
                   {searchResults.map(user => (
-                    <div key={user.id} className="search-result-card card">
+                    <div key={user._id} className="search-result-card card">
                       <div className="result-header">
                         <div className="result-avatar">{user.avatar}</div>
                         <div className="result-info">
                           <h4>{user.username}</h4>
-                          <p className="result-sport">{user.sport}</p>
+                          <p className="result-email">{user.email}</p>
+                          {user.sport && <p className="result-sport">{user.sport}</p>}
+                          {user.location && <p className="result-location">📍 {user.location}</p>}
                         </div>
                       </div>
 
-                      <div className="result-stats">
-                        <p>👥 {user.mutualFriends} zajedničkih prijatelja</p>
-                        <p>⚽ {user.teams} timova</p>
+                      <div className="result-actions">
+                        {user.isFriend ? (
+                          <button className="btn btn-disabled" disabled>
+                            ✓ Već prijatelji
+                          </button>
+                        ) : user.requestSent ? (
+                          <button className="btn btn-disabled" disabled>
+                            ✉️ Zahtjev poslan
+                          </button>
+                        ) : (
+                          <button 
+                            className="btn btn-primary"
+                            onClick={() => handleSendFriendRequest(user)}
+                          >
+                            + Dodaj prijatelja
+                          </button>
+                        )}
                       </div>
-
-                      <button 
-                        className="btn btn-primary"
-                        onClick={() => handleAddFriend(user)}
-                      >
-                        + Dodaj prijatelja
-                      </button>
                     </div>
                   ))}
                 </div>
@@ -483,42 +411,19 @@ function Friends() {
         </div>
       </div>
 
-      {/* Modal za challenge */}
-      {showChallengeModal && selectedRival && (
-        <div className="modal-overlay" onClick={() => setShowChallengeModal(false)}>
-          <div className="challenge-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>⚔️ Izazovi {selectedRival.teamName}</h2>
-            
-            <div className="challenge-info">
-              <div className="challenge-logo">{selectedRival.logo}</div>
-              <p>Pošalji challenge rivalskom timu i dogovori utakmicu!</p>
-            </div>
-
-            <div className="form-group">
-              <label>Predloženi datum</label>
-              <input
-                type="date"
-                min={new Date().toISOString().split('T')[0]}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Vrijeme</label>
-              <input type="time" />
-            </div>
-
-            <div className="form-group">
-              <label>Lokacija</label>
-              <input
-                type="text"
-                placeholder="npr. Stadion Poljud"
-              />
-            </div>
+      {/* Modal za poruku uz friend request */}
+      {showMessageModal && selectedUser && (
+        <div className="modal-overlay" onClick={() => setShowMessageModal(false)}>
+          <div className="friend-message-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>✉️ Dodaj prijatelja</h2>
+            <p>Pošalji zahtjev korisniku <strong>{selectedUser.username}</strong></p>
 
             <div className="form-group">
               <label>Poruka (opcionalno)</label>
               <textarea
-                placeholder="Dodaj poruku protivničkom timu..."
+                value={friendRequestMessage}
+                onChange={(e) => setFriendRequestMessage(e.target.value)}
+                placeholder="Napiši kratku poruku..."
                 rows="3"
               />
             </div>
@@ -526,15 +431,19 @@ function Friends() {
             <div className="modal-actions">
               <button 
                 className="btn btn-secondary"
-                onClick={() => setShowChallengeModal(false)}
+                onClick={() => {
+                  setShowMessageModal(false);
+                  setFriendRequestMessage('');
+                  setSelectedUser(null);
+                }}
               >
                 Odustani
               </button>
               <button 
                 className="btn btn-primary"
-                onClick={handleSendChallenge}
+                onClick={confirmSendRequest}
               >
-                Pošalji Challenge
+                Pošalji zahtjev
               </button>
             </div>
           </div>

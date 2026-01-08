@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import Toast from '../components/Toast';
 import Modal from '../components/Modal';
 import './LoyaltyRewards.css';
+import { formatPrice } from '../utils/currency';
 
 function LoyaltyRewards() {
   const navigate = useNavigate();
@@ -152,80 +153,88 @@ function LoyaltyRewards() {
     if (savedRewards) {
       setRewards(JSON.parse(savedRewards));
     } else {
-      const demoRewards = [
-        {
-          id: 1,
-          name: 'Premium Avatar Pack',
-          description: '10 ekskluzivnih avatara',
-          icon: '🎭',
-          cost: 500,
-          type: 'cosmetic',
-          available: true
-        },
-        {
-          id: 2,
-          name: 'VIP Status (7 dana)',
-          description: 'Pristup VIP funkcijama',
-          icon: '👑',
-          cost: 1000,
-          type: 'premium',
-          available: true
-        },
-        {
-          id: 3,
-          name: 'Custom Team Badge',
-          description: 'Kreiraj vlastiti badge',
-          icon: '🛡️',
-          cost: 750,
-          type: 'cosmetic',
-          available: true
-        },
-        {
-          id: 4,
-          name: 'Tournament Entry Voucher',
-          description: 'Besplatna prijava na turnir',
-          icon: '🎫',
-          cost: 300,
-          type: 'utility',
-          available: true
-        },
-        {
-          id: 5,
-          name: 'XP Boost (24h)',
-          description: '+50% XP na 24 sata',
-          icon: '⚡',
-          cost: 400,
-          type: 'boost',
-          available: true
-        },
-        {
-          id: 6,
-          name: 'Profile Theme Pack',
-          description: '5 premium tema za profil',
-          icon: '🎨',
-          cost: 600,
-          type: 'cosmetic',
-          available: true
-        },
-        {
-          id: 7,
-          name: 'MVP Badge',
-          description: 'Poseban badge za profil',
-          icon: '⭐',
-          cost: 800,
-          type: 'cosmetic',
-          available: true
-        },
-        {
-          id: 8,
-          name: 'Premium Emotes Pack',
-          description: '15 ekskluzivnih emotea',
-          icon: '😎',
-          cost: 450,
-          type: 'cosmetic',
-          available: true
-        }
-      ];
+     const demoRewards = [
+  {
+    id: 1,
+    name: 'Premium Avatar Pack',
+    description: '10 ekskluzivnih avatara',
+    icon: '🎭',
+    cost: 500,
+    costEur: 66.40, // 500 HRK
+    type: 'cosmetic',
+    available: true
+  },
+  {
+    id: 2,
+    name: 'VIP Status (7 dana)',
+    description: 'Pristup VIP funkcijama',
+    icon: '👑',
+    cost: 1000,
+    costEur: 132.69, // 1000 HRK
+    type: 'premium',
+    available: true
+  },
+  {
+    id: 3,
+    name: 'Custom Team Badge',
+    description: 'Kreiraj vlastiti badge',
+    icon: '🛡️',
+    cost: 750,
+    costEur: 99.52, // 750 HRK
+    type: 'cosmetic',
+    available: true
+  },
+  {
+    id: 4,
+    name: 'Tournament Entry Voucher',
+    description: 'Besplatna prijava na turnir',
+    icon: '🎫',
+    cost: 300,
+    costEur: 39.81, // 300 HRK
+    type: 'utility',
+    available: true
+  },
+  {
+    id: 5,
+    name: 'XP Boost (24h)',
+    description: '+50% XP na 24 sata',
+    icon: '⚡',
+    cost: 400,
+    costEur: 53.08, // 400 HRK
+    type: 'boost',
+    available: true
+  },
+  {
+    id: 6,
+    name: 'Profile Theme Pack',
+    description: '5 premium tema za profil',
+    icon: '🎨',
+    cost: 600,
+    costEur: 79.62, // 600 HRK
+    type: 'cosmetic',
+    available: true
+  },
+  {
+    id: 7,
+    name: 'MVP Badge',
+    description: 'Poseban badge za profil',
+    icon: '⭐',
+    cost: 800,
+    costEur: 106.16, // 800 HRK
+    type: 'cosmetic',
+    available: true
+  },
+  {
+    id: 8,
+    name: 'Premium Emotes Pack',
+    description: '15 ekskluzivnih emotea',
+    icon: '😎',
+    cost: 450,
+    costEur: 59.71, // 450 HRK
+    type: 'cosmetic',
+    available: true
+  }
+];
       setRewards(demoRewards);
       localStorage.setItem('loyaltyRewards', JSON.stringify(demoRewards));
     }
@@ -543,7 +552,7 @@ function LoyaltyRewards() {
                     </div>
 
                     <div className="reward-footer">
-                      <span className="reward-cost">💰 {reward.cost}</span>
+                      <span className="reward-cost">💰 {reward.costEur.toFixed(2)} €</span>
                       <button 
                         className="btn btn-primary btn-small"
                         onClick={() => handleRedeemReward(reward)}

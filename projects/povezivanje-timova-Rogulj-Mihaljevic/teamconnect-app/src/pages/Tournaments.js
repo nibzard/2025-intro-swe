@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Toast from '../components/Toast';
 import Modal from '../components/Modal';
+import { formatPrice } from '../utils/currency';
+import { getAllSports } from '../data/sports';
+import { europeanCities } from '../data/cities';
 import './Tournaments.css';
 
 function Tournaments() {
@@ -10,25 +13,26 @@ function Tournaments() {
   const [tournaments, setTournaments] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [toast, setToast] = useState(null);
-  const [activeTab, setActiveTab] = useState('active'); // active, upcoming, finished
+  const [activeTab, setActiveTab] = useState('active');
 
   const [formData, setFormData] = useState({
     name: '',
     sport: '',
     location: '',
     city: '',
+    country: 'Hrvatska',
     startDate: '',
     endDate: '',
-    maxTeams: 8,
+    maxTeams: '',
     teamSize: 5,
-    format: 'knockout', // knockout, league
+    format: 'knockout',
     entryFee: 0,
     prize: '',
     description: ''
   });
 
-  const sportovi = ['⚽ Nogomet', '🏀 Košarka', '🏐 Odbojka', '🎾 Tenis', '🤾 Rukomet'];
-  const gradovi = ['Zagreb', 'Split', 'Rijeka', 'Osijek', 'Zadar', 'Pula'];
+  const sportsList = getAllSports();
+  const countries = Object.keys(europeanCities).sort((a, b) => a.localeCompare(b, 'hr'));
 
   useEffect(() => {
     loadTournaments();
@@ -39,13 +43,14 @@ function Tournaments() {
     if (saved) {
       setTournaments(JSON.parse(saved));
     } else {
-      // Demo turniri
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       const demo = [
         {
           id: 1,
           name: 'Ljetni Nogometni Turnir 2026',
           sport: '⚽ Nogomet',
           city: 'Split',
+          country: 'Hrvatska',
           location: 'Stadion Poljud',
           startDate: '2026-02-01',
           endDate: '2026-02-15',
@@ -54,11 +59,11 @@ function Tournaments() {
           registeredTeams: 8,
           format: 'knockout',
           status: 'upcoming',
-          entryFee: 500,
-          prize: '10,000 kn',
+          entryFee: 66.40, // 500 HRK = 66.40 EUR
+          prize: '1,327 €', // 10,000 HRK
           teams: [],
           matches: [],
-          creator: JSON.parse(localStorage.getItem('user') || '{}').username,
+          creator: currentUser.username,
           createdAt: new Date().toISOString()
         }
       ];
@@ -101,6 +106,7 @@ function Tournaments() {
       sport: '',
       location: '',
       city: '',
+      country: 'Hrvatska',
       startDate: '',
       endDate: '',
       maxTeams: 8,
@@ -210,12 +216,15 @@ function Tournaments() {
                 <h3>{tournament.name}</h3>
                 
                 <div className="tournament-info">
-                  <p>📍 {tournament.city}, {tournament.location}</p>
+                  <p>📍 {tournament.city}, {tournament.country}</p>
+                  <p>🏟️ {tournament.location}</p>
                   <p>📅 {formatDate(tournament.startDate)} - {formatDate(tournament.endDate)}</p>
                   <p>👥 Format: {tournament.format === 'knockout' ? 'Knockout' : 'Liga'}</p>
                   <p>🎯 Timovi: {tournament.registeredTeams}/{tournament.maxTeams}</p>
                   {tournament.prize && <p>🏆 Nagrada: {tournament.prize}</p>}
-                  {tournament.entryFee > 0 && <p>💰 Kotizacija: {tournament.entryFee} kn</p>}
+                  {tournament.entryFee > 0 && (
+                    <p>💰 Kotizacija: {formatPrice(tournament.entryFee * 7.5345)}</p>
+                  )}
                 </div>
 
                 {tournament.description && (
@@ -269,14 +278,30 @@ function Tournaments() {
             
             <div className="modal-form">
               <div className="form-group">
-                <label>Naziv turnira *</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="npr. Ljetni Turnir 2026"
-                />
+                <label>Broj timova</label>
+  <select 
+    name="maxTeams" 
+    value={formData.maxTeams} 
+    onChange={handleChange}
+  >
+    <option value={4}>4 tima</option>
+    <option value={8}>8 timova</option>
+    <option value={16}>16 timova</option>
+    <option value={32}>32 tima</option>
+    <option value="custom">Custom broj...</option>
+               </select>
+               {formData.maxTeams === 'custom' && (
+    <input
+      type="number"
+      name="customMaxTeams"
+      value={formData.customMaxTeams}
+      onChange={handleChange}
+      placeholder="Upiši broj timova"
+      min="2"
+      max="128"
+      style={{ marginTop: '10px' }}
+    />
+  )}
               </div>
 
               <div className="form-row">
@@ -284,17 +309,37 @@ function Tournaments() {
                   <label>Sport *</label>
                   <select name="sport" value={formData.sport} onChange={handleChange}>
                     <option value="">Odaberi</option>
-                    {sportovi.map(s => <option key={s} value={s}>{s}</option>)}
+                    <optgroup label="Popularni">
+                      {sportsList.filter(s => s.popular).map(sport => (
+                        <option key={sport.id} value={sport.name}>{sport.name}</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Ostali">
+                      {sportsList.filter(s => !s.popular).map(sport => (
+                        <option key={sport.id} value={sport.name}>{sport.name}</option>
+                      ))}
+                    </optgroup>
                   </select>
                 </div>
 
                 <div className="form-group">
-                  <label>Grad *</label>
-                  <select name="city" value={formData.city} onChange={handleChange}>
-                    <option value="">Odaberi</option>
-                    {gradovi.map(g => <option key={g} value={g}>{g}</option>)}
+                  <label>Država *</label>
+                  <select name="country" value={formData.country} onChange={handleChange}>
+                    {countries.map(country => (
+                      <option key={country} value={country}>{country}</option>
+                    ))}
                   </select>
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label>Grad *</label>
+                <select name="city" value={formData.city} onChange={handleChange}>
+                  <option value="">Odaberi</option>
+                  {formData.country && europeanCities[formData.country]?.map(city => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-group">
@@ -366,13 +411,15 @@ function Tournaments() {
                 </div>
 
                 <div className="form-group">
-                  <label>Kotizacija (kn)</label>
+                  <label>Kotizacija (€)</label>
                   <input
                     type="number"
                     name="entryFee"
                     value={formData.entryFee}
                     onChange={handleChange}
                     min={0}
+                    step="0.01"
+                    placeholder="0.00"
                   />
                 </div>
               </div>
@@ -384,7 +431,7 @@ function Tournaments() {
                   name="prize"
                   value={formData.prize}
                   onChange={handleChange}
-                  placeholder="npr. 10,000 kn + trofej"
+                  placeholder="npr. 1,000 € + trofej"
                 />
               </div>
 

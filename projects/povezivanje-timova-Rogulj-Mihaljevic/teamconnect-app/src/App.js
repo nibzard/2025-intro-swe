@@ -34,14 +34,21 @@ function App() {
     <Router>
       <div className="app">
         <Routes>
+          {/* Javne rute */}
           <Route path="/" element={<Register />} />
           <Route path="/verify" element={<VerifyEmail />} />
           <Route path="/login" element={<Login />} />
+          
+          {/* Privatne rute */}
           <Route path="/profile-setup" element={<PrivateRoute><ProfileSetup /></PrivateRoute>} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/create-team" element={<PrivateRoute><CreateTeam /></PrivateRoute>} />
           <Route path="/my-teams" element={<PrivateRoute><MyTeams /></PrivateRoute>} />
+          
+          {/* Profil - vlastiti i tuđi */}
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/profile/:userId" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          
           <Route path="/activity" element={<PrivateRoute><ActivityFeed /></PrivateRoute>} />
           
           {/* Turniri */}

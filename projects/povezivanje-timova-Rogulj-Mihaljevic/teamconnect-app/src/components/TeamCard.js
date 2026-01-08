@@ -1,167 +1,117 @@
-import React, { useState } from 'react';
-import { teamsAPI } from '../services/api';
-import Modal from './Modal';
-import Toast from './Toast';
+import React from 'react';
 import './TeamCard.css';
 
-function TeamCard({ team, onUpdate }) {
-  const user = JSON.parse(localStorage.getItem('user'));
-  const [showLeaveModal, setShowLeaveModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [toast, setToast] = useState(null);
-
-  const isJoined = team.players?.some(p => {
-    return p._id === user._id || p === user._id || p._id === user.id || p === user.id;
-  });
+function TeamCard({ team, onJoin, onLeave, onDelete, onJoinWaitlist, showActions = true }) {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isCreator = team.creator === user._id || team.creator === user.id;
+  const isJoined = team.players?.some(p => p._id === user._id || p._id === user.id || p === user._id || p === user.id);
   const isFull = team.currentPlayers >= team.maxPlayers;
-  const isCreator = team.creator?._id === user._id || team.creator?._id === user.id;
-
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-  };
-
-  const handleJoin = async () => {
-    try {
-      await teamsAPI.join(team._id);
-       const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
-    const newNotif = {
-      id: Date.now(),
-      type: 'team_join',
-      message: `Uspješno si se pridružio timu "${team.name}"! 🎉`,
-      timestamp: new Date().toISOString(),
-      read: false
-    };
-    notifications.unshift(newNotif);
-    localStorage.setItem('notifications', JSON.stringify(notifications));
-    
-      showToast('Uspješno si se pridružio timu! 🎉', 'success');
-      if (onUpdate) onUpdate();
-    } catch (err) {
-      showToast(err.response?.data?.message || 'Greška pri pridruživanju', 'error');
-    }
-  };
-
-  const handleLeaveConfirm = async () => {
-    try {
-      await teamsAPI.leave(team._id);
-       const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
-    const newNotif = {
-      id: Date.now(),
-      type: 'team_leave',
-      message: `Napustio si tim "${team.name}" 👋`,
-      timestamp: new Date().toISOString(),
-      read: false
-    };
-    notifications.unshift(newNotif);
-    localStorage.setItem('notifications', JSON.stringify(notifications));
-    setShowLeaveModal(false);
-    showToast('Uspješno si napustio tim', 'success');
-    if (onUpdate) onUpdate();
-  } catch (err) {
-      setShowLeaveModal(false);
-      showToast(err.response?.data?.message || 'Greška', 'error');
-    }
-  };
-
-  const handleDeleteConfirm = async () => {
-    try {
-      await teamsAPI.delete(team._id);
-      setShowDeleteModal(false);
-      showToast('Tim je obrisan', 'success');
-      if (onUpdate) onUpdate();
-    } catch (err) {
-      setShowDeleteModal(false);
-      showToast(err.response?.data?.message || 'Greška', 'error');
-    }
-  };
+  const isOnWaitlist = team.waitlist?.some(w => w.user === user._id || w.user === user.id);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('hr-HR', { day: 'numeric', month: 'long', year: 'numeric' });
+    return date.toLocaleDateString('hr-HR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const getProgressColor = () => {
+    const percentage = (team.currentPlayers / team.maxPlayers) * 100;
+    if (percentage >= 90) return '#f44336';
+    if (percentage >= 70) return '#ff9800';
+    return '#4caf50';
   };
 
   return (
-    <>
-      <div className="team-card">
-        <div className="team-header">
-          <h3>{team.name}</h3>
-          <span className="team-sport">{team.sport}</span>
+    <div className="team-card card">
+      <div className="team-card-header">
+        <div className="team-sport">{team.sport}</div>
+        {isFull && <div className="team-full-badge">PUNO</div>}
+        {isOnWaitlist && <div className="team-waitlist-badge">📧 Na listi čekanja</div>}
+      </div>
+
+      <h3>{team.name}</h3>
+      
+      <div className="team-info">
+        <p>📅 {formatDate(team.date)}</p>
+        <p>🕐 {team.time}</p>
+        <p>📍 {team.city}, {team.country || 'Hrvatska'}</p>
+        <p>🏟️ {team.location}</p>
+      </div>
+
+      {team.description && (
+        <p className="team-description">{team.description}</p>
+      )}
+
+      <div className="team-players">
+        <div className="players-count">
+          Igrači: {team.currentPlayers}/{team.maxPlayers}
         </div>
-
-        <div className="team-info">
-          <p className="team-location">📍 {team.city}, {team.location}</p>
-          <p className="team-date">📅 {formatDate(team.date)}</p>
-          <p className="team-time">🕐 {team.time}</p>
-          
-          {team.description && (
-            <p className="team-description">{team.description}</p>
-          )}
-
-          <div className="team-players">
-            <p>👥 {team.currentPlayers}/{team.maxPlayers} igrača</p>
-            <div className="progress-bar">
-              <div 
-                className="progress-fill" 
-                style={{ width: `${(team.currentPlayers / team.maxPlayers) * 100}%` }}
-              />
-            </div>
-          </div>
-
-          <p className="team-creator">Kreirao: {team.creator?.username || 'Nepoznato'}</p>
-        </div>
-
-        <div className="team-actions">
-          {isCreator ? (
-            <button onClick={() => setShowDeleteModal(true)} className="btn btn-danger">
-              Obriši tim
-            </button>
-          ) : isJoined ? (
-            <button onClick={() => setShowLeaveModal(true)} className="btn btn-secondary">
-              Napusti tim
-            </button>
-          ) : isFull ? (
-            <button disabled className="btn btn-disabled">
-              Puno
-            </button>
-          ) : (
-            <button onClick={handleJoin} className="btn btn-primary">
-              Pridruži se
-            </button>
-          )}
+        <div className="progress-bar">
+          <div 
+            className="progress-fill" 
+            style={{ 
+              width: `${(team.currentPlayers / team.maxPlayers) * 100}%`,
+              background: getProgressColor()
+            }}
+          />
         </div>
       </div>
 
-      {/* Modal za napuštanje tima */}
-      <Modal
-        isOpen={showLeaveModal}
-        onClose={() => setShowLeaveModal(false)}
-        onConfirm={handleLeaveConfirm}
-        title="Napusti tim?"
-        message={`Sigurno želiš napustiti tim "${team.name}"? Moći ćeš se ponovno pridružiti kasnije.`}
-        confirmText="Da, napusti"
-        cancelText="Ne, ostani"
-      />
-
-      {/* Modal za brisanje tima */}
-      <Modal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onConfirm={handleDeleteConfirm}
-        title="Obriši tim?"
-        message={`Sigurno želiš obrisati tim "${team.name}"? Ova radnja se ne može poništiti!`}
-        confirmText="Da, obriši"
-        cancelText="Odustani"
-      />
-
-      {/* Toast notifikacija */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
+      {team.waitlist && team.waitlist.length > 0 && (
+        <div className="waitlist-info">
+          📧 {team.waitlist.length} {team.waitlist.length === 1 ? 'osoba' : 'osoba'} na listi čekanja
+        </div>
       )}
-    </>
+
+      {showActions && (
+        <div className="team-actions">
+          {isCreator ? (
+            <>
+              <button className="btn btn-secondary" disabled>
+                Kreator
+              </button>
+              {onDelete && (
+                <button className="btn btn-danger" onClick={() => onDelete(team._id)}>
+                  Obriši
+                </button>
+              )}
+            </>
+          ) : isJoined ? (
+            onLeave && (
+              <button className="btn btn-secondary" onClick={() => onLeave(team._id)}>
+                Napusti tim
+              </button>
+            )
+          ) : isFull ? (
+            isOnWaitlist ? (
+              <button className="btn btn-disabled" disabled>
+                Na listi čekanja
+              </button>
+            ) : (
+              onJoinWaitlist && (
+                <button className="btn btn-secondary" onClick={() => onJoinWaitlist(team._id)}>
+                  📧 Dodaj me na listu čekanja
+                </button>
+              )
+            )
+          ) : (
+            onJoin && (
+              <button className="btn btn-primary" onClick={() => onJoin(team._id)}>
+                Pridruži se
+              </button>
+            )
+          )}
+        </div>
+      )}
+
+      <div className="team-creator">
+        Kreator: {team.creator?.username || 'Unknown'}
+      </div>
+    </div>
   );
 }
 

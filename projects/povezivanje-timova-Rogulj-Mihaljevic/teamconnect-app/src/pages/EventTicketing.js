@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Toast from '../components/Toast';
 import Modal from '../components/Modal';
+import { formatPrice } from '../utils/currency';
 import './EventTicketing.css';
 
 function EventTicketing() {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [myTickets, setMyTickets] = useState([]);
-  const [activeTab, setActiveTab] = useState('events'); // events, myTickets
+  const [activeTab, setActiveTab] = useState('events');
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
@@ -45,14 +46,14 @@ function EventTicketing() {
           capacity: 1000,
           soldTickets: 687,
           ticketTypes: [
-            { type: 'standard', name: 'Standardna', price: 50, available: 200 },
-            { type: 'vip', name: 'VIP', price: 150, available: 50 },
-            { type: 'premium', name: 'Premium', price: 100, available: 63 }
+            { type: 'standard', name: 'Standardna', price: 6.64, available: 200 }, // 50 HRK
+            { type: 'vip', name: 'VIP', price: 19.91, available: 50 }, // 150 HRK
+            { type: 'premium', name: 'Premium', price: 13.27, available: 63 } // 100 HRK
           ],
           image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800',
           description: 'Veliko finale ljetnog turnira! Ne propustite!',
           organizer: 'TeamConnect',
-          status: 'selling' // selling, soldout, ended
+          status: 'selling'
         },
         {
           id: 2,
@@ -64,8 +65,8 @@ function EventTicketing() {
           capacity: 800,
           soldTickets: 543,
           ticketTypes: [
-            { type: 'standard', name: 'Standardna', price: 40, available: 157 },
-            { type: 'vip', name: 'VIP', price: 120, available: 100 }
+            { type: 'standard', name: 'Standardna', price: 5.31, available: 157 }, // 40 HRK
+            { type: 'vip', name: 'VIP', price: 15.93, available: 100 } // 120 HRK
           ],
           image: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800',
           description: 'Uzbudljivo košarkaško polufinale!',
@@ -93,10 +94,10 @@ function EventTicketing() {
           venue: 'Stadion Poljud, Split',
           seatType: 'VIP',
           quantity: 2,
-          totalPrice: 300,
+          totalPrice: 39.82, // 300 HRK
           purchaseDate: new Date(Date.now() - 86400000).toISOString(),
           qrCode: 'QR-CODE-DATA-001',
-          status: 'valid' // valid, used, cancelled
+          status: 'valid'
         }
       ];
       setMyTickets(demoTickets);
@@ -143,12 +144,10 @@ function EventTicketing() {
       status: 'valid'
     };
 
-    // Ažuriraj karte
     const updatedTickets = [...myTickets, newTicket];
     setMyTickets(updatedTickets);
     localStorage.setItem('myTickets', JSON.stringify(updatedTickets));
 
-    // Ažuriraj event (prodano karata)
     const updatedEvents = events.map(e => {
       if (e.id === selectedEvent.id) {
         return {
@@ -291,7 +290,7 @@ function EventTicketing() {
                             >
                               {type.name}
                             </span>
-                            <span className="ticket-price">{type.price} kn</span>
+                            <span className="ticket-price">{formatPrice(type.price * 7.5345)}</span>
                           </div>
                           <span className="ticket-available">
                             {type.available > 0 ? `${type.available} dostupno` : 'Rasprodano'}
@@ -363,7 +362,7 @@ function EventTicketing() {
                     </div>
                     <div className="ticket-detail-item">
                       <span className="detail-icon">💰</span>
-                      <span>{ticket.totalPrice} kn</span>
+                      <span>{formatPrice(ticket.totalPrice * 7.5345)}</span>
                     </div>
                   </div>
 
@@ -406,7 +405,7 @@ function EventTicketing() {
               >
                 {selectedEvent.ticketTypes.map(type => (
                   <option key={type.type} value={type.type} disabled={type.available === 0}>
-                    {type.name} - {type.price} kn ({type.available} dostupno)
+                    {type.name} - {formatPrice(type.price * 7.5345)} ({type.available} dostupno)
                   </option>
                 ))}
               </select>
@@ -447,7 +446,7 @@ function EventTicketing() {
               <div className="summary-row">
                 <span>Cijena po karti:</span>
                 <span className="summary-value">
-                  {selectedEvent.ticketTypes.find(t => t.type === purchaseForm.seatType)?.price} kn
+                  {formatPrice((selectedEvent.ticketTypes.find(t => t.type === purchaseForm.seatType)?.price || 0) * 7.5345)}
                 </span>
               </div>
               <div className="summary-row">
@@ -457,7 +456,7 @@ function EventTicketing() {
               <div className="summary-row total">
                 <span>Ukupno:</span>
                 <span className="summary-value">
-                  {(selectedEvent.ticketTypes.find(t => t.type === purchaseForm.seatType)?.price || 0) * purchaseForm.quantity} kn
+                  {formatPrice((selectedEvent.ticketTypes.find(t => t.type === purchaseForm.seatType)?.price || 0) * purchaseForm.quantity * 7.5345)}
                 </span>
               </div>
             </div>
@@ -508,6 +507,7 @@ function EventTicketing() {
               <h4>{selectedTicket.eventName}</h4>
               <p>📅 {formatDate(selectedTicket.date)} u {selectedTicket.time}</p>
               <p>🎫 {selectedTicket.seatType} × {selectedTicket.quantity}</p>
+              <p>💰 {formatPrice(selectedTicket.totalPrice * 7.5345)}</p>
               <p>#{selectedTicket.id}</p>
             </div>
 
