@@ -1,6 +1,7 @@
 const Team = require('../models/Team');
 const User = require('../models/User');
 const nodemailer = require('nodemailer');
+const { notifyWaitlist } = require('./waitlistController');
 
 // Funkcija za slanje emaila kada se pridružiš timu
 const sendTeamJoinEmail = async (userEmail, teamName, teamDate, teamTime, teamLocation) => {
@@ -193,51 +194,35 @@ exports.joinTeam = async (req, res) => {
 // Napusti tim
 exports.leaveTeam = async (req, res) => {
   try {
-    const team = await Team.findById(req.params.id);
+    const { teamId } = req.params;
+    const userId = req.user.id;
 
+    const team = await Team.findById(teamId);
+    
     if (!team) {
       return res.status(404).json({ message: 'Tim ne postoji' });
     }
 
-    // Provjeri je li korisnik u timu
-    if (!team.players.includes(req.user._id)) {
-      return res.status(400).json({ message: 'Nisi u ovom timu!' });
+    if (!team.players.includes(userId)) {
+      return res.status(400).json({ message: 'Nisi u ovom timu' });
     }
 
-    // Kreator ne može napustiti tim
-    if (team.creator.equals(req.user._id)) {
-      return res.status(400).json({ message: 'Kreator ne može napustiti tim! Obriši ga umjesto toga.' });
-    }
-
-    // Ukloni igrača
-    team.players = team.players.filter(player => !player.equals(req.user._id));
-    team.currentPlayers -= 1;
+    team.players = team.players.filter(p => p.toString() !== userId);
+    team.currentPlayers = team.players.length;
     await team.save();
 
-    // Pošalji email
-    try {
-      await sendTeamLeaveEmail(
-        req.user.email,
-        team.name,
-        team.date,
-        team.time
-      );
-    } catch (emailErr) {
-      console.error('Greška pri slanju emaila:', emailErr);
-      // Nastavi dalje iako email nije poslan
-    }
+    // NOVO - Obavijesti waitlist korisnike
+    await notifyWaitlist(teamId);
 
-    res.json({ 
-      message: 'Napustio si tim',
-      team 
-    });
+    // Pošalji email notifikaciju ostalim članovima
+    await sendTeamLeaveEmail(team, req.user);
 
+    res.json({ message: 'Napustio si tim' });
   } catch (error) {
-    console.error('Greška pri napuštanju tima:', error);
-    res.status(500).json({ message: 'Greška na serveru' });
+    console.error('Leave team error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
-
 // Obriši tim (samo kreator)
 exports.deleteTeam = async (req, res) => {
   try {
