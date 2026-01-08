@@ -1,5 +1,6 @@
 const Tournament = require('../models/Tournament');
 const User = require('../models/User');
+const { createActivityHelper } = require('./activityController'); // ✅ DODANO
 
 // Dohvati sve turnire
 exports.getTournaments = async (req, res) => {
@@ -69,6 +70,22 @@ exports.createTournament = async (req, res) => {
     await tournament.save();
     await tournament.populate('creator', 'username avatar');
 
+    // ✅ NOVO - Kreiraj aktivnost
+    try {
+      await createActivityHelper(
+        userId,
+        'tournament_created',
+        {
+          tournamentId: tournament._id,
+          tournamentName: tournament.name
+        },
+        'public'
+      );
+    } catch (activityErr) {
+      console.error('Greška pri kreiranju aktivnosti:', activityErr);
+      // Nastavi dalje iako aktivnost nije kreirana
+    }
+
     res.status(201).json({ 
       message: 'Turnir kreiran!', 
       tournament 
@@ -127,6 +144,23 @@ exports.registerTeam = async (req, res) => {
 
     await tournament.save();
     await tournament.populate('registeredTeams.captain', 'username avatar');
+
+    // ✅ NOVO - Kreiraj aktivnost
+    try {
+      await createActivityHelper(
+        userId,
+        'tournament_joined',
+        {
+          tournamentId: tournament._id,
+          tournamentName: tournament.name,
+          teamName: teamName
+        },
+        'public'
+      );
+    } catch (activityErr) {
+      console.error('Greška pri kreiranju aktivnosti:', activityErr);
+      // Nastavi dalje iako aktivnost nije kreirana
+    }
 
     res.json({ 
       message: 'Tim uspješno registriran!', 

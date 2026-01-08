@@ -1,6 +1,7 @@
 const Field = require('../models/Field');
 const fs = require('fs');
 const path = require('path');
+const { createActivityHelper } = require('./activityController');
 
 // Dohvati sve terene
 exports.getFields = async (req, res) => {
@@ -57,6 +58,15 @@ exports.createField = async (req, res) => {
       }
       return res.status(400).json({ message: 'Popuni sva obavezna polja!' });
     }
+    await createActivityHelper(
+  userId,
+  'field_added',
+  {
+    fieldId: field._id,
+    fieldName: field.name
+  },
+  'public'
+);
 
     // Dodaj slike
     const images = [];

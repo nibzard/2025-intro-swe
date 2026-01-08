@@ -2,6 +2,8 @@ const Team = require('../models/Team');
 const User = require('../models/User');
 const nodemailer = require('nodemailer');
 const { notifyWaitlist } = require('./waitlistController');
+const { createActivityHelper } = require('./activityController');
+const { createNotificationHelper } = require('./notificationController'); // ✅ DODANO
 
 // Funkcija za slanje emaila kada se pridružiš timu
 const sendTeamJoinEmail = async (userEmail, teamName, teamDate, teamTime, teamLocation) => {
@@ -67,12 +69,10 @@ exports.createTeam = async (req, res) => {
   try {
     const { name, sport, location, city, date, time, maxPlayers, description } = req.body;
 
-    // Provjeri da li su sva polja popunjena
     if (!name || !sport || !location || !city || !date || !time || !maxPlayers) {
       return res.status(400).json({ message: 'Popuni sva obavezna polja!' });
     }
 
-    // Kreiraj tim
     const team = new Team({
       name,
       sport,
@@ -87,6 +87,20 @@ exports.createTeam = async (req, res) => {
     });
 
     await team.save();
+
+    try {
+      await createActivityHelper(
+        req.user._id,
+        'team_created',
+        {
+          teamId: team._id,
+          teamName: team.name
+        },
+        'public'
+      );
+    } catch (activityErr) {
+      console.error('Greška pri kreiranju aktivnosti:', activityErr);
+    }
 
     res.status(201).json({ 
       message: 'Tim uspješno kreiran!',
@@ -104,7 +118,6 @@ exports.getTeams = async (req, res) => {
   try {
     const { sport, city, location } = req.query;
 
-    // Filtriraj timove
     let filter = {};
     if (sport) filter.sport = sport;
     if (city) filter.city = city;
@@ -151,12 +164,10 @@ exports.joinTeam = async (req, res) => {
       return res.status(404).json({ message: 'Tim ne postoji' });
     }
 
-    // Provjeri je li tim pun
     if (team.currentPlayers >= team.maxPlayers) {
       return res.status(400).json({ message: 'Tim je pun!' });
     }
 
-    // Provjeri je li korisnik već u timu
     if (team.players.includes(req.user._id)) {
       return res.status(400).json({ message: 'Već si u ovom timu!' });
     }
@@ -177,7 +188,39 @@ exports.joinTeam = async (req, res) => {
       );
     } catch (emailErr) {
       console.error('Greška pri slanju emaila:', emailErr);
-      // Nastavi dalje iako email nije poslan
+    }
+
+    // Kreiraj aktivnost
+    try {
+      await createActivityHelper(
+        req.user._id,
+        'team_joined',
+        {
+          teamId: team._id,
+          teamName: team.name
+        },
+        'public'
+      );
+    } catch (activityErr) {
+      console.error('Greška pri kreiranju aktivnosti:', activityErr);
+    }
+
+    // ✅ NOVO - Notifikacija za kreatora tima
+    try {
+      // Dohvati user za username
+      const user = await User.findById(req.user._id).select('username');
+      
+      await createNotificationHelper(
+        team.creator,
+        'team_joined',
+        '🤝 Novi član tima',
+        `${user.username} se pridružio tvom timu "${team.name}"`,
+        `/teams/${team._id}`,
+        { teamId: team._id },
+        req.user._id
+      );
+    } catch (notifErr) {
+      console.error('Greška pri kreiranju notifikacije:', notifErr);
     }
 
     res.json({ 
@@ -211,11 +254,22 @@ exports.leaveTeam = async (req, res) => {
     team.currentPlayers = team.players.length;
     await team.save();
 
-    // NOVO - Obavijesti waitlist korisnike
-    await notifyWaitlist(teamId);
+    try {
+      await notifyWaitlist(teamId);
+    } catch (waitlistErr) {
+      console.error('Greška pri notifikaciji waitlista:', waitlistErr);
+    }
 
-    // Pošalji email notifikaciju ostalim članovima
-    await sendTeamLeaveEmail(team, req.user);
+    try {
+      await sendTeamLeaveEmail(
+        req.user.email,
+        team.name,
+        team.date,
+        team.time
+      );
+    } catch (emailErr) {
+      console.error('Greška pri slanju emaila:', emailErr);
+    }
 
     res.json({ message: 'Napustio si tim' });
   } catch (error) {
@@ -223,6 +277,7 @@ exports.leaveTeam = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 // Obriši tim (samo kreator)
 exports.deleteTeam = async (req, res) => {
   try {
@@ -232,7 +287,6 @@ exports.deleteTeam = async (req, res) => {
       return res.status(404).json({ message: 'Tim ne postoji' });
     }
 
-    // Samo kreator može obrisati tim
     if (!team.creator.equals(req.user._id)) {
       return res.status(403).json({ message: 'Samo kreator može obrisati tim!' });
     }
@@ -248,12 +302,10 @@ exports.deleteTeam = async (req, res) => {
 };
 
 // Dohvati moje timove
-// Dohvati timove gdje je korisnik član ili kreator
 exports.getMyTeams = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Dohvati timove gdje je korisnik član ili kreator
     const teams = await Team.find({
       $or: [
         { creator: userId },
@@ -262,7 +314,7 @@ exports.getMyTeams = async (req, res) => {
     })
     .populate('creator', 'username email avatar')
     .populate('players', 'username email avatar')
-    .sort({ date: 1 }); // Sortiraj po datumu
+    .sort({ date: 1 });
 
     res.json(teams);
   } catch (error) {

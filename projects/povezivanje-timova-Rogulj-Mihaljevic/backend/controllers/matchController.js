@@ -1,5 +1,6 @@
 const Match = require('../models/Match');
 const User = require('../models/User');
+const { createActivityHelper } = require('./activityController');
 
 // Dohvati sve utakmice
 exports.getMatches = async (req, res) => {
@@ -225,8 +226,34 @@ exports.updateStatus = async (req, res) => {
       match.startTime = new Date();
     }
     
+    // ✅ NOVO - Kreiraj aktivnosti kada utakmica završi
     if (status === 'finished' && !match.endTime) {
       match.endTime = new Date();
+      
+      // Kreiraj aktivnosti za sve igrače
+      const winner = match.score.team1 > match.score.team2 ? 'team1' : 'team2';
+      const winningTeam = winner === 'team1' ? match.team1 : match.team2;
+      
+      // Aktivnosti za winning team
+      if (winningTeam.players && winningTeam.players.length > 0) {
+        for (const playerId of winningTeam.players) {
+          try {
+            await createActivityHelper(
+              playerId,
+              'match_won',
+              {
+                matchId: match._id,
+                opponent: winner === 'team1' ? match.team2.name : match.team1.name,
+                score: `${match.score.team1}-${match.score.team2}`
+              },
+              'public'
+            );
+          } catch (activityErr) {
+            console.error('Greška pri kreiranju aktivnosti za igrača:', activityErr);
+            // Nastavi sa sljedećim igračem
+          }
+        }
+      }
     }
 
     await match.save();

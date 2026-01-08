@@ -1,5 +1,6 @@
 const Team = require('../models/Team');
 const nodemailer = require('nodemailer');
+const { createNotificationHelper } = require('./notificationController'); // ✅ DODANO
 
 // Email transporter
 const transporter = nodemailer.createTransport({
@@ -89,7 +90,7 @@ exports.notifyWaitlist = async (teamId) => {
 
     // Ako tim nije pun, obavijesti sve na waitlistu
     if (team.currentPlayers < team.maxPlayers) {
-      const promises = team.waitlist.map(item => {
+      const emailPromises = team.waitlist.map(item => {
         const mailOptions = {
           from: process.env.EMAIL_USER,
           to: item.email,
@@ -142,7 +143,23 @@ exports.notifyWaitlist = async (teamId) => {
         return transporter.sendMail(mailOptions);
       });
 
-      await Promise.all(promises);
+      // ✅ NOVO - Kreiraj notifikacije za sve na waitlistu
+      const notificationPromises = team.waitlist.map(waitlistUser => {
+        return createNotificationHelper(
+          waitlistUser.user,
+          'waitlist_spot_available',
+          '🎉 Mjesto dostupno!',
+          `Oslobodilo se mjesto u timu "${team.name}"`,
+          '/dashboard',
+          { teamId: team._id }
+        ).catch(err => {
+          console.error('Greška pri kreiranju notifikacije za waitlist:', err);
+        });
+      });
+
+      // Šalji sve emailove i notifikacije paralelno
+      await Promise.all([...emailPromises, ...notificationPromises]);
+      
       console.log(`Waitlist notifikacije poslane za tim: ${team.name}`);
     }
   } catch (error) {

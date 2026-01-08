@@ -22,6 +22,7 @@ import EventTicketing from './pages/EventTicketing';
 import LoyaltyRewards from './pages/LoyaltyRewards';
 import VideoHighlights from './pages/VideoHighlights';
 import './App.css';
+import Notifications from './pages/Notifications';
 
 function App() {
   const token = localStorage.getItem('token');
@@ -44,6 +45,7 @@ function App() {
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/create-team" element={<PrivateRoute><CreateTeam /></PrivateRoute>} />
           <Route path="/my-teams" element={<PrivateRoute><MyTeams /></PrivateRoute>} />
+          <Route path="/notifications" element={<PrivateRoute><Notifications /></PrivateRoute>} />
           
           {/* Profil - vlastiti i tuđi */}
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />

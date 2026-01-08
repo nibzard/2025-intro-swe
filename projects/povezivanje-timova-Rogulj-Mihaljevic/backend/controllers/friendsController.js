@@ -1,5 +1,7 @@
 const User = require('../models/User');
 const nodemailer = require('nodemailer');
+const { createActivityHelper } = require('./activityController');
+const { createNotificationHelper } = require('./notificationController');
 
 // Email transporter
 const transporter = nodemailer.createTransport({
@@ -21,7 +23,7 @@ exports.searchUsers = async (req, res) => {
     }
 
     const users = await User.find({
-      _id: { $ne: userId }, // Isključi trenutnog korisnika
+      _id: { $ne: userId },
       $or: [
         { username: { $regex: query, $options: 'i' } },
         { email: { $regex: query, $options: 'i' } }
@@ -30,7 +32,6 @@ exports.searchUsers = async (req, res) => {
     .select('username email avatar sport location')
     .limit(20);
 
-    // Dodaj info o već poslanim zahtjevima
     const currentUser = await User.findById(userId);
     const usersWithStatus = users.map(user => ({
       ...user.toObject(),
@@ -63,12 +64,10 @@ exports.sendFriendRequest = async (req, res) => {
       return res.status(404).json({ message: 'Korisnik ne postoji' });
     }
 
-    // Provjeri jel već prijatelj
     if (currentUser.friends.includes(userId)) {
       return res.status(400).json({ message: 'Već ste prijatelji!' });
     }
 
-    // Provjeri jel već poslao zahtjev
     const alreadySent = targetUser.friendRequests.some(
       req => req.from.toString() === currentUserId
     );
@@ -77,7 +76,6 @@ exports.sendFriendRequest = async (req, res) => {
       return res.status(400).json({ message: 'Zahtjev već poslan!' });
     }
 
-    // Dodaj zahtjev
     targetUser.friendRequests.push({
       from: currentUserId,
       message: message || '',
@@ -86,53 +84,72 @@ exports.sendFriendRequest = async (req, res) => {
 
     await targetUser.save();
 
-    // Pošalji email notifikaciju
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: targetUser.email,
-      subject: `👋 ${currentUser.username} želi biti tvoj prijatelj na TeamConnect`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #667eea; text-align: center;">👋 Novi zahtjev za prijateljstvo!</h1>
-          
-          <div style="background: #f5f7fa; padding: 30px; border-radius: 15px; margin: 20px 0;">
-            <p style="font-size: 18px; color: #333;">
-              <strong>${currentUser.username}</strong> želi biti tvoj prijatelj na TeamConnect!
-            </p>
-            
-            ${message ? `
-              <div style="background: white; padding: 15px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #667eea;">
-                <p style="margin: 0; color: #666; font-style: italic;">"${message}"</p>
-              </div>
-            ` : ''}
-            
-            <p style="margin-top: 20px;">
-              <strong>Sport:</strong> ${currentUser.sport || 'Nije navedeno'}<br>
-              <strong>Lokacija:</strong> ${currentUser.location || 'Nije navedeno'}
-            </p>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="http://localhost:3000/friends" 
-               style="background: linear-gradient(135deg, #667eea, #764ba2); 
-                      color: white; 
-                      padding: 15px 40px; 
-                      text-decoration: none; 
-                      border-radius: 25px; 
-                      font-weight: bold;
-                      display: inline-block;">
-              Vidi zahtjev
-            </a>
-          </div>
-          
-          <p style="color: #999; text-align: center; font-size: 14px;">
-            TeamConnect - Povežite se s igračima 🏆
-          </p>
-        </div>
-      `
-    };
+    // ✅ NOVO - Kreiraj notifikaciju
+    try {
+      await createNotificationHelper(
+        userId, // recipient
+        'friend_request',
+        '👋 Novi zahtjev za prijateljstvo',
+        `${currentUser.username} želi biti tvoj prijatelj`,
+        '/friends',
+        { friendRequestId: targetUser._id.toString() },
+        currentUserId // sender
+      );
+    } catch (notifErr) {
+      console.error('Greška pri kreiranju notifikacije:', notifErr);
+    }
 
-    await transporter.sendMail(mailOptions);
+    // Pošalji email notifikaciju
+    try {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: targetUser.email,
+        subject: `👋 ${currentUser.username} želi biti tvoj prijatelj na TeamConnect`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h1 style="color: #667eea; text-align: center;">👋 Novi zahtjev za prijateljstvo!</h1>
+            
+            <div style="background: #f5f7fa; padding: 30px; border-radius: 15px; margin: 20px 0;">
+              <p style="font-size: 18px; color: #333;">
+                <strong>${currentUser.username}</strong> želi biti tvoj prijatelj na TeamConnect!
+              </p>
+              
+              ${message ? `
+                <div style="background: white; padding: 15px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #667eea;">
+                  <p style="margin: 0; color: #666; font-style: italic;">"${message}"</p>
+                </div>
+              ` : ''}
+              
+              <p style="margin-top: 20px;">
+                <strong>Sport:</strong> ${currentUser.sport || 'Nije navedeno'}<br>
+                <strong>Lokacija:</strong> ${currentUser.location || 'Nije navedeno'}
+              </p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="http://localhost:3000/friends" 
+                 style="background: linear-gradient(135deg, #667eea, #764ba2); 
+                        color: white; 
+                        padding: 15px 40px; 
+                        text-decoration: none; 
+                        border-radius: 25px; 
+                        font-weight: bold;
+                        display: inline-block;">
+                Vidi zahtjev
+              </a>
+            </div>
+            
+            <p style="color: #999; text-align: center; font-size: 14px;">
+              TeamConnect - Povežite se s igračima 🏆
+            </p>
+          </div>
+        `
+      };
+
+      await transporter.sendMail(mailOptions);
+    } catch (emailErr) {
+      console.error('Greška pri slanju emaila:', emailErr);
+    }
 
     res.json({ message: 'Zahtjev poslan!' });
   } catch (error) {
@@ -180,41 +197,85 @@ exports.acceptFriendRequest = async (req, res) => {
     friend.friends.push(userId);
     await friend.save();
 
-    // Pošalji email notifikaciju
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: friend.email,
-      subject: `🎉 ${user.username} je prihvatio tvoj zahtjev za prijateljstvo!`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #4caf50; text-align: center;">🎉 Sada ste prijatelji!</h1>
-          
-          <div style="background: #f5f7fa; padding: 30px; border-radius: 15px; margin: 20px 0; text-align: center;">
-            <p style="font-size: 18px; color: #333;">
-              <strong>${user.username}</strong> je prihvatio tvoj zahtjev za prijateljstvo!
-            </p>
-            <p style="font-size: 16px; color: #666;">
-              Sada možete zajedno igrati i pratiti jedni druge na TeamConnect.
-            </p>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="http://localhost:3000/friends" 
-               style="background: linear-gradient(135deg, #4caf50, #66bb6a); 
-                      color: white; 
-                      padding: 15px 40px; 
-                      text-decoration: none; 
-                      border-radius: 25px; 
-                      font-weight: bold;
-                      display: inline-block;">
-              Vidi prijatelje
-            </a>
-          </div>
-        </div>
-      `
-    };
+    // ✅ NOVO - Kreiraj aktivnosti za oba korisnika
+    try {
+      await createActivityHelper(
+        userId,
+        'friend_added',
+        {
+          friendId: friendId,
+          friendName: friend.username
+        },
+        'friends'
+      );
 
-    await transporter.sendMail(mailOptions);
+      await createActivityHelper(
+        friendId,
+        'friend_added',
+        {
+          friendId: userId,
+          friendName: user.username
+        },
+        'friends'
+      );
+    } catch (activityErr) {
+      console.error('Greška pri kreiranju aktivnosti:', activityErr);
+    }
+
+    // ✅ NOVO - Kreiraj notifikaciju
+    try {
+      await createNotificationHelper(
+        friendId,
+        'friend_accepted',
+        '🎉 Zahtjev prihvaćen',
+        `${user.username} je prihvatio tvoj zahtjev za prijateljstvo`,
+        '/friends',
+        {},
+        userId
+      );
+    } catch (notifErr) {
+      console.error('Greška pri kreiranju notifikacije:', notifErr);
+    }
+
+    // Pošalji email notifikaciju
+    try {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: friend.email,
+        subject: `🎉 ${user.username} je prihvatio tvoj zahtjev za prijateljstvo!`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h1 style="color: #4caf50; text-align: center;">🎉 Sada ste prijatelji!</h1>
+            
+            <div style="background: #f5f7fa; padding: 30px; border-radius: 15px; margin: 20px 0; text-align: center;">
+              <p style="font-size: 18px; color: #333;">
+                <strong>${user.username}</strong> je prihvatio tvoj zahtjev za prijateljstvo!
+              </p>
+              <p style="font-size: 16px; color: #666;">
+                Sada možete zajedno igrati i pratiti jedni druge na TeamConnect.
+              </p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="http://localhost:3000/friends" 
+                 style="background: linear-gradient(135deg, #4caf50, #66bb6a); 
+                        color: white; 
+                        padding: 15px 40px; 
+                        text-decoration: none; 
+                        border-radius: 25px; 
+                        font-weight: bold;
+                        display: inline-block;">
+                Vidi prijatelje
+              </a>
+            </div>
+          </div>
+        `
+      };
+
+      await transporter.sendMail(mailOptions);
+    } catch (emailErr) {
+      console.error('Greška pri slanju emaila:', emailErr);
+    }
 
     res.json({ message: 'Zahtjev prihvaćen!' });
   } catch (error) {

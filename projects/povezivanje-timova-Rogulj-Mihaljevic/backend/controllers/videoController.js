@@ -1,6 +1,9 @@
 const Video = require('../models/Video');
+const User = require('../models/User');
 const fs = require('fs');
 const path = require('path');
+const { createActivityHelper } = require('./activityController');
+const { createNotificationHelper } = require('./notificationController'); // ✅ DODANO
 
 // Upload video
 exports.uploadVideo = async (req, res) => {
@@ -12,7 +15,6 @@ exports.uploadVideo = async (req, res) => {
     const { title, description, category } = req.body;
 
     if (!title || !category) {
-      // Obriši uploadani file ako nedostaju podaci
       fs.unlinkSync(req.file.path);
       return res.status(400).json({ message: 'Naslov i kategorija su obavezni!' });
     }
@@ -29,9 +31,21 @@ exports.uploadVideo = async (req, res) => {
     });
 
     await video.save();
-
-    // Populate author data
     await video.populate('author', 'username avatar');
+
+    try {
+      await createActivityHelper(
+        req.user.id,
+        'video_uploaded',
+        {
+          videoId: video._id,
+          videoTitle: video.title
+        },
+        'public'
+      );
+    } catch (activityErr) {
+      console.error('Greška pri kreiranju aktivnosti:', activityErr);
+    }
 
     res.json({ 
       message: 'Video uspješno uploadan!', 
@@ -39,7 +53,6 @@ exports.uploadVideo = async (req, res) => {
     });
   } catch (error) {
     console.error('Upload video error:', error);
-    // Obriši uploadani file u slučaju greške
     if (req.file) {
       fs.unlinkSync(req.file.path);
     }
@@ -91,7 +104,6 @@ exports.getVideo = async (req, res) => {
       return res.status(404).json({ message: 'Video ne postoji' });
     }
 
-    // Povećaj views
     video.views += 1;
     await video.save();
 
@@ -167,6 +179,25 @@ exports.likeVideo = async (req, res) => {
 
     await video.save();
 
+    // ✅ NOVO - Notifikacija za autora videa (samo ako nije sam lajkao)
+    if (video.author.toString() !== userId && !alreadyLiked) {
+      try {
+        const liker = await User.findById(userId).select('username');
+        
+        await createNotificationHelper(
+          video.author,
+          'video_liked',
+          '❤️ Novi like',
+          `${liker.username} je lajkao tvoj video "${video.title}"`,
+          `/highlights`,
+          { videoId: video._id },
+          userId
+        );
+      } catch (notifErr) {
+        console.error('Greška pri kreiranju notifikacije:', notifErr);
+      }
+    }
+
     res.json({ 
       message: alreadyLiked ? 'Unlike' : 'Like',
       likes: video.likes.length 
@@ -202,6 +233,25 @@ exports.addComment = async (req, res) => {
     await video.save();
     await video.populate('comments.user', 'username avatar');
 
+    // ✅ NOVO - Notifikacija za autora videa (ako nije sam komentirao)
+    if (video.author.toString() !== userId) {
+      try {
+        const commenter = await User.findById(userId).select('username');
+        
+        await createNotificationHelper(
+          video.author,
+          'video_commented',
+          '💬 Novi komentar',
+          `${commenter.username} je komentirao tvoj video "${video.title}"`,
+          `/highlights`,
+          { videoId: video._id },
+          userId
+        );
+      } catch (notifErr) {
+        console.error('Greška pri kreiranju notifikacije:', notifErr);
+      }
+    }
+
     res.json({ 
       message: 'Komentar dodan!',
       comment: video.comments[video.comments.length - 1]
@@ -224,12 +274,10 @@ exports.deleteVideo = async (req, res) => {
       return res.status(404).json({ message: 'Video ne postoji' });
     }
 
-    // Provjeri jel autor
     if (video.author.toString() !== userId) {
       return res.status(403).json({ message: 'Nemaš pravo obrisati ovaj video!' });
     }
 
-    // Obriši file
     if (fs.existsSync(video.filepath)) {
       fs.unlinkSync(video.filepath);
     }

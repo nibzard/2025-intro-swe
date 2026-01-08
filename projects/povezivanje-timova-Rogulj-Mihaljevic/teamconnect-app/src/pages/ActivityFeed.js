@@ -1,60 +1,186 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Toast from '../components/Toast';
 import './ActivityFeed.css';
 
 function ActivityFeed() {
   const navigate = useNavigate();
   const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
+  const [toast, setToast] = useState(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    // Učitaj aktivnosti iz localStorage
-    const savedActivities = localStorage.getItem('activities');
-    if (savedActivities) {
-      setActivities(JSON.parse(savedActivities));
-    } else {
-      // Demo aktivnosti
-      const demoActivities = [
-        {
-          id: 1,
-          type: 'user_join',
-          user: 'danana',
-          action: 'se pridružio/la aplikaciji',
-          icon: '🎉',
-          timestamp: new Date(Date.now() - 3600000).toISOString()
-        },
-        {
-          id: 2,
-          type: 'team_create',
-          user: 'danana',
-          action: 'kreirao/la novi tim',
-          target: 'odbojaksi',
-          icon: '✨',
-          timestamp: new Date(Date.now() - 7200000).toISOString()
-        },
-        {
-          id: 3,
-          type: 'team_join',
-          user: JSON.parse(localStorage.getItem('user') || '{}').username,
-          action: 'se pridružio/la timu',
-          target: 'odbojaksi',
-          icon: '🤝',
-          timestamp: new Date(Date.now() - 10800000).toISOString()
-        }
-      ];
-      setActivities(demoActivities);
-      localStorage.setItem('activities', JSON.stringify(demoActivities));
-    }
-  }, []);
+    loadActivities();
+  }, [filter, page]);
 
-  const getActivityColor = (type) => {
-    switch (type) {
-      case 'user_join': return '#4caf50';
-      case 'team_create': return '#667eea';
-      case 'team_join': return '#ff9800';
-      case 'team_leave': return '#f44336';
-      case 'team_full': return '#2196f3';
-      default: return '#999';
+  const loadActivities = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      let url = `http://localhost:5000/api/activities/feed?page=${page}&limit=20`;
+      if (filter !== 'all') {
+        url += `&type=${filter}`;
+      }
+
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (page === 1) {
+          setActivities(data.activities);
+        } else {
+          setActivities([...activities, ...data.activities]);
+        }
+        
+        setHasMore(data.pagination.page < data.pagination.pages);
+      } else {
+        const error = await response.json();
+        setToast({ message: error.message, type: 'error' });
+      }
+    } catch (error) {
+      console.error('Load activities error:', error);
+      setToast({ message: 'Greška pri učitavanju aktivnosti', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilterChange = (newFilter) => {
+    setFilter(newFilter);
+    setPage(1);
+    setActivities([]);
+  };
+
+  const loadMore = () => {
+    if (!loading && hasMore) {
+      setPage(page + 1);
+    }
+  };
+
+  const getActivityIcon = (type) => {
+    const icons = {
+      team_created: '👥',
+      team_joined: '🤝',
+      match_played: '⚽',
+      video_uploaded: '📹',
+      tournament_created: '🏆',
+      tournament_joined: '🎯',
+      field_added: '🏟️',
+      friend_added: '👋',
+      achievement_unlocked: '🎖️',
+      rank_up: '⬆️',
+      goal_scored: '⚽',
+      match_won: '🏆'
+    };
+    return icons[type] || '📌';
+  };
+
+  const getActivityText = (activity) => {
+    const username = activity.user.username;
+    
+    switch (activity.type) {
+      case 'team_created':
+        return (
+          <>
+            <strong>{username}</strong> je kreirao tim{' '}
+            <span className="highlight">{activity.data.teamName}</span>
+          </>
+        );
+      case 'team_joined':
+        return (
+          <>
+            <strong>{username}</strong> se pridružio timu{' '}
+            <span className="highlight">{activity.data.teamName}</span>
+          </>
+        );
+      case 'match_played':
+        return (
+          <>
+            <strong>{username}</strong> je odigrao utakmicu protiv{' '}
+            <span className="highlight">{activity.data.opponent}</span>
+          </>
+        );
+      case 'match_won':
+        return (
+          <>
+            <strong>{username}</strong> je pobijedio{' '}
+            <span className="highlight">{activity.data.opponent}</span> rezultatom{' '}
+            <span className="highlight">{activity.data.score}</span>
+          </>
+        );
+      case 'video_uploaded':
+        return (
+          <>
+            <strong>{username}</strong> je uploadao video{' '}
+            <span className="highlight">{activity.data.videoTitle}</span>
+          </>
+        );
+      case 'tournament_created':
+        return (
+          <>
+            <strong>{username}</strong> je kreirao turnir{' '}
+            <span className="highlight">{activity.data.tournamentName}</span>
+          </>
+        );
+      case 'tournament_joined':
+        return (
+          <>
+            <strong>{username}</strong> se prijavio na turnir{' '}
+            <span className="highlight">{activity.data.tournamentName}</span> s timom{' '}
+            <span className="highlight">{activity.data.teamName}</span>
+          </>
+        );
+      case 'field_added':
+        return (
+          <>
+            <strong>{username}</strong> je dodao teren{' '}
+            <span className="highlight">{activity.data.fieldName}</span>
+          </>
+        );
+      case 'friend_added':
+        return (
+          <>
+            <strong>{username}</strong> i{' '}
+            <strong>{activity.data.friendName}</strong> su sada prijatelji
+          </>
+        );
+      case 'achievement_unlocked':
+        return (
+          <>
+            <strong>{username}</strong> je otkljućao achievement{' '}
+            <span className="highlight">{activity.data.achievementName}</span>
+          </>
+        );
+      case 'rank_up':
+        return (
+          <>
+            <strong>{username}</strong> je napredovao iz{' '}
+            <span className="highlight">{activity.data.oldRank}</span> u{' '}
+            <span className="highlight">{activity.data.newRank}</span> rank
+          </>
+        );
+      case 'goal_scored':
+        return (
+          <>
+            <strong>{username}</strong> je postigao gol
+          </>
+        );
+      default:
+        return (
+          <>
+            <strong>{username}</strong> je napravio nešto
+          </>
+        );
     }
   };
 
@@ -66,117 +192,121 @@ function ActivityFeed() {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Upravo sad';
+    if (diffMins < 1) return 'Upravo sada';
     if (diffMins < 60) return `Prije ${diffMins} min`;
     if (diffHours < 24) return `Prije ${diffHours}h`;
-    if (diffDays === 1) return 'Jučer';
-    return `Prije ${diffDays} dana`;
+    if (diffDays < 7) return `Prije ${diffDays} dana`;
+    return date.toLocaleDateString('hr-HR');
   };
 
-  const formatDate = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString('hr-HR', { 
-      day: 'numeric', 
-      month: 'long', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const groupByDate = (activities) => {
-    const groups = {};
-    activities.forEach(activity => {
-      const date = new Date(activity.timestamp).toDateString();
-      if (!groups[date]) {
-        groups[date] = [];
-      }
-      groups[date].push(activity);
-    });
-    return groups;
-  };
-
-  const groupedActivities = groupByDate(activities);
+  if (loading && activities.length === 0) {
+    return (
+      <div className="activity-feed-page">
+        <Navbar />
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Učitavanje aktivnosti...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="activity-feed-page">
       <Navbar />
       
-      <div className="activity-container">
-        <div className="activity-header">
-          <h1>📰 Aktivnosti</h1>
+      <div className="activity-feed-container">
+        <div className="activity-feed-header">
+          <h1>📰 Activity Feed</h1>
           <p>Vidi što se događa u TeamConnect zajednici</p>
         </div>
 
-        <div className="activity-content">
-          {activities.length === 0 ? (
-            <div className="empty-feed card">
-              <span className="empty-icon">📭</span>
-              <h2>Nema aktivnosti</h2>
-              <p>Kada se nešto dogodi, vidjet ćeš to ovdje!</p>
-              <button className="btn btn-primary" onClick={() => navigate('/dashboard')}>
-                Istraži timove
-              </button>
-            </div>
-          ) : (
-            <div className="timeline">
-              {Object.entries(groupedActivities).map(([date, dayActivities]) => (
-                <div key={date} className="timeline-section">
-                  <div className="timeline-date">
-                    {new Date(date).toLocaleDateString('hr-HR', { 
-                      weekday: 'long', 
-                      day: 'numeric', 
-                      month: 'long' 
-                    })}
+        <div className="activity-filters card">
+          <button 
+            className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
+            onClick={() => handleFilterChange('all')}
+          >
+            Sve aktivnosti
+          </button>
+          <button 
+            className={`filter-btn ${filter === 'team_created' ? 'active' : ''}`}
+            onClick={() => handleFilterChange('team_created')}
+          >
+            👥 Timovi
+          </button>
+          <button 
+            className={`filter-btn ${filter === 'match_won' ? 'active' : ''}`}
+            onClick={() => handleFilterChange('match_won')}
+          >
+            ⚽ Utakmice
+          </button>
+          <button 
+            className={`filter-btn ${filter === 'video_uploaded' ? 'active' : ''}`}
+            onClick={() => handleFilterChange('video_uploaded')}
+          >
+            📹 Videi
+          </button>
+          <button 
+            className={`filter-btn ${filter === 'tournament_created' ? 'active' : ''}`}
+            onClick={() => handleFilterChange('tournament_created')}
+          >
+            🏆 Turniri
+          </button>
+          <button 
+            className={`filter-btn ${filter === 'rank_up' ? 'active' : ''}`}
+            onClick={() => handleFilterChange('rank_up')}
+          >
+            ⬆️ Rank Up
+          </button>
+        </div>
+
+        {activities.length === 0 ? (
+          <div className="no-activities card">
+            <span className="empty-icon">📰</span>
+            <h3>Nema aktivnosti</h3>
+            <p>Kada ti ili tvoji prijatelji nešto napravite, vidjet ćeš to ovdje!</p>
+          </div>
+        ) : (
+          <>
+            <div className="activities-list">
+              {activities.map(activity => (
+                <div key={activity._id} className="activity-item card">
+                  <div className="activity-icon">
+                    {getActivityIcon(activity.type)}
                   </div>
                   
-                  {dayActivities.map(activity => (
-                    <div key={activity.id} className="activity-item">
-                      <div 
-                        className="activity-icon" 
-                        style={{ background: getActivityColor(activity.type) }}
-                      >
-                        {activity.icon}
-                      </div>
-                      
-                      <div className="activity-content-box card">
-                        <div className="activity-main">
-                          <span className="activity-user">{activity.user}</span>
-                          <span className="activity-action">{activity.action}</span>
-                          {activity.target && (
-                            <span className="activity-target">"{activity.target}"</span>
-                          )}
-                        </div>
-                        <div className="activity-time">
-                          {formatTime(activity.timestamp)}
-                        </div>
-                      </div>
+                  <div className="activity-content">
+                    <div className="activity-avatar">
+                      {activity.user.avatar}
                     </div>
-                  ))}
+                    
+                    <div className="activity-text">
+                      <p>{getActivityText(activity)}</p>
+                      <span className="activity-time">
+                        {formatTime(activity.createdAt)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
-          )}
-        </div>
 
-        <div className="activity-stats card">
-          <h3>📊 Statistika</h3>
-          <div className="stats-grid">
-            <div className="stat-item">
-              <div className="stat-value">{activities.filter(a => a.type === 'team_create').length}</div>
-              <div className="stat-label">Kreirano timova</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-value">{activities.filter(a => a.type === 'team_join').length}</div>
-              <div className="stat-label">Pridruživanja</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-value">{activities.filter(a => a.type === 'user_join').length}</div>
-              <div className="stat-label">Novih korisnika</div>
-            </div>
-          </div>
-        </div>
+            {hasMore && (
+              <div className="load-more-container">
+                <button 
+                  className="btn btn-secondary"
+                  onClick={loadMore}
+                  disabled={loading}
+                >
+                  {loading ? 'Učitavanje...' : 'Učitaj više'}
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </div>
+
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
 }

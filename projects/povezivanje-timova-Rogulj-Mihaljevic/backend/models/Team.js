@@ -18,6 +18,25 @@ const teamSchema = new mongoose.Schema({
     email: { type: String },
     addedAt: { type: Date, default: Date.now }
   }],
+  // Chat messages
+messages: [{
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  text: { type: String, required: true },
+  type: { 
+    type: String, 
+    enum: ['text', 'image', 'location', 'system'],
+    default: 'text'
+  },
+  // Za location tip
+  location: {
+    latitude: { type: Number },
+    longitude: { type: Number },
+    address: { type: String }
+  },
+  // Za image tip
+  imageUrl: { type: String },
+  createdAt: { type: Date, default: Date.now }
+}],
   createdAt: { type: Date, default: Date.now }
 });
 

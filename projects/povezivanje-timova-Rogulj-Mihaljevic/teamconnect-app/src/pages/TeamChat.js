@@ -1,146 +1,263 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Toast from '../components/Toast';
+import { getSocket } from '../utils/socket';
 import './TeamChat.css';
 
 function TeamChat() {
   const { teamId } = useParams();
   const navigate = useNavigate();
-  const [team, setTeam] = useState(null);
+
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [team, setTeam] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingUsers, setTypingUsers] = useState([]);
+
+  const messagesEndRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const socketRef = useRef(null);
+
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
-    loadTeamAndMessages();
-  }, [teamId]);
+    socketRef.current = getSocket();
+    loadTeam();
+    loadMessages();
 
-  const loadTeamAndMessages = () => {
-    // Učitaj tim podatke (simulacija - u pravoj app bi ovo bilo iz API-ja)
-    const mockTeam = {
-      id: teamId,
-      name: 'Odbojaška Ekipa',
-      sport: '🏐 Odbojka',
-      members: [
-        { id: 1, username: currentUser.username, avatar: currentUser.avatar || '👤' },
-        { id: 2, username: 'danana', avatar: '👨' },
-        { id: 3, username: 'marko123', avatar: '🧑' }
-      ]
+    socketRef.current.emit('join_team', teamId);
+
+    socketRef.current.on('new_message', (message) => {
+      setMessages(prev => [...prev, message]);
+      scrollToBottom();
+    });
+
+    socketRef.current.on('user_typing', ({ userId, username }) => {
+      if (userId !== currentUser._id && userId !== currentUser.id) {
+        setTypingUsers(prev => {
+          if (!prev.find(u => u.userId === userId)) {
+            return [...prev, { userId, username }];
+          }
+          return prev;
+        });
+      }
+    });
+
+    socketRef.current.on('user_stop_typing', ({ userId }) => {
+      setTypingUsers(prev => prev.filter(u => u.userId !== userId));
+    });
+
+    socketRef.current.on('message_deleted', ({ messageId }) => {
+      setMessages(prev => prev.filter(m => m._id !== messageId));
+    });
+
+    return () => {
+      socketRef.current.emit('leave_team', teamId);
+      socketRef.current.off('new_message');
+      socketRef.current.off('user_typing');
+      socketRef.current.off('user_stop_typing');
+      socketRef.current.off('message_deleted');
     };
-    setTeam(mockTeam);
+  }, [teamId, currentUser._id, currentUser.id]);
 
-    // Učitaj poruke
-    const savedMessages = localStorage.getItem(`chat_${teamId}`);
-    if (savedMessages) {
-      setMessages(JSON.parse(savedMessages));
-    } else {
-      // Demo poruke
-      const demo = [
-        {
-          id: 1,
-          userId: 2,
-          username: 'danana',
-          avatar: '👨',
-          message: 'Hej ekipa! Spremni za večeras?',
-          timestamp: new Date(Date.now() - 7200000).toISOString(),
-          type: 'text'
-        },
-        {
-          id: 2,
-          userId: 3,
-          username: 'marko123',
-          avatar: '🧑',
-          message: 'Da! U 18h na Poljudu?',
-          timestamp: new Date(Date.now() - 5400000).toISOString(),
-          type: 'text'
-        }
-      ];
-      setMessages(demo);
-      localStorage.setItem(`chat_${teamId}`, JSON.stringify(demo));
+  const loadTeam = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/teams/${teamId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setTeam(data);
+      } else {
+        setToast({ message: 'Tim ne postoji', type: 'error' });
+        setTimeout(() => navigate('/my-teams'), 2000);
+      }
+    } catch (error) {
+      console.error('Load team error:', error);
     }
   };
 
-  const saveMessages = (msgs) => {
-    localStorage.setItem(`chat_${teamId}`, JSON.stringify(msgs));
-    setMessages(msgs);
+  const loadMessages = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/chat/${teamId}/messages`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data);
+        setTimeout(scrollToBottom, 100);
+      }
+    } catch (error) {
+      console.error('Load messages error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
-    const newMsg = {
-      id: Date.now(),
-      userId: currentUser.id,
-      username: currentUser.username,
-      avatar: currentUser.avatar || '👤',
-      message: newMessage,
-      timestamp: new Date().toISOString(),
+    socketRef.current.emit('send_message', {
+      teamId,
+      userId: currentUser._id || currentUser.id,
+      text: newMessage.trim(),
       type: 'text'
-    };
+    });
 
-    const updated = [...messages, newMsg];
-    saveMessages(updated);
     setNewMessage('');
-
-    // Scroll to bottom
-    setTimeout(() => {
-      const chatMessages = document.querySelector('.chat-messages');
-      if (chatMessages) {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      }
-    }, 100);
-  };
-
-  const handleSendLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const newMsg = {
-          id: Date.now(),
-          userId: currentUser.id,
-          username: currentUser.username,
-          avatar: currentUser.avatar || '👤',
-          message: `Lokacija: ${position.coords.latitude}, ${position.coords.longitude}`,
-          timestamp: new Date().toISOString(),
-          type: 'location',
-          location: {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          }
-        };
-
-        const updated = [...messages, newMsg];
-        saveMessages(updated);
-      }, (error) => {
-        setToast({ message: 'Ne mogu pristupiti lokaciji!', type: 'error' });
-      });
-    } else {
-      setToast({ message: 'Geolokacija nije podržana!', type: 'error' });
-    }
-  };
-
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-
-    if (diffMins < 1) return 'Upravo sad';
-    if (diffMins < 60) return `Prije ${diffMins} min`;
-    
-    return date.toLocaleTimeString('hr-HR', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    socketRef.current.emit('stop_typing', {
+      teamId,
+      userId: currentUser._id || currentUser.id
     });
   };
 
-  if (!team) {
+  const handleTyping = () => {
+    if (!isTyping) {
+      setIsTyping(true);
+      socketRef.current.emit('typing', {
+        teamId,
+        userId: currentUser._id || currentUser.id,
+        username: currentUser.username
+      });
+    }
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      socketRef.current.emit('stop_typing', {
+        teamId,
+        userId: currentUser._id || currentUser.id
+      });
+    }, 2000);
+  };
+
+  const handleShareLocation = () => {
+    if (!navigator.geolocation) {
+      setToast({ message: 'Geolokacija nije podržana', type: 'error' });
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        socketRef.current.emit('send_message', {
+          teamId,
+          userId: currentUser._id || currentUser.id,
+          type: 'location',
+          text: '📍 Lokacija',
+          location: { latitude, longitude }
+        });
+        setToast({ message: 'Lokacija poslana!', type: 'success' });
+      },
+      () => setToast({ message: 'Nije moguće dohvatiti lokaciju', type: 'error' })
+    );
+  };
+
+  const handleDeleteMessage = async (messageId) => {
+    if (!window.confirm('Obriši poruku?')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`http://localhost:5000/api/chat/${teamId}/messages/${messageId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const formatTime = (timestamp) =>
+    new Date(timestamp).toLocaleTimeString('hr-HR', { hour: '2-digit', minute: '2-digit' });
+
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) return 'Danas';
+    if (date.toDateString() === yesterday.toDateString()) return 'Jučer';
+    return date.toLocaleDateString('hr-HR');
+  };
+
+  const renderMessage = (message, index) => {
+    const isOwnMessage =
+      message.user._id === currentUser._id || message.user._id === currentUser.id;
+
+    const showDateSeparator =
+      index === 0 ||
+      formatDate(messages[index - 1].createdAt) !== formatDate(message.createdAt);
+
+    return (
+      <React.Fragment key={message._id}>
+        {showDateSeparator && (
+          <div className="date-separator">
+            <span>{formatDate(message.createdAt)}</span>
+          </div>
+        )}
+
+        <div className={`message-wrapper ${isOwnMessage ? 'own' : 'other'}`}>
+          {!isOwnMessage && (
+            <div className="message-avatar">{message.user.avatar}</div>
+          )}
+
+          <div className={`message-bubble ${isOwnMessage ? 'own' : 'other'}`}>
+            {!isOwnMessage && (
+              <div className="message-sender">{message.user.username}</div>
+            )}
+
+            {message.type === 'location' ? (
+              <div className="message-location">
+                <span className="location-icon">📍</span>
+                <a
+                  href={`https://www.google.com/maps?q=${message.location.latitude},${message.location.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Vidi lokaciju na mapi
+                </a>
+              </div>
+            ) : (
+              <div className="message-text">{message.text}</div>
+            )}
+
+            <div className="message-time">{formatTime(message.createdAt)}</div>
+
+            {isOwnMessage && (
+              <button
+                className="message-delete-btn"
+                onClick={() => handleDeleteMessage(message._id)}
+              >
+                🗑️
+              </button>
+            )}
+          </div>
+        </div>
+      </React.Fragment>
+    );
+  };
+
+  if (loading) {
     return (
       <div className="team-chat-page">
         <Navbar />
-        <div className="loading">Učitavanje...</div>
+        <div className="loading-container">
+          <div className="loading-spinner" />
+          <p>Učitavanje chata...</p>
+        </div>
       </div>
     );
   }
@@ -148,108 +265,86 @@ function TeamChat() {
   return (
     <div className="team-chat-page">
       <Navbar />
-      
+
       <div className="chat-container">
         <div className="chat-header card">
-          <div className="chat-header-left">
-            <button className="back-btn" onClick={() => navigate('/my-teams')}>
-              ← Natrag
-            </button>
-            <div>
-              <h2>{team.name}</h2>
-              <p>{team.sport} • {team.members.length} članova</p>
-            </div>
-          </div>
-          <div className="chat-members">
-            {team.members.map(member => (
-              <div key={member.id} className="member-avatar" title={member.username}>
-                {member.avatar}
-              </div>
-            ))}
+          <button className="back-button" onClick={() => navigate('/my-teams')}>
+            ← Natrag
+          </button>
+
+          <div className="chat-header-info">
+            <h2>💬 {team?.name}</h2>
+            <p>{team?.currentPlayers}/{team?.maxPlayers} igrača</p>
           </div>
         </div>
 
-        <div className="chat-content card">
+        <div className="chat-messages-container card">
           <div className="chat-messages">
             {messages.length === 0 ? (
               <div className="no-messages">
                 <span className="empty-icon">💬</span>
-                <p>Još nema poruka</p>
-                <small>Budi prvi koji će nešto poslati!</small>
+                <p>Nema poruka</p>
+                <p>Budi prvi koji će nešto napisati!</p>
               </div>
             ) : (
-              messages.map((msg, index) => {
-                const isOwn = msg.userId === currentUser.id;
-                const showAvatar = index === 0 || messages[index - 1].userId !== msg.userId;
-
-                return (
-                  <div 
-                    key={msg.id} 
-                    className={`message ${isOwn ? 'own-message' : 'other-message'}`}
-                  >
-                    {!isOwn && showAvatar && (
-                      <div className="message-avatar">{msg.avatar}</div>
-                    )}
-                    
-                    <div className="message-content">
-                      {!isOwn && showAvatar && (
-                        <div className="message-username">{msg.username}</div>
-                      )}
-                      
-                      {msg.type === 'text' && (
-                        <div className="message-bubble">
-                          {msg.message}
-                        </div>
-                      )}
-
-                      {msg.type === 'location' && (
-                        <div className="message-bubble location-message">
-                          📍 Lokacija
-                          <a 
-                            href={`https://www.google.com/maps?q=${msg.location.lat},${msg.location.lng}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Otvori u Google Maps
-                          </a>
-                        </div>
-                      )}
-
-                      <div className="message-timestamp">
-                        {formatTimestamp(msg.timestamp)}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
+              messages.map(renderMessage)
             )}
+
+            {typingUsers.length > 0 && (
+              <div className="typing-indicator">
+                <div className="typing-dots">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+                <span className="typing-text">
+                  {typingUsers[0].username} piše...
+                </span>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
           </div>
 
-          <form className="chat-input" onSubmit={handleSendMessage}>
-            <button 
-              type="button" 
-              className="btn-icon"
-              onClick={handleSendLocation}
-              title="Pošalji lokaciju"
+          <form className="chat-input-container" onSubmit={handleSendMessage}>
+            <button
+              type="button"
+              className="btn-location"
+              onClick={handleShareLocation}
+              title="Podijeli lokaciju"
             >
               📍
             </button>
-            
+
             <input
               type="text"
+              className="chat-input"
               value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
+              onChange={(e) => {
+                setNewMessage(e.target.value);
+                handleTyping();
+              }}
               placeholder="Napiši poruku..."
             />
-            
-            <button type="submit" className="btn-send">
-              ➤
+
+            <button
+              type="submit"
+              className="btn-send"
+              disabled={!newMessage.trim()}
+            >
+              Pošalji
             </button>
           </form>
         </div>
       </div>
 
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

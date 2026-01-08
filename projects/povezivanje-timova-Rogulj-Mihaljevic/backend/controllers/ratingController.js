@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const PlayerStats = require('../models/PlayerStats');
 const { calculateUserRating } = require('../utils/ratingCalculator');
+const { createActivityHelper } = require('./activityController');
+const { createNotificationHelper } = require('./notificationController'); // ✅ DODANO
 
 // Dohvati leaderboard
 exports.getLeaderboard = async (req, res) => {
@@ -15,7 +17,6 @@ exports.getLeaderboard = async (req, res) => {
       .sort({ 'rating.overall': -1 })
       .limit(parseInt(limit));
 
-    // Dodaj poziciju na leaderboardu
     const leaderboard = users.map((user, index) => ({
       ...user.toObject(),
       position: index + 1
@@ -40,7 +41,6 @@ exports.getUserRating = async (req, res) => {
       return res.status(404).json({ message: 'Korisnik ne postoji' });
     }
 
-    // Dohvati poziciju na leaderboardu
     const betterPlayers = await User.countDocuments({
       'rating.overall': { $gt: user.rating.overall }
     });
@@ -55,19 +55,20 @@ exports.getUserRating = async (req, res) => {
   }
 };
 
-// Ručno preračunaj rating (admin funkcija ili za sve korisnike)
+// Ručno preračunaj rating
 exports.recalculateRating = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Dohvati sve stats
+    const user = await User.findById(userId);
+    const oldRank = user.rank;
+
     const allStats = await PlayerStats.find({ user: userId });
     
     if (allStats.length === 0) {
       return res.status(400).json({ message: 'Nemaš statistike za izračun ratinga!' });
     }
 
-    // Agregiraj stats
     const totalStats = {
       totalMatches: 0,
       totalWins: 0,
@@ -88,13 +89,11 @@ exports.recalculateRating = async (req, res) => {
       totalStats.totalRedCards += stat.redCards || 0;
     });
 
-    // Izračunaj rating
     const newRating = calculateUserRating(totalStats);
+    const newRank = newRating.rank;
 
-    // Ažuriraj user
-    const user = await User.findById(userId);
     user.rating = newRating;
-    user.rank = newRating.rank;
+    user.rank = newRank;
     user.stats = {
       totalMatches: totalStats.totalMatches,
       totalWins: totalStats.totalWins,
@@ -103,9 +102,44 @@ exports.recalculateRating = async (req, res) => {
     
     await user.save();
 
+    // ✅ Provjeri je li rank up
+    if (oldRank !== newRank) {
+      // Kreiraj aktivnost
+      try {
+        await createActivityHelper(
+          userId,
+          'rank_up',
+          {
+            oldRank: oldRank,
+            newRank: newRank
+          },
+          'public'
+        );
+      } catch (activityErr) {
+        console.error('Greška pri kreiranju aktivnosti za rank up:', activityErr);
+      }
+
+      // ✅ NOVO - Notifikacija za rank up
+      try {
+        await createNotificationHelper(
+          userId,
+          'rank_up',
+          '⬆️ Rank Up!',
+          `Čestitamo! Napredovao si u ${newRank.toUpperCase()} rank!`,
+          '/ratings',
+          { oldRank, newRank }
+        );
+      } catch (notifErr) {
+        console.error('Greška pri kreiranju notifikacije za rank up:', notifErr);
+      }
+    }
+
     res.json({ 
       message: 'Rating preračunat!', 
-      rating: newRating 
+      rating: newRating,
+      rankChanged: oldRank !== newRank,
+      oldRank,
+      newRank
     });
   } catch (error) {
     console.error('Recalculate rating error:', error);
@@ -113,7 +147,7 @@ exports.recalculateRating = async (req, res) => {
   }
 };
 
-// Dohvati achievements (baziran na rating i stats)
+// Dohvati achievements
 exports.getAchievements = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -121,7 +155,6 @@ exports.getAchievements = async (req, res) => {
     const user = await User.findById(userId);
     const allStats = await PlayerStats.find({ user: userId });
 
-    // Izračunaj total stats
     const totalStats = {
       totalMatches: 0,
       totalWins: 0,
@@ -134,7 +167,6 @@ exports.getAchievements = async (req, res) => {
       totalStats.totalGoals += stat.goalsScored || 0;
     });
 
-    // Definiraj achievements
     const achievements = [
       {
         id: 'first_match',

@@ -10,9 +10,11 @@ const {
   deleteVideo
 } = require('../controllers/videoController');
 const auth = require('../middleware/auth');
-const upload = require('../middleware/upload');
+const { uploadVideo: videoUpload } = require('../middleware/upload'); // ← PROMJENA
+const { uploadLimiter } = require('../middleware/ratelimiter');
 
-router.post('/upload', auth, upload.single('video'), uploadVideo);
+router.post('/upload', auth, uploadLimiter, uploadVideo.single('video'), uploadVideoController); // NOVO
+router.post('/upload', auth, videoUpload.single('video'), uploadVideo);
 router.get('/', getVideos);
 router.get('/:videoId', getVideo);
 router.get('/:videoId/stream', streamVideo);
