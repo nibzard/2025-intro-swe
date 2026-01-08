@@ -2,16 +2,23 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Kreiraj direktorij ako ne postoji
-const uploadDir = './uploads/videos';
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+// Kreiraj direktorije ako ne postoje
+const uploadDirs = {
+  videos: './uploads/videos',
+  images: './uploads/images',
+  fields: './uploads/fields'
+};
 
-// Configure storage
-const storage = multer.diskStorage({
+Object.values(uploadDirs).forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
+
+// Configure storage za videe
+const videoStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, uploadDir);
+    cb(null, uploadDirs.videos);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -19,8 +26,30 @@ const storage = multer.diskStorage({
   }
 });
 
-// File filter
-const fileFilter = (req, file, cb) => {
+// Configure storage za slike
+const imageStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDirs.images);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'image-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+// Configure storage za field slike
+const fieldImageStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDirs.fields);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'field-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+// File filters
+const videoFilter = (req, file, cb) => {
   const allowedTypes = /mp4|mov|avi|mkv|webm/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = allowedTypes.test(file.mimetype);
@@ -32,13 +61,45 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Upload middleware
-const upload = multer({
-  storage: storage,
+const imageFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png|gif|webp/;
+  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = allowedTypes.test(file.mimetype);
+
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Samo image formati su dozvoljeni (jpeg, jpg, png, gif, webp)!'));
+  }
+};
+
+// Upload middlewares
+const uploadVideo = multer({
+  storage: videoStorage,
   limits: {
     fileSize: 100 * 1024 * 1024 // 100MB max
   },
-  fileFilter: fileFilter
+  fileFilter: videoFilter
 });
 
-module.exports = upload;
+const uploadImage = multer({
+  storage: imageStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB max
+  },
+  fileFilter: imageFilter
+});
+
+const uploadFieldImages = multer({
+  storage: fieldImageStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB max per image
+  },
+  fileFilter: imageFilter
+});
+
+module.exports = {
+  uploadVideo,
+  uploadImage,
+  uploadFieldImages
+};

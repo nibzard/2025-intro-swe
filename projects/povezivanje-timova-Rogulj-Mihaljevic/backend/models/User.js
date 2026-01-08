@@ -62,6 +62,22 @@ const userSchema = new mongoose.Schema({
     totalWins: { type: Number, default: 0 },
     totalGoals: { type: Number, default: 0 }
   },
+  // Rating system
+rating: {
+  overall: { type: Number, default: 1000, min: 0, max: 3000 },
+  attack: { type: Number, default: 50, min: 0, max: 100 },
+  defense: { type: Number, default: 50, min: 0, max: 100 },
+  teamwork: { type: Number, default: 50, min: 0, max: 100 },
+  consistency: { type: Number, default: 50, min: 0, max: 100 },
+  lastUpdated: { type: Date, default: Date.now }
+},
+
+// Ranking
+rank: { 
+  type: String,
+  enum: ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'master'],
+  default: 'bronze'
+},
   
   createdAt: { type: Date, default: Date.now },
   lastActive: { type: Date, default: Date.now }

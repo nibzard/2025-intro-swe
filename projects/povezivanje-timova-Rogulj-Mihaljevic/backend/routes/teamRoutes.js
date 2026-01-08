@@ -1,29 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const teamController = require('../controllers/teamController');
+const { 
+  createTeam, 
+  getTeams, 
+  getTeam, 
+  joinTeam, 
+  leaveTeam,
+  deleteTeam,
+  getMyTeams  // NOVO
+} = require('../controllers/teamController');
 const auth = require('../middleware/auth');
 
-// Sve rute zahtijevaju autentifikaciju (auth middleware)
-
-// POST /api/teams - kreiraj tim
-router.post('/', auth, teamController.createTeam);
-
-// GET /api/teams - dohvati sve timove (s filterima)
-router.get('/', auth, teamController.getTeams);
-
-// GET /api/teams/my - dohvati moje timove
-router.get('/my', auth, teamController.getMyTeams);
-
-// GET /api/teams/:id - dohvati jedan tim
-router.get('/:id', auth, teamController.getTeam);
-
-// POST /api/teams/:id/join - pridruži se timu
-router.post('/:id/join', auth, teamController.joinTeam);
-
-// POST /api/teams/:id/leave - napusti tim
-router.post('/:id/leave', auth, teamController.leaveTeam);
-
-// DELETE /api/teams/:id - obriši tim
-router.delete('/:id', auth, teamController.deleteTeam);
+router.post('/', auth, createTeam);
+router.get('/', getTeams);
+router.get('/my-teams', auth, getMyTeams); // NOVO - mora biti prije /:id
+router.get('/:id', getTeam);
+router.post('/:teamId/join', auth, joinTeam);
+router.post('/:teamId/leave', auth, leaveTeam);
+router.delete('/:teamId', auth, deleteTeam);
 
 module.exports = router;

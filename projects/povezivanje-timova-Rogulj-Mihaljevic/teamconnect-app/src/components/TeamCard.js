@@ -1,12 +1,15 @@
 import React from 'react';
+import { getUserId, isCreator, isMember } from '../utils/userHelper';
 import './TeamCard.css';
 
 function TeamCard({ team, onJoin, onLeave, onDelete, onJoinWaitlist, showActions = true }) {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const isCreator = team.creator === user._id || team.creator === user.id;
-  const isJoined = team.players?.some(p => p._id === user._id || p._id === user.id || p === user._id || p === user.id);
+  const userId = getUserId(user);
+  
+  const isTeamCreator = isCreator(team, userId);
+  const isJoined = isMember(team, userId);
   const isFull = team.currentPlayers >= team.maxPlayers;
-  const isOnWaitlist = team.waitlist?.some(w => w.user === user._id || w.user === user.id);
+  const isOnWaitlist = team.waitlist?.some(w => w.user === userId);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -69,7 +72,7 @@ function TeamCard({ team, onJoin, onLeave, onDelete, onJoinWaitlist, showActions
 
       {showActions && (
         <div className="team-actions">
-          {isCreator ? (
+          {isTeamCreator ? (
             <>
               <button className="btn btn-secondary" disabled>
                 Kreator

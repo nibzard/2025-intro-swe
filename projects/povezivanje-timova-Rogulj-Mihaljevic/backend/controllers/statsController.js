@@ -1,5 +1,5 @@
 const PlayerStats = require('../models/PlayerStats');
-
+const { calculateUserRating } = require('../utils/ratingCalculator');
 // Dohvati statistiku
 exports.getStats = async (req, res) => {
   try {
@@ -48,6 +48,7 @@ exports.upsertStats = async (req, res) => {
 };
 
 // Dodaj utakmicu
+// Dodaj utakmicu
 exports.addMatch = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -87,13 +88,56 @@ exports.addMatch = async (req, res) => {
 
     await playerStats.save();
 
-    res.json({ message: 'Utakmica dodana!', stats: playerStats });
+    // NOVO - Ažuriraj rating u User modelu
+    const User = require('../models/User');
+    const user = await User.findById(userId);
+    
+    // Agregiraj stats iz svih sportova
+    const allStats = await PlayerStats.find({ user: userId });
+    const totalStats = {
+      totalMatches: 0,
+      totalWins: 0,
+      totalGoals: 0,
+      totalAssists: 0,
+      totalCleanSheets: 0,
+      totalYellowCards: 0,
+      totalRedCards: 0
+    };
+
+    allStats.forEach(stat => {
+      totalStats.totalMatches += stat.totalMatches || 0;
+      totalStats.totalWins += stat.wins || 0;
+      totalStats.totalGoals += stat.goalsScored || 0;
+      totalStats.totalAssists += stat.assists || 0;
+      totalStats.totalCleanSheets += stat.cleanSheets || 0;
+      totalStats.totalYellowCards += stat.yellowCards || 0;
+      totalStats.totalRedCards += stat.redCards || 0;
+    });
+
+    // Izračunaj rating
+    const newRating = calculateUserRating(totalStats);
+    
+    // Ažuriraj user rating
+    user.rating = newRating;
+    user.rank = newRating.rank;
+    user.stats = {
+      totalMatches: totalStats.totalMatches,
+      totalWins: totalStats.totalWins,
+      totalGoals: totalStats.totalGoals
+    };
+    
+    await user.save();
+
+    res.json({ 
+      message: 'Utakmica dodana!', 
+      stats: playerStats,
+      rating: newRating 
+    });
   } catch (error) {
     console.error('Add match error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
-
 // Obriši utakmicu
 exports.deleteMatch = async (req, res) => {
   try {

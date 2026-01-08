@@ -38,39 +38,25 @@ function Tournaments() {
     loadTournaments();
   }, []);
 
-  const loadTournaments = () => {
-    const saved = localStorage.getItem('tournaments');
-    if (saved) {
-      setTournaments(JSON.parse(saved));
+  const loadTournaments = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch('http://localhost:5000/api/tournaments', {
+      headers: token ? {
+        'Authorization': `Bearer ${token}`
+      } : {}
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      setTournaments(data);
     } else {
-      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-      const demo = [
-        {
-          id: 1,
-          name: 'Ljetni Nogometni Turnir 2026',
-          sport: '⚽ Nogomet',
-          city: 'Split',
-          country: 'Hrvatska',
-          location: 'Stadion Poljud',
-          startDate: '2026-02-01',
-          endDate: '2026-02-15',
-          maxTeams: 16,
-          teamSize: 11,
-          registeredTeams: 8,
-          format: 'knockout',
-          status: 'upcoming',
-          entryFee: 66.40, // 500 HRK = 66.40 EUR
-          prize: '1,327 €', // 10,000 HRK
-          teams: [],
-          matches: [],
-          creator: currentUser.username,
-          createdAt: new Date().toISOString()
-        }
-      ];
-      setTournaments(demo);
-      localStorage.setItem('tournaments', JSON.stringify(demo));
+      console.error('Failed to load tournaments');
     }
-  };
+  } catch (error) {
+    console.error('Load tournaments error:', error);
+  }
+};
 
   const saveTournaments = (data) => {
     localStorage.setItem('tournaments', JSON.stringify(data));
@@ -81,43 +67,53 @@ function Tournaments() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleCreateTournament = () => {
-    if (!formData.name || !formData.sport || !formData.city || !formData.startDate) {
-      setToast({ message: 'Popuni sva obavezna polja!', type: 'error' });
-      return;
-    }
+ const handleCreateTournament = async () => {
+  if (!formData.name || !formData.sport || !formData.city || !formData.startDate) {
+    setToast({ message: 'Popuni sva obavezna polja!', type: 'error' });
+    return;
+  }
 
-    const newTournament = {
-      id: Date.now(),
-      ...formData,
-      registeredTeams: 0,
-      status: new Date(formData.startDate) > new Date() ? 'upcoming' : 'active',
-      teams: [],
-      matches: [],
-      creator: JSON.parse(localStorage.getItem('user') || '{}').username,
-      createdAt: new Date().toISOString()
-    };
-
-    const updated = [...tournaments, newTournament];
-    saveTournaments(updated);
-    setShowCreateModal(false);
-    setFormData({
-      name: '',
-      sport: '',
-      location: '',
-      city: '',
-      country: 'Hrvatska',
-      startDate: '',
-      endDate: '',
-      maxTeams: 8,
-      teamSize: 5,
-      format: 'knockout',
-      entryFee: 0,
-      prize: '',
-      description: ''
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch('http://localhost:5000/api/tournaments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(formData)
     });
-    setToast({ message: 'Turnir uspješno kreiran! 🏆', type: 'success' });
-  };
+
+    const data = await response.json();
+
+    if (response.ok) {
+      setShowCreateModal(false);
+      setFormData({
+        name: '',
+        sport: '',
+        location: '',
+        city: '',
+        country: 'Hrvatska',
+        startDate: '',
+        endDate: '',
+        maxTeams: 8,
+        customMaxTeams: '',
+        teamSize: 5,
+        format: 'knockout',
+        entryFee: 0,
+        prize: '',
+        description: ''
+      });
+      setToast({ message: 'Turnir uspješno kreiran! 🏆', type: 'success' });
+      loadTournaments(); // Refresh
+    } else {
+      setToast({ message: data.message, type: 'error' });
+    }
+  } catch (error) {
+    console.error('Create tournament error:', error);
+    setToast({ message: 'Greška pri kreiranju turnira', type: 'error' });
+  }
+};
 
   const handleRegisterTeam = (tournamentId) => {
     navigate(`/tournament/${tournamentId}/register`);

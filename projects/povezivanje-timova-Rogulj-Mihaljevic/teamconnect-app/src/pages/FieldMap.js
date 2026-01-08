@@ -2,14 +2,23 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Toast from '../components/Toast';
 import './FieldMap.css';
-import { addCustomCity } from '../data/cities';
 
 function FieldMap() {
+  // ============ STATE ============
   const [fields, setFields] = useState([]);
   const [selectedField, setSelectedField] = useState(null);
   const [filter, setFilter] = useState({ sport: '', city: '' });
   const [toast, setToast] = useState(null);
   const [showAddFieldModal, setShowAddFieldModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
+  // Upload state
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [selectedImageFiles, setSelectedImageFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  // Form state
   const [fieldForm, setFieldForm] = useState({
     name: '',
     sport: '',
@@ -22,11 +31,7 @@ function FieldMap() {
     images: []
   });
 
-  const [selectedImages, setSelectedImages] = useState([]);
-
-  // Dodane nedostajuće varijable
-  const currentUser = { username: 'Gost' }; // ili dohvati iz context/props ako imaš auth sistem
-
+  // ============ CONSTANTS ============
   const sportsList = [
     { id: 1, name: '⚽ Nogomet', popular: true },
     { id: 2, name: '🏀 Košarka', popular: true },
@@ -52,53 +57,66 @@ function FieldMap() {
     'Klima', 'Kafić', 'Restoran', 'Tribine', 'Ozvučenje'
   ];
 
+  // ============ EFFECTS ============
   useEffect(() => {
     loadFields();
   }, []);
 
-  const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    const imageUrls = files.map(file => URL.createObjectURL(file));
-    setSelectedImages([...selectedImages, ...imageUrls]);
+  // ============ API FUNCTIONS ============
+  const loadFields = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost:5000/api/fields');
+
+      if (response.ok) {
+        const data = await response.json();
+        setFields(data);
+      } else {
+        console.error('Failed to load fields');
+      }
+    } catch (error) {
+      console.error('Load fields error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleAddField = () => {
-    if (!fieldForm.name || !fieldForm.sport || !fieldForm.city) {
-      setToast({ message: 'Popuni sva obavezna polja!', type: 'error' });
+  // ============ HANDLER FUNCTIONS ============
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    
+    if (files.length === 0) return;
+    
+    if (files.length > 5) {
+      setToast({ message: 'Maksimalno 5 slika!', type: 'error' });
       return;
     }
 
-    const newField = {
-      id: Date.now(),
-      ...fieldForm,
-      image: selectedImages[0] || 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800',
-      images: selectedImages,
-      rating: 0,
-      reviews: 0,
-      availability: 'Dostupno',
-      coordinates: { lat: 45.8150, lng: 15.9819 }, // Default Zagreb
-      addedBy: currentUser.username,
-      addedAt: new Date().toISOString()
-    };
-
-    const updated = [newField, ...fields];
-    setFields(updated);
-    localStorage.setItem('sportsFields', JSON.stringify(updated));
-
-    setShowAddFieldModal(false);
-    setFieldForm({
-      name: '',
-      sport: '',
-      city: '',
-      country: 'Hrvatska',
-      address: '',
-      price: '',
-      facilities: [],
-      description: '',
-      images: []
+    const validFiles = [];
+    const validFileObjects = [];
+    
+    files.forEach(file => {
+      if (!file.type.startsWith('image/')) {
+        setToast({ message: `${file.name} nije slika!`, type: 'error' });
+        return;
+      }
+      
+      if (file.size > 10 * 1024 * 1024) {
+        setToast({ message: `${file.name} je prevelika! Max 10MB`, type: 'error' });
+        return;
+      }
+      
+      validFiles.push(URL.createObjectURL(file));
+      validFileObjects.push(file);
     });
-    setSelectedImages([]);
-    setToast({ message: 'Teren uspješno dodan! 🎉', type: 'success' });
+
+    setSelectedImages([...selectedImages, ...validFiles]);
+    setSelectedImageFiles([...selectedImageFiles, ...validFileObjects]);
+  };
+
+  const handleRemoveImage = (index) => {
+    setSelectedImages(selectedImages.filter((_, i) => i !== index));
+    setSelectedImageFiles(selectedImageFiles.filter((_, i) => i !== index));
   };
 
   const handleToggleFacility = (facility) => {
@@ -110,61 +128,91 @@ function FieldMap() {
     }
   };
 
-  const loadFields = () => {
-    const saved = localStorage.getItem('sportsFields');
-    if (saved) {
-      setFields(JSON.parse(saved));
-    } else {
-      // Demo tereni
-      const demo = [
-        {
-          id: 1,
-          name: 'Stadion Poljud',
-          sport: '⚽ Nogomet',
-          city: 'Split',
-          address: 'Mediteranskih igara 2',
-          rating: 4.8,
-          reviews: 124,
-          price: '500 kn/h',
-          availability: 'Dostupno',
-          facilities: ['Parking', 'Tuš', 'Rasvjeta', 'Svlačionice'],
-          image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800',
-          coordinates: { lat: 43.5109, lng: 16.4410 }
-        },
-        {
-          id: 2,
-          name: 'Arena Zagreb',
-          sport: '🏀 Košarka',
-          city: 'Zagreb',
-          address: 'Ulica Vice Vukova 6',
-          rating: 4.9,
-          reviews: 289,
-          price: '800 kn/h',
-          availability: 'Rezervirano',
-          facilities: ['Parking', 'Tuš', 'Klima', 'Restoran', 'Svlačionice'],
-          image: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800',
-          coordinates: { lat: 45.8016, lng: 15.9667 }
-        },
-        {
-          id: 3,
-          name: 'Spaladium Arena',
-          sport: '🏐 Odbojka',
-          city: 'Split',
-          address: 'Zrinsko Frankopanska 211',
-          rating: 4.7,
-          reviews: 156,
-          price: '600 kn/h',
-          availability: 'Dostupno',
-          facilities: ['Parking', 'Tuš', 'Kafić', 'Svlačionice'],
-          image: 'https://images.unsplash.com/photo-1593642532400-2682810df593?w=800',
-          coordinates: { lat: 43.5199, lng: 16.4732 }
+  const handleAddField = async () => {
+    if (!fieldForm.name || !fieldForm.sport || !fieldForm.city) {
+      setToast({ message: 'Popuni sva obavezna polja!', type: 'error' });
+      return;
+    }
+
+    if (selectedImages.length === 0) {
+      setToast({ message: 'Dodaj barem jednu sliku!', type: 'error' });
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      const token = localStorage.getItem('token');
+      
+      const formData = new FormData();
+      
+      formData.append('data', JSON.stringify({
+        name: fieldForm.name,
+        sport: fieldForm.sport,
+        city: fieldForm.city,
+        country: fieldForm.country,
+        address: fieldForm.address,
+        price: fieldForm.price || 0,
+        facilities: fieldForm.facilities || [],
+        description: fieldForm.description || '',
+        coordinates: fieldForm.coordinates || { lat: 45.8150, lng: 15.9819 }
+      }));
+
+      for (let i = 0; i < selectedImageFiles.length; i++) {
+        formData.append('images', selectedImageFiles[i]);
+      }
+
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const percentComplete = (e.loaded / e.total) * 100;
+          setUploadProgress(Math.round(percentComplete));
         }
-      ];
-      setFields(demo);
-      localStorage.setItem('sportsFields', JSON.stringify(demo));
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status === 201) {
+          setToast({ message: '🎉 Teren uspješno dodan!', type: 'success' });
+          setShowAddFieldModal(false);
+          setFieldForm({
+            name: '',
+            sport: '',
+            city: '',
+            country: 'Hrvatska',
+            address: '',
+            price: '',
+            facilities: [],
+            description: ''
+          });
+          setSelectedImages([]);
+          setSelectedImageFiles([]);
+          setUploadProgress(0);
+          setIsUploading(false);
+          loadFields();
+        } else {
+          const error = JSON.parse(xhr.responseText);
+          setToast({ message: error.message || 'Greška pri dodavanju terena', type: 'error' });
+          setIsUploading(false);
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        setToast({ message: 'Greška pri uploadu', type: 'error' });
+        setIsUploading(false);
+      });
+
+      xhr.open('POST', 'http://localhost:5000/api/fields');
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      xhr.send(formData);
+
+    } catch (error) {
+      console.error('Add field error:', error);
+      setToast({ message: 'Greška pri dodavanju terena', type: 'error' });
+      setIsUploading(false);
     }
   };
 
+  // ============ HELPER FUNCTIONS ============
   const filterFields = () => {
     return fields.filter(field => {
       const sportMatch = !filter.sport || field.sport === filter.sport;
@@ -179,11 +227,13 @@ function FieldMap() {
 
   const filteredFields = filterFields();
 
+  // ============ RENDER ============
   return (
     <div className="field-map-page">
       <Navbar />
       
       <div className="field-map-container">
+        {/* HEADER */}
         <div className="map-header">
           <h1>📍 Mapa Terena</h1>
           <p>Pronađi savršeni teren za svoju utakmicu</p>
@@ -195,6 +245,7 @@ function FieldMap() {
           </button>
         </div>
 
+        {/* ADD FIELD MODAL */}
         {showAddFieldModal && (
           <div className="modal-overlay" onClick={() => setShowAddFieldModal(false)}>
             <div className="add-field-modal" onClick={(e) => e.stopPropagation()}>
@@ -313,8 +364,20 @@ function FieldMap() {
                   <label htmlFor="field-images" className="image-upload-label">
                     <div className="upload-icon">📷</div>
                     <p>Klikni za dodavanje slika</p>
-                    <small>Možeš dodati više slika</small>
+                    <small>Možeš dodati više slika (max 5)</small>
                   </label>
+                  
+                  {isUploading && (
+                    <div className="upload-progress">
+                      <div className="progress-bar-upload">
+                        <div 
+                          className="progress-fill-upload"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                      <p className="progress-text">{uploadProgress}% uploadano...</p>
+                    </div>
+                  )}
                   
                   {selectedImages.length > 0 && (
                     <div className="image-preview-grid">
@@ -323,7 +386,7 @@ function FieldMap() {
                           <img src={img} alt={`Preview ${index + 1}`} />
                           <button 
                             className="remove-image"
-                            onClick={() => setSelectedImages(selectedImages.filter((_, i) => i !== index))}
+                            onClick={() => handleRemoveImage(index)}
                           >
                             ✕
                           </button>
@@ -338,21 +401,25 @@ function FieldMap() {
                 <button 
                   className="btn btn-secondary"
                   onClick={() => setShowAddFieldModal(false)}
+                  disabled={isUploading}
                 >
                   Odustani
                 </button>
                 <button 
                   className="btn btn-primary"
                   onClick={handleAddField}
+                  disabled={isUploading}
                 >
-                  Dodaj teren
+                  {isUploading ? `Uploading ${uploadProgress}%...` : 'Dodaj teren'}
                 </button>
               </div>
             </div>
           </div>
         )}
 
+        {/* MAIN LAYOUT */}
         <div className="map-layout">
+          {/* SIDEBAR */}
           <div className="fields-sidebar">
             <div className="sidebar-filters card">
               <h3>🔍 Filtriraj</h3>
@@ -389,6 +456,7 @@ function FieldMap() {
               )}
             </div>
 
+            {/* FIELDS LIST */}
             <div className="fields-list">
               {filteredFields.length === 0 ? (
                 <div className="no-fields">
@@ -402,7 +470,14 @@ function FieldMap() {
                     className={`field-card card ${selectedField?.id === field.id ? 'selected' : ''}`}
                     onClick={() => setSelectedField(field)}
                   >
-                    <div className="field-image" style={{ backgroundImage: `url(${field.image})` }}>
+                    <div 
+                      className="field-image"
+                      style={{ 
+                        backgroundImage: field.images && field.images.length > 0
+                          ? `url(http://localhost:5000/${field.images[0].filepath.replace(/\\/g, '/')})`
+                          : `url(${field.image})`
+                      }}
+                    >
                       <div 
                         className="field-availability"
                         style={{ background: getAvailabilityColor(field.availability) }}
@@ -450,12 +525,17 @@ function FieldMap() {
             </div>
           </div>
 
+          {/* MAP VIEW */}
           <div className="map-view card">
             {selectedField ? (
               <div className="selected-field-details">
                 <div 
                   className="selected-field-image"
-                  style={{ backgroundImage: `url(${selectedField.image})` }}
+                  style={{ 
+                    backgroundImage: selectedField.images && selectedField.images.length > 0
+                      ? `url(http://localhost:5000/${selectedField.images[0].filepath.replace(/\\/g, '/')})`
+                      : `url(${selectedField.image})`
+                  }}
                 >
                   <button 
                     className="close-detail-btn"

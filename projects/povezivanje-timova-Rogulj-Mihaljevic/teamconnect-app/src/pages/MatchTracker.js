@@ -2,182 +2,211 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Toast from '../components/Toast';
-import Modal from '../components/Modal';
 import './MatchTracker.css';
 
 function MatchTracker() {
   const { matchId } = useParams();
   const navigate = useNavigate();
+  
+  // ============ STATE ============
   const [match, setMatch] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
+  const [activeTab, setActiveTab] = useState('live');
   const [showEventModal, setShowEventModal] = useState(false);
+  const [showCommentaryModal, setShowCommentaryModal] = useState(false);
+  
   const [eventForm, setEventForm] = useState({
     type: 'goal',
-    team: 'home',
+    team: 'team1',
     player: '',
     minute: '',
     description: ''
   });
+  
+  const [commentaryForm, setCommentaryForm] = useState({
+    minute: '',
+    text: ''
+  });
 
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+  // ============ EFFECTS ============
   useEffect(() => {
-    loadMatch();
-  }, [matchId]);
+    fetchMatch();
+    
+    // Auto-refresh svake 3 sekunde ako je live
+    const interval = setInterval(() => {
+      if (match?.status === 'live') {
+        fetchMatch(true); // silent refresh
+      }
+    }, 3000);
+    
+    return () => clearInterval(interval);
+  }, [matchId, match?.status]);
 
-  const loadMatch = () => {
-    const saved = localStorage.getItem('matches');
-    if (saved) {
-      const matches = JSON.parse(saved);
-      const found = matches.find(m => m.id === parseInt(matchId));
-      if (found) {
-        setMatch(found);
+  // ============ API FUNCTIONS ============
+  const fetchMatch = async (silent = false) => {
+    try {
+      if (!silent) setLoading(true);
+      
+      const response = await fetch(`http://localhost:5000/api/matches/${matchId}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setMatch(data);
       } else {
-        createDemoMatch();
+        const error = await response.json();
+        setToast({ message: error.message || 'Utakmica ne postoji', type: 'error' });
+        setTimeout(() => navigate('/dashboard'), 2000);
       }
-    } else {
-      createDemoMatch();
+    } catch (error) {
+      console.error('Fetch match error:', error);
+      setToast({ message: 'Greška pri učitavanju utakmice', type: 'error' });
+    } finally {
+      if (!silent) setLoading(false);
     }
   };
 
-  const createDemoMatch = () => {
-    const demoMatch = {
-      id: matchId ? parseInt(matchId) : Date.now(),
-      homeTeam: {
-        name: 'Plavi Lavovi',
-        logo: '🦁',
-        score: 2,
-        players: ['Marko', 'Ivan', 'Luka', 'Tomislav', 'Petar']
-      },
-      awayTeam: {
-        name: 'Crveni Tigrovi',
-        logo: '🐯',
-        score: 1,
-        players: ['Ana', 'Maja', 'Petra', 'Nina', 'Sara']
-      },
-      sport: '⚽ Nogomet',
-      date: new Date().toISOString(),
-      status: 'live', // live, finished, scheduled
-      currentMinute: 67,
-      events: [
-        {
-          id: 1,
-          type: 'goal',
-          team: 'home',
-          player: 'Marko',
-          minute: 15,
-          description: 'Pogodak glavom nakon kornera',
-          timestamp: new Date(Date.now() - 3600000).toISOString()
+  // ============ HANDLER FUNCTIONS ============
+  const handleStatusChange = async (newStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/matches/${matchId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        {
-          id: 2,
-          type: 'goal',
-          team: 'away',
-          player: 'Ana',
-          minute: 34,
-          description: 'Prekrasan udarac s 20 metara',
-          timestamp: new Date(Date.now() - 2400000).toISOString()
-        },
-        {
-          id: 3,
-          type: 'yellow_card',
-          team: 'home',
-          player: 'Ivan',
-          minute: 52,
-          description: 'Fauliranje protivničkog igrača',
-          timestamp: new Date(Date.now() - 900000).toISOString()
-        },
-        {
-          id: 4,
-          type: 'goal',
-          team: 'home',
-          player: 'Luka',
-          minute: 65,
-          description: 'Kontranapada i precizno izvođenje',
-          timestamp: new Date(Date.now() - 120000).toISOString()
-        }
-      ],
-      statistics: {
-        home: {
-          possession: 58,
-          shots: 14,
-          shotsOnTarget: 7,
-          corners: 6,
-          fouls: 8
-        },
-        away: {
-          possession: 42,
-          shots: 9,
-          shotsOnTarget: 4,
-          corners: 3,
-          fouls: 12
-        }
+        body: JSON.stringify({ status: newStatus })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setToast({ message: '✅ Status ažuriran!', type: 'success' });
+        fetchMatch();
+      } else {
+        setToast({ message: data.message, type: 'error' });
       }
-    };
-    setMatch(demoMatch);
-    saveMatch(demoMatch);
-  };
-
-  const saveMatch = (matchData) => {
-    const saved = localStorage.getItem('matches');
-    let matches = saved ? JSON.parse(saved) : [];
-    const index = matches.findIndex(m => m.id === matchData.id);
-    
-    if (index >= 0) {
-      matches[index] = matchData;
-    } else {
-      matches.push(matchData);
+    } catch (error) {
+      console.error('Update status error:', error);
+      setToast({ message: 'Greška pri ažuriranju statusa', type: 'error' });
     }
-    
-    localStorage.setItem('matches', JSON.stringify(matches));
-    setMatch(matchData);
   };
 
-  const handleAddEvent = () => {
-    if (!eventForm.player || !eventForm.minute) {
-      setToast({ message: 'Popuni sva obavezna polja!', type: 'error' });
+  const handleAddEvent = async () => {
+    if (!eventForm.type || !eventForm.team || !eventForm.minute) {
+      setToast({ message: 'Popuni obavezna polja!', type: 'error' });
       return;
     }
 
-    const newEvent = {
-      id: Date.now(),
-      ...eventForm,
-      minute: parseInt(eventForm.minute),
-      timestamp: new Date().toISOString()
-    };
-
-    const updatedMatch = {
-      ...match,
-      events: [...match.events, newEvent].sort((a, b) => a.minute - b.minute)
-    };
-
-    // Ažuriraj rezultat ako je gol
-    if (eventForm.type === 'goal') {
-      if (eventForm.team === 'home') {
-        updatedMatch.homeTeam.score += 1;
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/matches/${matchId}/event`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(eventForm)
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setToast({ message: '✅ Event dodan!', type: 'success' });
+        setShowEventModal(false);
+        setEventForm({
+          type: 'goal',
+          team: 'team1',
+          player: '',
+          minute: '',
+          description: ''
+        });
+        fetchMatch();
       } else {
-        updatedMatch.awayTeam.score += 1;
+        setToast({ message: data.message, type: 'error' });
       }
+    } catch (error) {
+      console.error('Add event error:', error);
+      setToast({ message: 'Greška pri dodavanju eventa', type: 'error' });
     }
-
-    saveMatch(updatedMatch);
-    setShowEventModal(false);
-    setEventForm({
-      type: 'goal',
-      team: 'home',
-      player: '',
-      minute: '',
-      description: ''
-    });
-    setToast({ message: 'Event dodan! ⚽', type: 'success' });
   };
 
+  const handleAddCommentary = async () => {
+    if (!commentaryForm.minute || !commentaryForm.text) {
+      setToast({ message: 'Popuni obavezna polja!', type: 'error' });
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/matches/${matchId}/commentary`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(commentaryForm)
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setToast({ message: '✅ Komentar dodan!', type: 'success' });
+        setShowCommentaryModal(false);
+        setCommentaryForm({ minute: '', text: '' });
+        fetchMatch();
+      } else {
+        setToast({ message: data.message, type: 'error' });
+      }
+    } catch (error) {
+      console.error('Add commentary error:', error);
+      setToast({ message: 'Greška pri dodavanju komentara', type: 'error' });
+    }
+  };
+
+  const handleScoreUpdate = async (team, increment) => {
+    try {
+      const token = localStorage.getItem('token');
+      const newScore = {
+        team1Score: match.score.team1 + (team === 'team1' ? increment : 0),
+        team2Score: match.score.team2 + (team === 'team2' ? increment : 0)
+      };
+
+      const response = await fetch(`http://localhost:5000/api/matches/${matchId}/score`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(newScore)
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        fetchMatch();
+      } else {
+        setToast({ message: data.message, type: 'error' });
+      }
+    } catch (error) {
+      console.error('Update score error:', error);
+      setToast({ message: 'Greška pri ažuriranju rezultata', type: 'error' });
+    }
+  };
+
+  // ============ HELPER FUNCTIONS ============
   const getEventIcon = (type) => {
     const icons = {
       goal: '⚽',
       yellow_card: '🟨',
       red_card: '🟥',
       substitution: '🔄',
-      injury: '🏥',
-      penalty: '🎯'
+      injury: '🤕',
+      penalty: '🎯',
+      other: '📝'
     };
     return icons[type] || '📌';
   };
@@ -187,24 +216,23 @@ function MatchTracker() {
       goal: 'Gol',
       yellow_card: 'Žuti karton',
       red_card: 'Crveni karton',
-      substitution: 'Izmjena',
+      substitution: 'Zamjena',
       injury: 'Ozljeda',
-      penalty: 'Penal'
+      penalty: 'Penal',
+      other: 'Ostalo'
     };
     return labels[type] || 'Event';
   };
 
-  const endMatch = () => {
-    const updatedMatch = {
-      ...match,
-      status: 'finished',
-      currentMinute: 90
-    };
-    saveMatch(updatedMatch);
-    setToast({ message: 'Utakmica završena! 🏁', type: 'success' });
-  };
+  // Check if user is moderator
+  const isModerator = match && (
+    match.createdBy?._id === currentUser._id || 
+    match.createdBy?._id === currentUser.id ||
+    match.moderators?.some(m => m._id === currentUser._id || m._id === currentUser.id)
+  );
 
-  if (!match) {
+  // ============ LOADING STATE ============
+  if (loading || !match) {
     return (
       <div className="match-tracker-page">
         <Navbar />
@@ -213,11 +241,13 @@ function MatchTracker() {
     );
   }
 
+  // ============ RENDER ============
   return (
     <div className="match-tracker-page">
       <Navbar />
       
       <div className="match-tracker-container">
+        {/* HEADER */}
         <div className="match-header">
           <button className="back-btn" onClick={() => navigate('/my-teams')}>
             ← Natrag
@@ -231,34 +261,62 @@ function MatchTracker() {
             })}
           </div>
           <div className="match-status-badge" data-status={match.status}>
-            {match.status === 'live' && `⚡ UŽIVO - ${match.currentMinute}'`}
+            {match.status === 'live' && `⚡ UŽIVO - ${match.currentMinute || 0}'`}
             {match.status === 'finished' && '🏁 ZAVRŠENO'}
             {match.status === 'scheduled' && '📅 NADOLAZEĆE'}
           </div>
         </div>
 
+        {/* SCOREBOARD */}
         <div className="scoreboard card">
           <div className="team-section home-team">
-            <div className="team-logo">{match.homeTeam.logo}</div>
-            <h2>{match.homeTeam.name}</h2>
-            <div className="team-score">{match.homeTeam.score}</div>
+            <div className="team-logo">{match.team1?.logo || '⚽'}</div>
+            <h2>{match.team1?.name || 'Tim 1'}</h2>
+            <div className="team-score">{match.score?.team1 || 0}</div>
           </div>
 
           <div className="scoreboard-center">
             <div className="vs-divider">VS</div>
-            <div className="match-sport">{match.sport}</div>
+            <div className="match-sport">{match.sport || '⚽ Nogomet'}</div>
           </div>
 
           <div className="team-section away-team">
-            <div className="team-logo">{match.awayTeam.logo}</div>
-            <h2>{match.awayTeam.name}</h2>
-            <div className="team-score">{match.awayTeam.score}</div>
+            <div className="team-logo">{match.team2?.logo || '⚽'}</div>
+            <h2>{match.team2?.name || 'Tim 2'}</h2>
+            <div className="team-score">{match.score?.team2 || 0}</div>
           </div>
         </div>
 
-        <div className="match-controls card">
-          {match.status === 'live' && (
-            <>
+        {/* MODERATOR CONTROLS */}
+        {isModerator && match.status !== 'finished' && (
+          <div className="match-controls card">
+            <h3>⚙️ Kontrole</h3>
+            
+            <div className="status-controls">
+              <button 
+                className={`btn ${match.status === 'scheduled' ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => handleStatusChange('scheduled')}
+                disabled={match.status === 'scheduled'}
+              >
+                📅 Zakazano
+              </button>
+              <button 
+                className={`btn ${match.status === 'live' ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => handleStatusChange('live')}
+                disabled={match.status === 'live'}
+              >
+                🔴 LIVE
+              </button>
+              <button 
+                className={`btn ${match.status === 'finished' ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => handleStatusChange('finished')}
+                disabled={match.status === 'finished'}
+              >
+                ✅ Završeno
+              </button>
+            </div>
+
+            <div className="action-buttons">
               <button 
                 className="btn btn-primary"
                 onClick={() => setShowEventModal(true)}
@@ -267,183 +325,221 @@ function MatchTracker() {
               </button>
               <button 
                 className="btn btn-secondary"
-                onClick={endMatch}
+                onClick={() => setShowCommentaryModal(true)}
               >
-                🏁 Završi utakmicu
+                💬 Dodaj komentar
               </button>
-            </>
-          )}
-          {match.status === 'finished' && (
-            <div className="match-finished-notice">
-              <span className="finish-icon">🏁</span>
-              <p>Utakmica je završena</p>
             </div>
-          )}
+
+            <div className="score-controls">
+              <div className="team-score-control">
+                <h4>{match.team1?.name || 'Tim 1'}</h4>
+                <div className="score-buttons">
+                  <button 
+                    className="btn btn-small btn-secondary"
+                    onClick={() => handleScoreUpdate('team1', -1)}
+                    disabled={match.score?.team1 === 0}
+                  >
+                    -
+                  </button>
+                  <span className="score-display">{match.score?.team1 || 0}</span>
+                  <button 
+                    className="btn btn-small btn-primary"
+                    onClick={() => handleScoreUpdate('team1', 1)}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div className="team-score-control">
+                <h4>{match.team2?.name || 'Tim 2'}</h4>
+                <div className="score-buttons">
+                  <button 
+                    className="btn btn-small btn-secondary"
+                    onClick={() => handleScoreUpdate('team2', -1)}
+                    disabled={match.score?.team2 === 0}
+                  >
+                    -
+                  </button>
+                  <span className="score-display">{match.score?.team2 || 0}</span>
+                  <button 
+                    className="btn btn-small btn-primary"
+                    onClick={() => handleScoreUpdate('team2', 1)}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TABS */}
+        <div className="match-tabs">
+          <button 
+            className={`tab ${activeTab === 'live' ? 'active' : ''}`}
+            onClick={() => setActiveTab('live')}
+          >
+            ⚡ Uživo
+          </button>
+          <button 
+            className={`tab ${activeTab === 'stats' ? 'active' : ''}`}
+            onClick={() => setActiveTab('stats')}
+          >
+            📊 Statistika
+          </button>
+          <button 
+            className={`tab ${activeTab === 'commentary' ? 'active' : ''}`}
+            onClick={() => setActiveTab('commentary')}
+          >
+            💬 Komentari
+          </button>
         </div>
 
+        {/* TAB CONTENT */}
         <div className="match-content">
-          <div className="match-timeline card">
-            <h3>⏱️ Timeline događaja</h3>
-            {match.events.length === 0 ? (
-              <div className="no-events">
-                <p>Još nema događaja</p>
-              </div>
-            ) : (
-              <div className="timeline-events">
-                {match.events.map(event => (
-                  <div 
-                    key={event.id} 
-                    className={`timeline-event ${event.team}-event`}
-                  >
-                    <div className="event-minute">{event.minute}'</div>
-                    <div className="event-icon">{getEventIcon(event.type)}</div>
-                    <div className="event-details">
-                      <div className="event-header">
-                        <span className="event-type">{getEventLabel(event.type)}</span>
-                        <span className="event-player">{event.player}</span>
+          {/* LIVE TAB */}
+          {activeTab === 'live' && (
+            <div className="match-timeline card">
+              <h3>⏱️ Timeline događaja</h3>
+              {(!match.events || match.events.length === 0) ? (
+                <div className="no-events">
+                  <p>Još nema događaja</p>
+                </div>
+              ) : (
+                <div className="timeline-events">
+                  {match.events.map(event => (
+                    <div 
+                      key={event._id || event.id} 
+                      className={`timeline-event ${event.team}-event`}
+                    >
+                      <div className="event-minute">{event.minute}'</div>
+                      <div className="event-icon">{getEventIcon(event.type)}</div>
+                      <div className="event-details">
+                        <div className="event-header">
+                          <span className="event-type">{getEventLabel(event.type)}</span>
+                          {event.player && <span className="event-player">{event.player}</span>}
+                        </div>
+                        {event.description && (
+                          <p className="event-description">{event.description}</p>
+                        )}
                       </div>
-                      {event.description && (
-                        <p className="event-description">{event.description}</p>
-                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* STATS TAB */}
+          {activeTab === 'stats' && (
+            <div className="match-statistics card">
+              <h3>📊 Statistika</h3>
+              {match.statistics ? (
+                <div className="stat-bars">
+                  <div className="stat-item">
+                    <div className="stat-label">Posjed lopte</div>
+                    <div className="stat-bar-container">
+                      <div className="stat-value home">{match.statistics.team1?.possession || 50}%</div>
+                      <div className="stat-bar">
+                        <div 
+                          className="stat-fill home-fill"
+                          style={{ width: `${match.statistics.team1?.possession || 50}%` }}
+                        />
+                      </div>
+                      <div className="stat-value away">{match.statistics.team2?.possession || 50}%</div>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
 
-          <div className="match-statistics card">
-            <h3>📊 Statistika</h3>
-            <div className="stat-bars">
-              <div className="stat-item">
-                <div className="stat-label">Posjed lopte</div>
-                <div className="stat-bar-container">
-                  <div className="stat-value home">{match.statistics.home.possession}%</div>
-                  <div className="stat-bar">
-                    <div 
-                      className="stat-fill home-fill"
-                      style={{ width: `${match.statistics.home.possession}%` }}
-                    />
-                    <div 
-                      className="stat-fill away-fill"
-                      style={{ width: `${match.statistics.away.possession}%` }}
-                    />
+                  <div className="stat-item">
+                    <div className="stat-label">Udarci</div>
+                    <div className="stat-bar-container">
+                      <div className="stat-value home">{match.statistics.team1?.shots || 0}</div>
+                      <div className="stat-bar">
+                        <div 
+                          className="stat-fill home-fill"
+                          style={{ 
+                            width: `${((match.statistics.team1?.shots || 0) / ((match.statistics.team1?.shots || 0) + (match.statistics.team2?.shots || 1))) * 100}%` 
+                          }}
+                        />
+                      </div>
+                      <div className="stat-value away">{match.statistics.team2?.shots || 0}</div>
+                    </div>
                   </div>
-                  <div className="stat-value away">{match.statistics.away.possession}%</div>
                 </div>
-              </div>
-
-              <div className="stat-item">
-                <div className="stat-label">Udarci</div>
-                <div className="stat-bar-container">
-                  <div className="stat-value home">{match.statistics.home.shots}</div>
-                  <div className="stat-bar">
-                    <div 
-                      className="stat-fill home-fill"
-                      style={{ 
-                        width: `${(match.statistics.home.shots / (match.statistics.home.shots + match.statistics.away.shots)) * 100}%` 
-                      }}
-                    />
-                  </div>
-                  <div className="stat-value away">{match.statistics.away.shots}</div>
-                </div>
-              </div>
-
-              <div className="stat-item">
-                <div className="stat-label">Udarci u okvir</div>
-                <div className="stat-bar-container">
-                  <div className="stat-value home">{match.statistics.home.shotsOnTarget}</div>
-                  <div className="stat-bar">
-                    <div 
-                      className="stat-fill home-fill"
-                      style={{ 
-                        width: `${(match.statistics.home.shotsOnTarget / (match.statistics.home.shotsOnTarget + match.statistics.away.shotsOnTarget)) * 100}%` 
-                      }}
-                    />
-                  </div>
-                  <div className="stat-value away">{match.statistics.away.shotsOnTarget}</div>
-                </div>
-              </div>
-
-              <div className="stat-item">
-                <div className="stat-label">Korneri</div>
-                <div className="stat-bar-container">
-                  <div className="stat-value home">{match.statistics.home.corners}</div>
-                  <div className="stat-bar">
-                    <div 
-                      className="stat-fill home-fill"
-                      style={{ 
-                        width: `${(match.statistics.home.corners / (match.statistics.home.corners + match.statistics.away.corners)) * 100}%` 
-                      }}
-                    />
-                  </div>
-                  <div className="stat-value away">{match.statistics.away.corners}</div>
-                </div>
-              </div>
-
-              <div className="stat-item">
-                <div className="stat-label">Faulovi</div>
-                <div className="stat-bar-container">
-                  <div className="stat-value home">{match.statistics.home.fouls}</div>
-                  <div className="stat-bar">
-                    <div 
-                      className="stat-fill home-fill"
-                      style={{ 
-                        width: `${(match.statistics.home.fouls / (match.statistics.home.fouls + match.statistics.away.fouls)) * 100}%` 
-                      }}
-                    />
-                  </div>
-                  <div className="stat-value away">{match.statistics.away.fouls}</div>
-                </div>
-              </div>
+              ) : (
+                <p>Statistika nije dostupna</p>
+              )}
             </div>
-          </div>
+          )}
+
+          {/* COMMENTARY TAB */}
+          {activeTab === 'commentary' && (
+            <div className="match-commentary card">
+              <h3>💬 Komentari uživo</h3>
+              {(!match.commentary || match.commentary.length === 0) ? (
+                <div className="no-commentary">
+                  <p>Još nema komentara</p>
+                </div>
+              ) : (
+                <div className="commentary-list">
+                  {match.commentary.map(comment => (
+                    <div key={comment._id || comment.id} className="commentary-item">
+                      <div className="commentary-minute">{comment.minute}'</div>
+                      <div className="commentary-content">
+                        <div className="commentary-author">{comment.author || 'Nepoznat'}</div>
+                        <p className="commentary-text">{comment.text}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Modal za dodavanje eventa */}
+      {/* EVENT MODAL */}
       {showEventModal && (
         <div className="modal-overlay" onClick={() => setShowEventModal(false)}>
-          <div className="add-event-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>+ Dodaj event</h2>
+          <div className="event-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>➕ Dodaj event</h2>
             
             <div className="form-group">
               <label>Tip eventa *</label>
-              <select 
+              <select
                 value={eventForm.type}
                 onChange={(e) => setEventForm({ ...eventForm, type: e.target.value })}
               >
                 <option value="goal">⚽ Gol</option>
                 <option value="yellow_card">🟨 Žuti karton</option>
                 <option value="red_card">🟥 Crveni karton</option>
-                <option value="substitution">🔄 Izmjena</option>
-                <option value="injury">🏥 Ozljeda</option>
-                <option value="penalty">🎯 Penal</option>
+                <option value="substitution">🔄 Zamjena</option>
+                <option value="injury">🤕 Ozljeda</option>
+                <option value="other">📝 Ostalo</option>
               </select>
             </div>
 
             <div className="form-group">
               <label>Tim *</label>
-              <select 
+              <select
                 value={eventForm.team}
                 onChange={(e) => setEventForm({ ...eventForm, team: e.target.value })}
               >
-                <option value="home">{match.homeTeam.name}</option>
-                <option value="away">{match.awayTeam.name}</option>
+                <option value="team1">{match.team1?.name || 'Tim 1'}</option>
+                <option value="team2">{match.team2?.name || 'Tim 2'}</option>
               </select>
             </div>
 
             <div className="form-group">
-              <label>Igrač *</label>
-              <select 
+              <label>Igrač</label>
+              <input
+                type="text"
                 value={eventForm.player}
                 onChange={(e) => setEventForm({ ...eventForm, player: e.target.value })}
-              >
-                <option value="">Odaberi igrača</option>
-                {(eventForm.team === 'home' ? match.homeTeam.players : match.awayTeam.players).map(player => (
-                  <option key={player} value={player}>{player}</option>
-                ))}
-              </select>
+                placeholder="Ime igrača"
+              />
             </div>
 
             <div className="form-group">
@@ -452,18 +548,18 @@ function MatchTracker() {
                 type="number"
                 value={eventForm.minute}
                 onChange={(e) => setEventForm({ ...eventForm, minute: e.target.value })}
-                placeholder="npr. 45"
-                min="1"
+                placeholder="npr. 23"
+                min="0"
                 max="120"
               />
             </div>
 
             <div className="form-group">
-              <label>Opis (opcionalno)</label>
+              <label>Opis</label>
               <textarea
                 value={eventForm.description}
                 onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
-                placeholder="Dodaj kratak opis događaja..."
+                placeholder="Dodatne informacije..."
                 rows="3"
               />
             </div>
@@ -480,6 +576,52 @@ function MatchTracker() {
                 onClick={handleAddEvent}
               >
                 Dodaj event
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* COMMENTARY MODAL */}
+      {showCommentaryModal && (
+        <div className="modal-overlay" onClick={() => setShowCommentaryModal(false)}>
+          <div className="commentary-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>💬 Dodaj live komentar</h2>
+            
+            <div className="form-group">
+              <label>Minuta *</label>
+              <input
+                type="number"
+                value={commentaryForm.minute}
+                onChange={(e) => setCommentaryForm({ ...commentaryForm, minute: e.target.value })}
+                placeholder="npr. 34"
+                min="0"
+                max="120"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Komentar *</label>
+              <textarea
+                value={commentaryForm.text}
+                onChange={(e) => setCommentaryForm({ ...commentaryForm, text: e.target.value })}
+                placeholder="npr. Nevjerovatan pokušaj sa distance..."
+                rows="4"
+              />
+            </div>
+
+            <div className="modal-actions">
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setShowCommentaryModal(false)}
+              >
+                Odustani
+              </button>
+              <button 
+                className="btn btn-primary"
+                onClick={handleAddCommentary}
+              >
+                Dodaj komentar
               </button>
             </div>
           </div>

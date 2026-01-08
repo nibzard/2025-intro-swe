@@ -248,19 +248,25 @@ exports.deleteTeam = async (req, res) => {
 };
 
 // Dohvati moje timove
+// Dohvati timove gdje je korisnik član ili kreator
 exports.getMyTeams = async (req, res) => {
   try {
-    const teams = await Team.find({ 
-      players: req.user._id 
+    const userId = req.user.id;
+
+    // Dohvati timove gdje je korisnik član ili kreator
+    const teams = await Team.find({
+      $or: [
+        { creator: userId },
+        { players: userId }
+      ]
     })
-      .populate('creator', 'username')
-      .populate('players', 'username')
-      .sort({ createdAt: -1 });
+    .populate('creator', 'username email avatar')
+    .populate('players', 'username email avatar')
+    .sort({ date: 1 }); // Sortiraj po datumu
 
     res.json(teams);
-
   } catch (error) {
-    console.error('Greška pri dohvaćanju mojih timova:', error);
-    res.status(500).json({ message: 'Greška na serveru' });
+    console.error('Get my teams error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };

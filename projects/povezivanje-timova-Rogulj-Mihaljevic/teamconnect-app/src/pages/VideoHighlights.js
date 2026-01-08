@@ -51,16 +51,55 @@ function VideoHighlights() {
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Provjeri veličinu (max 100MB)
-      if (file.size > 100 * 1024 * 1024) {
-        setToast({ message: 'Video je prevelik! Maksimalno 100MB.', type: 'error' });
+  const file = e.target.files[0];
+  if (file) {
+    // Provjeri tip
+    const allowedTypes = ['video/mp4', 'video/mov', 'video/avi', 'video/mkv', 'video/webm'];
+    if (!allowedTypes.includes(file.type)) {
+      setToast({ 
+        message: 'Nedozvoljen format! Koristi: MP4, MOV, AVI, MKV ili WEBM', 
+        type: 'error' 
+      });
+      return;
+    }
+     const maxSize = 100 * 1024 * 1024; // 100MB u bytes
+    if (file.size > maxSize) {
+      setToast({ 
+        message: `Video je prevelik! Maksimalno 100MB. Tvoj video: ${formatFileSize(file.size)}`, 
+        type: 'error' 
+      });
+      return;
+    }
+
+    // Provjeri je li stvarno video
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.onloadedmetadata = function() {
+      window.URL.revokeObjectURL(video.src);
+      const duration = video.duration;
+      if (duration > 600) { // 600 sekundi = 10 minuta
+        setToast({ 
+          message: 'Video je predug! Maksimalna dužina: 10 minuta', 
+          type: 'error' 
+        });
         return;
       }
+      
       setUploadForm({ ...uploadForm, file });
-    }
-  };
+      setToast({ 
+        message: '✅ Video odabran! Spreman za upload.', 
+        type: 'success' 
+      });
+    }; 
+     video.onerror = function() {
+      setToast({ 
+        message: 'Datoteka nije valjan video!', 
+        type: 'error' 
+      });
+    };
+    video.src = URL.createObjectURL(file);
+  }
+};
 
   const handleUpload = async () => {
     if (!uploadForm.title || !uploadForm.category || !uploadForm.file) {

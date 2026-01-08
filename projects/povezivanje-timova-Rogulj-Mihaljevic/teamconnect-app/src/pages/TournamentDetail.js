@@ -3,12 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Toast from '../components/Toast';
 import './TournamentDetail.css';
+import BracketGenerator from '../components/Bracketgenerator';
 
 function TournamentDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [tournament, setTournament] = useState(null);
-  const [activeTab, setActiveTab] = useState('info'); // info, teams, bracket
+  const [activeTab, setActiveTab] = useState('info');
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
@@ -34,23 +35,13 @@ function TournamentDetail() {
     });
   };
 
-  const generateBracket = () => {
-    if (!tournament || tournament.registeredTeams < tournament.maxTeams) {
-      return <p>Bracket će biti dostupan kada se svi timovi prijave.</p>;
-    }
-
-    // Generiraj knockout bracket
-    const rounds = Math.log2(tournament.maxTeams);
-    return (
-      <div className="bracket-container">
-        <h3>Knockout Bracket</h3>
-        <p className="bracket-info">Bracket će biti prikazan ovdje nakon završetka prijava</p>
-        <div className="bracket-placeholder">
-          <span className="bracket-icon">🏆</span>
-          <p>Bracket sistem dolazi uskoro!</p>
-        </div>
-      </div>
-    );
+  const getStatusBadge = (status) => {
+    const badges = {
+      active: { text: 'U tijeku', color: '#4caf50' },
+      upcoming: { text: 'Uskoro', color: '#ff9800' },
+      finished: { text: 'Završeno', color: '#999' }
+    };
+    return badges[status] || badges.upcoming;
   };
 
   if (!tournament) {
@@ -107,13 +98,28 @@ function TournamentDetail() {
             className={`tab ${activeTab === 'bracket' ? 'active' : ''}`}
             onClick={() => setActiveTab('bracket')}
           >
-            🏆 Bracket
+            🏆 Raspored
+          </button>
+          <button 
+            className={`tab ${activeTab === 'matches' ? 'active' : ''}`}
+            onClick={() => setActiveTab('matches')}
+          >
+            ⚽ Utakmice
           </button>
         </div>
 
         <div className="tournament-content card">
+          {/* INFO TAB */}
           {activeTab === 'info' && (
             <div className="tournament-info-tab">
+              <h2>ℹ️ O turniru</h2>
+              
+              {tournament.description && (
+                <div className="tournament-full-description">
+                  <p>{tournament.description}</p>
+                </div>
+              )}
+
               <div className="info-grid">
                 <div className="info-item">
                   <span className="info-label">Format:</span>
@@ -145,14 +151,11 @@ function TournamentDetail() {
                   <span className="info-label">Organizator:</span>
                   <span className="info-value">{tournament.creator}</span>
                 </div>
-              </div>
-
-              {tournament.description && (
-                <div className="tournament-full-description">
-                  <h3>O turniru</h3>
-                  <p>{tournament.description}</p>
+                <div className="info-item">
+                  <span className="info-label">Status:</span>
+                  <span className="info-value">{getStatusBadge(tournament.status).text}</span>
                 </div>
-              )}
+              </div>
 
               <div className="tournament-register-section">
                 {tournament.registeredTeams < tournament.maxTeams ? (
@@ -177,39 +180,50 @@ function TournamentDetail() {
             </div>
           )}
 
+          {/* TEAMS TAB */}
           {activeTab === 'teams' && (
-            <div className="teams-tab">
+            <div className="teams-list-tab">
+              <h2>👥 Prijavljeni timovi</h2>
               {tournament.teams && tournament.teams.length > 0 ? (
-                <div className="teams-list">
-                  {tournament.teams.map((team, idx) => (
-                    <div key={idx} className="team-item">
-                      <div className="team-number">#{idx + 1}</div>
+                <div className="registered-teams-list">
+                  {tournament.teams.map((team, index) => (
+                    <div key={index} className="registered-team-item">
+                      <div className="team-number">#{index + 1}</div>
                       <div className="team-details">
                         <h4>{team.name}</h4>
-                        <p>Kapetan: {team.captain}</p>
-                        <p>Igrača: {team.players.length}</p>
+                        <p>{team.players} igrača</p>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="no-teams">
-                  <span className="empty-icon">👥</span>
-                  <p>Još nema prijavljenih timova</p>
-                  <button 
-                    className="btn btn-primary"
-                    onClick={() => navigate(`/tournament/${tournament.id}/register`)}
-                  >
-                    Budi prvi!
-                  </button>
+                <p className="no-teams-registered">Još nema prijavljenih timova</p>
+              )}
+            </div>
+          )}
+
+          {/* BRACKET TAB */}
+          {activeTab === 'bracket' && (
+            <div className="bracket-tab">
+              {tournament.teams && tournament.teams.length >= 2 ? (
+                <BracketGenerator 
+                  teams={tournament.teams}
+                  matches={tournament.matches || []}
+                  onUpdateMatch={(match) => console.log('Update match:', match)}
+                />
+              ) : (
+                <div className="no-bracket-container">
+                  <p className="no-bracket">Bracket će biti generiran kada se prijavi dovoljno timova</p>
                 </div>
               )}
             </div>
           )}
 
-          {activeTab === 'bracket' && (
-            <div className="bracket-tab">
-              {generateBracket()}
+          {/* MATCHES TAB */}
+          {activeTab === 'matches' && (
+            <div className="matches-tab">
+              <h2>⚽ Utakmice</h2>
+              <p>Utakmice će biti prikazane ovdje kada turnir počne</p>
             </div>
           )}
         </div>
