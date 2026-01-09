@@ -592,7 +592,10 @@ async def run_all(
     # Initialize semaphore for rate limiting concurrent requests
     max_concurrent = config.run_settings.max_concurrent_requests
     semaphore = asyncio.Semaphore(max_concurrent)
+    request_delay = config.run_settings.request_delay_seconds
     logger.info(f"Parallelization enabled: max {max_concurrent} concurrent requests")
+    if request_delay > 0:
+        logger.info(f"Request throttling enabled: {request_delay}s delay between requests")
 
     # Define async wrapper for executing single query with semaphore
     async def _execute_query_with_semaphore(
@@ -950,6 +953,10 @@ async def run_all(
                         else:
                             progress_callback()
 
+                    # Apply request delay to avoid rate limiting
+                    if request_delay > 0:
+                        await asyncio.sleep(request_delay)
+
                     return (True, total_query_cost, None, operations_cost_usd)
 
                 # Process browser/custom runner
@@ -1104,6 +1111,10 @@ async def run_all(
                     else:
                         progress_callback()
 
+                # Apply request delay to avoid rate limiting
+                if request_delay > 0:
+                    await asyncio.sleep(request_delay)
+
                 return (True, total_query_cost, None, 0.0)  # Browser runners don't support operations yet
 
             except Exception as e:
@@ -1161,6 +1172,10 @@ async def run_all(
                         await progress_callback.complete_query(query_key, success=False)
                     else:
                         progress_callback()
+
+                # Apply request delay to avoid rate limiting (even on errors)
+                if request_delay > 0:
+                    await asyncio.sleep(request_delay)
 
                 return (False, 0.0, error_dict, 0.0)
 
