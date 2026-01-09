@@ -7,23 +7,30 @@ const {
   joinTeam, 
   leaveTeam,
   deleteTeam,
-  getMyTeams  // NOVO
+  getMyTeams
 } = require('../controllers/teamController');
 const auth = require('../middleware/auth');
+const { createTeamValidator, teamIdValidator } = require('../middleware/validators');
 
-router.post('/', auth, createTeam);
+// ✅ Get all teams - JAVNA ruta (svi mogu vidjeti)
 router.get('/', getTeams);
-router.get('/my-teams', auth, getMyTeams); // NOVO - mora biti prije /:id
-router.get('/:id', getTeam);
-router.post('/:teamId/join', auth, joinTeam);
-router.post('/:teamId/leave', auth, leaveTeam);
-router.delete('/:teamId', auth, deleteTeam);
-const { createTeamValidator, teamIdValidator } = require('../middleware/validators'); // NOVO
 
-router.post('/', auth, createTeamValidator, createTeam); // DODAJ validator
-router.get('/:teamId', teamIdValidator, getTeam); // DODAJ validator
-router.post('/:teamId/join', auth, teamIdValidator, joinTeam); // DODAJ validator
-router.post('/:teamId/leave', auth, teamIdValidator, leaveTeam); // DODAJ validator
-router.delete('/:teamId', auth, teamIdValidator, deleteTeam); // DODAJ validator
+// ✅ Get MY teams - PRIVATNA ruta (mora biti prije /:id!)
+router.get('/my-teams', auth, getMyTeams);
+
+// ✅ Get single team - JAVNA ruta
+router.get('/:id', teamIdValidator, getTeam);
+
+// ✅ Create team - PRIVATNA ruta
+router.post('/', auth, createTeamValidator, createTeam);
+
+// ✅ Join team - PRIVATNA ruta
+router.post('/:teamId/join', auth, teamIdValidator, joinTeam);
+
+// ✅ Leave team - PRIVATNA ruta
+router.post('/:teamId/leave', auth, teamIdValidator, leaveTeam);
+
+// ✅ Delete team - PRIVATNA ruta
+router.delete('/:teamId', auth, teamIdValidator, deleteTeam);
 
 module.exports = router;

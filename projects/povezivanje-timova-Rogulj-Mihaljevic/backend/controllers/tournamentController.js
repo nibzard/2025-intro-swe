@@ -1,6 +1,6 @@
 const Tournament = require('../models/Tournament');
 const User = require('../models/User');
-const { createActivityHelper } = require('./activityController'); // ✅ DODANO
+const { createActivityHelper } = require('./activityController');
 
 // Dohvati sve turnire
 exports.getTournaments = async (req, res) => {
@@ -16,9 +16,11 @@ exports.getTournaments = async (req, res) => {
       .populate('creator', 'username avatar')
       .sort({ startDate: 1 });
 
+    console.log(`✅ Fetched ${tournaments.length} tournaments`);
+
     res.json(tournaments);
   } catch (error) {
-    console.error('Get tournaments error:', error);
+    console.error('❌ Get tournaments error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -33,12 +35,15 @@ exports.getTournament = async (req, res) => {
       .populate('registeredTeams.captain', 'username email avatar');
 
     if (!tournament) {
+      console.log('❌ Tournament not found:', id);
       return res.status(404).json({ message: 'Turnir ne postoji' });
     }
 
+    console.log('✅ Tournament fetched:', tournament._id);
+
     res.json(tournament);
   } catch (error) {
-    console.error('Get tournament error:', error);
+    console.error('❌ Get tournament error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -46,31 +51,82 @@ exports.getTournament = async (req, res) => {
 // Kreiraj turnir
 exports.createTournament = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id;
     const tournamentData = req.body;
 
-    // Validacija
-    if (!tournamentData.name || !tournamentData.sport || !tournamentData.startDate) {
-      return res.status(400).json({ message: 'Popuni sva obavezna polja!' });
+    console.log('📥 Create tournament request:', tournamentData);
+    console.log('👤 User ID:', userId);
+
+    // Detaljnija validacija
+    const missingFields = [];
+    
+    if (!tournamentData.name || tournamentData.name.trim() === '') {
+      missingFields.push('name');
+    }
+    if (!tournamentData.sport || tournamentData.sport.trim() === '') {
+      missingFields.push('sport');
+    }
+    if (!tournamentData.startDate) {
+      missingFields.push('startDate');
+    }
+    if (!tournamentData.endDate) {
+      missingFields.push('endDate');
+    }
+    if (!tournamentData.location || tournamentData.location.trim() === '') {
+      missingFields.push('location');
+    }
+    if (!tournamentData.city || tournamentData.city.trim() === '') {
+      missingFields.push('city');
+    }
+
+    if (missingFields.length > 0) {
+      console.log('❌ Missing fields:', missingFields);
+      return res.status(400).json({ 
+        message: 'Popuni sva obavezna polja!',
+        missingFields
+      });
     }
 
     // Provjeri je li maxTeams custom ili standard
     let maxTeams = tournamentData.maxTeams;
     if (maxTeams === 'custom' && tournamentData.customMaxTeams) {
       maxTeams = parseInt(tournamentData.customMaxTeams);
+    } else if (maxTeams) {
+      maxTeams = parseInt(maxTeams);
+    } else {
+      maxTeams = 8;
     }
 
+    console.log('✅ Max teams:', maxTeams);
+
     const tournament = new Tournament({
-      ...tournamentData,
+      name: tournamentData.name.trim(),
+      sport: tournamentData.sport.trim(),
+      location: tournamentData.location.trim(),
+      city: tournamentData.city.trim(),
+      country: tournamentData.country || 'Hrvatska',  // ✅ DODANO
+      startDate: tournamentData.startDate,
+      endDate: tournamentData.endDate,
       maxTeams,
+      teamSize: tournamentData.teamSize || 5,
+      format: tournamentData.format || 'knockout',
+      prizePool: tournamentData.prizePool || 0,
+      entryFee: tournamentData.entryFee || 0,
+      prize: tournamentData.prize || '',  // ✅ DODANO
+      rules: tournamentData.rules || '',
+      description: tournamentData.description?.trim() || '',
       creator: userId,
-      status: new Date(tournamentData.startDate) > new Date() ? 'upcoming' : 'active'
+      status: new Date(tournamentData.startDate) > new Date() ? 'upcoming' : 'active',
+      registeredTeams: [],
+      bracket: []
     });
 
     await tournament.save();
     await tournament.populate('creator', 'username avatar');
 
-    // ✅ NOVO - Kreiraj aktivnost
+    console.log('✅ Tournament created:', tournament._id);
+
+    // Kreiraj aktivnost
     try {
       await createActivityHelper(
         userId,
@@ -83,7 +139,6 @@ exports.createTournament = async (req, res) => {
       );
     } catch (activityErr) {
       console.error('Greška pri kreiranju aktivnosti:', activityErr);
-      // Nastavi dalje iako aktivnost nije kreirana
     }
 
     res.status(201).json({ 
@@ -91,7 +146,7 @@ exports.createTournament = async (req, res) => {
       tournament 
     });
   } catch (error) {
-    console.error('Create tournament error:', error);
+    console.error('❌ Create tournament error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -101,7 +156,9 @@ exports.registerTeam = async (req, res) => {
   try {
     const { tournamentId } = req.params;
     const { teamName, players } = req.body;
-    const userId = req.user.id;
+    const userId = req.user._id;
+
+    console.log('📥 Register team request:', { tournamentId, teamName, userId });
 
     if (!teamName || !players || players.length === 0) {
       return res.status(400).json({ message: 'Popuni sve podatke o timu!' });
@@ -110,6 +167,7 @@ exports.registerTeam = async (req, res) => {
     const tournament = await Tournament.findById(tournamentId);
     
     if (!tournament) {
+      console.log('❌ Tournament not found:', tournamentId);
       return res.status(404).json({ message: 'Turnir ne postoji' });
     }
 
@@ -145,7 +203,9 @@ exports.registerTeam = async (req, res) => {
     await tournament.save();
     await tournament.populate('registeredTeams.captain', 'username avatar');
 
-    // ✅ NOVO - Kreiraj aktivnost
+    console.log('✅ Team registered to tournament');
+
+    // Kreiraj aktivnost
     try {
       await createActivityHelper(
         userId,
@@ -159,7 +219,6 @@ exports.registerTeam = async (req, res) => {
       );
     } catch (activityErr) {
       console.error('Greška pri kreiranju aktivnosti:', activityErr);
-      // Nastavi dalje iako aktivnost nije kreirana
     }
 
     res.json({ 
@@ -167,7 +226,7 @@ exports.registerTeam = async (req, res) => {
       tournament 
     });
   } catch (error) {
-    console.error('Register team error:', error);
+    console.error('❌ Register team error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -176,16 +235,20 @@ exports.registerTeam = async (req, res) => {
 exports.generateBracket = async (req, res) => {
   try {
     const { tournamentId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user._id;
+
+    console.log('📥 Generate bracket request:', { tournamentId, userId });
 
     const tournament = await Tournament.findById(tournamentId);
     
     if (!tournament) {
+      console.log('❌ Tournament not found:', tournamentId);
       return res.status(404).json({ message: 'Turnir ne postoji' });
     }
 
     // Provjeri je li kreator
-    if (tournament.creator.toString() !== userId) {
+    if (tournament.creator.toString() !== userId.toString()) {
+      console.log('⚠️ User is not creator');
       return res.status(403).json({ message: 'Samo kreator može generirati bracket!' });
     }
 
@@ -241,12 +304,14 @@ exports.generateBracket = async (req, res) => {
     tournament.status = 'active';
     await tournament.save();
 
+    console.log('✅ Bracket generated');
+
     res.json({ 
       message: 'Bracket generiran!', 
       tournament 
     });
   } catch (error) {
-    console.error('Generate bracket error:', error);
+    console.error('❌ Generate bracket error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -256,7 +321,7 @@ exports.updateMatch = async (req, res) => {
   try {
     const { tournamentId, matchId } = req.params;
     const { score1, score2 } = req.body;
-    const userId = req.user.id;
+    const userId = req.user._id;
 
     const tournament = await Tournament.findById(tournamentId);
     
@@ -265,7 +330,7 @@ exports.updateMatch = async (req, res) => {
     }
 
     // Provjeri je li kreator
-    if (tournament.creator.toString() !== userId) {
+    if (tournament.creator.toString() !== userId.toString()) {
       return res.status(403).json({ message: 'Samo kreator može ažurirati rezultate!' });
     }
 
@@ -298,12 +363,14 @@ exports.updateMatch = async (req, res) => {
 
     await tournament.save();
 
+    console.log('✅ Match updated');
+
     res.json({ 
       message: 'Rezultat ažuriran!', 
       tournament 
     });
   } catch (error) {
-    console.error('Update match error:', error);
+    console.error('❌ Update match error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -312,24 +379,30 @@ exports.updateMatch = async (req, res) => {
 exports.deleteTournament = async (req, res) => {
   try {
     const { tournamentId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user._id;
+
+    console.log('📥 Delete tournament request:', { tournamentId, userId });
 
     const tournament = await Tournament.findById(tournamentId);
     
     if (!tournament) {
+      console.log('❌ Tournament not found:', tournamentId);
       return res.status(404).json({ message: 'Turnir ne postoji' });
     }
 
     // Provjeri je li kreator
-    if (tournament.creator.toString() !== userId) {
+    if (tournament.creator.toString() !== userId.toString()) {
+      console.log('⚠️ User is not creator');
       return res.status(403).json({ message: 'Samo kreator može obrisati turnir!' });
     }
 
     await Tournament.findByIdAndDelete(tournamentId);
 
+    console.log('✅ Tournament deleted:', tournamentId);
+
     res.json({ message: 'Turnir obrisan!' });
   } catch (error) {
-    console.error('Delete tournament error:', error);
+    console.error('❌ Delete tournament error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

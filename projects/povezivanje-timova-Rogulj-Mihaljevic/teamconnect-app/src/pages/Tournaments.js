@@ -12,6 +12,8 @@ function Tournaments() {
   const navigate = useNavigate();
   const [tournaments, setTournaments] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [selectedTournament, setSelectedTournament] = useState(null);
   const [toast, setToast] = useState(null);
   const [activeTab, setActiveTab] = useState('active');
 
@@ -23,12 +25,18 @@ function Tournaments() {
     country: 'Hrvatska',
     startDate: '',
     endDate: '',
-    maxTeams: '',
+    maxTeams: 8,
+    customMaxTeams: '',
     teamSize: 5,
     format: 'knockout',
     entryFee: 0,
     prize: '',
     description: ''
+  });
+
+  const [registerData, setRegisterData] = useState({
+    teamName: '',
+    players: []
   });
 
   const sportsList = getAllSports();
@@ -39,84 +47,148 @@ function Tournaments() {
   }, []);
 
   const loadTournaments = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch('http://localhost:5000/api/tournaments', {
-      headers: token ? {
-        'Authorization': `Bearer ${token}`
-      } : {}
-    });
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/tournaments', {
+        headers: token ? {
+          'Authorization': `Bearer ${token}`
+        } : {}
+      });
 
-    if (response.ok) {
-      const data = await response.json();
-      setTournaments(data);
-    } else {
-      console.error('Failed to load tournaments');
+      if (response.ok) {
+        const data = await response.json();
+        setTournaments(data);
+        console.log(`Fetched ${data.length} tournaments`);
+      } else {
+        console.error('Failed to load tournaments');
+      }
+    } catch (error) {
+      console.error('Load tournaments error:', error);
     }
-  } catch (error) {
-    console.error('Load tournaments error:', error);
-  }
-};
-
-  const saveTournaments = (data) => {
-    localStorage.setItem('tournaments', JSON.stringify(data));
-    setTournaments(data);
   };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
- const handleCreateTournament = async () => {
-  if (!formData.name || !formData.sport || !formData.city || !formData.startDate) {
-    setToast({ message: 'Popuni sva obavezna polja!', type: 'error' });
-    return;
-  }
+  const handleRegisterChange = (e) => {
+    setRegisterData({ ...registerData, [e.target.name]: e.target.value });
+  };
 
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch('http://localhost:5000/api/tournaments', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(formData)
-    });
+  const handlePlayerChange = (index, value) => {
+    const newPlayers = [...registerData.players];
+    newPlayers[index] = { name: value, position: '' };
+    setRegisterData({ ...registerData, players: newPlayers });
+  };
 
-    const data = await response.json();
+  const handleCreateTournament = async () => {
+    console.log('🚀 Creating tournament with data:', formData);
 
-    if (response.ok) {
-      setShowCreateModal(false);
-      setFormData({
-        name: '',
-        sport: '',
-        location: '',
-        city: '',
-        country: 'Hrvatska',
-        startDate: '',
-        endDate: '',
-        maxTeams: 8,
-        customMaxTeams: '',
-        teamSize: 5,
-        format: 'knockout',
-        entryFee: 0,
-        prize: '',
-        description: ''
-      });
-      setToast({ message: 'Turnir uspješno kreiran! 🏆', type: 'success' });
-      loadTournaments(); // Refresh
-    } else {
-      setToast({ message: data.message, type: 'error' });
+    if (!formData.name || !formData.sport || !formData.city || !formData.startDate || !formData.endDate || !formData.location) {
+      setToast({ message: 'Popuni sva obavezna polja!', type: 'error' });
+      return;
     }
-  } catch (error) {
-    console.error('Create tournament error:', error);
-    setToast({ message: 'Greška pri kreiranju turnira', type: 'error' });
-  }
-};
 
-  const handleRegisterTeam = (tournamentId) => {
-    navigate(`/tournament/${tournamentId}/register`);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/tournaments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setShowCreateModal(false);
+        setFormData({
+          name: '',
+          sport: '',
+          location: '',
+          city: '',
+          country: 'Hrvatska',
+          startDate: '',
+          endDate: '',
+          maxTeams: 8,
+          customMaxTeams: '',
+          teamSize: 5,
+          format: 'knockout',
+          entryFee: 0,
+          prize: '',
+          description: ''
+        });
+        setToast({ message: 'Turnir uspješno kreiran! 🏆', type: 'success' });
+        loadTournaments();
+      } else {
+        console.error('Create tournament error:', data);
+        setToast({ message: data.message || 'Greška pri kreiranju turnira', type: 'error' });
+      }
+    } catch (error) {
+      console.error('Create tournament error:', error);
+      setToast({ message: 'Greška pri kreiranju turnira', type: 'error' });
+    }
+  };
+
+  const handleOpenRegister = (tournament) => {
+    setSelectedTournament(tournament);
+    
+    // Inicijaliziraj prazne igrače
+    const emptyPlayers = Array(tournament.teamSize).fill('').map(() => ({ name: '', position: '' }));
+    setRegisterData({
+      teamName: '',
+      players: emptyPlayers
+    });
+    
+    setShowRegisterModal(true);
+  };
+
+  const handleRegisterTeam = async () => {
+    console.log('🚀 Registering team:', registerData);
+
+    if (!registerData.teamName) {
+      setToast({ message: 'Unesi naziv tima!', type: 'error' });
+      return;
+    }
+
+    // Provjeri jesu li svi igrači uneseni
+    const filledPlayers = registerData.players.filter(p => p.name.trim() !== '');
+    if (filledPlayers.length !== selectedTournament.teamSize) {
+      setToast({ message: `Moraš unijeti ${selectedTournament.teamSize} igrača!`, type: 'error' });
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/tournaments/${selectedTournament._id}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          teamName: registerData.teamName,
+          players: filledPlayers
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setShowRegisterModal(false);
+        setRegisterData({ teamName: '', players: [] });
+        setToast({ message: 'Tim uspješno prijavljen! 🎉', type: 'success' });
+        loadTournaments();
+      } else {
+        console.error('Register team error:', data);
+        setToast({ message: data.message || 'Greška pri prijavi tima', type: 'error' });
+      }
+    } catch (error) {
+      console.error('Register team error:', error);
+      setToast({ message: 'Greška pri prijavi tima', type: 'error' });
+    }
   };
 
   const filterTournaments = (status) => {
@@ -198,7 +270,7 @@ function Tournaments() {
             </div>
           ) : (
             filteredTournaments.map(tournament => (
-              <div key={tournament.id} className="tournament-card card">
+              <div key={tournament._id} className="tournament-card card">
                 <div className="tournament-header-card">
                   <div className="tournament-sport">{tournament.sport}</div>
                   <div 
@@ -212,11 +284,11 @@ function Tournaments() {
                 <h3>{tournament.name}</h3>
                 
                 <div className="tournament-info">
-                  <p>📍 {tournament.city}, {tournament.country}</p>
+                  <p>📍 {tournament.city}, {tournament.country || 'Hrvatska'}</p>
                   <p>🏟️ {tournament.location}</p>
                   <p>📅 {formatDate(tournament.startDate)} - {formatDate(tournament.endDate)}</p>
                   <p>👥 Format: {tournament.format === 'knockout' ? 'Knockout' : 'Liga'}</p>
-                  <p>🎯 Timovi: {tournament.registeredTeams}/{tournament.maxTeams}</p>
+                  <p>🎯 Timovi: {tournament.registeredTeams?.length || 0}/{tournament.maxTeams}</p>
                   {tournament.prize && <p>🏆 Nagrada: {tournament.prize}</p>}
                   {tournament.entryFee > 0 && (
                     <p>💰 Kotizacija: {formatPrice(tournament.entryFee * 7.5345)}</p>
@@ -231,16 +303,18 @@ function Tournaments() {
                   <div className="progress-bar">
                     <div 
                       className="progress-fill"
-                      style={{ width: `${(tournament.registeredTeams / tournament.maxTeams) * 100}%` }}
+                      style={{ 
+                        width: `${((tournament.registeredTeams?.length || 0) / tournament.maxTeams) * 100}%` 
+                      }}
                     />
                   </div>
                 </div>
 
                 <div className="tournament-actions">
-                  {tournament.registeredTeams < tournament.maxTeams ? (
+                  {(tournament.registeredTeams?.length || 0) < tournament.maxTeams ? (
                     <button 
                       className="btn btn-primary"
-                      onClick={() => handleRegisterTeam(tournament.id)}
+                      onClick={() => handleOpenRegister(tournament)}
                     >
                       Prijavi tim
                     </button>
@@ -251,14 +325,14 @@ function Tournaments() {
                   )}
                   <button 
                     className="btn btn-secondary"
-                    onClick={() => navigate(`/tournament/${tournament.id}`)}
+                    onClick={() => navigate(`/tournament/${tournament._id}`)}
                   >
                     Detalji
                   </button>
                 </div>
 
                 <div className="tournament-creator">
-                  Organizator: {tournament.creator}
+                  Organizator: {tournament.creator?.username || 'Unknown'}
                 </div>
               </div>
             ))
@@ -273,33 +347,20 @@ function Tournaments() {
             <h2>🏆 Kreiraj novi turnir</h2>
             
             <div className="modal-form">
+              {/* Naziv turnira */}
               <div className="form-group">
-                <label>Broj timova</label>
-  <select 
-    name="maxTeams" 
-    value={formData.maxTeams} 
-    onChange={handleChange}
-  >
-    <option value={4}>4 tima</option>
-    <option value={8}>8 timova</option>
-    <option value={16}>16 timova</option>
-    <option value={32}>32 tima</option>
-    <option value="custom">Custom broj...</option>
-               </select>
-               {formData.maxTeams === 'custom' && (
-    <input
-      type="number"
-      name="customMaxTeams"
-      value={formData.customMaxTeams}
-      onChange={handleChange}
-      placeholder="Upiši broj timova"
-      min="2"
-      max="128"
-      style={{ marginTop: '10px' }}
-    />
-  )}
+                <label>Naziv turnira *</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="npr. Ljetni turnir u malom nogometu"
+                  required
+                />
               </div>
 
+              {/* Sport i Država */}
               <div className="form-row">
                 <div className="form-group">
                   <label>Sport *</label>
@@ -328,6 +389,7 @@ function Tournaments() {
                 </div>
               </div>
 
+              {/* Grad */}
               <div className="form-group">
                 <label>Grad *</label>
                 <select name="city" value={formData.city} onChange={handleChange}>
@@ -338,6 +400,7 @@ function Tournaments() {
                 </select>
               </div>
 
+              {/* Lokacija/Teren */}
               <div className="form-group">
                 <label>Lokacija/Teren *</label>
                 <input
@@ -349,6 +412,7 @@ function Tournaments() {
                 />
               </div>
 
+              {/* Datumi */}
               <div className="form-row">
                 <div className="form-group">
                   <label>Početak *</label>
@@ -373,30 +437,48 @@ function Tournaments() {
                 </div>
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Broj timova</label>
-                  <select name="maxTeams" value={formData.maxTeams} onChange={handleChange}>
-                    <option value={4}>4 tima</option>
-                    <option value={8}>8 timova</option>
-                    <option value={16}>16 timova</option>
-                    <option value={32}>32 tima</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Igrača po timu</label>
+              {/* Broj timova */}
+              <div className="form-group">
+                <label>Broj timova *</label>
+                <select 
+                  name="maxTeams" 
+                  value={formData.maxTeams} 
+                  onChange={handleChange}
+                >
+                  <option value={4}>4 tima</option>
+                  <option value={8}>8 timova</option>
+                  <option value={16}>16 timova</option>
+                  <option value={32}>32 tima</option>
+                  <option value="custom">Custom broj...</option>
+                </select>
+                {formData.maxTeams === 'custom' && (
                   <input
                     type="number"
-                    name="teamSize"
-                    value={formData.teamSize}
+                    name="customMaxTeams"
+                    value={formData.customMaxTeams}
                     onChange={handleChange}
-                    min={2}
-                    max={22}
+                    placeholder="Upiši broj timova"
+                    min="2"
+                    max="128"
+                    style={{ marginTop: '10px' }}
                   />
-                </div>
+                )}
               </div>
 
+              {/* Igrača po timu */}
+              <div className="form-group">
+                <label>Igrača po timu</label>
+                <input
+                  type="number"
+                  name="teamSize"
+                  value={formData.teamSize}
+                  onChange={handleChange}
+                  min={2}
+                  max={22}
+                />
+              </div>
+
+              {/* Format i Kotizacija */}
               <div className="form-row">
                 <div className="form-group">
                   <label>Format</label>
@@ -420,6 +502,7 @@ function Tournaments() {
                 </div>
               </div>
 
+              {/* Nagrada */}
               <div className="form-group">
                 <label>Nagrada (opcionalno)</label>
                 <input
@@ -431,6 +514,7 @@ function Tournaments() {
                 />
               </div>
 
+              {/* Opis */}
               <div className="form-group">
                 <label>Opis (opcionalno)</label>
                 <textarea
@@ -442,12 +526,67 @@ function Tournaments() {
                 />
               </div>
 
+              {/* Buttons */}
               <div className="modal-actions">
                 <button className="btn btn-secondary" onClick={() => setShowCreateModal(false)}>
                   Odustani
                 </button>
                 <button className="btn btn-primary" onClick={handleCreateTournament}>
                   Kreiraj turnir
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal za prijavu tima */}
+      {showRegisterModal && selectedTournament && (
+        <div className="modal-overlay" onClick={() => setShowRegisterModal(false)}>
+          <div className="create-tournament-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>🏆 Prijavi tim na {selectedTournament.name}</h2>
+            
+            <div className="modal-form">
+              <div className="form-group">
+                <label>Naziv tima *</label>
+                <input
+                  type="text"
+                  name="teamName"
+                  value={registerData.teamName}
+                  onChange={handleRegisterChange}
+                  placeholder="npr. Thunder Squad"
+                  required
+                />
+              </div>
+
+              <p style={{ marginBottom: '10px', fontWeight: 'bold' }}>
+                Igrači ({selectedTournament.teamSize} potrebno):
+              </p>
+
+              {registerData.players.map((player, index) => (
+                <div key={index} className="form-group">
+                  <input
+                    type="text"
+                    value={player.name}
+                    onChange={(e) => handlePlayerChange(index, e.target.value)}
+                    placeholder={`Igrač ${index + 1}`}
+                    required
+                  />
+                </div>
+              ))}
+
+              <div className="modal-actions">
+                <button 
+                  className="btn btn-secondary" 
+                  onClick={() => setShowRegisterModal(false)}
+                >
+                  Odustani
+                </button>
+                <button 
+                  className="btn btn-primary"
+                  onClick={handleRegisterTeam}
+                >
+                  Prijavi tim
                 </button>
               </div>
             </div>
