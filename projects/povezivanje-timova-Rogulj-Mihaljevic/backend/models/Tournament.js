@@ -11,14 +11,34 @@ const tournamentSchema = new mongoose.Schema({
   endDate: { type: Date, required: true },
   
   maxTeams: { type: Number, required: true },
-  teamSize: { type: Number, required: true },
+  
+  // ✅ NOVO - Min i Max igrača
+  minPlayersPerTeam: { 
+    type: Number, 
+    required: true,
+    default: 5,
+    min: 1
+  },
+  maxPlayersPerTeam: { 
+    type: Number, 
+    required: true,
+    default: 7,
+    min: 1
+  },
+  
+  // ✅ DEPRECATED - Čuvamo za backward compatibility
+  teamSize: { 
+    type: Number,
+    default: 5
+  },
+  
   format: { 
     type: String, 
     enum: ['knockout', 'league'],
     default: 'knockout'
   },
   
-  entryFee: { type: Number, default: 0 }, // U eurima
+  entryFee: { type: Number, default: 0 },
   prize: { type: String },
   description: { type: String },
   
@@ -62,7 +82,17 @@ const tournamentSchema = new mongoose.Schema({
 tournamentSchema.pre('save', function(next) {
   this.updatedAt = new Date();
   next();
-});// Indexi
+});
+
+// Validation - maxPlayers mora biti >= minPlayers
+tournamentSchema.pre('save', function(next) {
+  if (this.maxPlayersPerTeam < this.minPlayersPerTeam) {
+    return next(new Error('Maksimalan broj igrača mora biti veći ili jednak minimalnom broju'));
+  }
+  next();
+});
+
+// Indexi
 tournamentSchema.index({ sport: 1 });
 tournamentSchema.index({ city: 1 });
 tournamentSchema.index({ startDate: 1 });

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Toast from '../components/Toast';
-import Modal from '../components/Modal';
 import { formatPrice } from '../utils/currency';
 import { getAllSports } from '../data/sports';
 import { europeanCities } from '../data/cities';
@@ -27,6 +26,8 @@ function Tournaments() {
     endDate: '',
     maxTeams: 8,
     customMaxTeams: '',
+    minPlayersPerTeam: 5,
+    maxPlayersPerTeam: 7,
     teamSize: 5,
     format: 'knockout',
     entryFee: 0,
@@ -89,6 +90,12 @@ function Tournaments() {
       return;
     }
 
+    // Validacija min/max igrača
+    if (parseInt(formData.maxPlayersPerTeam) < parseInt(formData.minPlayersPerTeam)) {
+      setToast({ message: 'Maksimalan broj igrača mora biti veći ili jednak minimalnom!', type: 'error' });
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5000/api/tournaments', {
@@ -114,6 +121,8 @@ function Tournaments() {
           endDate: '',
           maxTeams: 8,
           customMaxTeams: '',
+          minPlayersPerTeam: 5,
+          maxPlayersPerTeam: 7,
           teamSize: 5,
           format: 'knockout',
           entryFee: 0,
@@ -135,8 +144,10 @@ function Tournaments() {
   const handleOpenRegister = (tournament) => {
     setSelectedTournament(tournament);
     
-    // Inicijaliziraj prazne igrače
-    const emptyPlayers = Array(tournament.teamSize).fill('').map(() => ({ name: '', position: '' }));
+    // ✅ Inicijaliziraj sa maxPlayersPerTeam umjesto teamSize
+    const maxPlayers = tournament.maxPlayersPerTeam || tournament.teamSize || 5;
+    const emptyPlayers = Array(maxPlayers).fill('').map(() => ({ name: '', position: '' }));
+    
     setRegisterData({
       teamName: '',
       players: emptyPlayers
@@ -153,10 +164,18 @@ function Tournaments() {
       return;
     }
 
-    // Provjeri jesu li svi igrači uneseni
+    // ✅ Provjeri min/max igrača
     const filledPlayers = registerData.players.filter(p => p.name.trim() !== '');
-    if (filledPlayers.length !== selectedTournament.teamSize) {
-      setToast({ message: `Moraš unijeti ${selectedTournament.teamSize} igrača!`, type: 'error' });
+    const minPlayers = selectedTournament.minPlayersPerTeam || selectedTournament.teamSize || 5;
+    const maxPlayers = selectedTournament.maxPlayersPerTeam || selectedTournament.teamSize || 5;
+
+    if (filledPlayers.length < minPlayers) {
+      setToast({ message: `Minimalno igrača: ${minPlayers}`, type: 'error' });
+      return;
+    }
+
+    if (filledPlayers.length > maxPlayers) {
+      setToast({ message: `Maksimalno igrača (sa zamjenama): ${maxPlayers}`, type: 'error' });
       return;
     }
 
@@ -289,6 +308,8 @@ function Tournaments() {
                   <p>📅 {formatDate(tournament.startDate)} - {formatDate(tournament.endDate)}</p>
                   <p>👥 Format: {tournament.format === 'knockout' ? 'Knockout' : 'Liga'}</p>
                   <p>🎯 Timovi: {tournament.registeredTeams?.length || 0}/{tournament.maxTeams}</p>
+                  {/* ✅ NOVO - Prikaz min/max igrača */}
+                  <p>👤 Igrači po timu: {tournament.minPlayersPerTeam || tournament.teamSize || 5} - {tournament.maxPlayersPerTeam || tournament.teamSize || 5}</p>
                   {tournament.prize && <p>🏆 Nagrada: {tournament.prize}</p>}
                   {tournament.entryFee > 0 && (
                     <p>💰 Kotizacija: {formatPrice(tournament.entryFee * 7.5345)}</p>
@@ -465,17 +486,39 @@ function Tournaments() {
                 )}
               </div>
 
-              {/* Igrača po timu */}
-              <div className="form-group">
-                <label>Igrača po timu</label>
-                <input
-                  type="number"
-                  name="teamSize"
-                  value={formData.teamSize}
-                  onChange={handleChange}
-                  min={2}
-                  max={22}
-                />
+              {/* ✅ NOVO - Min i Max igrača po timu */}
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Min igrača (osnova) *</label>
+                  <input
+                    type="number"
+                    name="minPlayersPerTeam"
+                    value={formData.minPlayersPerTeam}
+                    onChange={handleChange}
+                    min={1}
+                    max={22}
+                    placeholder="5"
+                  />
+                  <small style={{ color: '#666', fontSize: '12px' }}>
+                    Minimalni broj potreban za igru
+                  </small>
+                </div>
+
+                <div className="form-group">
+                  <label>Max igrača (+ zamjene) *</label>
+                  <input
+                    type="number"
+                    name="maxPlayersPerTeam"
+                    value={formData.maxPlayersPerTeam}
+                    onChange={handleChange}
+                    min={formData.minPlayersPerTeam || 1}
+                    max={22}
+                    placeholder="7"
+                  />
+                  <small style={{ color: '#666', fontSize: '12px' }}>
+                    Maksimalno sa zamjenama
+                  </small>
+                </div>
               </div>
 
               {/* Format i Kotizacija */}
@@ -559,8 +602,9 @@ function Tournaments() {
                 />
               </div>
 
+              {/* ✅ NOVO - Prikaz raspona igrača */}
               <p style={{ marginBottom: '10px', fontWeight: 'bold' }}>
-                Igrači ({selectedTournament.teamSize} potrebno):
+                Igrači (min {selectedTournament.minPlayersPerTeam || selectedTournament.teamSize || 5}, max {selectedTournament.maxPlayersPerTeam || selectedTournament.teamSize || 5}):
               </p>
 
               {registerData.players.map((player, index) => (
@@ -569,8 +613,7 @@ function Tournaments() {
                     type="text"
                     value={player.name}
                     onChange={(e) => handlePlayerChange(index, e.target.value)}
-                    placeholder={`Igrač ${index + 1}`}
-                    required
+                    placeholder={`Igrač ${index + 1}${index < (selectedTournament.minPlayersPerTeam || selectedTournament.teamSize || 5) ? ' *' : ' (zamjena)'}`}
                   />
                 </div>
               ))}
