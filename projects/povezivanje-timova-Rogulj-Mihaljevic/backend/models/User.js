@@ -46,48 +46,61 @@ const userSchema = new mongoose.Schema({
   
   // Verifikacija
   verificationCode: { type: String },
-  isVerified: { type: Boolean, default: true },
+  isVerified: { type: Boolean, default: false },
   
   // Prijatelji
-  friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  friends: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User',
+    default: []
+  }],
   friendRequests: [{
-    from: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    message: { type: String },
+    from: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'User',
+      required: true
+    },
+    message: { type: String, default: '' },
     sentAt: { type: Date, default: Date.now }
   }],
   
-  // Statistike (brzi pregled)
+  // Statistike
   stats: {
     totalMatches: { type: Number, default: 0 },
     totalWins: { type: Number, default: 0 },
     totalGoals: { type: Number, default: 0 }
   },
-  // Rating system
-rating: {
-  overall: { type: Number, default: 1000, min: 0, max: 3000 },
-  attack: { type: Number, default: 50, min: 0, max: 100 },
-  defense: { type: Number, default: 50, min: 0, max: 100 },
-  teamwork: { type: Number, default: 50, min: 0, max: 100 },
-  consistency: { type: Number, default: 50, min: 0, max: 100 },
-  lastUpdated: { type: Date, default: Date.now }
-},
-
-// Ranking
-rank: { 
-  type: String,
-  enum: ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'master'],
-  default: 'bronze'
-},
   
+  // Rating system
+  rating: {
+    overall: { type: Number, default: 1000, min: 0, max: 3000 },
+    attack: { type: Number, default: 50, min: 0, max: 100 },
+    defense: { type: Number, default: 50, min: 0, max: 100 },
+    teamwork: { type: Number, default: 50, min: 0, max: 100 },
+    consistency: { type: Number, default: 50, min: 0, max: 100 },
+    lastUpdated: { type: Date, default: Date.now }
+  },
+
+  // Ranking
+  rank: { 
+    type: String,
+    enum: ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'master'],
+    default: 'bronze'
+  },
+  
+  // ✅ DODANO - Refresh token
+  refreshToken: { type: String },
+  refreshTokenExpiry: { type: Date },
+  
+  // Timestamps
   createdAt: { type: Date, default: Date.now },
   lastActive: { type: Date, default: Date.now }
 });
-refreshToken: { type: String }
-refreshTokenExpiry: { type: Date }
+
 // Indexi za performance
 userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ username: 1 }, { unique: true });
-userSchema.index({ 'rating.overall': -1 }); // Za leaderboard
+userSchema.index({ 'rating.overall': -1 });
 userSchema.index({ rank: 1 });
 userSchema.index({ sport: 1 });
 userSchema.index({ city: 1 });
@@ -96,4 +109,5 @@ userSchema.index({ createdAt: -1 });
 
 // Compound index za search
 userSchema.index({ username: 'text', email: 'text' });
+
 module.exports = mongoose.model('User', userSchema);

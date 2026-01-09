@@ -1,9 +1,7 @@
-import api from '../utils/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Toast from '../components/Toast';
-import Modal from '../components/Modal';
 import './Friends.css';
 
 function Friends() {
@@ -17,6 +15,7 @@ function Friends() {
   const [showMessageModal, setShowMessageModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [friendRequestMessage, setFriendRequestMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -31,32 +30,58 @@ function Friends() {
   const loadFriends = async () => {
     try {
       const token = localStorage.getItem('token');
+      
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      
       const response = await fetch('http://localhost:5000/api/friends', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
+      if (response.status === 401) {
+        localStorage.clear();
+        navigate('/login');
+        return;
+      }
+
       if (response.ok) {
         const data = await response.json();
         setFriends(data);
+        console.log('✅ Loaded friends:', data.length);
       }
     } catch (error) {
-      console.error('Load friends error:', error);
+      console.error('❌ Load friends error:', error);
     }
   };
 
   const loadRequests = async () => {
     try {
       const token = localStorage.getItem('token');
+      
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      
       const response = await fetch('http://localhost:5000/api/friends/requests', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
+      if (response.status === 401) {
+        localStorage.clear();
+        navigate('/login');
+        return;
+      }
+
       if (response.ok) {
         const data = await response.json();
         setRequests(data);
+        console.log('✅ Loaded requests:', data.length);
       }
     } catch (error) {
-      console.error('Load requests error:', error);
+      console.error('❌ Load requests error:', error);
     }
   };
 
@@ -66,22 +91,42 @@ function Friends() {
       return;
     }
 
+    setLoading(true);
+
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/friends/search?query=${searchQuery}`, {
+      
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      console.log('🔍 Searching for:', searchQuery);
+
+      const res = await fetch(`http://localhost:5000/api/friends/search?query=${encodeURIComponent(searchQuery)}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+
+      if (res.status === 401) {
+        localStorage.clear();
+        navigate('/login');
+        return;
+      }
 
       if (res.ok) {
         const data = await res.json();
         setSearchResults(data);
         setActiveTab('search');
+        console.log('✅ Search results:', data.length);
       } else {
-        setToast({ message: 'Greška pri pretrazi', type: 'error' });
+        const errorData = await res.json();
+        setToast({ message: errorData.message || 'Greška pri pretrazi', type: 'error' });
       }
     } catch (error) {
-      console.error('Search error:', error);
+      console.error('❌ Search error:', error);
       setToast({ message: 'Greška pri pretrazi', type: 'error' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -95,6 +140,14 @@ function Friends() {
 
     try {
       const token = localStorage.getItem('token');
+      
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      console.log('📤 Sending friend request to:', selectedUser.username);
+
       const res = await fetch(`http://localhost:5000/api/friends/request/${selectedUser._id}`, {
         method: 'POST',
         headers: {
@@ -103,6 +156,12 @@ function Friends() {
         },
         body: JSON.stringify({ message: friendRequestMessage })
       });
+
+      if (res.status === 401) {
+        localStorage.clear();
+        navigate('/login');
+        return;
+      }
 
       const data = await res.json();
 
@@ -113,10 +172,10 @@ function Friends() {
         setSelectedUser(null);
         handleSearch(); // refresh search results
       } else {
-        setToast({ message: data.message, type: 'error' });
+        setToast({ message: data.message || 'Greška pri slanju zahtjeva', type: 'error' });
       }
     } catch (error) {
-      console.error('Send request error:', error);
+      console.error('❌ Send request error:', error);
       setToast({ message: 'Greška pri slanju zahtjeva', type: 'error' });
     }
   };
@@ -124,10 +183,22 @@ function Friends() {
   const handleAcceptRequest = async (requestId) => {
     try {
       const token = localStorage.getItem('token');
+      
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
       const res = await fetch(`http://localhost:5000/api/friends/accept/${requestId}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
+
+      if (res.status === 401) {
+        localStorage.clear();
+        navigate('/login');
+        return;
+      }
 
       const data = await res.json();
 
@@ -136,10 +207,10 @@ function Friends() {
         loadRequests();
         loadFriends();
       } else {
-        setToast({ message: data.message, type: 'error' });
+        setToast({ message: data.message || 'Greška pri prihvaćanju', type: 'error' });
       }
     } catch (error) {
-      console.error('Accept request error:', error);
+      console.error('❌ Accept request error:', error);
       setToast({ message: 'Greška pri prihvaćanju zahtjeva', type: 'error' });
     }
   };
@@ -147,50 +218,82 @@ function Friends() {
   const handleRejectRequest = async (requestId) => {
     try {
       const token = localStorage.getItem('token');
+      
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
       const res = await fetch(`http://localhost:5000/api/friends/reject/${requestId}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
+
+      if (res.status === 401) {
+        localStorage.clear();
+        navigate('/login');
+        return;
+      }
 
       if (res.ok) {
         setToast({ message: 'Zahtjev odbijen', type: 'info' });
         loadRequests();
       }
     } catch (error) {
-      console.error('Reject request error:', error);
+      console.error('❌ Reject request error:', error);
       setToast({ message: 'Greška pri odbijanju zahtjeva', type: 'error' });
     }
   };
 
   const handleRemoveFriend = async (friendId) => {
+    if (!window.confirm('Jesi li siguran/a da želiš ukloniti prijatelja?')) {
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
+      
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
       const res = await fetch(`http://localhost:5000/api/friends/${friendId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
+
+      if (res.status === 401) {
+        localStorage.clear();
+        navigate('/login');
+        return;
+      }
 
       if (res.ok) {
         setToast({ message: 'Prijatelj uklonjen', type: 'info' });
         loadFriends();
       }
     } catch (error) {
-      console.error('Remove friend error:', error);
+      console.error('❌ Remove friend error:', error);
       setToast({ message: 'Greška pri uklanjanju prijatelja', type: 'error' });
     }
   };
 
   const formatDate = (timestamp) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffHours < 1) return 'Prije manje od 1h';
-    if (diffHours < 24) return `Prije ${diffHours}h`;
-    if (diffDays < 7) return `Prije ${diffDays} dana`;
-    return date.toLocaleDateString('hr-HR');
+      if (diffHours < 1) return 'Prije manje od 1h';
+      if (diffHours < 24) return `Prije ${diffHours}h`;
+      if (diffDays < 7) return `Prije ${diffDays} dana`;
+      return date.toLocaleDateString('hr-HR');
+    } catch (error) {
+      return '';
+    }
   };
 
   return (
@@ -214,9 +317,14 @@ function Friends() {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Pretraži po korisničkom imenu ili emailu..."
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              disabled={loading}
             />
-            <button className="btn btn-primary" onClick={handleSearch}>
-              Pretraži
+            <button 
+              className="btn btn-primary" 
+              onClick={handleSearch}
+              disabled={loading}
+            >
+              {loading ? 'Tražim...' : 'Pretraži'}
             </button>
           </div>
         </div>
@@ -263,12 +371,12 @@ function Friends() {
                     <div key={friend._id} className="friend-card card">
                       <div className="friend-header">
                         <div className="friend-avatar-wrapper">
-                          <div className="friend-avatar">{friend.avatar}</div>
+                          <div className="friend-avatar">{friend.avatar || '👤'}</div>
                         </div>
                         <div className="friend-info">
                           <h4>{friend.username}</h4>
                           <p className="friend-email">{friend.email}</p>
-                          {friend.sport && <p className="friend-sport">{friend.sport}</p>}
+                          {friend.sport && <p className="friend-sport">⚽ {friend.sport}</p>}
                           {friend.location && <p className="friend-location">📍 {friend.location}</p>}
                         </div>
                       </div>
@@ -308,17 +416,17 @@ function Friends() {
                   {requests.map(request => (
                     <div key={request._id} className="request-card card">
                       <div className="request-header">
-                        <div className="request-avatar">{request.from.avatar}</div>
+                        <div className="request-avatar">{request.from?.avatar || '👤'}</div>
                         <div className="request-info">
-                          <h4>{request.from.username}</h4>
-                          <p className="request-email">{request.from.email}</p>
-                          {request.from.sport && <p className="request-sport">{request.from.sport}</p>}
+                          <h4>{request.from?.username || 'Unknown'}</h4>
+                          <p className="request-email">{request.from?.email || ''}</p>
+                          {request.from?.sport && <p className="request-sport">⚽ {request.from.sport}</p>}
                         </div>
                       </div>
 
                       {request.message && <p className="request-message">"{request.message}"</p>}
 
-                      <p className="request-time">{formatDate(request.sentAt)}</p>
+                      <p className="request-time">{formatDate(request.sentAt || request.createdAt)}</p>
 
                       <div className="request-actions">
                         <button
@@ -355,11 +463,11 @@ function Friends() {
                   {searchResults.map(user => (
                     <div key={user._id} className="search-result-card card">
                       <div className="result-header">
-                        <div className="result-avatar">{user.avatar}</div>
+                        <div className="result-avatar">{user.avatar || '👤'}</div>
                         <div className="result-info">
                           <h4>{user.username}</h4>
                           <p className="result-email">{user.email}</p>
-                          {user.sport && <p className="result-sport">{user.sport}</p>}
+                          {user.sport && <p className="result-sport">⚽ {user.sport}</p>}
                           {user.location && <p className="result-location">📍 {user.location}</p>}
                         </div>
                       </div>
@@ -372,6 +480,10 @@ function Friends() {
                         ) : user.requestSent ? (
                           <button className="btn btn-disabled" disabled>
                             ✉️ Zahtjev poslan
+                          </button>
+                        ) : user._id === currentUser.id ? (
+                          <button className="btn btn-disabled" disabled>
+                            👤 To si ti
                           </button>
                         ) : (
                           <button
@@ -405,6 +517,7 @@ function Friends() {
                 onChange={(e) => setFriendRequestMessage(e.target.value)}
                 placeholder="Napiši kratku poruku..."
                 rows="3"
+                maxLength={200}
               />
             </div>
 
