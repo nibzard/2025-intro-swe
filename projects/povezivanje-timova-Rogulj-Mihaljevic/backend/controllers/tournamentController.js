@@ -2,6 +2,16 @@ const Tournament = require('../models/Tournament');
 const User = require('../models/User');
 const { createActivityHelper } = require('./activityController');
 
+// ⚠️ Email funcionalnost privremeno isključena
+// const nodemailer = require('nodemailer');
+// const transporter = nodemailer.createTransporter({
+//   service: 'gmail',
+//   auth: {
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASS
+//   }
+// });
+
 // Dohvati sve turnire
 exports.getTournaments = async (req, res) => {
   try {
@@ -15,6 +25,32 @@ exports.getTournaments = async (req, res) => {
     const tournaments = await Tournament.find(query)
       .populate('creator', 'username avatar')
       .sort({ startDate: 1 });
+
+    // Auto-update status
+    const now = new Date();
+    for (const tournament of tournaments) {
+      let newStatus = tournament.status;
+      
+      // Ako je datum završetka prošao
+      if (new Date(tournament.endDate) < now && tournament.status !== 'finished') {
+        newStatus = 'finished';
+      }
+      // Ako turnir još nije počeo i popunjen je
+      else if (new Date(tournament.startDate) > now && tournament.registeredTeams.length === tournament.maxTeams) {
+        newStatus = 'upcoming';
+      }
+      // Ako je otvoren za prijave ili je u tijeku
+      else if (tournament.registeredTeams.length < tournament.maxTeams || 
+               (new Date(tournament.startDate) <= now && new Date(tournament.endDate) >= now)) {
+        newStatus = 'active';
+      }
+      
+      // Spremi ako se promijenio
+      if (newStatus !== tournament.status) {
+        tournament.status = newStatus;
+        await tournament.save();
+      }
+    }
 
     console.log(`✅ Fetched ${tournaments.length} tournaments`);
 
@@ -97,7 +133,7 @@ exports.createTournament = async (req, res) => {
       maxTeams = 8;
     }
 
-    // ✅ NOVO - Min i Max igrača
+    // Min i Max igrača
     const minPlayers = parseInt(tournamentData.minPlayersPerTeam) || 5;
     const maxPlayers = parseInt(tournamentData.maxPlayersPerTeam) || 7;
 
@@ -130,7 +166,7 @@ exports.createTournament = async (req, res) => {
       rules: tournamentData.rules || '',
       description: tournamentData.description?.trim() || '',
       creator: userId,
-      status: new Date(tournamentData.startDate) > new Date() ? 'upcoming' : 'active',
+      status: 'active',
       registeredTeams: [],
       bracket: []
     });
@@ -178,7 +214,8 @@ exports.registerTeam = async (req, res) => {
       return res.status(400).json({ message: 'Popuni sve podatke o timu!' });
     }
 
-    const tournament = await Tournament.findById(tournamentId);
+    const tournament = await Tournament.findById(tournamentId)
+      .populate('creator', 'username email');
     
     if (!tournament) {
       console.log('❌ Tournament not found:', tournamentId);
@@ -199,7 +236,7 @@ exports.registerTeam = async (req, res) => {
       return res.status(400).json({ message: 'Tim s tim imenom već postoji!' });
     }
 
-    // ✅ NOVO - Provjeri min/max igrača
+    // Provjeri min/max igrača
     const minPlayers = tournament.minPlayersPerTeam || tournament.teamSize || 5;
     const maxPlayers = tournament.maxPlayersPerTeam || tournament.teamSize || 5;
 
@@ -215,6 +252,9 @@ exports.registerTeam = async (req, res) => {
       });
     }
 
+    // Dohvati kapitena
+    const captain = await User.findById(userId);
+
     // Dodaj tim
     tournament.registeredTeams.push({
       teamName,
@@ -227,6 +267,35 @@ exports.registerTeam = async (req, res) => {
     await tournament.populate('registeredTeams.captain', 'username avatar');
 
     console.log('✅ Team registered to tournament');
+
+    // ⚠️ EMAIL FUNKCIONALNOST PRIVREMENO ISKLJUČENA
+    console.log('⚠️ Email notifications are temporarily disabled');
+    
+    /*
+    // Email KAPITANU
+    try {
+      const captainMailOptions = {
+        from: process.env.EMAIL_USER,
+        to: captain.email,
+        subject: `🏆 Tim "${teamName}" uspješno prijavljen na turnir!`,
+        html: `...`
+      };
+      await transporter.sendMail(captainMailOptions);
+      console.log('✅ Email sent to captain');
+
+      // Email ORGANIZATORU
+      const organizerMailOptions = {
+        from: process.env.EMAIL_USER,
+        to: tournament.creator.email,
+        subject: `🎉 Novi tim prijavljen na "${tournament.name}"!`,
+        html: `...`
+      };
+      await transporter.sendMail(organizerMailOptions);
+      console.log('✅ Email sent to organizer');
+    } catch (emailErr) {
+      console.error('❌ Email sending error:', emailErr);
+    }
+    */
 
     // Kreiraj aktivnost
     try {
@@ -250,6 +319,63 @@ exports.registerTeam = async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Register team error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Odjavi tim sa turnira
+exports.unregisterTeam = async (req, res) => {
+  try {
+    const { tournamentId } = req.params;
+    const userId = req.user._id;
+
+    console.log('📥 Unregister team request:', { tournamentId, userId });
+
+    const tournament = await Tournament.findById(tournamentId);
+    
+    if (!tournament) {
+      console.log('❌ Tournament not found:', tournamentId);
+      return res.status(404).json({ message: 'Turnir ne postoji' });
+    }
+
+    // Pronađi tim gdje je korisnik kapetan
+    const teamIndex = tournament.registeredTeams.findIndex(
+      team => team.captain && team.captain.toString() === userId.toString()
+    );
+
+    if (teamIndex === -1) {
+      return res.status(404).json({ message: 'Nisi registriran na ovom turniru' });
+    }
+
+    // Ukloni tim
+    const removedTeam = tournament.registeredTeams[teamIndex];
+    tournament.registeredTeams.splice(teamIndex, 1);
+    await tournament.save();
+
+    console.log('✅ Team unregistered from tournament');
+
+    // Kreiraj aktivnost
+    try {
+      await createActivityHelper(
+        userId,
+        'tournament_left',
+        {
+          tournamentId: tournament._id,
+          tournamentName: tournament.name,
+          teamName: removedTeam.teamName
+        },
+        'public'
+      );
+    } catch (activityErr) {
+      console.error('Greška pri kreiranju aktivnosti:', activityErr);
+    }
+
+    res.json({ 
+      message: 'Tim uspješno odjavljen!', 
+      tournament 
+    });
+  } catch (error) {
+    console.error('❌ Unregister team error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -429,60 +555,5 @@ exports.deleteTournament = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-// Odjavi tim sa turnira
-exports.unregisterTeam = async (req, res) => {
-  try {
-    const { tournamentId } = req.params;
-    const userId = req.user._id;
 
-    console.log('📥 Unregister team request:', { tournamentId, userId });
-
-    const tournament = await Tournament.findById(tournamentId);
-    
-    if (!tournament) {
-      console.log('❌ Tournament not found:', tournamentId);
-      return res.status(404).json({ message: 'Turnir ne postoji' });
-    }
-
-    // Pronađi tim gdje je korisnik kapetan
-    const teamIndex = tournament.registeredTeams.findIndex(
-      team => team.captain && team.captain.toString() === userId.toString()
-    );
-
-    if (teamIndex === -1) {
-      return res.status(404).json({ message: 'Nisi registriran na ovom turniru' });
-    }
-
-    // Ukloni tim
-    const removedTeam = tournament.registeredTeams[teamIndex];
-    tournament.registeredTeams.splice(teamIndex, 1);
-    await tournament.save();
-
-    console.log('✅ Team unregistered from tournament');
-
-    // Kreiraj aktivnost
-    try {
-      await createActivityHelper(
-        userId,
-        'tournament_left',
-        {
-          tournamentId: tournament._id,
-          tournamentName: tournament.name,
-          teamName: removedTeam.teamName
-        },
-        'public'
-      );
-    } catch (activityErr) {
-      console.error('Greška pri kreiranju aktivnosti:', activityErr);
-    }
-
-    res.json({ 
-      message: 'Tim uspješno odjavljen!', 
-      tournament 
-    });
-  } catch (error) {
-    console.error('❌ Unregister team error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
 module.exports = exports;
