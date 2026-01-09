@@ -100,27 +100,120 @@ def analyze_meal():
 
 @app.route('/api/lookup_meal', methods=['POST'])
 def lookup_meal():
-    """Ruta za pretraživanje simulirane baze podataka."""
+    """
+    Ruta za pretraživanje simulirane baze podataka.
+    Ako namirnica nije pronađena, koristi AI za procjenu.
+    """
     data = request.json
-    meal_name = data.get('meal_name', '').lower()
+    meal_name_raw = data.get('meal_name', '')
+    meal_name_lower = meal_name_raw.lower()
     grams = data.get('grams', 100)
 
-    if meal_name in MEAL_DB:
-        base_data = MEAL_DB[meal_name]
+    if not meal_name_raw or grams <= 0:
+        return jsonify({"success": False, "error": "Naziv obroka i gramaža su obavezni."}), 400
+
+    # 1. POKUŠAJ TRAŽENJA U SIMULIRANOJ BAZI (MEAL_DB)
+    if meal_name_lower in MEAL_DB:
+        base_data = MEAL_DB[meal_name_lower]
         factor = grams / 100.0
 
         result = {
             "success": True,
-            "name": f"{meal_name.capitalize()} ({grams}g)",
+            "name": f"{meal_name_raw} ({grams}g) [Baza]",
             "calories": base_data['calories_per_100g'] * factor,
             "protein": base_data['protein'] * factor,
             "fat": base_data['fat'] * factor,
             "carbs": base_data['carbs'] * factor
         }
         return jsonify(result)
-    else:
-        return jsonify({"success": False, "error": "Namirnica nije pronađena."}), 404
+    
+    # 2. AKO NIJE NAĐENO U BAZI, KORISTI AI ZA PROCJENU
+    
+    prompt = (
+        f"Procijeni nutritivne vrijednosti za '{meal_name_raw}', za količinu od {grams} grama. "
+        "Vrati procjenu ukupnih kalorija (kcal), proteina (g), masti (g) i ugljikohidrata (g) za tu navedenu gramažu. "
+        "Odgovor MORA biti striktno u JSON formatu i MORA sadržavati polja: 'calories', 'protein', 'fat' i 'carbs'. "
+        "Sve vrijednosti trebaju biti kao brojevi. Primjer: {'calories': 350.5, 'protein': 25.1, 'fat': 15.0, 'carbs': 30.2}"
+    )
 
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=300,
+            response_format={"type": "json_object"}
+        )
+
+        json_string = response.choices[0].message.content
+        meal_data = json.loads(json_string)
+
+        required_keys = ['calories', 'protein', 'fat', 'carbs']
+        if all(k in meal_data for k in required_keys):
+            return jsonify({
+                "success": True,
+                "name": f"{meal_name_raw} ({grams}g)",
+                "calories": float(meal_data['calories']),
+                "protein": float(meal_data['protein']),
+                "fat": float(meal_data['fat']),
+                "carbs": float(meal_data['carbs'])
+            })
+        else:
+            return jsonify({"success": False, "error": "AI procjena nije vratila ispravan JSON format."}), 500
+
+    except Exception as e:
+        print(f"Greška u AI pretraživanju/procjeni: {e}")
+        return jsonify({"success": False, "error": f"Interna serverska greška u AI obradi: {str(e)}"}), 500
+@app.route('/api/calculate_tdee', methods=['POST'])
+def calculate_tdee():
+    """Ruta za izračun dnevnih kalorija (TDEE) pomoću AI."""
+    data = request.json
+    
+    # Provjera ulaznih podataka
+    required_fields = ['age', 'weight', 'height', 'activity', 'target_weight']
+    if not all(field in data for field in required_fields):
+        return jsonify({"success": False, "error": "Nedostaju potrebni podaci."}), 400
+
+    age = data['age']
+    weight = data['weight']
+    height = data['height']
+    activity = data['activity']
+    target_weight = data['target_weight']
+
+    # Kreiranje prompta za OpenAI
+    prompt = (
+        f"Korisnik ima {age} godina, težak je {weight} kg, visok {height} cm, a razina aktivnosti mu je '{activity}'. "
+        f"Željena težina mu je {target_weight} kg. "
+        "Koristeći standardne formule (kao što je Mifflin-St Jeor), najprije izračunaj bazalni metabolizam (BMR), zatim ukupnu dnevnu potrošnju energije (TDEE) i na kraju, "
+        "preporučenu dnevnu kalorijsku potrebu za postizanje željenog cilja. "
+        "Odgovor MORA biti striktno u JSON formatu i MORA sadržavati polja: "
+        "'tdee_recommendation' (preporučeni unos kalorija u kcal, kao cijeli broj) "
+        "i 'explanation' (kratko objašnjenje preporuke). "
+        "Primjer: {'tdee_recommendation': 2100, 'explanation': 'Za umjereni deficit radi gubitka težine...'}"
+    )
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",  # Koristimo brži i jeftiniji model za ovakve zadatke
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=500,
+            response_format={"type": "json_object"}
+        )
+
+        json_string = response.choices[0].message.content
+        result_data = json.loads(json_string)
+
+        if 'tdee_recommendation' in result_data and 'explanation' in result_data:
+            return jsonify({
+                "success": True,
+                "recommended_kcal": int(result_data['tdee_recommendation']),
+                "explanation": result_data['explanation']
+            })
+        else:
+            return jsonify({"success": False, "error": "AI nije vratio ispravan JSON format."}), 500
+
+    except Exception as e:
+        print(f"Greška u TDEE kalkulaciji: {e}")
+        return jsonify({"success": False, "error": f"Interna serverska greška: {str(e)}"}), 500
 # ===================================================
 # POKRETANJE APLIKACIJE
 # ===================================================
