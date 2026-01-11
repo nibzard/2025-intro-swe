@@ -23,9 +23,10 @@ import {
   Loader2,
   Copy,
   Check,
+  Brain,
   FileText,
 } from 'lucide-react';
-import type { WatcherConfig, Intent } from './types.ts';
+import type { WatcherConfig, Intent, BrandMention } from './types.ts';
 import { GEMINI_MODELS } from './types.ts';
 import yaml from 'js-yaml';
 
@@ -35,20 +36,60 @@ import yaml from 'js-yaml';
 const API_BASE_URL = import.meta.env.VITE_API_URL ||
   (import.meta.env.PROD ? '/api' : 'http://127.0.0.1:8000');
 
-const FormattedAnswer = ({ text }: { text: string }) => {
+const FormattedAnswer = ({ text, mentions = [] }: { text: string; mentions?: BrandMention[] }) => {
   if (!text) return null;
+
+  // Prepare brand highlighting patterns
+  const uniqueBrands = Array.from(new Set(mentions.map(m => m.brand)));
+  // Match longest brands first to avoid partial matches
+  const sortedBrands = uniqueBrands.sort((a, b) => b.length - a.length);
+  const brandPattern = sortedBrands.length > 0 
+    ? new RegExp(`(${sortedBrands.map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi') 
+    : null;
+
+  const brandMap = new Map<string, boolean>();
+  mentions.forEach(m => brandMap.set(m.brand.toLowerCase(), m.is_mine));
+
+  const highlightText = (content: string) => {
+    if (!brandPattern || !content) return content;
+    
+    // Split by brand pattern to isolate brand mentions
+    return content.split(brandPattern).map((part, i) => {
+      const lower = part.toLowerCase();
+      // Check if this part is a detected brand
+      // We check via the map because the split might include delimiters that aren't brands 
+      // (though with capture group regex it includes the matches)
+      // Note: we must check if brandMap has the key.
+      // Since we constructed the regex from the keys, matches should be in the map.
+      // However, regex is case-insensitive, map keys should be lowercased.
+      if (brandMap.has(lower)) {
+        const isMine = brandMap.get(lower);
+        return (
+          <span key={i} className={isMine ? "text-emerald-300 font-medium" : "text-rose-300 font-medium"}>
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
 
   const processText = (str: string | JSX.Element): any => {
     if (typeof str !== 'string') return str;
     
-    // Handle bold **text**
+    // Handle bold **text** first
     // We highlight bold text in a primary color to make key entities (like brands or metrics) stand out
     const parts = str.split(/(\*\*.*?\*\*)/g);
     return parts.map((part, i) => {
       if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={i} className="text-primary-300 font-bold">{part.slice(2, -2)}</strong>;
+        const content = part.slice(2, -2);
+        return (
+          <strong key={i} className="text-primary-300 font-bold">
+            {highlightText(content)}
+          </strong>
+        );
       }
-      return part;
+      return highlightText(part);
     });
   };
 
@@ -760,7 +801,7 @@ function App() {
                             </div>
                             
                             <div className="bg-slate-900/40 rounded-xl p-5 mb-6 border border-slate-800/50">
-                                <FormattedAnswer text={intentResult.answer} />
+                                <FormattedAnswer text={intentResult.answer} mentions={intentResult.mentions} />
                             </div>
 
                             <div>
@@ -773,13 +814,13 @@ function App() {
                                       intentResult.mentions.map((mention: any, index: number) => (
                                           <div key={index} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
                                             mention.is_mine 
-                                              ? 'bg-primary-500/10 border-primary-500/30 text-primary-300' 
-                                              : 'bg-accent-500/10 border-accent-500/30 text-accent-300'
+                                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' 
+                                              : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
                                           }`}>
                                               <span className="font-medium">{mention.brand}</span>
                                               {mention.rank && (
                                                 <span className={`text-xs px-1.5 py-0.5 rounded ${
-                                                  mention.is_mine ? 'bg-primary-500/20' : 'bg-accent-500/20'
+                                                  mention.is_mine ? 'bg-emerald-500/20' : 'bg-rose-500/20'
                                                 }`}>
                                                   #{mention.rank}
                                                 </span>
