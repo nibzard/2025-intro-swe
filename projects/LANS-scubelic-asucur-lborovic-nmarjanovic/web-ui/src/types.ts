@@ -68,7 +68,4 @@ export interface BrandMention {
 
 export const GEMINI_MODELS = [
   { id: 'models/gemini-2.5-flash', name: 'Gemini 2.5 Flash', description: 'Latest and fastest model (recommended)' },
-  { id: 'models/gemini-2.0-flash', name: 'Gemini 2.0 Flash', description: 'Fast model' },
-  { id: 'models/gemini-1.5-pro-latest', name: 'Gemini 1.5 Pro', description: 'Most capable model for complex tasks' },
-  { id: 'models/gemini-1.5-flash-latest', name: 'Gemini 1.5 Flash', description: 'Fast and cost-effective' },
 ] as const;
