@@ -23,6 +23,7 @@ import {
   Loader2,
   Copy,
   Check,
+  FileText,
 } from 'lucide-react';
 import type { WatcherConfig, Intent } from './types.ts';
 import { GEMINI_MODELS } from './types.ts';
@@ -183,6 +184,92 @@ function App() {
     } finally {
       setIsRunning(false);
     }
+  };
+
+  const downloadResultsJSON = () => {
+    if (!results) return;
+    const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `results-${runId}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadResultsCSV = () => {
+    if (!results || !results.intents_data) return;
+    
+    // Header
+    const headers = ['Intent ID', 'Prompt', 'Answer', 'Brand', 'Rank', 'Is Mine'];
+    const rows = [headers.join(',')];
+
+    // Data
+    results.intents_data.forEach((intent: any) => {
+      if (intent.mentions && intent.mentions.length > 0) {
+        intent.mentions.forEach((mention: any) => {
+          const row = [
+            `"${intent.intent_id}"`,
+            `"${intent.prompt.replace(/"/g, '""')}"`,
+            `"${intent.answer.replace(/"/g, '""')}"`,
+            `"${mention.brand}"`,
+            mention.rank || '',
+            mention.is_mine ? 'Yes' : 'No'
+          ];
+          rows.push(row.join(','));
+        });
+      } else {
+        // Row for intent with no mentions
+        const row = [
+            `"${intent.intent_id}"`,
+            `"${intent.prompt.replace(/"/g, '""')}"`,
+            `"${intent.answer.replace(/"/g, '""')}"`,
+            '',
+            '',
+            ''
+        ];
+        rows.push(row.join(','));
+      }
+    });
+
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `results-${runId}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadResultsText = () => {
+    if (!results || !results.intents_data) return;
+    
+    let text = `Search Results for Run: ${runId}\n`;
+    text += `Date: ${new Date().toLocaleString()}\n`;
+    text += '----------------------------------------\n\n';
+
+    results.intents_data.forEach((intent: any) => {
+      text += `Query: ${intent.prompt}\n`;
+      text += `ID: ${intent.intent_id}\n`;
+      text += `Answer:\n${intent.answer}\n\n`;
+      text += 'Mentions:\n';
+      if (intent.mentions && intent.mentions.length > 0) {
+        intent.mentions.forEach((mention: any) => {
+          text += `- ${mention.brand} (Rank: ${mention.rank || 'N/A'}) - ${mention.is_mine ? 'My Brand' : 'Competitor'}\n`;
+        });
+      } else {
+        text += 'No mentions found.\n';
+      }
+      text += '\n----------------------------------------\n\n';
+    });
+
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `results-${runId}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const isConfigValid =
@@ -564,7 +651,24 @@ function App() {
         ) : (
           /* Results Tab */
           <div className="glass-card p-8">
-            <h2 className="text-2xl font-bold text-slate-200 mb-4">Search Results for Run: <span className="text-primary-400">{runId}</span></h2>
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+              <h2 className="text-2xl font-bold text-slate-200">
+                Search Results for Run: <span className="text-primary-400">{runId}</span>
+              </h2>
+              {results && results.intents_data && results.intents_data.length > 0 && (
+                <div className="flex gap-2">
+                  <button onClick={downloadResultsCSV} className="btn-secondary text-sm px-3 py-2" title="Download CSV">
+                    <Download className="w-4 h-4 mr-2 inline" /> CSV
+                  </button>
+                  <button onClick={downloadResultsJSON} className="btn-secondary text-sm px-3 py-2" title="Download JSON">
+                    <Code className="w-4 h-4 mr-2 inline" /> JSON
+                  </button>
+                  <button onClick={downloadResultsText} className="btn-secondary text-sm px-3 py-2" title="Download Text">
+                    <FileText className="w-4 h-4 mr-2 inline" /> TXT
+                  </button>
+                </div>
+              )}
+            </div>
             {results && results.intents_data && results.intents_data.length > 0 ? (
                 <div className="space-y-6">
                     {results.intents_data.map((intentResult: any) => (
