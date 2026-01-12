@@ -1,4 +1,4 @@
-# ✅ **ENGINEERING SPECIFICATION – HERCircle (v0.1.0 Baseline)**
+# ✅ **ENGINEERING SPECIFICATION – HERChat (v0.1.0 Baseline)**
 
 ---
 
@@ -6,7 +6,7 @@
 
 ### **Project Name & Working Title:**
 
-**HERCircle – Social & Cycle Tracking Platform for Women**
+**HERChat – Social & Cycle Tracking Platform for Women**
 
 ### **Version / Date:**
 
@@ -14,7 +14,7 @@ v0.1.0 (Initial Engineering Spec)
 
 ### **High-Level Goal:**
 
-HERCircle je web aplikacija namijenjena ženama koja kombinira društvenu mrežu i praćenje menstrualnog ciklusa. Korisnicama pruža siguran prostor za dijeljenje objava, praćenje zdravlja, međusobnu podršku i izgradnju zajednice.
+HERChat je web aplikacija namijenjena ženama koja kombinira društvenu mrežu i praćenje menstrualnog ciklusa. Korisnicama pruža siguran prostor za dijeljenje objava, praćenje zdravlja, međusobnu podršku i izgradnju zajednice.
 
 ### **Core Value Proposition:**
 
@@ -116,7 +116,7 @@ MySQL Database
 ### **3.3 Project Directory Structure**
 
 ```text
-hercircle/
+HERChat/
  ├── backend/
  │   ├── routes/
  │   ├── controllers/
