@@ -130,6 +130,15 @@ body {
     color: var(--accent);
 }
 
+.btn-danger {
+    background: transparent;
+    border: 1px solid #a33;
+    color: #ff6b6b;
+}
+.btn-danger:hover {
+    background: rgba(163,51,51,0.06);
+}
+
 /* Inputs */
 
 input, textarea {
@@ -249,4 +258,40 @@ input:focus, textarea:focus {
     width: 18px;
     height: 18px;
 }
+
+/* Schedule table */
+
+.schedule-table th, .schedule-table td {
+    border: 1px solid var(--border);
+    padding: 8px;
+}
+
+.schedule-table tbody tr:nth-child(odd) {
+    background: linear-gradient(90deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));
+}
+
+.schedule-table td { cursor: pointer; }
+
+/* read-only visual */
+.read-only-schedule {
+    opacity: 0.95;
+}
+.read-only-schedule .schedule-table td { cursor: default; }
+
+/* Company settings form */
+.template-row {
+    display:flex;
+    gap:8px;
+    margin-top:8px;
+    align-items:center;
+}
+.template-row input {
+    width: 220px;
+}
+#companySettingsCard input[type="time"], #companySettingsCard input[type="number"] {
+    width: 160px;
+    margin-top:8px;
+}
+
+
 
