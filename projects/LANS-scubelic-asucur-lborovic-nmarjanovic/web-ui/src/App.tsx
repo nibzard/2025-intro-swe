@@ -23,8 +23,10 @@ import {
   Loader2,
   Copy,
   Check,
+  Brain,
+  FileText,
 } from 'lucide-react';
-import type { WatcherConfig, Intent } from './types.ts';
+import type { WatcherConfig, Intent, BrandMention } from './types.ts';
 import { GEMINI_MODELS } from './types.ts';
 import yaml from 'js-yaml';
 
@@ -33,6 +35,115 @@ import yaml from 'js-yaml';
 // In development: uses direct backend URL
 const API_BASE_URL = import.meta.env.VITE_API_URL ||
   (import.meta.env.PROD ? '/api' : 'http://127.0.0.1:8000');
+
+const FormattedAnswer = ({ text, mentions = [] }: { text: string; mentions?: BrandMention[] }) => {
+  if (!text) return null;
+
+  // Prepare brand highlighting patterns
+  const uniqueBrands = Array.from(new Set(mentions.map(m => m.brand)));
+  // Match longest brands first to avoid partial matches
+  const sortedBrands = uniqueBrands.sort((a, b) => b.length - a.length);
+  const brandPattern = sortedBrands.length > 0 
+    ? new RegExp(`(${sortedBrands.map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi') 
+    : null;
+
+  const brandMap = new Map<string, boolean>();
+  mentions.forEach(m => brandMap.set(m.brand.toLowerCase(), m.is_mine));
+
+  const highlightText = (content: string) => {
+    if (!brandPattern || !content) return content;
+    
+    // Split by brand pattern to isolate brand mentions
+    return content.split(brandPattern).map((part, i) => {
+      const lower = part.toLowerCase();
+      // Check if this part is a detected brand
+      // We check via the map because the split might include delimiters that aren't brands 
+      // (though with capture group regex it includes the matches)
+      // Note: we must check if brandMap has the key.
+      // Since we constructed the regex from the keys, matches should be in the map.
+      // However, regex is case-insensitive, map keys should be lowercased.
+      if (brandMap.has(lower)) {
+        const isMine = brandMap.get(lower);
+        return (
+          <span key={i} className={isMine ? "text-emerald-300 font-medium" : "text-rose-300 font-medium"}>
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
+  const processText = (str: string | JSX.Element): any => {
+    if (typeof str !== 'string') return str;
+    
+    // Handle bold **text** first
+    // We highlight bold text in a primary color to make key entities (like brands or metrics) stand out
+    const parts = str.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        const content = part.slice(2, -2);
+        return (
+          <strong key={i} className="text-primary-300 font-bold">
+            {highlightText(content)}
+          </strong>
+        );
+      }
+      return highlightText(part);
+    });
+  };
+
+  // Split by double newlines for paragraphs/sections
+  const sections = text.split(/\n\n+/);
+
+  return (
+    <div className="space-y-4">
+      {sections.map((section, sIdx) => {
+        // Handle ### headers
+        // We add a gradient line decoration to visually separate sections and improve readability
+        if (section.startsWith('### ')) {
+          return (
+            <h4 key={sIdx} className="text-lg font-bold text-slate-100 mt-6 mb-3 flex items-center gap-3">
+              <span className="h-px flex-1 bg-gradient-to-r from-primary-500/50 to-transparent"></span>
+              <span className="text-primary-200">{processText(section.slice(4))}</span>
+              <span className="h-px flex-1 bg-gradient-to-l from-primary-500/50 to-transparent"></span>
+            </h4>
+          );
+        }
+
+        const lines = section.split('\n').filter(l => l.trim());
+        
+        // Detection for list items (starts with -, *, • or 1.)
+        const isList = lines.every(line => /^\s*([-*•]|\d+\.)/.test(line.trim()));
+
+        if (isList && lines.length > 0) {
+          return (
+            <ul key={sIdx} className="space-y-2 ml-1">
+              {lines.map((line, lIdx) => {
+                const match = line.match(/^\s*([-*•]|\d+\.)\s*(.*)/);
+                if (match) {
+                  return (
+                    <li key={lIdx} className="flex gap-3 text-sm text-slate-300">
+                      <span className="text-primary-400 font-bold min-w-[12px] flex justify-center">{match[1].length > 1 ? match[1] : '•'}</span>
+                      <span className="flex-1">{processText(match[2])}</span>
+                    </li>
+                  );
+                }
+                return <p key={lIdx} className="text-sm text-slate-300 ml-6">{processText(line)}</p>;
+              })}
+            </ul>
+          );
+        }
+
+        return (
+          <p key={sIdx} className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
+            {processText(section)}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
 
 function App() {
   // State
@@ -63,6 +174,8 @@ function App() {
             provider: 'google',
             model_name: selectedModel,
             env_api_key: 'GEMINI_API_KEY',
+            // Instruct the model to format output for readability: bullet points, short paragraphs, and bold entities
+            system_prompt: "You are an unbiased market analyst. Provide factual, balanced recommendations. IMPORTANT: Structure your response using bullet points for lists and short paragraphs. Highlight key entities (brands, products, metrics) in **bold** to make them stand out. Avoid long blocks of text.",
             ...(enableWebSearch && { tools: [{ google_search: {} }] }),
           },
         ],
@@ -183,6 +296,98 @@ function App() {
     } finally {
       setIsRunning(false);
     }
+  };
+
+  // Export the full raw results object as a JSON file
+  // Useful for debugging or re-importing data later
+  const downloadResultsJSON = () => {
+    if (!results) return;
+    const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `results-${runId}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Export results as a CSV file for spreadsheet analysis
+  // Handles proper escaping of quotes in prompts and answers to ensure valid CSV format
+  const downloadResultsCSV = () => {
+    if (!results || !results.intents_data) return;
+    
+    // Header
+    const headers = ['Intent ID', 'Prompt', 'Answer', 'Brand', 'Rank', 'Is Mine'];
+    const rows = [headers.join(',')];
+
+    // Data
+    results.intents_data.forEach((intent: any) => {
+      if (intent.mentions && intent.mentions.length > 0) {
+        intent.mentions.forEach((mention: any) => {
+          const row = [
+            `"${intent.intent_id}"`,
+            `"${intent.prompt.replace(/"/g, '""')}"`,
+            `"${intent.answer.replace(/"/g, '""')}"`,
+            `"${mention.brand}"`,
+            mention.rank || '',
+            mention.is_mine ? 'Yes' : 'No'
+          ];
+          rows.push(row.join(','));
+        });
+      } else {
+        // Row for intent with no mentions
+        const row = [
+            `"${intent.intent_id}"`,
+            `"${intent.prompt.replace(/"/g, '""')}"`,
+            `"${intent.answer.replace(/"/g, '""')}"`,
+            '',
+            '',
+            ''
+        ];
+        rows.push(row.join(','));
+      }
+    });
+
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `results-${runId}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Generate a human-readable text report of the results
+  // Useful for quick sharing or reading without a spreadsheet viewer
+  const downloadResultsText = () => {
+    if (!results || !results.intents_data) return;
+    
+    let text = `Search Results for Run: ${runId}\n`;
+    text += `Date: ${new Date().toLocaleString()}\n`;
+    text += '----------------------------------------\n\n';
+
+    results.intents_data.forEach((intent: any) => {
+      text += `Query: ${intent.prompt}\n`;
+      text += `ID: ${intent.intent_id}\n`;
+      text += `Answer:\n${intent.answer}\n\n`;
+      text += 'Mentions:\n';
+      if (intent.mentions && intent.mentions.length > 0) {
+        intent.mentions.forEach((mention: any) => {
+          text += `- ${mention.brand} (Rank: ${mention.rank || 'N/A'}) - ${mention.is_mine ? 'My Brand' : 'Competitor'}\n`;
+        });
+      } else {
+        text += 'No mentions found.\n';
+      }
+      text += '\n----------------------------------------\n\n';
+    });
+
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `results-${runId}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const isConfigValid =
@@ -564,22 +769,70 @@ function App() {
         ) : (
           /* Results Tab */
           <div className="glass-card p-8">
-            <h2 className="text-2xl font-bold text-slate-200 mb-4">Search Results for Run: <span className="text-primary-400">{runId}</span></h2>
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+              <h2 className="text-2xl font-bold text-slate-200">
+                Search Results for Run: <span className="text-primary-400">{runId}</span>
+              </h2>
+              {results && results.intents_data && results.intents_data.length > 0 && (
+                <div className="flex gap-2">
+                  {/* Download buttons for exporting results in different formats (CSV, JSON, TXT) */}
+                  <button onClick={downloadResultsCSV} className="btn-secondary text-sm px-3 py-2" title="Download CSV">
+                    <Download className="w-4 h-4 mr-2 inline" /> CSV
+                  </button>
+                  <button onClick={downloadResultsJSON} className="btn-secondary text-sm px-3 py-2" title="Download JSON">
+                    <Code className="w-4 h-4 mr-2 inline" /> JSON
+                  </button>
+                  <button onClick={downloadResultsText} className="btn-secondary text-sm px-3 py-2" title="Download Text">
+                    <FileText className="w-4 h-4 mr-2 inline" /> TXT
+                  </button>
+                </div>
+              )}
+            </div>
             {results && results.intents_data && results.intents_data.length > 0 ? (
-                <div className="space-y-6">
+                <div className="space-y-8">
+                    {/* Render results in a card-based layout with formatted answers and mention tags */}
                     {results.intents_data.map((intentResult: any) => (
-                        <div key={intentResult.intent_id} className="p-4 bg-slate-800/30 rounded-xl border border-slate-700/50">
-                            <h3 className="font-bold text-lg text-slate-300">{intentResult.prompt}</h3>
-                            <p className="text-sm text-slate-400 italic mt-1">{intentResult.answer}</p>
-                            <div className="mt-4">
-                                <h4 className="font-semibold text-slate-400">Mentions:</h4>
-                                <ul className="list-disc list-inside mt-2 space-y-1">
-                                    {intentResult.mentions.map((mention: any, index: number) => (
-                                        <li key={index} className={`text-sm ${mention.is_mine ? 'text-primary-400' : 'text-accent-400'}`}>
-                                            {mention.brand} (Rank: {mention.rank || 'N/A'})
-                                        </li>
-                                    ))}
-                                </ul>
+                        <div key={intentResult.intent_id} className="p-6 bg-slate-800/20 rounded-2xl border border-slate-700/40 hover:border-slate-600/60 transition-colors">
+                            <div className="flex items-start gap-4 mb-4">
+                              <div className="w-8 h-8 rounded-lg bg-primary-500/20 flex items-center justify-center shrink-0">
+                                <MessageSquare className="w-4 h-4 text-primary-400" />
+                              </div>
+                              <h3 className="font-bold text-xl text-slate-100">{intentResult.prompt}</h3>
+                            </div>
+                            
+                            <div className="bg-slate-900/40 rounded-xl p-5 mb-6 border border-slate-800/50">
+                                <FormattedAnswer text={intentResult.answer} mentions={intentResult.mentions} />
+                            </div>
+
+                            <div>
+                                <div className="flex items-center gap-2 mb-3">
+                                  <Target className="w-4 h-4 text-accent-400" />
+                                  <h4 className="font-semibold text-slate-400 text-sm uppercase tracking-wider">Detected Mentions</h4>
+                                </div>
+                                <div className="flex flex-wrap gap-3">
+                                    {intentResult.mentions && intentResult.mentions.length > 0 ? (
+                                      intentResult.mentions.map((mention: any, index: number) => (
+                                          <div key={index} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
+                                            mention.is_mine 
+                                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' 
+                                              : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                                          }`}>
+                                              <span className="font-medium">{mention.brand}</span>
+                                              {mention.rank && (
+                                                <span className={`text-xs px-1.5 py-0.5 rounded ${
+                                                  mention.is_mine ? 'bg-emerald-500/20' : 'bg-rose-500/20'
+                                                }`}>
+                                                  #{mention.rank}
+                                                </span>
+                                              )}
+                                          </div>
+                                      ))
+                                    ) : (
+                                      <span className="text-sm text-slate-500 italic text-center w-full py-2 bg-slate-900/20 rounded-lg border border-dashed border-slate-800">
+                                        No brand mentions detected in this answer
+                                      </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))}

@@ -11,7 +11,7 @@ run_settings:
   models:
     # Google Gemini with Google Search grounding
     - provider: "google"
-      model_name: "gemini-2.0-flash-exp"
+      model_name: "models/gemini-2.5-flash"
       env_api_key: "GEMINI_API_KEY"
       system_prompt: "google/gemini-grounding"
       tools:
@@ -24,7 +24,7 @@ run_settings:
 extraction_settings:
   extraction_model:
     provider: "google"
-    model_name: "gemini-1.5-flash"  # Fast + cheap model optimized for extraction
+    model_name: "models/gemini-2.5-flash"  # Fast + cheap model optimized for extraction
     env_api_key: "GEMINI_API_KEY"
     system_prompt: "google/default"
 

@@ -24,7 +24,7 @@ run_settings:
   models:
     # Google Gemini (fast, cheap, recommended)
     - provider: "google"
-      model_name: "gemini-1.5-flash"
+      model_name: "models/gemini-2.5-flash"
       env_api_key: "GEMINI_API_KEY"
       system_prompt: "google/default"
 
@@ -50,19 +50,17 @@ intents:
   - id: "buying-decision"
     prompt: "Which [product type] should I choose?"
 
-# Optional: Advanced extraction settings
-# Uncomment to enable LLM-based extraction for better accuracy
-# extraction_settings:
-#   extraction_model:
-#     provider: "google"
-#     model_name: "gemini-1.5-flash"
-#     env_api_key: "GEMINI_API_KEY"
-#     system_prompt: "google/default"
-#   method: "function_calling"
-#   fallback_to_regex: true
-#   min_confidence: 0.7
-#   enable_sentiment_analysis: true
-#   enable_intent_classification: true
+extraction_settings:
+  extraction_model:
+    provider: "google"
+    model_name: "models/gemini-2.5-flash"
+    env_api_key: "GEMINI_API_KEY"
+    system_prompt: "google/default"
+  method: "function_calling"
+  fallback_to_regex: true
+  min_confidence: 0.7
+  enable_sentiment_analysis: true
+  enable_intent_classification: true
 
 # Optional: Budget controls to prevent runaway costs
 # Uncomment to enable cost limits
