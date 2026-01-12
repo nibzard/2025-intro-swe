@@ -41,3 +41,7 @@ NAPOMENA: da bi vam radilo, vaš laptop/PC i mob sa kojim ste skenirali apk,
 	-Potrebno je prilagoditi neke elemente stranice
 (7.12.2025.)(Lucija)
 	-Izrađena web aplikacija - potrebno ju je prilagoditi za mobitel
+(2.1.2026.)(Karlo)
+	-Zapažanje-mogući problemi-
+	--Plaćanje uz pomoć "novčanika":
+	---

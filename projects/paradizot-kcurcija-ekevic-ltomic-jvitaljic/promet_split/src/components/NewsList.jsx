@@ -15,11 +15,11 @@ export default function NewsList(){
         <article key={i} className="news-item">
           <div className="news-date">{n.date}</div>
           <h4>{n.title}</h4>
-          <a href="#">Pročitaj više</a>
+          <a className="btn btn-ghost" href="#">Pročitaj više</a>
         </article>
       ))}
       <div className="more-news">
-        <a href="#">Više novosti</a>
+        <a className="btn" href="#">Više novosti</a>
       </div>
     </section>
   )

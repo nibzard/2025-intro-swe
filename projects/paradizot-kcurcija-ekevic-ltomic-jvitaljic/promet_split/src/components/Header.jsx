@@ -1,9 +1,10 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import './Header.css'
 
 export default function Header(){
   return (
-    <header>
+    <header className="site-header">
       <div className="top-bar">
         <div className="container bar-inner">
           <div className="contact">
@@ -20,13 +21,13 @@ export default function Header(){
         <div className="logo">Promet Split</div>
         <nav className="nav">
           <ul>
-            <li>Naslovna</li>
-            <li>Vozni red</li>
-            <li>Linije</li>
-            <li>Cjenik</li>
-            <li>Obavijesti</li>
-            <li>Usluge</li>
-            <li>Kontakt</li>
+            <li><Link to="/">Naslovna</Link></li>
+            <li><Link to="/tickets">Naruči kartu</Link></li>
+            <li><Link to="/network">Mreža</Link></li>
+            <li><Link to="/map">Karta</Link></li>
+            <li><Link to="/profile">Profil</Link></li>
+            <li><Link to="/messages">Poruke</Link></li>
+            <li><Link to="/contact">Kontakt</Link></li>
           </ul>
         </nav>
         <button className="menu-btn">Izbornik</button>

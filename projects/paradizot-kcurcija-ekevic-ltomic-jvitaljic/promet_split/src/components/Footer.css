@@ -1,2 +1,5 @@
-footer { background:#f0f0f0; padding:32px 0; border-top:1px solid #ccc; }
+footer { background: linear-gradient(180deg, rgba(2,6,23,0.02), rgba(99,102,241,0.02)); padding: 36px 0; border-top: 1px solid rgba(15,23,42,0.04); }
+footer h4 { margin-bottom:8px; }
 .footer-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:16px; }
+footer p, footer li { color: var(--muted); }
+footer a { color: var(--muted); text-decoration: none; }

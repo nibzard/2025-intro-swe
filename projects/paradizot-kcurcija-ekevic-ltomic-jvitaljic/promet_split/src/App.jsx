@@ -1,37 +1,46 @@
 import React from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Header from './components/Header'
 import HeroNews from './components/HeroNews'
 import NewsList from './components/NewsList'
 import Footer from './components/Footer'
+import Messages from './components/Messages'
+import Contact from './components/Contact'
+import Tickets from './components/Tickets'
+import TicketNetwork from './components/TicketNetwork'
+import Profile from './components/Profile'
+import MapView from './components/MapView'
 import './App.css'
+import 'leaflet/dist/leaflet.css';
 
 export default function App(){
   return (
-    <div className="app">
-      <Header />
-      <main className="main">
-        <div className="content">
-          <div className="main-section">
-            <HeroNews />
-            <NewsList />
+    <BrowserRouter>
+      <div className="app">
+        <Header />
+        <main className="main">
+          <div className="container">
+            <div className="content">
+              <div className="main-section">
+                <Routes>
+                  <Route path="/" element={<><HeroNews /><NewsList /></>} />
+                  <Route path="/tickets" element={<Tickets />} />
+                  <Route path="/network" element={<TicketNetwork />} />
+                  <Route path="/map" element={<MapView />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/messages" element={<Messages />} />
+                </Routes>
+              </div>
+              <aside className="sidebar">
+                <Messages />
+                <Contact />
+              </aside>
+            </div>
           </div>
-          <aside className="sidebar">
-            <div className="card">
-              <h3>Vozni red</h3>
-              <p>Brzi prikaz linija i voznih redova (placeholder)</p>
-            </div>
-            <div className="card">
-              <h3>Servisne informacije</h3>
-              <ul>
-                <li>PUTNE KARTE</li>
-                <li>Obavijesti</li>
-                <li>Kontakt</li>
-              </ul>
-            </div>
-          </aside>
-        </div>
-      </main>
-      <Footer />
-    </div>
+        </main>
+        <Footer />
+      </div>
+    </BrowserRouter>
   )
 }
