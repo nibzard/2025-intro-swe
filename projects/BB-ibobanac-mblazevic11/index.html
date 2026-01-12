@@ -13,7 +13,8 @@
             <p class="subtitle">Organiziraj svoje obveze i ispite - BB Team</p>
         </header>
 
-        <div class="monthly-overview">
+        <!-- Mjesečni pregled -->
+        <section class="monthly-overview">
             <h2>📅 Mjesečni pregled</h2>
             <p id="current-month"></p>
             <div class="overview-stats">
@@ -34,10 +35,12 @@
                     <div class="stat-label">Nadolazeće (7 dana)</div>
                 </div>
             </div>
-        </div>
+        </section>
 
+        <!-- Glavni sadržaj -->
         <div class="main-content">
-            <div class="add-task-section">
+            <!-- Dodaj obvezu -->
+            <section class="add-task-section">
                 <h3>➕ Nova obveza</h3>
                 <form id="task-form">
                     <div class="form-group">
@@ -59,9 +62,10 @@
                     </div>
                     <button type="submit">Dodaj obvezu</button>
                 </form>
-            </div>
+            </section>
 
-            <div class="tasks-section">
+            <!-- Moje obveze -->
+            <section class="tasks-section">
                 <h3>📋 Moje obveze</h3>
                 <div class="filter-buttons">
                     <button class="filter-btn active" data-filter="all">Sve</button>
@@ -78,10 +82,10 @@
                         <p>Nemaš još nijednu obvezu.<br>Dodaj prvu da počneš organizirati svoje obveze!</p>
                     </div>
                 </div>
-            </div>
+            </section>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

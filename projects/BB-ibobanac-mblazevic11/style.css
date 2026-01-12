@@ -1,3 +1,4 @@
+/* Reset i osnovni stilovi */
 * {
     margin: 0;
     padding: 0;
@@ -6,7 +7,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
     min-height: 100vh;
     padding: 20px;
 }
@@ -16,6 +17,7 @@ body {
     margin: 0 auto;
 }
 
+/* Header */
 header {
     background: white;
     padding: 30px;
@@ -25,7 +27,7 @@ header {
 }
 
 h1 {
-    color: #667eea;
+    color: #2563eb;
     font-size: 2.5em;
     margin-bottom: 10px;
 }
@@ -35,6 +37,7 @@ h1 {
     font-size: 1.1em;
 }
 
+/* Mjesečni pregled */
 .monthly-overview {
     background: white;
     padding: 25px;
@@ -44,7 +47,7 @@ h1 {
 }
 
 .monthly-overview h2 {
-    color: #667eea;
+    color: #2563eb;
     margin-bottom: 15px;
     font-size: 1.8em;
 }
@@ -57,7 +60,7 @@ h1 {
 }
 
 .stat-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
     color: white;
     padding: 20px;
     border-radius: 10px;
@@ -72,15 +75,17 @@ h1 {
 
 .stat-label {
     font-size: 0.9em;
-    opacity: 0.9;
+    opacity: 0.95;
 }
 
+/* Glavni sadržaj */
 .main-content {
     display: grid;
     grid-template-columns: 1fr 2fr;
     gap: 30px;
 }
 
+/* Dodaj obvezu */
 .add-task-section {
     background: white;
     padding: 25px;
@@ -90,7 +95,7 @@ h1 {
 }
 
 .add-task-section h3 {
-    color: #667eea;
+    color: #2563eb;
     margin-bottom: 20px;
     font-size: 1.5em;
 }
@@ -117,13 +122,13 @@ input, select {
 
 input:focus, select:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #2563eb;
 }
 
 button {
     width: 100%;
     padding: 15px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -135,13 +140,14 @@ button {
 
 button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
 }
 
 button:active {
     transform: translateY(0);
 }
 
+/* Moje obveze */
 .tasks-section {
     background: white;
     padding: 25px;
@@ -150,11 +156,12 @@ button:active {
 }
 
 .tasks-section h3 {
-    color: #667eea;
+    color: #2563eb;
     margin-bottom: 20px;
     font-size: 1.5em;
 }
 
+/* Filter tipke */
 .filter-buttons {
     display: flex;
     gap: 10px;
@@ -170,6 +177,8 @@ button:active {
     cursor: pointer;
     transition: all 0.3s;
     font-size: 0.9em;
+    width: auto;
+    color: #333;
 }
 
 .filter-btn:hover {
@@ -177,31 +186,34 @@ button:active {
 }
 
 .filter-btn.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
     color: white;
-    border-color: #667eea;
+    border-color: #2563eb;
 }
 
+/* Lista obveza u gridu */
 .tasks-list {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 15px;
+    margin-top: 10px;
 }
 
 .task-item {
     background: #f9f9f9;
-    padding: 20px;
-    border-radius: 10px;
-    border-left: 5px solid #667eea;
+    padding: 15px 20px;
+    border-radius: 12px;
+    border-left: 5px solid #2563eb;
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
-    align-items: center;
     transition: all 0.3s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
 .task-item:hover {
-    transform: translateX(5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.2);
 }
 
 .task-item.completed {
@@ -214,7 +226,7 @@ button:active {
 }
 
 .task-info {
-    flex: 1;
+    margin-bottom: 10px;
 }
 
 .task-title {
@@ -231,102 +243,40 @@ button:active {
     color: #666;
 }
 
-.task-date {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.task-category {
-    padding: 4px 12px;
-    border-radius: 15px;
-    font-size: 0.85em;
-    font-weight: 600;
-}
-
-.category-ispit {
-    background: #ffebee;
-    color: #c62828;
-}
-
-.category-projekt {
-    background: #e3f2fd;
-    color: #1565c0;
-}
-
-.category-zadaca {
-    background: #fff3e0;
-    color: #e65100;
-}
-
-.category-osobno {
-    background: #f3e5f5;
-    color: #6a1b9a;
-}
-
 .task-actions {
     display: flex;
+    justify-content: flex-end;
     gap: 10px;
 }
 
-.action-btn {
-    width: 40px;
-    height: 40px;
+.task-actions .action-btn {
+    width: 35px;
+    height: 35px;
+    font-size: 1em;
     border-radius: 50%;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2em;
-    transition: all 0.3s;
 }
 
-.complete-btn {
-    background: #4caf50;
-    color: white;
-}
+/* Boje po kategoriji */
+.category-ispit { background: #ffebee; color: #c62828; }
+.category-projekt { background: #e3f2fd; color: #1565c0; }
+.category-zadaca { background: #fff3e0; color: #e65100; }
+.category-osobno { background: #f3e5f5; color: #6a1b9a; }
 
-.complete-btn:hover {
-    background: #45a049;
-    transform: scale(1.1);
-}
+/* Completed / actions */
+.complete-btn { background: #4caf50; color: white; }
+.complete-btn:hover { background: #45a049; transform: scale(1.1); }
+.delete-btn { background: #f44336; color: white; }
+.delete-btn:hover { background: #da190b; transform: scale(1.1); }
 
-.delete-btn {
-    background: #f44336;
-    color: white;
-}
+/* Empty state */
+.empty-state { text-align: center; padding: 60px 20px; color: #999; }
+.empty-state-icon { font-size: 4em; margin-bottom: 20px; }
 
-.delete-btn:hover {
-    background: #da190b;
-    transform: scale(1.1);
-}
-
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: #999;
-}
-
-.empty-state-icon {
-    font-size: 4em;
-    margin-bottom: 20px;
-}
-
+/* Responsivnost */
 @media (max-width: 768px) {
-    .main-content {
-        grid-template-columns: 1fr;
-    }
-
-    h1 {
-        font-size: 1.8em;
-    }
-
-    .overview-stats {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .stat-number {
-        font-size: 2em;
-    }
+    .main-content { grid-template-columns: 1fr; }
+    h1 { font-size: 1.8em; }
+    .overview-stats { grid-template-columns: repeat(2, 1fr); }
+    .stat-number { font-size: 2em; }
+    .tasks-list { grid-template-columns: 1fr; }
 }
