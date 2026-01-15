@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Planner - BB Team</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Student Planner</h1>
+            <p class="subtitle">Organiziraj svoje obveze i ispite - BB Team</p>
+        </header>
+
+        <!-- Mjesečni pregled -->
+        <section class="monthly-overview">
+            <h2>📅 Mjesečni pregled</h2>
+            <p id="current-month"></p>
+            <div class="overview-stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-tasks">0</div>
+                    <div class="stat-label">Ukupno obveza</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="pending-tasks">0</div>
+                    <div class="stat-label">Aktivne obveze</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="completed-tasks">0</div>
+                    <div class="stat-label">Završeno</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="upcoming-tasks">0</div>
+                    <div class="stat-label">Nadolazeće (7 dana)</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Glavni sadržaj -->
+        <div class="main-content">
+            <!-- Dodaj obvezu -->
+            <section class="add-task-section">
+                <h3>➕ Nova obveza</h3>
+                <form id="task-form">
+                    <div class="form-group">
+                        <label for="task-title">Naziv obveze</label>
+                        <input type="text" id="task-title" placeholder="npr. Kolokvij iz Matematike" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-date">Datum</label>
+                        <input type="date" id="task-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-category">Kategorija</label>
+                        <select id="task-category" required>
+                            <option value="Ispit">Ispit</option>
+                            <option value="Projekt">Projekt</option>
+                            <option value="Zadaca">Zadaća</option>
+                            <option value="Osobno">Osobno</option>
+                        </select>
+                    </div>
+                    <button type="submit">Dodaj obvezu</button>
+                </form>
+            </section>
+
+            <!-- Moje obveze -->
+            <section class="tasks-section">
+                <h3>📋 Moje obveze</h3>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">Sve</button>
+                    <button class="filter-btn" data-filter="Ispit">Ispiti</button>
+                    <button class="filter-btn" data-filter="Projekt">Projekti</button>
+                    <button class="filter-btn" data-filter="Zadaca">Zadaće</button>
+                    <button class="filter-btn" data-filter="Osobno">Osobno</button>
+                    <button class="filter-btn" data-filter="active">Aktivne</button>
+                    <button class="filter-btn" data-filter="completed">Završene</button>
+                </div>
+                <div class="tasks-list" id="tasks-list">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <p>Nemaš još nijednu obvezu.<br>Dodaj prvu da počneš organizirati svoje obveze!</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>

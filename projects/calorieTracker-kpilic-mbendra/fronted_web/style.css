@@ -1,0 +1,15 @@
+body { background: #0c0c0c; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+#app-container { max-width: 1000px; margin: auto; }
+section { background: #181818; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #222; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+input, select, button { background: #252525; color: #fff; border: none; padding: 12px; border-radius: 8px; width: 100%; margin-top: 10px; box-sizing: border-box; }
+button { background: #7c3aed; font-weight: bold; cursor: pointer; transition: 0.2s; }
+button:hover { background: #6d28d9; }
+#phase-2-diary { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+.chart-container { position: relative; height: 180px; width: 180px; margin: auto; }
+.chart-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+.meal-columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
+.col { background: #121212; padding: 10px; border-radius: 10px; min-height: 200px; border: 1px solid #222; }
+.meal-card { background: #222; padding: 10px; border-radius: 8px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #7c3aed; }
+.meal-card button { width: auto; background: #ef4444; padding: 4px 8px; margin: 0; }
+.secondary-btn { background: #333; }

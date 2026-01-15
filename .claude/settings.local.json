@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(gemini --help:*)",
+      "Bash(where:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

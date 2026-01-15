@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <title>SmartSchedule – Početna</title>
+    <link rel="stylesheet" href="global.css">
+</head>
+
+<body>
+
+<!-- TOP NAVIGATION -->
+<div class="topnav" style="position:relative;">
+
+    <!-- LOGO LEFT -->
+    <div class="logo-box">
+        <div class="logo-icon">SS</div>
+        <div class="logo-text">SmartSchedule</div>
+    </div>
+
+    <!-- CENTERED NAVIGATION -->
+    <div class="nav-links" style="
+        position:absolute;
+        left:50%;
+        transform:translateX(-50%);
+    ">
+        <a href="index.html" data-link="index">Početna</a>
+        <a href="dashboard.html" data-link="dashboard">Dashboard</a>
+    </div>
+
+    <!-- USER AREA (prijava/odjava) -->
+    <div id="userArea" style="position:absolute; right:12px; top:12px;"></div>
+</div>
+
+
+<script>
+/* OGRANIČENJE NAVIGACIJE – samo index + trenutna + prethodna */
+const currentPage = document.location.pathname.split("/").pop().replace(".html","");
+
+/* Hijerarhija kretanja */
+const steps = ["index","dashboard","personal","create","final"];
+
+/* Nađi index trenutne stranice */
+const currentIndex = steps.indexOf(currentPage);
+
+/* Prođi kroz sve linkove */
+document.querySelectorAll(".nav-links a").forEach(a => {
+    const page = a.getAttribute("data-link");
+    const pageIndex = steps.indexOf(page);
+
+    /* Pravilo: dopušteno ako je <= currentIndex */
+    if (pageIndex <= currentIndex) {
+        // dopušteno
+        a.style.pointerEvents = "auto";
+        a.style.opacity = "1";
+    } else {
+        // zaključano
+        a.style.pointerEvents = "none";
+        a.style.opacity = "0.35";
+    }
+});
+</script>
+
+
+<div class="container">
+
+    <!-- HERO SECTION -->
+    <div class="hero">
+        
+        <!-- TEXT -->
+        <div class="hero-text">
+            <h1 class="hero-title">Planiranje rasporeda bez muke</h1>
+            <p class="hero-sub">
+                SmartSchedule omogućava jednostavno kreiranje, dijeljenje i automatsku AI optimizaciju 
+                osobnih i poslovnih rasporeda.
+            </p>
+
+            <!-- LOGIN / SIGNUP TABS -->
+            <div class="card" style="max-width:360px;">
+                
+                <div class="flex">
+                    <button id="loginTab" class="btn" style="flex:1;">Login</button>
+                    <button id="signupTab" class="btn-gray" style="flex:1;">Registracija</button>
+                </div>
+
+                <!-- LOGIN FORM -->
+                <form id="loginForm">
+                    <input id="loginName" type="text" placeholder="Ime" required>
+                    <input id="loginPassword" type="password" placeholder="Lozinka" required>
+                    <div id="loginMsg" style="color:#c33; margin-top:8px; min-height:18px;"></div>
+                    <button class="btn" style="margin-top:8px;">Prijava</button>
+                </form> 
+
+                <!-- SIGNUP FORM -->
+                <form id="signupForm" style="display:none;">
+                    <input id="signupName" type="text" placeholder="Ime" required>
+                    <input id="signupPassword" type="password" placeholder="Lozinka" required>
+
+                    <div class="checkbox-row">
+                        <input id="bossCheck" type="checkbox">
+                        <label for="bossCheck" style="color:var(--text-soft);">Poslovođa</label>
+                    </div>
+
+                    <div id="companyFields" style="display:none;">
+                        <input id="companyName" type="text" placeholder="Ime tvrtke">
+                        <input id="companyOIB" type="text" placeholder="OIB">
+                        <input id="companyAddress" type="text" placeholder="Adresa tvrtke">
+                    </div>
+
+                    <div id="signupMsg" style="color:#c33; margin-top:8px; min-height:18px;"></div>
+                    <button class="btn" style="margin-top:8px;">Registracija</button>
+                </form> 
+
+            </div>
+        </div>
+
+        <!-- ILLUSTRATION -->
+        <div class="hero-illustration">
+            Ilustracija (placeholder)  
+        </div>
+
+    </div>
+
+</div>
+
+<!-- include auth helper -->
+<script src="auth.js"></script>
+
+<script>
+/* TAB SWITCHING */
+const loginTab = document.getElementById("loginTab");
+const signupTab = document.getElementById("signupTab");
+const loginForm = document.getElementById("loginForm");
+const signupForm = document.getElementById("signupForm");
+const bossCheck = document.getElementById("bossCheck");
+const companyFields = document.getElementById("companyFields");
+
+loginTab.onclick = () => {
+    loginForm.style.display = "block";
+    signupForm.style.display = "none";
+    loginTab.className = "btn";
+    signupTab.className = "btn-gray";
+};
+
+signupTab.onclick = () => {
+    loginForm.style.display = "none";
+    signupForm.style.display = "block";
+    loginTab.className = "btn-gray";
+    signupTab.className = "btn";
+};
+
+/* SHOW COMPANY FIELDS */
+bossCheck.onchange = () => {
+    companyFields.style.display = bossCheck.checked ? "block" : "none";
+};
+
+/* UI: user area */
+function showUserArea() {
+    const u = ssAuth.getCurrentUser();
+    const el = document.getElementById('userArea');
+    if (u) {
+        el.innerHTML = `<span style="color:var(--text-soft); margin-right:10px;">${u.name}</span> <button class="btn-gray" onclick="ssLogout()">Odjava</button>`;
+    } else el.innerHTML = '';
+}
+
+function ssLogout(){
+    ssAuth.logout();
+    showUserArea();
+    location.href = 'index.html';
+}
+
+showUserArea();
+
+/* AUTHENTICATION HANDLERS */
+loginForm.onsubmit = async e => {
+    e.preventDefault();
+    const name = document.getElementById('loginName').value;
+    const pass = document.getElementById('loginPassword').value;
+    const msg = document.getElementById('loginMsg');
+    msg.innerText = '';
+
+    try {
+        await ssAuth.loginUser({name, password: pass});
+        showUserArea();
+        location.href = 'dashboard.html';
+    } catch (err) {
+        msg.innerText = err.message || 'Greška pri prijavi';
+    }
+};
+
+signupForm.onsubmit = async e => {
+    e.preventDefault();
+    const name = document.getElementById('signupName').value;
+    const pass = document.getElementById('signupPassword').value;
+    const isBoss = document.getElementById('bossCheck').checked;
+    const company = isBoss ? {
+        name: document.getElementById('companyName').value,
+        oib: document.getElementById('companyOIB').value,
+        address: document.getElementById('companyAddress').value
+    } : null;
+
+    const msg = document.getElementById('signupMsg');
+    msg.innerText = '';
+
+    try {
+        await ssAuth.registerUser({name, password: pass, isBoss, company});
+        showUserArea();
+        location.href = 'dashboard.html';
+    } catch (err) {
+        msg.innerText = err.message || 'Greška pri registraciji';
+    }
+};
+</script>
+
+</body>
+</html>

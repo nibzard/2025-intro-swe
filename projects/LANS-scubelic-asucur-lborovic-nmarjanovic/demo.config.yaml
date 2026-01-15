@@ -1,0 +1,30 @@
+# LLM Answer Watcher - Social Media Demo
+# Monitoring brand mentions in AI-powered search responses
+
+run_settings:
+  output_dir: "./demo-output"
+  sqlite_db_path: "./demo-output/watcher.db"
+  max_concurrent_requests: 5
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+
+brands:
+  mine:
+    - "Firecrawl"
+    - "Firecrawl.dev"
+  competitors:
+    - "Scrapy"
+    - "Beautiful Soup"
+    - "BeautifulSoup"
+    - "Puppeteer"
+    - "Selenium"
+    - "Playwright"
+
+intents:
+  - id: "best-scraping-tools"
+    prompt: "What are the best web scraping tools for developers in 2025?"
+
+  - id: "scraping-recommendations"
+    prompt: "I need to extract data from websites at scale. What tools should I use?"
