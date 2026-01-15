@@ -1,4 +1,3 @@
-
 import express from "express";
 import cors from "cors";
 import multer from "multer";
@@ -8,6 +7,9 @@ import sqlite3 from "sqlite3";
 import dotenv from "dotenv";
 import OpenAI from "openai";
 import fs from "fs";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
 
 dotenv.config();
 
@@ -17,12 +19,27 @@ const __dirname = path.dirname(__filename);
 // --- CONFIG ---
 const PORT = process.env.PORT || 5000;
 const DB_PATH = path.join(__dirname, "db", "seatreview.db");
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
 // --- OPENAI CLIENT (optional) ---
 let openai = null;
 if (process.env.OPENAI_API_KEY) {
   openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
+  });
+}
+
+// --- EMAIL TRANSPORTER ---
+let emailTransporter = null;
+if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  emailTransporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT || 587,
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
   });
 }
 
@@ -61,19 +78,35 @@ sqlite3.verbose();
 const db = new sqlite3.Database(DB_PATH);
 
 db.serialize(() => {
+  // Users table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS User (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      verification_code TEXT,
+      is_verified INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
+
+  // Venues with category (stadium/arena)
   db.run(`
     CREATE TABLE IF NOT EXISTS Venue (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       address TEXT,
-      type TEXT
+      type TEXT,
+      category TEXT DEFAULT 'stadium'
     );
   `);
 
+  // Reviews linked to users
   db.run(`
     CREATE TABLE IF NOT EXISTS Review (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       venue_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
       section TEXT,
       row TEXT,
       seat_number TEXT,
@@ -83,15 +116,23 @@ db.serialize(() => {
       rating_cleanliness INTEGER,
       text_review TEXT,
       created_at TEXT DEFAULT (datetime('now')),
-      FOREIGN KEY (venue_id) REFERENCES Venue(id)
+      FOREIGN KEY (venue_id) REFERENCES Venue(id),
+      FOREIGN KEY (user_id) REFERENCES User(id)
     );
   `);
 
+  // Photos (including 360 photos)
   db.run(`
     CREATE TABLE IF NOT EXISTS Photo (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      review_id INTEGER NOT NULL,
+      venue_id INTEGER,
+      review_id INTEGER,
       file_path TEXT NOT NULL,
+      is_360 INTEGER DEFAULT 0,
+      section TEXT,
+      row TEXT,
+      seat_number TEXT,
+      FOREIGN KEY (venue_id) REFERENCES Venue(id),
       FOREIGN KEY (review_id) REFERENCES Review(id)
     );
   `);
@@ -115,11 +156,11 @@ db.serialize(() => {
     }
     if (row.count === 0) {
       const stmt = db.prepare(
-        "INSERT INTO Venue (name, address, type) VALUES (?, ?, ?)"
+        "INSERT INTO Venue (name, address, type, category) VALUES (?, ?, ?, ?)"
       );
-      stmt.run("City Arena", "Main Street 1", "arena");
-      stmt.run("Grand Theatre", "Old Town 3", "theatre");
-      stmt.run("National Stadium", "Stadium Road 10", "stadium");
+      stmt.run("City Arena", "Main Street 1", "arena", "arena");
+      stmt.run("Grand Theatre", "Old Town 3", "theatre", "arena");
+      stmt.run("National Stadium", "Stadium Road 10", "stadium", "stadium");
       stmt.finalize();
       console.log("Seeded sample venues.");
     }
@@ -151,17 +192,203 @@ const getAsync = (sql, params = []) =>
     });
   });
 
-// --- ROUTES ---
+// Generate 6-digit code
+const generateVerificationCode = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
 
-// Health
-app.get("/api/health", (req, res) => {
-  res.json({ status: "ok" });
+// --- AUTH MIDDLEWARE ---
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ error: "Access token required" });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: "Invalid or expired token" });
+    }
+    req.user = user;
+    next();
+  });
+};
+
+// --- AUTH ROUTES ---
+
+// Register
+app.post("/api/auth/register", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password required" });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters" });
+    }
+
+    const existing = await getAsync("SELECT id FROM User WHERE email = ?", [email]);
+    if (existing) {
+      return res.status(400).json({ error: "Email already registered" });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const verificationCode = generateVerificationCode();
+
+    const result = await runAsync(
+      "INSERT INTO User (email, password_hash, verification_code) VALUES (?, ?, ?)",
+      [email, passwordHash, verificationCode]
+    );
+
+    // Send verification code via email
+    if (emailTransporter) {
+      try {
+        await emailTransporter.sendMail({
+          from: process.env.EMAIL_FROM || "noreply@seatreview.com",
+          to: email,
+          subject: "Your SeatReview Verification Code",
+          html: `
+            <h2>Welcome to SeatReview!</h2>
+            <p>Your verification code is:</p>
+            <h1 style="font-size: 48px; letter-spacing: 10px; color: #1d4ed8;">${verificationCode}</h1>
+            <p>Enter this code to verify your account.</p>
+            <p>This code will expire in 15 minutes.</p>
+          `
+        });
+      } catch (emailErr) {
+        console.error("Email send error:", emailErr);
+      }
+    }
+
+    res.status(201).json({
+      message: "User registered. Please check your email for verification code.",
+      userId: result.lastID,
+      verificationCode: emailTransporter ? undefined : verificationCode // Only return code if email not configured (for testing)
+    });
+  } catch (err) {
+    console.error("Registration error:", err);
+    res.status(500).json({ error: "Registration failed" });
+  }
 });
 
-// Get all venues
+// Verify code
+app.post("/api/auth/verify", async (req, res) => {
+  try {
+    const { email, code } = req.body;
+
+    if (!email || !code) {
+      return res.status(400).json({ error: "Email and code required" });
+    }
+
+    const user = await getAsync(
+      "SELECT id, email FROM User WHERE email = ? AND verification_code = ?",
+      [email, code]
+    );
+
+    if (!user) {
+      return res.status(400).json({ error: "Invalid verification code" });
+    }
+
+    await runAsync(
+      "UPDATE User SET is_verified = 1, verification_code = NULL WHERE id = ?",
+      [user.id]
+    );
+
+    res.json({ message: "Account verified successfully!" });
+  } catch (err) {
+    console.error("Verification error:", err);
+    res.status(500).json({ error: "Verification failed" });
+  }
+});
+
+// Login
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password required" });
+    }
+
+    const user = await getAsync("SELECT * FROM User WHERE email = ?", [email]);
+    if (!user) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    const validPassword = await bcrypt.compare(password, user.password_hash);
+    if (!validPassword) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    if (!user.is_verified) {
+      return res.status(403).json({ error: "Please verify your email first" });
+    }
+
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+
+    res.json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user.id,
+        email: user.email
+      }
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ error: "Login failed" });
+  }
+});
+
+// Get current user profile
+app.get("/api/auth/me", authenticateToken, async (req, res) => {
+  try {
+    const user = await getAsync(
+      "SELECT id, email, created_at FROM User WHERE id = ?",
+      [req.user.userId]
+    );
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Get user's review count
+    const reviewCount = await getAsync(
+      "SELECT COUNT(*) as count FROM Review WHERE user_id = ?",
+      [req.user.userId]
+    );
+
+    res.json({
+      ...user,
+      reviewCount: reviewCount.count
+    });
+  } catch (err) {
+    console.error("Get user error:", err);
+    res.status(500).json({ error: "Failed to get user" });
+  }
+});
+
+// --- VENUE ROUTES ---
+
+// Get all venues (with category filter)
 app.get("/api/venues", async (req, res) => {
   try {
-    const venues = await allAsync("SELECT * FROM Venue");
+    const { category } = req.query;
+    let sql = "SELECT * FROM Venue";
+    let params = [];
+
+    if (category) {
+      sql += " WHERE category = ?";
+      params.push(category);
+    }
+
+    const venues = await allAsync(sql, params);
     res.json(venues);
   } catch (err) {
     console.error(err);
@@ -183,8 +410,51 @@ app.get("/api/venues/:id", async (req, res) => {
   }
 });
 
-// Create review (multipart, with photos field)
-app.post("/api/reviews", upload.array("photos", 5), async (req, res) => {
+// Get 360 photos for venue
+app.get("/api/venues/:id/360-photos", async (req, res) => {
+  try {
+    const photos = await allAsync(
+      "SELECT * FROM Photo WHERE venue_id = ? AND is_360 = 1 ORDER BY section, row, seat_number",
+      [req.params.id]
+    );
+    res.json(photos);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load 360 photos" });
+  }
+});
+
+// Upload 360 photo
+app.post("/api/venues/:id/360-photos", authenticateToken, upload.single("photo"), async (req, res) => {
+  try {
+    const { section, row, seat_number } = req.body;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ error: "Photo file required" });
+    }
+
+    const relPath = `/uploads/${file.filename}`;
+    const result = await runAsync(
+      "INSERT INTO Photo (venue_id, file_path, is_360, section, row, seat_number) VALUES (?, ?, 1, ?, ?, ?)",
+      [req.params.id, relPath, section || null, row || null, seat_number || null]
+    );
+
+    res.status(201).json({
+      message: "360 photo uploaded",
+      photoId: result.lastID,
+      filePath: relPath
+    });
+  } catch (err) {
+    console.error("Upload error:", err);
+    res.status(500).json({ error: "Failed to upload photo" });
+  }
+});
+
+// --- REVIEW ROUTES ---
+
+// Create review (requires authentication)
+app.post("/api/reviews", authenticateToken, upload.array("photos", 5), async (req, res) => {
   try {
     const {
       venue_id,
@@ -219,13 +489,14 @@ app.post("/api/reviews", upload.array("photos", 5), async (req, res) => {
     const result = await runAsync(
       `
       INSERT INTO Review (
-        venue_id, section, row, seat_number,
+        venue_id, user_id, section, row, seat_number,
         rating_comfort, rating_legroom, rating_visibility, rating_cleanliness,
         text_review
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         venue_id,
+        req.user.userId,
         section || null,
         row || null,
         seat_number || null,
@@ -243,8 +514,8 @@ app.post("/api/reviews", upload.array("photos", 5), async (req, res) => {
     for (const file of files) {
       const relPath = `/uploads/${file.filename}`;
       await runAsync(
-        "INSERT INTO Photo (review_id, file_path) VALUES (?, ?)",
-        [reviewId, relPath]
+        "INSERT INTO Photo (review_id, venue_id, file_path) VALUES (?, ?, ?)",
+        [reviewId, venue_id, relPath]
       );
     }
 
@@ -262,9 +533,13 @@ app.post("/api/reviews", upload.array("photos", 5), async (req, res) => {
 // Get review + photos
 app.get("/api/reviews/:id", async (req, res) => {
   try {
-    const review = await getAsync("SELECT * FROM Review WHERE id = ?", [
-      req.params.id
-    ]);
+    const review = await getAsync(
+      `SELECT Review.*, User.email as user_email
+       FROM Review
+       LEFT JOIN User ON Review.user_id = User.id
+       WHERE Review.id = ?`,
+      [req.params.id]
+    );
     if (!review) return res.status(404).json({ error: "Review not found" });
 
     const photos = await allAsync(
@@ -284,11 +559,10 @@ app.get("/api/venues/:id/photos", async (req, res) => {
   try {
     const rows = await allAsync(
       `
-      SELECT Photo.id, Photo.file_path
+      SELECT Photo.id, Photo.file_path, Photo.is_360
       FROM Photo
-      JOIN Review ON Photo.review_id = Review.id
-      WHERE Review.venue_id = ?
-      ORDER BY Review.created_at DESC
+      WHERE Photo.venue_id = ? AND Photo.is_360 = 0
+      ORDER BY Photo.id DESC
       LIMIT 50
       `,
       [req.params.id]
@@ -305,9 +579,11 @@ app.get("/api/venues/:id/reviews", async (req, res) => {
   try {
     const reviews = await allAsync(
       `
-      SELECT * FROM Review
-      WHERE venue_id = ?
-      ORDER BY created_at DESC
+      SELECT Review.*, User.email as user_email
+      FROM Review
+      LEFT JOIN User ON Review.user_id = User.id
+      WHERE Review.venue_id = ?
+      ORDER BY Review.created_at DESC
       LIMIT 100
       `,
       [req.params.id]
@@ -346,34 +622,13 @@ app.get("/api/venues/:id/stats", async (req, res) => {
     const text = reviews.map((r) => r.text_review).join(" ");
     const freqMap = {};
     const stopWords = new Set([
-      "the",
-      "a",
-      "and",
-      "or",
-      "of",
-      "to",
-      "is",
-      "it",
-      "in",
-      "for",
-      "i",
-      "was",
-      "very",
-      "with",
-      "on",
-      "at",
-      "but",
-      "not",
-      "je",
-      "bio",
-      "bila",
-      "sam",
-      "nije"
+      "the", "a", "and", "or", "of", "to", "is", "it", "in", "for", "i",
+      "was", "very", "with", "on", "at", "but", "not"
     ]);
 
     text
       .toLowerCase()
-      .split(/[^a-zA-ZčćšđžČĆŠĐŽ]+/)
+      .split(/[^a-zA-Z]+/)
       .filter((w) => w && w.length > 2 && !stopWords.has(w))
       .forEach((w) => {
         freqMap[w] = (freqMap[w] || 0) + 1;
@@ -416,8 +671,8 @@ app.get("/api/venues/:id/insights", async (req, res) => {
   }
 });
 
-// Generate AI insight
-app.post("/api/venues/:id/insights/generate", async (req, res) => {
+// Generate AI insight (requires authentication)
+app.post("/api/venues/:id/insights/generate", authenticateToken, async (req, res) => {
   if (!openai) {
     return res
       .status(500)
@@ -452,7 +707,7 @@ app.post("/api/venues/:id/insights/generate", async (req, res) => {
       .join("\n");
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4.1-mini",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -505,7 +760,12 @@ app.post("/api/venues/:id/insights/generate", async (req, res) => {
   }
 });
 
+// Health check
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok" });
+});
+
 // --- START SERVER ---
 app.listen(PORT, () => {
-  console.log(`Backend listening on http://localhost:${PORT}`);
+  console.log(`🚀 SeatReview Backend listening on http://localhost:${PORT}`);
 });
