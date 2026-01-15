@@ -107,7 +107,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center animate-float">
                 <Search className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -138,22 +138,22 @@ export default function LandingPage() {
       <section className="relative pt-20 pb-32 px-6">
         <div className="max-w-5xl mx-auto text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-500/10 border border-primary-500/20 mb-8">
-            <Sparkles className="w-4 h-4 text-primary-400" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-500/10 border border-primary-500/20 mb-8 animate-fade-in-down">
+            <Sparkles className="w-4 h-4 text-primary-400 animate-pulse" />
             <span className="text-sm text-primary-300">Now with Google Gemini & Web Search</span>
           </div>
 
           {/* Headline */}
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight animate-fade-in-up">
             Know What AI Says
             <br />
-            <span className="bg-gradient-to-r from-primary-400 via-accent-400 to-primary-400 bg-clip-text text-transparent animated-gradient">
+            <span className="animated-gradient-text">
               About Your Brand
             </span>
           </h1>
 
           {/* Subheadline */}
-          <p className="text-xl md:text-2xl text-navy-400 mb-8 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl md:text-2xl text-navy-400 mb-8 max-w-3xl mx-auto leading-relaxed animate-fade-in-up animation-delay-200" style={{ opacity: 0, animationFillMode: 'forwards' }}>
             The first brand monitoring platform built for the age of AI search.
             <br />
             <span className="text-navy-300">
@@ -162,8 +162,8 @@ export default function LandingPage() {
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <button onClick={() => navigate('/app')} className="btn-primary text-lg px-8 py-4 glow-primary">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-fade-in-up animation-delay-400" style={{ opacity: 0, animationFillMode: 'forwards' }}>
+            <button onClick={() => navigate('/app')} className="btn-primary text-lg px-8 py-4 animate-pulse-glow hover-lift">
               <Zap className="w-5 h-5 mr-2 inline" />
               Start Monitoring Free
             </button>
@@ -171,7 +171,7 @@ export default function LandingPage() {
               href="https://github.com/nibzard/llm-answer-watcher"
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-secondary text-lg px-8 py-4"
+              className="btn-secondary text-lg px-8 py-4 hover-lift"
             >
               <Code className="w-5 h-5 mr-2 inline" />
               View on GitHub
@@ -186,7 +186,11 @@ export default function LandingPage() {
               { value: '<5s', label: 'Per Query' },
               { value: '$0.001', label: 'Avg. Cost' },
             ].map((stat, i) => (
-              <div key={i} className="glass-card p-4">
+              <div
+                key={i}
+                className={`glass-card p-4 hover-lift card-hover-glow animate-scale-in animation-delay-${(i + 5) * 100}`}
+                style={{ opacity: 0, animationFillMode: 'forwards' }}
+              >
                 <div className="text-2xl font-bold text-white">{stat.value}</div>
                 <div className="text-sm text-navy-400">{stat.label}</div>
               </div>
@@ -226,11 +230,14 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, i) => (
-              <div key={i} className="glass-card p-6 hover:border-navy-700 transition-colors group">
+              <div
+                key={i}
+                className="glass-card p-6 hover-lift card-hover-glow group"
+              >
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500/20 to-accent-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <feature.icon className="w-6 h-6 text-primary-400" />
+                  <feature.icon className="w-6 h-6 text-primary-400 group-hover-spin" />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
+                <h3 className="text-lg font-semibold text-white mb-2 text-gradient-hover">{feature.title}</h3>
                 <p className="text-navy-400 text-sm leading-relaxed">{feature.description}</p>
               </div>
             ))}
@@ -248,14 +255,14 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {steps.map((step, i) => (
-              <div key={i} className="relative text-center">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-white">
+              <div key={i} className="relative text-center group">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-white animate-float group-hover:animate-none group-hover:scale-110 transition-transform" style={{ animationDelay: `${i * 200}ms` }}>
                   {step.step}
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">{step.title}</h3>
                 <p className="text-sm text-navy-400">{step.description}</p>
                 {i < steps.length - 1 && (
-                  <ArrowRight className="hidden md:block absolute top-8 -right-4 w-6 h-6 text-navy-600" />
+                  <ArrowRight className="hidden md:block absolute top-8 -right-4 w-6 h-6 text-navy-600 animate-pulse" />
                 )}
               </div>
             ))}
@@ -273,12 +280,12 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {useCases.map((useCase, i) => (
-              <div key={i} className="glass-card p-6 flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-accent-500/20 flex items-center justify-center shrink-0">
+              <div key={i} className="glass-card p-6 flex items-start gap-4 hover-lift card-hover-glow group">
+                <div className="w-12 h-12 rounded-xl bg-accent-500/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                   <useCase.icon className="w-6 h-6 text-accent-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-1">{useCase.role}</h3>
+                  <h3 className="text-lg font-semibold text-white mb-1 text-gradient-hover">{useCase.role}</h3>
                   <p className="text-navy-400 text-sm">{useCase.description}</p>
                 </div>
               </div>
@@ -297,7 +304,7 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Open Source */}
-            <div className="glass-card p-8">
+            <div className="glass-card p-8 hover-lift card-hover-glow">
               <h3 className="text-xl font-bold text-white mb-2">Open Source</h3>
               <div className="text-3xl font-bold text-white mb-1">
                 Free
@@ -320,8 +327,8 @@ export default function LandingPage() {
             </div>
 
             {/* Pro */}
-            <div className="glass-card p-8 border-primary-500/50 glow-primary relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary-500 rounded-full text-xs font-medium text-white">
+            <div className="glass-card p-8 border-primary-500/50 animate-pulse-glow relative hover-lift">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary-500 rounded-full text-xs font-medium text-white animate-pulse">
                 Popular
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Pro</h3>
@@ -348,7 +355,7 @@ export default function LandingPage() {
             </div>
 
             {/* Enterprise */}
-            <div className="glass-card p-8">
+            <div className="glass-card p-8 hover-lift card-hover-glow">
               <h3 className="text-xl font-bold text-white mb-2">Enterprise</h3>
               <div className="text-3xl font-bold text-white mb-1">Custom</div>
               <p className="text-navy-400 text-sm mb-6">Tailored for your needs</p>
@@ -380,11 +387,11 @@ export default function LandingPage() {
             <p className="text-lg text-navy-400">One command to install, one command to run</p>
           </div>
 
-          <div className="glass-card p-6 font-mono text-sm">
+          <div className="glass-card p-6 font-mono text-sm hover-lift">
             <div className="flex items-center gap-2 mb-4 text-navy-400">
-              <div className="w-3 h-3 rounded-full bg-red-500"></div>
-              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              <div className="w-3 h-3 rounded-full bg-primary-500 animate-pulse"></div>
+              <div className="w-3 h-3 rounded-full bg-accent-500"></div>
+              <div className="w-3 h-3 rounded-full bg-accent-800"></div>
               <span className="ml-2">Terminal</span>
             </div>
             <div className="space-y-2 text-navy-300">
@@ -392,7 +399,7 @@ export default function LandingPage() {
                 <span className="text-primary-400">$</span> pip install llm-answer-watcher
               </p>
               <p>
-                <span className="text-primary-400">$</span> llm-answer-watcher demo
+                <span className="text-primary-400">$</span> llm-answer-watcher demo<span className="animate-cursor">&nbsp;</span>
               </p>
               <p className="text-navy-500"># No API keys needed for the demo!</p>
               <p className="text-navy-500"># See what AI says about any brand in 60 seconds</p>
@@ -407,13 +414,13 @@ export default function LandingPage() {
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Stop guessing.
             <br />
-            <span className="text-primary-400">Start monitoring.</span>
+            <span className="animated-gradient-text">Start monitoring.</span>
           </h2>
           <p className="text-xl text-navy-400 mb-8">
             In a world where AI answers questions, the brands that get mentioned win.
           </p>
-          <button onClick={() => navigate('/app')} className="btn-primary text-lg px-10 py-5 glow-primary">
-            <Zap className="w-5 h-5 mr-2 inline" />
+          <button onClick={() => navigate('/app')} className="btn-primary text-lg px-10 py-5 animate-pulse-glow hover-lift">
+            <Zap className="w-5 h-5 mr-2 inline animate-pulse" />
             Get Started Free
             <ArrowRight className="w-5 h-5 ml-2 inline" />
           </button>
