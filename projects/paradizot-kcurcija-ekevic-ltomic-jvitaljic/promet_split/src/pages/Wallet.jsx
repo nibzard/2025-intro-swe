@@ -1,19 +1,47 @@
 import { useState } from 'react';
+import { useWallet } from '../context/WalletContext';
 import { CreditCard, Wallet as WalletIcon, X, Check } from 'lucide-react';
 
 const Wallet = () => {
-    const [balance, setBalance] = useState(15.50);
+    const { balance, addToBalance, subtractFromBalance } = useWallet();
     const [showTopUp, setShowTopUp] = useState(false);
     const [selectedAmount, setSelectedAmount] = useState(10);
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('google');
+    const [selectedTicket, setSelectedTicket] = useState(null);
+    const [purchaseProcessing, setPurchaseProcessing] = useState(false);
     const [processing, setProcessing] = useState(false);
+
+    const TICKETS = [
+        { id: 1, name: '1. Zona', price: 1.00, duration: '1 Sat' },
+        { id: 2, name: '2. Zona', price: 1.50, duration: '1 Sat' },
+        { id: 3, name: '3. Zona', price: 2.00, duration: '1 Sat' },
+        { id: 4, name: '4. Zona', price: 2.50, duration: '1 Sat' },
+    ];
 
     const handleTopUp = () => {
         setProcessing(true);
         setTimeout(() => {
-            setBalance(prev => prev + selectedAmount);
+            addToBalance(selectedAmount);
             setProcessing(false);
             setShowTopUp(false);
         }, 1500);
+    };
+
+    const handleBuyTicket = () => {
+        if (!selectedTicket) return;
+
+        if (balance < selectedTicket.price) {
+            alert('Nedovoljno sredstava na računu! Molimo nadoplatite račun.');
+            return;
+        }
+
+        setPurchaseProcessing(true);
+        setTimeout(() => {
+            subtractFromBalance(selectedTicket.price);
+            setPurchaseProcessing(false);
+            setSelectedTicket(null);
+            // In a real app, we would add the ticket to the user's "Tickets" list here
+        }, 1000);
     };
 
     return (
@@ -63,15 +91,27 @@ const Wallet = () => {
             {/* Quick Actions (Tickets mock) */}
             <h3 style={{ marginBottom: '1.25rem', fontSize: '1.25rem' }}>Brza kupnja</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                {/* We will implement Ticket buying logic later, focusing on top up first per request */}
-                <div style={{ background: 'var(--color-surface)', padding: '1.5rem', borderRadius: '1rem', border: '1px solid var(--color-border)', color: 'var(--color-text)' }}>
-                    <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>1 Sat</div>
-                    <div style={{ color: 'var(--color-primary)' }}>1.00 €</div>
-                </div>
-                <div style={{ background: 'var(--color-surface)', padding: '1.5rem', borderRadius: '1rem', border: '1px solid var(--color-border)', color: 'var(--color-text)' }}>
-                    <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>24 Sata</div>
-                    <div style={{ color: 'var(--color-primary)' }}>3.00 €</div>
-                </div>
+                {TICKETS.map((ticket) => (
+                    <button
+                        key={ticket.id}
+                        onClick={() => setSelectedTicket(ticket)}
+                        style={{
+                            background: 'var(--color-surface)',
+                            padding: '1.5rem',
+                            borderRadius: '1rem',
+                            border: '1px solid var(--color-border)',
+                            color: 'var(--color-text)',
+                            textAlign: 'left',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'flex-start'
+                        }}
+                    >
+                        <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{ticket.name}</div>
+                        <div style={{ color: 'var(--color-primary)' }}>{ticket.price.toFixed(2)} €</div>
+                    </button>
+                ))}
             </div>
 
             {/* Top Up Modal */}
@@ -132,9 +172,24 @@ const Wallet = () => {
                         <div style={{ marginBottom: '2rem' }}>
                             <p style={{ marginBottom: '1rem', color: 'var(--color-text-muted)' }}>Način plaćanja:</p>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                <PaymentMethodButton icon="G" label="Google Pay" />
-                                <PaymentMethodButton icon="" label="Apple Pay" />
-                                <PaymentMethodButton icon="P" label="PayPal" />
+                                <PaymentMethodButton
+                                    icon="G"
+                                    label="Google Pay"
+                                    selected={selectedPaymentMethod === 'google'}
+                                    onClick={() => setSelectedPaymentMethod('google')}
+                                />
+                                <PaymentMethodButton
+                                    icon=""
+                                    label="Apple Pay"
+                                    selected={selectedPaymentMethod === 'apple'}
+                                    onClick={() => setSelectedPaymentMethod('apple')}
+                                />
+                                <PaymentMethodButton
+                                    icon="P"
+                                    label="PayPal"
+                                    selected={selectedPaymentMethod === 'paypal'}
+                                    onClick={() => setSelectedPaymentMethod('paypal')}
+                                />
                             </div>
                         </div>
 
@@ -157,24 +212,103 @@ const Wallet = () => {
                     </div>
                 </div>
             )}
+
+            {/* Ticket Purchase Confirmation Modal */}
+            {selectedTicket && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    background: 'rgba(0, 0, 0, 0.6)',
+                    backdropFilter: 'blur(4px)',
+                    zIndex: 200,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '1.5rem'
+                }}>
+                    <div
+                        className="scale-in"
+                        style={{
+                            background: 'var(--color-surface)',
+                            borderRadius: '1.5rem',
+                            padding: '2rem',
+                            width: '100%',
+                            maxWidth: '320px',
+                            border: '1px solid var(--color-border)',
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+                        }}
+                    >
+                        <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', textAlign: 'center' }}>Potvrda kupnje</h3>
+
+                        <div style={{
+                            background: 'var(--color-bg)',
+                            padding: '1rem',
+                            borderRadius: '1rem',
+                            marginBottom: '1.5rem',
+                            textAlign: 'center'
+                        }}>
+                            <div style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.25rem' }}>{selectedTicket.name}</div>
+                            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-primary)' }}>{selectedTicket.price.toFixed(2)} €</div>
+                            <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>{selectedTicket.duration}</div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <button
+                                onClick={() => setSelectedTicket(null)}
+                                style={{
+                                    flex: 1,
+                                    padding: '0.75rem',
+                                    borderRadius: '0.75rem',
+                                    background: 'var(--color-surface-hover)',
+                                    color: 'var(--color-text)',
+                                    fontWeight: 600,
+                                    border: 'none'
+                                }}
+                            >
+                                Odustani
+                            </button>
+                            <button
+                                onClick={handleBuyTicket}
+                                disabled={purchaseProcessing}
+                                style={{
+                                    flex: 1,
+                                    padding: '0.75rem',
+                                    borderRadius: '0.75rem',
+                                    background: purchaseProcessing ? 'var(--color-surface-hover)' : 'var(--color-primary)',
+                                    color: purchaseProcessing ? 'var(--color-text-muted)' : '#1a1a1a',
+                                    fontWeight: 600,
+                                    border: 'none',
+                                    opacity: purchaseProcessing ? 0.7 : 1
+                                }}
+                            >
+                                {purchaseProcessing ? '...' : 'Potvrdi'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
-const PaymentMethodButton = ({ icon, label }) => (
-    <button style={{
-        width: '100%',
-        padding: '1rem',
-        borderRadius: '0.75rem',
-        background: 'var(--color-bg)',
-        border: '1px solid var(--color-border)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '1rem',
-        color: 'var(--color-text)',
-        fontWeight: 500,
-        justifyContent: 'flex-start'
-    }}>
+const PaymentMethodButton = ({ icon, label, selected, onClick }) => (
+    <button
+        onClick={onClick}
+        style={{
+            width: '100%',
+            padding: '1rem',
+            borderRadius: '0.75rem',
+            background: 'var(--color-bg)',
+            border: selected ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            color: 'var(--color-text)',
+            fontWeight: 500,
+            justifyContent: 'flex-start',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+        }}>
         <div style={{
             width: '40px',
             height: '40px',
@@ -189,6 +323,7 @@ const PaymentMethodButton = ({ icon, label }) => (
             {icon}
         </div>
         <span>{label}</span>
+        {selected && <Check size={20} color="var(--color-primary)" style={{ marginLeft: 'auto' }} />}
     </button>
 );
 
