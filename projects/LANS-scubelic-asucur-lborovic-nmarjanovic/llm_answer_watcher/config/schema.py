@@ -33,8 +33,8 @@ class ModelConfig(BaseModel):
     Specifies which LLM to call and where to find its API key in the environment.
 
     Attributes:
-        provider: LLM provider name (google only)
-        model_name: Specific model identifier (e.g., "gemini-1.5-flash")
+        provider: LLM provider name (google, groq)
+        model_name: Specific model identifier (e.g., "gemini-1.5-flash", "llama-3.1-8b-instant")
         env_api_key: Environment variable name containing the API key
         system_prompt: Optional relative path to system prompt JSON (e.g., "google/default")
                       If not specified, uses provider default
@@ -44,7 +44,7 @@ class ModelConfig(BaseModel):
         tool_choice: Tool selection mode ("auto", "required", "none"). Default: "auto"
     """
 
-    provider: Literal["google"]
+    provider: Literal["google", "groq"]
     model_name: str
     env_api_key: str
     system_prompt: str | None = None
@@ -166,13 +166,13 @@ class ExtractionModelConfig(BaseModel):
     Separate from answer-generating models for cost/latency optimization.
 
     Attributes:
-        provider: LLM provider name (google only)
-        model_name: Specific model identifier (e.g., "gemini-1.5-flash")
+        provider: LLM provider name (google, groq)
+        model_name: Specific model identifier (e.g., "gemini-1.5-flash", "llama-3.1-8b-instant")
         env_api_key: Environment variable name containing the API key
         system_prompt: Optional relative path to system prompt JSON
     """
 
-    provider: Literal["google"]
+    provider: Literal["google", "groq"]
     model_name: str
     env_api_key: str
     system_prompt: str | None = None

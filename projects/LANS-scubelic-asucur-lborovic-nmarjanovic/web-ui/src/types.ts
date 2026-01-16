@@ -14,7 +14,7 @@ export interface RunSettings {
 }
 
 export interface ModelConfig {
-  provider: 'google';
+  provider: 'google' | 'groq';
   model_name: string;
   env_api_key: string;
   system_prompt?: string;
@@ -69,3 +69,13 @@ export interface BrandMention {
 export const GEMINI_MODELS = [
   { id: 'models/gemini-2.5-flash', name: 'Gemini 2.5 Flash', description: 'Latest and fastest model (recommended)' },
 ] as const;
+
+export const GROQ_MODELS = [
+  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', description: 'Best quality for general tasks' },
+  { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B Instant', description: 'Fastest inference, great for simple tasks' },
+  { id: 'llama-3.1-70b-versatile', name: 'Llama 3.1 70B', description: 'High-quality responses with fast speed' },
+  { id: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B', description: 'Good balance of speed and quality' },
+  { id: 'gemma2-9b-it', name: 'Gemma 2 9B', description: 'Google\'s Gemma model on Groq' },
+] as const;
+
+export type Provider = 'google' | 'groq';
