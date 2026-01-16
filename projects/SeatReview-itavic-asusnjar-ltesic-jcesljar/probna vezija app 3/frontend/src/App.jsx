@@ -1,17 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { useAuth } from "./AuthContext";
+import { useLanguage } from "./LanguageContext";
+import { translations } from "./translations";
+import Navigation from "./Navigation";
 import Photo360Viewer from "./Photo360Viewer";
+import SeatMap from "./SeatMap";
+import Favorites from "./Favorites";
+import ViewHistory from "./ViewHistory";
+import Leaderboard from "./Leaderboard";
 
 const API_BASE = "http://localhost:5000/api";
 
 function App() {
-  const { user, logout, token } = useAuth();
+  const { user, token } = useAuth();
+  const { language } = useLanguage();
+  const t = translations[language];
   const [step, setStep] = useState(1); // 1 = category, 2 = venue selection, 3 = content
   const [category, setCategory] = useState("");
   const [venues, setVenues] = useState([]);
   const [selectedVenueId, setSelectedVenueId] = useState("");
   const [tab, setTab] = useState("360view");
+  const [autoSelectSeat, setAutoSelectSeat] = useState(null);
 
   useEffect(() => {
     if (category && step === 2) {
@@ -44,6 +53,7 @@ function App() {
     if (step === 3) {
       setStep(2);
       setSelectedVenueId("");
+      setAutoSelectSeat(null); // Clear auto-select when going back
     } else if (step === 2) {
       setStep(1);
       setCategory("");
@@ -51,46 +61,64 @@ function App() {
     }
   };
 
-  return (
-    <div className="container">
-      {/* Header */}
-      <div className="app-header">
-        <div>
-          <h1>🎫 SeatReview</h1>
-          <p className="subtitle">
-            Explore 360° views and reviews from every seat
-          </p>
-        </div>
-        <div className="user-menu">
-          <Link to="/profile" className="profile-link">
-            👤 {user?.email}
-          </Link>
-          <button className="btn btn-secondary" onClick={logout}>
-            Logout
-          </button>
-        </div>
-      </div>
+  const handleNavigateToSeat = async (venueId, section, row, seatNumber) => {
+    try {
+      // Fetch venue details to get the category
+      const res = await fetch(`${API_BASE}/venues/${venueId}`);
+      if (res.ok) {
+        const venue = await res.json();
 
-      {/* Step 1: Category Selection */}
-      {step === 1 && (
-        <div className="selection-container">
-          <h2 className="selection-title">Select Category</h2>
+        // Set category and fetch venues for that category
+        setCategory(venue.category);
+
+        // Fetch venues for the category
+        const venuesRes = await fetch(`${API_BASE}/venues?category=${venue.category}`);
+        if (venuesRes.ok) {
+          const venuesData = await venuesRes.json();
+          setVenues(venuesData);
+        }
+
+        // Set the seat to auto-select
+        setAutoSelectSeat({
+          section,
+          row,
+          seat_number: seatNumber
+        });
+
+        // Navigate to the seat map
+        setSelectedVenueId(venueId);
+        setStep(3);
+        setTab("seatmap");
+      }
+    } catch (err) {
+      console.error("Error navigating to seat:", err);
+    }
+  };
+
+  return (
+    <>
+      <Navigation />
+      <div className="container">
+        {/* Step 1: Category Selection */}
+        {step === 1 && (
+          <div className="selection-container">
+            <h2 className="selection-title">{t.selectCategory}</h2>
           <div className="category-cards">
             <div
               className="category-card"
               onClick={() => handleCategorySelect("stadium")}
             >
               <div className="category-icon">⚽</div>
-              <h3>Stadiums</h3>
-              <p>Football, Soccer, Sports Arenas</p>
+              <h3>{t.stadiums}</h3>
+              <p>{t.stadiumsDesc}</p>
             </div>
             <div
               className="category-card"
               onClick={() => handleCategorySelect("arena")}
             >
               <div className="category-icon">🎭</div>
-              <h3>Arenas & Theatres</h3>
-              <p>Concerts, Shows, Entertainment</p>
+              <h3>{t.arenasTheatres}</h3>
+              <p>{t.arenasDesc}</p>
             </div>
           </div>
         </div>
@@ -100,10 +128,10 @@ function App() {
       {step === 2 && (
         <div className="selection-container">
           <button className="back-button" onClick={handleBack}>
-            ← Back to Categories
+            ← {t.backToCategories}
           </button>
           <h2 className="selection-title">
-            {category === "stadium" ? "⚽ Select Stadium" : "🎭 Select Arena"}
+            {category === "stadium" ? `⚽ ${t.selectStadium}` : `🎭 ${t.selectArena}`}
           </h2>
           <div className="venue-cards">
             {venues.map((venue) => (
@@ -119,7 +147,7 @@ function App() {
             ))}
           </div>
           {venues.length === 0 && (
-            <p className="no-venues">No venues available in this category.</p>
+            <p className="no-venues">{t.noVenues}</p>
           )}
         </div>
       )}
@@ -128,52 +156,87 @@ function App() {
       {step === 3 && selectedVenueId && (
         <>
           <button className="back-button" onClick={handleBack}>
-            ← Back to Venues
+            ← {t.backToVenues}
           </button>
 
           {/* Tabs */}
           <div className="tabs">
             <button
+              className={tab === "seatmap" ? "tab active" : "tab"}
+              onClick={() => setTab("seatmap")}
+            >
+              🎫 {t.tabSeatMap || "Seat Map"}
+            </button>
+            <button
               className={tab === "360view" ? "tab active" : "tab"}
               onClick={() => setTab("360view")}
             >
-              🌐 360° Views
+              🌐 {t.tab360Views}
             </button>
             <button
               className={tab === "reviews" ? "tab active" : "tab"}
               onClick={() => setTab("reviews")}
             >
-              📝 All Reviews
+              📝 {t.tabAllReviews}
             </button>
             <button
               className={tab === "submit" ? "tab active" : "tab"}
               onClick={() => setTab("submit")}
             >
-              ✍️ Submit Review
+              ✍️ {t.tabSubmitReview}
             </button>
             <button
               className={tab === "gallery" ? "tab active" : "tab"}
               onClick={() => setTab("gallery")}
             >
-              📸 Gallery
+              📸 {t.tabGallery}
             </button>
             <button
               className={tab === "insights" ? "tab active" : "tab"}
               onClick={() => setTab("insights")}
             >
-              📊 Insights
+              📊 {t.tabInsights}
+            </button>
+            <button
+              className={tab === "favorites" ? "tab active" : "tab"}
+              onClick={() => setTab("favorites")}
+            >
+              ⭐ {t.tabFavorites || "Favorites"}
+            </button>
+            <button
+              className={tab === "history" ? "tab active" : "tab"}
+              onClick={() => setTab("history")}
+            >
+              📜 {t.tabHistory || "History"}
+            </button>
+            <button
+              className={tab === "leaderboard" ? "tab active" : "tab"}
+              onClick={() => setTab("leaderboard")}
+            >
+              🏆 {t.tabLeaderboard || "Leaderboard"}
             </button>
           </div>
 
           {/* Content */}
+          {tab === "seatmap" && (
+            <SeatMap
+              venueId={selectedVenueId}
+              venueName={venues.find((v) => v.id === selectedVenueId)?.name}
+              autoSelectSeat={autoSelectSeat}
+            />
+          )}
           {tab === "360view" && <Photo360Viewer venueId={selectedVenueId} />}
           {tab === "reviews" && <AllReviews venueId={selectedVenueId} />}
           {tab === "submit" && <ReviewForm venueId={selectedVenueId} token={token} />}
           {tab === "gallery" && <VenueGallery venueId={selectedVenueId} />}
           {tab === "insights" && <VenueInsights venueId={selectedVenueId} />}
+          {tab === "favorites" && <Favorites />}
+          {tab === "history" && <ViewHistory onNavigateToSeat={handleNavigateToSeat} />}
+          {tab === "leaderboard" && <Leaderboard />}
         </>
       )}
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -283,6 +346,7 @@ function ReviewForm({ venueId, token }) {
     section: "",
     row: "",
     seat_number: "",
+    price: "",
     rating_comfort: "",
     rating_legroom: "",
     rating_visibility: "",
@@ -330,6 +394,7 @@ function ReviewForm({ venueId, token }) {
           section: "",
           row: "",
           seat_number: "",
+          price: "",
           rating_comfort: "",
           rating_legroom: "",
           rating_visibility: "",
@@ -383,6 +448,19 @@ function ReviewForm({ venueId, token }) {
                 placeholder="e.g., 12"
               />
             </div>
+          </div>
+          <div style={{ marginTop: "16px" }}>
+            <label className="label">💰 Price (€)</label>
+            <input
+              name="price"
+              type="number"
+              step="0.01"
+              min="0"
+              className="input"
+              value={formData.price}
+              onChange={handleChange}
+              placeholder="e.g., 85.50"
+            />
           </div>
         </div>
 

@@ -43,6 +43,7 @@ if (process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS) 
   });
 }
 
+
 // --- EXPRESS APP ---
 const app = express();
 app.use(cors());
@@ -110,6 +111,7 @@ db.serialize(() => {
       section TEXT,
       row TEXT,
       seat_number TEXT,
+      price REAL,
       rating_comfort INTEGER,
       rating_legroom INTEGER,
       rating_visibility INTEGER,
@@ -148,6 +150,63 @@ db.serialize(() => {
     );
   `);
 
+  // Favorites table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS Favorite (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      venue_id INTEGER,
+      section TEXT,
+      row TEXT,
+      seat_number TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES User(id),
+      FOREIGN KEY (venue_id) REFERENCES Venue(id),
+      UNIQUE(user_id, venue_id, section, row, seat_number)
+    );
+  `);
+
+  // View history table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS ViewHistory (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      venue_id INTEGER NOT NULL,
+      section TEXT,
+      row TEXT,
+      seat_number TEXT,
+      viewed_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES User(id),
+      FOREIGN KEY (venue_id) REFERENCES Venue(id)
+    );
+  `);
+
+  // Comments on reviews
+  db.run(`
+    CREATE TABLE IF NOT EXISTS Comment (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      review_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      comment_text TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (review_id) REFERENCES Review(id),
+      FOREIGN KEY (user_id) REFERENCES User(id)
+    );
+  `);
+
+  // User following system
+  db.run(`
+    CREATE TABLE IF NOT EXISTS UserFollow (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      follower_id INTEGER NOT NULL,
+      following_id INTEGER NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (follower_id) REFERENCES User(id),
+      FOREIGN KEY (following_id) REFERENCES User(id),
+      UNIQUE(follower_id, following_id)
+    );
+  `);
+
   // Seed example venues
   db.get("SELECT COUNT(*) AS count FROM Venue", (err, row) => {
     if (err) {
@@ -163,6 +222,64 @@ db.serialize(() => {
       stmt.run("National Stadium", "Stadium Road 10", "stadium", "stadium");
       stmt.finalize();
       console.log("Seeded sample venues.");
+
+      // Seed sample user and reviews with prices
+      setTimeout(() => {
+        const userStmt = db.prepare(
+          "INSERT INTO User (email, password_hash, is_verified) VALUES (?, ?, ?)"
+        );
+        // Simple demo user (password: demo123)
+        userStmt.run("demo@example.com", "$2b$10$abcdefghijklmnopqrstuvwxyz1234567890ABCDE", 1);
+        userStmt.finalize();
+
+        setTimeout(() => {
+          db.get("SELECT id FROM User WHERE email = ?", ["demo@example.com"], (err, user) => {
+            if (err || !user) return;
+
+            db.get("SELECT id FROM Venue WHERE name = ?", ["National Stadium"], (err, venue) => {
+              if (err || !venue) return;
+
+              // Seed sample reviews with prices for different sections
+              const reviewStmt = db.prepare(
+                `INSERT INTO Review (venue_id, user_id, section, row, seat_number, price,
+                 rating_comfort, rating_legroom, rating_visibility, rating_cleanliness, text_review)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+              );
+
+              // Section A - Cheap seats (50-70€)
+              reviewStmt.run(venue.id, user.id, "A", "1", "5", 50, 4, 3, 4, 4, "Great view for the price!");
+              reviewStmt.run(venue.id, user.id, "A", "2", "12", 55, 3, 3, 4, 4, "Good seats, comfortable.");
+              reviewStmt.run(venue.id, user.id, "A", "3", "8", 60, 4, 4, 5, 4, "Amazing visibility!");
+              reviewStmt.run(venue.id, user.id, "A", "4", "15", 65, 3, 3, 3, 3, "Decent seats.");
+              reviewStmt.run(venue.id, user.id, "A", "5", "20", 70, 4, 4, 4, 5, "Very clean area!");
+
+              // Section B - Medium seats (80-110€)
+              reviewStmt.run(venue.id, user.id, "B", "1", "3", 80, 4, 4, 5, 4, "Excellent side view!");
+              reviewStmt.run(venue.id, user.id, "B", "2", "9", 90, 4, 4, 4, 4, "Great seats!");
+              reviewStmt.run(venue.id, user.id, "B", "3", "14", 95, 5, 4, 5, 4, "Perfect for watching!");
+              reviewStmt.run(venue.id, user.id, "B", "4", "7", 100, 4, 5, 4, 5, "Lots of legroom!");
+              reviewStmt.run(venue.id, user.id, "B", "5", "18", 110, 5, 5, 5, 5, "Premium experience!");
+
+              // Section C - Expensive seats (120-160€)
+              reviewStmt.run(venue.id, user.id, "C", "1", "10", 120, 5, 5, 5, 5, "Best seats in the house!");
+              reviewStmt.run(venue.id, user.id, "C", "2", "6", 130, 5, 5, 5, 4, "Luxury seating!");
+              reviewStmt.run(venue.id, user.id, "C", "3", "12", 140, 5, 5, 4, 5, "Worth every penny!");
+              reviewStmt.run(venue.id, user.id, "C", "4", "8", 150, 5, 4, 5, 5, "VIP experience!");
+              reviewStmt.run(venue.id, user.id, "C", "5", "15", 160, 5, 5, 5, 5, "Absolutely amazing!");
+
+              // Section D - Mid-range seats (70-95€)
+              reviewStmt.run(venue.id, user.id, "D", "1", "4", 70, 4, 3, 4, 4, "Good value seats.");
+              reviewStmt.run(venue.id, user.id, "D", "2", "11", 75, 3, 4, 4, 4, "Nice angle.");
+              reviewStmt.run(venue.id, user.id, "D", "3", "9", 80, 4, 4, 4, 3, "Comfortable enough.");
+              reviewStmt.run(venue.id, user.id, "D", "4", "16", 90, 4, 4, 5, 4, "Great view!");
+              reviewStmt.run(venue.id, user.id, "D", "5", "13", 95, 4, 5, 4, 4, "Spacious seats!");
+
+              reviewStmt.finalize();
+              console.log("Seeded 20 sample reviews with prices.");
+            });
+          });
+        }, 100);
+      }, 100);
     }
   });
 });
@@ -197,6 +314,37 @@ const generateVerificationCode = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
+// Validate strong password
+const validatePassword = (password) => {
+  const minLength = 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+  const errors = [];
+  if (password.length < minLength) {
+    errors.push(`Password must be at least ${minLength} characters long`);
+  }
+  if (!hasUpperCase) {
+    errors.push("Password must contain at least one uppercase letter");
+  }
+  if (!hasLowerCase) {
+    errors.push("Password must contain at least one lowercase letter");
+  }
+  if (!hasNumber) {
+    errors.push("Password must contain at least one number");
+  }
+  if (!hasSpecialChar) {
+    errors.push("Password must contain at least one special character (!@#$%^&*(),.?\":{}|<>)");
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
 // --- AUTH MIDDLEWARE ---
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -226,8 +374,13 @@ app.post("/api/auth/register", async (req, res) => {
       return res.status(400).json({ error: "Email and password required" });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ error: "Password must be at least 6 characters" });
+    // Validate strong password
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({
+        error: "Password is not strong enough",
+        details: passwordValidation.errors
+      });
     }
 
     const existing = await getAsync("SELECT id FROM User WHERE email = ?", [email]);
@@ -763,6 +916,494 @@ app.post("/api/venues/:id/insights/generate", authenticateToken, async (req, res
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
+});
+
+// Get all seats for a venue with prices and ratings
+app.get("/api/venues/:venueId/seats", async (req, res) => {
+  try {
+    const { venueId } = req.params;
+
+    const seats = await allAsync(
+      `SELECT
+        section,
+        row,
+        seat_number,
+        price,
+        AVG(rating_comfort) as avg_comfort,
+        AVG(rating_legroom) as avg_legroom,
+        AVG(rating_visibility) as avg_visibility,
+        AVG(rating_cleanliness) as avg_cleanliness,
+        COUNT(*) as review_count
+      FROM Review
+      WHERE venue_id = ? AND price IS NOT NULL
+      GROUP BY section, row, seat_number
+      ORDER BY section, row, seat_number`,
+      [venueId]
+    );
+
+    // Calculate overall rating for each seat
+    const seatsWithRating = seats.map(seat => ({
+      ...seat,
+      overall_rating: (
+        (seat.avg_comfort || 0) +
+        (seat.avg_legroom || 0) +
+        (seat.avg_visibility || 0) +
+        (seat.avg_cleanliness || 0)
+      ) / 4
+    }));
+
+    res.json({ seats: seatsWithRating });
+  } catch (err) {
+    console.error("Error fetching seats:", err);
+    res.status(500).json({ error: "Failed to fetch seats" });
+  }
+});
+
+// Find best seat within budget
+app.get("/api/venues/:venueId/best-seat", async (req, res) => {
+  try {
+    const { venueId } = req.params;
+    const { budget } = req.query;
+
+    if (!budget) {
+      return res.status(400).json({ error: "Budget parameter required" });
+    }
+
+    const seats = await allAsync(
+      `SELECT
+        section,
+        row,
+        seat_number,
+        price,
+        AVG(rating_comfort) as avg_comfort,
+        AVG(rating_legroom) as avg_legroom,
+        AVG(rating_visibility) as avg_visibility,
+        AVG(rating_cleanliness) as avg_cleanliness,
+        COUNT(*) as review_count
+      FROM Review
+      WHERE venue_id = ? AND price IS NOT NULL AND price <= ?
+      GROUP BY section, row, seat_number`,
+      [venueId, parseFloat(budget)]
+    );
+
+    if (seats.length === 0) {
+      return res.json({
+        bestSeat: null,
+        message: "No seats found within budget"
+      });
+    }
+
+    // Calculate overall rating and sort by best rating
+    const seatsWithRating = seats.map(seat => ({
+      ...seat,
+      overall_rating: (
+        (seat.avg_comfort || 0) +
+        (seat.avg_legroom || 0) +
+        (seat.avg_visibility || 0) +
+        (seat.avg_cleanliness || 0)
+      ) / 4,
+      value_score: (
+        ((seat.avg_comfort || 0) +
+         (seat.avg_legroom || 0) +
+         (seat.avg_visibility || 0) +
+         (seat.avg_cleanliness || 0)) / 4
+      ) / (seat.price / 100) // Value = rating per 100 currency units
+    }));
+
+    // Sort by value score (best value for money)
+    seatsWithRating.sort((a, b) => b.value_score - a.value_score);
+
+    const bestSeat = seatsWithRating[0];
+
+    res.json({
+      bestSeat,
+      alternativeSeats: seatsWithRating.slice(1, 4) // Top 3 alternatives
+    });
+  } catch (err) {
+    console.error("Error finding best seat:", err);
+    res.status(500).json({ error: "Failed to find best seat" });
+  }
+});
+
+
+// --- FAVORITES ENDPOINTS ---
+// Add favorite
+app.post("/api/favorites", authenticateToken, async (req, res) => {
+  try {
+    const { venue_id, section, row, seat_number } = req.body;
+    const user_id = req.user.userId || req.user.id;
+
+    const stmt = db.prepare(
+      `INSERT OR IGNORE INTO Favorite (user_id, venue_id, section, row, seat_number)
+       VALUES (?, ?, ?, ?, ?)`
+    );
+
+    await new Promise((resolve, reject) => {
+      stmt.run([user_id, venue_id, section, row, seat_number], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+      stmt.finalize();
+    });
+
+    res.json({ success: true, message: "Added to favorites" });
+  } catch (err) {
+    console.error("Error adding favorite:", err);
+    res.status(500).json({ error: "Failed to add favorite" });
+  }
+});
+
+// Remove favorite
+app.delete("/api/favorites", authenticateToken, async (req, res) => {
+  try {
+    const { venue_id, section, row, seat_number } = req.body;
+    const user_id = req.user.userId || req.user.id;
+
+    const stmt = db.prepare(
+      `DELETE FROM Favorite
+       WHERE user_id = ? AND venue_id = ? AND section = ? AND row = ? AND seat_number = ?`
+    );
+
+    await new Promise((resolve, reject) => {
+      stmt.run([user_id, venue_id, section, row, seat_number], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+      stmt.finalize();
+    });
+
+    res.json({ success: true, message: "Removed from favorites" });
+  } catch (err) {
+    console.error("Error removing favorite:", err);
+    res.status(500).json({ error: "Failed to remove favorite" });
+  }
+});
+
+// Get user favorites
+app.get("/api/favorites", authenticateToken, async (req, res) => {
+  try {
+    const user_id = req.user.userId || req.user.id;
+
+    const allAsync = (sql, params) => {
+      return new Promise((resolve, reject) => {
+        db.all(sql, params, (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows);
+        });
+      });
+    };
+
+    const favorites = await allAsync(
+      `SELECT f.*, v.name as venue_name
+       FROM Favorite f
+       LEFT JOIN Venue v ON f.venue_id = v.id
+       WHERE f.user_id = ?
+       ORDER BY f.created_at DESC`,
+      [user_id]
+    );
+
+    res.json({ favorites });
+  } catch (err) {
+    console.error("Error fetching favorites:", err);
+    res.status(500).json({ error: "Failed to fetch favorites" });
+  }
+});
+
+// Check if seat is favorited
+app.get("/api/favorites/check", authenticateToken, async (req, res) => {
+  try {
+    const { venue_id, section, row, seat_number } = req.query;
+    const user_id = req.user.userId || req.user.id;
+
+    const getAsync = (sql, params) => {
+      return new Promise((resolve, reject) => {
+        db.get(sql, params, (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+    };
+
+    const favorite = await getAsync(
+      `SELECT id FROM Favorite
+       WHERE user_id = ? AND venue_id = ? AND section = ? AND row = ? AND seat_number = ?`,
+      [user_id, venue_id, section, row, seat_number]
+    );
+
+    res.json({ isFavorite: !!favorite });
+  } catch (err) {
+    console.error("Error checking favorite:", err);
+    res.status(500).json({ error: "Failed to check favorite" });
+  }
+});
+
+// --- VIEW HISTORY ENDPOINTS ---
+// Add view history
+app.post("/api/history", authenticateToken, async (req, res) => {
+  try {
+    const { venue_id, section, row, seat_number } = req.body;
+    const user_id = req.user.userId || req.user.id;
+
+    const stmt = db.prepare(
+      `INSERT INTO ViewHistory (user_id, venue_id, section, row, seat_number)
+       VALUES (?, ?, ?, ?, ?)`
+    );
+
+    await new Promise((resolve, reject) => {
+      stmt.run([user_id, venue_id, section, row, seat_number], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+      stmt.finalize();
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error adding history:", err);
+    res.status(500).json({ error: "Failed to add history" });
+  }
+});
+
+// Get user history
+app.get("/api/history", authenticateToken, async (req, res) => {
+  try {
+    const user_id = req.user.userId || req.user.id;
+
+    const allAsync = (sql, params) => {
+      return new Promise((resolve, reject) => {
+        db.all(sql, params, (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows);
+        });
+      });
+    };
+
+    const history = await allAsync(
+      `SELECT vh.*, v.name as venue_name, v.category as venue_category
+       FROM ViewHistory vh
+       LEFT JOIN Venue v ON vh.venue_id = v.id
+       WHERE vh.user_id = ?
+       ORDER BY vh.viewed_at DESC
+       LIMIT 50`,
+      [user_id]
+    );
+
+    res.json({ history });
+  } catch (err) {
+    console.error("Error fetching history:", err);
+    res.status(500).json({ error: "Failed to fetch history" });
+  }
+});
+
+// --- COMMENTS ENDPOINTS ---
+// Add comment to review
+app.post("/api/comments", authenticateToken, async (req, res) => {
+  try {
+    const { review_id, comment_text } = req.body;
+    const user_id = req.user.userId || req.user.id;
+
+    if (!comment_text || comment_text.trim().length === 0) {
+      return res.status(400).json({ error: "Comment text is required" });
+    }
+
+    const stmt = db.prepare(
+      `INSERT INTO Comment (review_id, user_id, comment_text)
+       VALUES (?, ?, ?)`
+    );
+
+    await new Promise((resolve, reject) => {
+      stmt.run([review_id, user_id, comment_text], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+      stmt.finalize();
+    });
+
+    res.json({ success: true, message: "Comment added" });
+  } catch (err) {
+    console.error("Error adding comment:", err);
+    res.status(500).json({ error: "Failed to add comment" });
+  }
+});
+
+// Get comments for a review
+app.get("/api/comments/:reviewId", authenticateToken, async (req, res) => {
+  try {
+    const { reviewId } = req.params;
+
+    const allAsync = (sql, params) => {
+      return new Promise((resolve, reject) => {
+        db.all(sql, params, (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows);
+        });
+      });
+    };
+
+    const comments = await allAsync(
+      `SELECT c.*, u.email as user_email
+       FROM Comment c
+       LEFT JOIN User u ON c.user_id = u.id
+       WHERE c.review_id = ?
+       ORDER BY c.created_at DESC`,
+      [reviewId]
+    );
+
+    res.json({ comments });
+  } catch (err) {
+    console.error("Error fetching comments:", err);
+    res.status(500).json({ error: "Failed to fetch comments" });
+  }
+});
+
+// --- USER FOLLOWING ENDPOINTS ---
+// Follow user
+app.post("/api/follow", authenticateToken, async (req, res) => {
+  try {
+    const { following_id } = req.body;
+    const follower_id = req.user.id;
+
+    if (follower_id === following_id) {
+      return res.status(400).json({ error: "Cannot follow yourself" });
+    }
+
+    const stmt = db.prepare(
+      `INSERT OR IGNORE INTO UserFollow (follower_id, following_id)
+       VALUES (?, ?)`
+    );
+
+    await new Promise((resolve, reject) => {
+      stmt.run([follower_id, following_id], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+      stmt.finalize();
+    });
+
+    res.json({ success: true, message: "Now following user" });
+  } catch (err) {
+    console.error("Error following user:", err);
+    res.status(500).json({ error: "Failed to follow user" });
+  }
+});
+
+// Unfollow user
+app.delete("/api/follow", authenticateToken, async (req, res) => {
+  try {
+    const { following_id } = req.body;
+    const follower_id = req.user.id;
+
+    const stmt = db.prepare(
+      `DELETE FROM UserFollow
+       WHERE follower_id = ? AND following_id = ?`
+    );
+
+    await new Promise((resolve, reject) => {
+      stmt.run([follower_id, following_id], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+      stmt.finalize();
+    });
+
+    res.json({ success: true, message: "Unfollowed user" });
+  } catch (err) {
+    console.error("Error unfollowing user:", err);
+    res.status(500).json({ error: "Failed to unfollow user" });
+  }
+});
+
+// Get user's followers
+app.get("/api/followers", authenticateToken, async (req, res) => {
+  try {
+    const user_id = req.user.userId || req.user.id;
+
+    const allAsync = (sql, params) => {
+      return new Promise((resolve, reject) => {
+        db.all(sql, params, (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows);
+        });
+      });
+    };
+
+    const followers = await allAsync(
+      `SELECT u.id, u.email, uf.created_at
+       FROM UserFollow uf
+       JOIN User u ON uf.follower_id = u.id
+       WHERE uf.following_id = ?`,
+      [user_id]
+    );
+
+    res.json({ followers });
+  } catch (err) {
+    console.error("Error fetching followers:", err);
+    res.status(500).json({ error: "Failed to fetch followers" });
+  }
+});
+
+// Get users the current user is following
+app.get("/api/following", authenticateToken, async (req, res) => {
+  try {
+    const user_id = req.user.userId || req.user.id;
+
+    const allAsync = (sql, params) => {
+      return new Promise((resolve, reject) => {
+        db.all(sql, params, (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows);
+        });
+      });
+    };
+
+    const following = await allAsync(
+      `SELECT u.id, u.email, uf.created_at
+       FROM UserFollow uf
+       JOIN User u ON uf.following_id = u.id
+       WHERE uf.follower_id = ?`,
+      [user_id]
+    );
+
+    res.json({ following });
+  } catch (err) {
+    console.error("Error fetching following:", err);
+    res.status(500).json({ error: "Failed to fetch following" });
+  }
+});
+
+// --- TOP REVIEWERS LEADERBOARD ---
+app.get("/api/leaderboard", authenticateToken, async (req, res) => {
+  try {
+    const allAsync = (sql, params) => {
+      return new Promise((resolve, reject) => {
+        db.all(sql, params, (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows);
+        });
+      });
+    };
+
+    const topReviewers = await allAsync(
+      `SELECT
+        u.id,
+        u.email,
+        COUNT(r.id) as review_count,
+        AVG((r.rating_comfort + r.rating_legroom + r.rating_visibility + r.rating_cleanliness) / 4.0) as avg_rating,
+        (SELECT COUNT(*) FROM UserFollow WHERE following_id = u.id) as follower_count
+       FROM User u
+       LEFT JOIN Review r ON u.id = r.user_id
+       GROUP BY u.id
+       HAVING review_count > 0
+       ORDER BY review_count DESC, avg_rating DESC
+       LIMIT 20`,
+      []
+    );
+
+    res.json({ topReviewers });
+  } catch (err) {
+    console.error("Error fetching leaderboard:", err);
+    res.status(500).json({ error: "Failed to fetch leaderboard" });
+  }
 });
 
 // --- START SERVER ---
