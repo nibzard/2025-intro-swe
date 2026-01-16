@@ -147,6 +147,9 @@ def build_project_blocks(projects: List[ProjectBlock]) -> List[str]:
     for i, project in enumerate(projects, 1):
         lines.append(f"### {i}. {project.title}\n")
         lines.append(project.content)
+        # Ensure blank line after each project
+        if not project.content.endswith('\n\n'):
+            lines.append('\n')
     return lines
 
 
@@ -246,8 +249,21 @@ def generate_output(projects_by_date: Dict[str, List[ProjectBlock]],
         lines.append('---\n')
         lines.append('\n')
 
-    # Add footer
-    lines.extend(footer_lines)
+    # Add footer (update statistics)
+    for line in footer_lines:
+        if 'Projects per date:' in line:
+            # Update the distribution line with cleaner format
+            counts = []
+            for date in date_order:
+                if date in projects_by_date:
+                    projects = extract_project_blocks(projects_by_date[date])
+                    # Extract just "Jan 26" or "Feb 2" from the full date
+                    parts = date.split()
+                    short_date = f"{parts[0][:3]} {parts[1].rstrip(',')}"
+                    counts.append(f"{short_date} ({len(projects)})")
+            lines.append(f"- Projects per date: {', '.join(counts)}\n")
+        else:
+            lines.append(line)
 
     return ''.join(lines)
 
