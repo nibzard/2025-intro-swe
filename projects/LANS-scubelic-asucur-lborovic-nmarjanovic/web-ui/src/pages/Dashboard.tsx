@@ -28,8 +28,8 @@ import {
   FileText,
   ArrowLeft,
 } from 'lucide-react';
-import type { WatcherConfig, Intent, BrandMention } from '../types.ts';
-import { GEMINI_MODELS } from '../types.ts';
+import type { WatcherConfig, Intent, BrandMention, Provider } from '../types.ts';
+import { GEMINI_MODELS, GROQ_MODELS } from '../types.ts';
 import yaml from 'js-yaml';
 
 // API base URL: use environment variable or default based on environment
@@ -136,8 +136,24 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<'config' | 'results'>('config');
   const [apiKey, setApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState<Provider>('google');
   const [selectedModel, setSelectedModel] = useState<string>(GEMINI_MODELS[0].id);
   const [enableWebSearch, setEnableWebSearch] = useState(true);
+
+  // Get available models based on selected provider
+  const availableModels = selectedProvider === 'google' ? GEMINI_MODELS : GROQ_MODELS;
+
+  // Handle provider change - reset model to first available
+  const handleProviderChange = (provider: Provider) => {
+    setSelectedProvider(provider);
+    if (provider === 'google') {
+      setSelectedModel(GEMINI_MODELS[0].id);
+      setEnableWebSearch(true); // Google supports web search
+    } else {
+      setSelectedModel(GROQ_MODELS[0].id);
+      setEnableWebSearch(false); // Groq doesn't support web search yet
+    }
+  };
   const [myBrands, setMyBrands] = useState<string[]>(['']);
   const [competitors, setCompetitors] = useState<string[]>(['']);
   const [intents, setIntents] = useState<Intent[]>([{ id: '', prompt: '' }]);
@@ -150,6 +166,11 @@ export default function Dashboard() {
 
   // Generate YAML config
   const generateConfig = useCallback((): WatcherConfig => {
+    const envApiKey = selectedProvider === 'google' ? 'GEMINI_API_KEY' : 'GROQ_API_KEY';
+    const systemPrompt = selectedProvider === 'google'
+      ? "google/gemini-grounding"
+      : "You are an unbiased market analyst. Provide factual, balanced recommendations. IMPORTANT: Structure your response using bullet points for lists and short paragraphs. Highlight key entities (brands, products, metrics) in **bold** to make them stand out. Avoid long blocks of text.";
+
     const config: WatcherConfig = {
       run_settings: {
         output_dir: './output',
@@ -157,11 +178,11 @@ export default function Dashboard() {
         max_concurrent_requests: 10,
         models: [
           {
-            provider: 'google',
+            provider: selectedProvider,
             model_name: selectedModel,
-            env_api_key: 'GEMINI_API_KEY',
-            system_prompt: "You are an unbiased market analyst. Provide factual, balanced recommendations. IMPORTANT: Structure your response using bullet points for lists and short paragraphs. Highlight key entities (brands, products, metrics) in **bold** to make them stand out. Avoid long blocks of text.",
-            ...(enableWebSearch && { tools: [{ google_search: {} }] }),
+            env_api_key: envApiKey,
+            system_prompt: systemPrompt,
+            ...(selectedProvider === 'google' && enableWebSearch && { tools: [{ google_search: {} }] }),
           },
         ],
         use_llm_rank_extraction: false,
@@ -178,7 +199,7 @@ export default function Dashboard() {
         })),
     };
     return config;
-  }, [selectedModel, enableWebSearch, myBrands, competitors, intents]);
+  }, [selectedProvider, selectedModel, enableWebSearch, myBrands, competitors, intents]);
 
   const yamlOutput = yaml.dump(generateConfig(), { lineWidth: -1 });
 
@@ -243,7 +264,7 @@ export default function Dashboard() {
 
   const runSearch = async () => {
     if (!apiKey) {
-      alert('Please enter your Gemini API key');
+      alert(`Please enter your ${selectedProvider === 'google' ? 'Gemini' : 'Groq'} API key`);
       return;
     }
     setIsRunning(true);
@@ -432,14 +453,49 @@ export default function Dashboard() {
                 </div>
 
                 <div className="space-y-4">
+                  {/* Provider Selection */}
                   <div>
-                    <label className="label">Gemini API Key</label>
+                    <label className="label">Provider</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => handleProviderChange('google')}
+                        className={`p-3 rounded-xl border transition-all ${
+                          selectedProvider === 'google'
+                            ? 'bg-primary-500/20 border-primary-500 text-primary-300'
+                            : 'bg-navy-800/30 border-navy-700/50 text-navy-400 hover:border-navy-600'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 justify-center">
+                          <Sparkles className="w-4 h-4" />
+                          <span className="font-medium">Google Gemini</span>
+                        </div>
+                        <p className="text-xs mt-1 opacity-70">With web search</p>
+                      </button>
+                      <button
+                        onClick={() => handleProviderChange('groq')}
+                        className={`p-3 rounded-xl border transition-all ${
+                          selectedProvider === 'groq'
+                            ? 'bg-primary-500/20 border-primary-500 text-primary-300'
+                            : 'bg-navy-800/30 border-navy-700/50 text-navy-400 hover:border-navy-600'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 justify-center">
+                          <Zap className="w-4 h-4" />
+                          <span className="font-medium">Groq</span>
+                        </div>
+                        <p className="text-xs mt-1 opacity-70">Ultra-fast inference</p>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="label">{selectedProvider === 'google' ? 'Gemini' : 'Groq'} API Key</label>
                     <div className="relative">
                       <input
                         type={showApiKey ? 'text' : 'password'}
                         value={apiKey}
                         onChange={(e) => setApiKey(e.target.value)}
-                        placeholder="AIzaSy..."
+                        placeholder={selectedProvider === 'google' ? 'AIzaSy...' : 'gsk_...'}
                         className="input-field pr-12"
                       />
                       <button
@@ -451,14 +507,25 @@ export default function Dashboard() {
                     </div>
                     <p className="text-xs text-navy-500 mt-1">
                       Get your key from{' '}
-                      <a
-                        href="https://aistudio.google.com/app/apikey"
-                        target="_blank"
-                        rel="noopener"
-                        className="text-primary-400 hover:text-primary-300"
-                      >
-                        Google AI Studio
-                      </a>
+                      {selectedProvider === 'google' ? (
+                        <a
+                          href="https://aistudio.google.com/app/apikey"
+                          target="_blank"
+                          rel="noopener"
+                          className="text-primary-400 hover:text-primary-300"
+                        >
+                          Google AI Studio
+                        </a>
+                      ) : (
+                        <a
+                          href="https://console.groq.com/keys"
+                          target="_blank"
+                          rel="noopener"
+                          className="text-primary-400 hover:text-primary-300"
+                        >
+                          Groq Console
+                        </a>
+                      )}
                     </p>
                   </div>
 
@@ -470,7 +537,7 @@ export default function Dashboard() {
                         onChange={(e) => setSelectedModel(e.target.value)}
                         className="input-field appearance-none cursor-pointer"
                       >
-                        {GEMINI_MODELS.map((model) => (
+                        {availableModels.map((model) => (
                           <option key={model.id} value={model.id}>
                             {model.name}
                           </option>
@@ -479,25 +546,27 @@ export default function Dashboard() {
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-navy-400 pointer-events-none" />
                     </div>
                     <p className="text-xs text-navy-500 mt-1">
-                      {GEMINI_MODELS.find((m) => m.id === selectedModel)?.description}
+                      {availableModels.find((m) => m.id === selectedModel)?.description}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => setEnableWebSearch(!enableWebSearch)}
-                      className={`relative w-12 h-6 rounded-full transition-colors ${
-                        enableWebSearch ? 'bg-primary-500' : 'bg-navy-700'
-                      }`}
-                    >
-                      <div
-                        className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-transform ${
-                          enableWebSearch ? 'translate-x-6' : 'translate-x-0.5'
+                  {selectedProvider === 'google' && (
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setEnableWebSearch(!enableWebSearch)}
+                        className={`relative w-12 h-6 rounded-full transition-colors ${
+                          enableWebSearch ? 'bg-primary-500' : 'bg-navy-700'
                         }`}
-                      />
-                    </button>
-                    <span className="text-sm text-navy-300">Enable Google Search grounding</span>
-                  </div>
+                      >
+                        <div
+                          className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-transform ${
+                            enableWebSearch ? 'translate-x-6' : 'translate-x-0.5'
+                          }`}
+                        />
+                      </button>
+                      <span className="text-sm text-navy-300">Enable Google Search grounding</span>
+                    </div>
+                  )}
                 </div>
               </section>
 
@@ -708,10 +777,18 @@ export default function Dashboard() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-navy-400 flex items-center gap-2">
+                      <Brain className="w-4 h-4" /> Provider
+                    </span>
+                    <span className="text-sm text-navy-200 capitalize">
+                      {selectedProvider === 'google' ? 'Google Gemini' : 'Groq'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-navy-400 flex items-center gap-2">
                       <Zap className="w-4 h-4" /> Model
                     </span>
                     <span className="text-sm text-navy-200">
-                      {GEMINI_MODELS.find((m) => m.id === selectedModel)?.name}
+                      {availableModels.find((m) => m.id === selectedModel)?.name}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -867,7 +944,7 @@ export default function Dashboard() {
                 <Clock className="w-4 h-4" /> Local-first storage
               </span>
               <span className="flex items-center gap-1">
-                <CheckCircle2 className="w-4 h-4" /> Google Gemini powered
+                <CheckCircle2 className="w-4 h-4" /> Gemini & Groq powered
               </span>
             </div>
           </div>
