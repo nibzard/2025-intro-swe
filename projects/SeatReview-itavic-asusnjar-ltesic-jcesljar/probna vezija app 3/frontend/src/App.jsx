@@ -1,432 +1,649 @@
-
 import React, { useEffect, useState } from "react";
+import { useAuth } from "./AuthContext";
+import { useLanguage } from "./LanguageContext";
+import { translations } from "./translations";
+import Navigation from "./Navigation";
+import Photo360Viewer from "./Photo360Viewer";
+import SeatMap from "./SeatMap";
+import Favorites from "./Favorites";
+import ViewHistory from "./ViewHistory";
+import Leaderboard from "./Leaderboard";
 
 const API_BASE = "http://localhost:5000/api";
 
 function App() {
+  const { user, token } = useAuth();
+  const { language } = useLanguage();
+  const t = translations[language];
+  const [step, setStep] = useState(1); // 1 = category, 2 = venue selection, 3 = content
+  const [category, setCategory] = useState("");
   const [venues, setVenues] = useState([]);
   const [selectedVenueId, setSelectedVenueId] = useState("");
-  const [tab, setTab] = useState("review"); // review | gallery | insights
+  const [tab, setTab] = useState("360view");
+  const [autoSelectSeat, setAutoSelectSeat] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_BASE}/venues`)
-      .then((r) => r.json())
-      .then(setVenues)
-      .catch((e) => console.error("Failed to load venues", e));
-  }, []);
-
-  useEffect(() => {
-    if (venues.length > 0 && !selectedVenueId) {
-      setSelectedVenueId(String(venues[0].id));
+    if (category && step === 2) {
+      fetchVenues();
     }
-  }, [venues, selectedVenueId]);
+  }, [category]);
+
+  const fetchVenues = () => {
+    const url = `${API_BASE}/venues?category=${category}`;
+    fetch(url)
+      .then((r) => r.json())
+      .then((data) => {
+        setVenues(data);
+      })
+      .catch((e) => console.error("Failed to load venues", e));
+  };
+
+  const handleCategorySelect = (cat) => {
+    setCategory(cat);
+    setStep(2);
+    setSelectedVenueId("");
+  };
+
+  const handleVenueSelect = (venueId) => {
+    setSelectedVenueId(venueId);
+    setStep(3);
+  };
+
+  const handleBack = () => {
+    if (step === 3) {
+      setStep(2);
+      setSelectedVenueId("");
+      setAutoSelectSeat(null); // Clear auto-select when going back
+    } else if (step === 2) {
+      setStep(1);
+      setCategory("");
+      setVenues([]);
+    }
+  };
+
+  const handleNavigateToSeat = async (venueId, section, row, seatNumber) => {
+    try {
+      // Fetch venue details to get the category
+      const res = await fetch(`${API_BASE}/venues/${venueId}`);
+      if (res.ok) {
+        const venue = await res.json();
+
+        // Set category and fetch venues for that category
+        setCategory(venue.category);
+
+        // Fetch venues for the category
+        const venuesRes = await fetch(`${API_BASE}/venues?category=${venue.category}`);
+        if (venuesRes.ok) {
+          const venuesData = await venuesRes.json();
+          setVenues(venuesData);
+        }
+
+        // Set the seat to auto-select
+        setAutoSelectSeat({
+          section,
+          row,
+          seat_number: seatNumber
+        });
+
+        // Navigate to the seat map
+        setSelectedVenueId(venueId);
+        setStep(3);
+        setTab("seatmap");
+      }
+    } catch (err) {
+      console.error("Error navigating to seat:", err);
+    }
+  };
 
   return (
-    <div className="container">
-      <h1>Seat Review</h1>
-      <p className="subtitle">
-        Rate your seat comfort in stadiums, theatres, arenas and more.
-      </p>
+    <>
+      <Navigation />
+      <div className="container">
+        {/* Step 1: Category Selection */}
+        {step === 1 && (
+          <div className="selection-container">
+            <h2 className="selection-title">{t.selectCategory}</h2>
+          <div className="category-cards">
+            <div
+              className="category-card"
+              onClick={() => handleCategorySelect("stadium")}
+            >
+              <div className="category-icon">⚽</div>
+              <h3>{t.stadiums}</h3>
+              <p>{t.stadiumsDesc}</p>
+            </div>
+            <div
+              className="category-card"
+              onClick={() => handleCategorySelect("arena")}
+            >
+              <div className="category-icon">🎭</div>
+              <h3>{t.arenasTheatres}</h3>
+              <p>{t.arenasDesc}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
+      {/* Step 2: Venue Selection */}
+      {step === 2 && (
+        <div className="selection-container">
+          <button className="back-button" onClick={handleBack}>
+            ← {t.backToCategories}
+          </button>
+          <h2 className="selection-title">
+            {category === "stadium" ? `⚽ ${t.selectStadium}` : `🎭 ${t.selectArena}`}
+          </h2>
+          <div className="venue-cards">
+            {venues.map((venue) => (
+              <div
+                key={venue.id}
+                className="venue-card"
+                onClick={() => handleVenueSelect(venue.id)}
+              >
+                <h3>{venue.name}</h3>
+                <p>{venue.address}</p>
+                <div className="venue-type">{venue.type}</div>
+              </div>
+            ))}
+          </div>
+          {venues.length === 0 && (
+            <p className="no-venues">{t.noVenues}</p>
+          )}
+        </div>
+      )}
+
+      {/* Step 3: Venue Content */}
+      {step === 3 && selectedVenueId && (
+        <>
+          <button className="back-button" onClick={handleBack}>
+            ← {t.backToVenues}
+          </button>
+
+          {/* Tabs */}
+          <div className="tabs">
+            <button
+              className={tab === "seatmap" ? "tab active" : "tab"}
+              onClick={() => setTab("seatmap")}
+            >
+              🎫 {t.tabSeatMap || "Seat Map"}
+            </button>
+            <button
+              className={tab === "360view" ? "tab active" : "tab"}
+              onClick={() => setTab("360view")}
+            >
+              🌐 {t.tab360Views}
+            </button>
+            <button
+              className={tab === "reviews" ? "tab active" : "tab"}
+              onClick={() => setTab("reviews")}
+            >
+              📝 {t.tabAllReviews}
+            </button>
+            <button
+              className={tab === "submit" ? "tab active" : "tab"}
+              onClick={() => setTab("submit")}
+            >
+              ✍️ {t.tabSubmitReview}
+            </button>
+            <button
+              className={tab === "gallery" ? "tab active" : "tab"}
+              onClick={() => setTab("gallery")}
+            >
+              📸 {t.tabGallery}
+            </button>
+            <button
+              className={tab === "insights" ? "tab active" : "tab"}
+              onClick={() => setTab("insights")}
+            >
+              📊 {t.tabInsights}
+            </button>
+            <button
+              className={tab === "favorites" ? "tab active" : "tab"}
+              onClick={() => setTab("favorites")}
+            >
+              ⭐ {t.tabFavorites || "Favorites"}
+            </button>
+            <button
+              className={tab === "history" ? "tab active" : "tab"}
+              onClick={() => setTab("history")}
+            >
+              📜 {t.tabHistory || "History"}
+            </button>
+            <button
+              className={tab === "leaderboard" ? "tab active" : "tab"}
+              onClick={() => setTab("leaderboard")}
+            >
+              🏆 {t.tabLeaderboard || "Leaderboard"}
+            </button>
+          </div>
+
+          {/* Content */}
+          {tab === "seatmap" && (
+            <SeatMap
+              venueId={selectedVenueId}
+              venueName={venues.find((v) => v.id === selectedVenueId)?.name}
+              autoSelectSeat={autoSelectSeat}
+            />
+          )}
+          {tab === "360view" && <Photo360Viewer venueId={selectedVenueId} />}
+          {tab === "reviews" && <AllReviews venueId={selectedVenueId} />}
+          {tab === "submit" && <ReviewForm venueId={selectedVenueId} token={token} />}
+          {tab === "gallery" && <VenueGallery venueId={selectedVenueId} />}
+          {tab === "insights" && <VenueInsights venueId={selectedVenueId} />}
+          {tab === "favorites" && <Favorites />}
+          {tab === "history" && <ViewHistory onNavigateToSeat={handleNavigateToSeat} />}
+          {tab === "leaderboard" && <Leaderboard />}
+        </>
+      )}
+      </div>
+    </>
+  );
+}
+
+// New component to show all reviews
+function AllReviews({ venueId }) {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/venues/${venueId}/reviews`)
+      .then((r) => r.json())
+      .then((data) => {
+        setReviews(data);
+        setLoading(false);
+      })
+      .catch((e) => {
+        console.error(e);
+        setLoading(false);
+      });
+  }, [venueId]);
+
+  if (loading) return <div className="loading-small">Loading reviews...</div>;
+
+  if (reviews.length === 0) {
+    return (
       <div className="card">
-        <label className="label">Select Venue</label>
-        <select
-          className="input"
-          value={selectedVenueId}
-          onChange={(e) => setSelectedVenueId(e.target.value)}
-        >
-          {venues.map((v) => (
-            <option key={v.id} value={v.id}>
-              {v.name}
-            </option>
-          ))}
-        </select>
+        <p className="no-content">No reviews yet. Be the first to review!</p>
       </div>
+    );
+  }
 
-      <div className="tabs">
-        <button
-          className={tab === "review" ? "tab active" : "tab"}
-          onClick={() => setTab("review")}
-        >
-          Submit Review
-        </button>
-        <button
-          className={tab === "gallery" ? "tab active" : "tab"}
-          onClick={() => setTab("gallery")}
-        >
-          Venue Photos
-        </button>
-        <button
-          className={tab === "insights" ? "tab active" : "tab"}
-          onClick={() => setTab("insights")}
-        >
-          Venue Insights
-        </button>
-      </div>
+  return (
+    <div className="reviews-container">
+      <h3 className="reviews-header">All Reviews ({reviews.length})</h3>
+      {reviews.map((review) => (
+        <div key={review.id} className="review-card">
+          <div className="review-header">
+            <div className="review-location">
+              <span className="review-badge">Section: {review.section || "N/A"}</span>
+              <span className="review-badge">Row: {review.row || "N/A"}</span>
+              <span className="review-badge">Seat: {review.seat_number || "N/A"}</span>
+            </div>
+            <div className="review-user">
+              👤 {review.user_email?.split("@")[0] || "Anonymous"}
+            </div>
+          </div>
 
-      {selectedVenueId && tab === "review" && (
-        <ReviewForm venueId={selectedVenueId} />
-      )}
-      {selectedVenueId && tab === "gallery" && (
-        <VenueGallery venueId={selectedVenueId} />
-      )}
-      {selectedVenueId && tab === "insights" && (
-        <VenueInsights venueId={selectedVenueId} />
-      )}
+          <div className="review-ratings">
+            <div className="rating-item">
+              <span className="rating-label">🛋️ Comfort</span>
+              <div className="rating-stars">
+                {"★".repeat(review.rating_comfort || 0)}
+                {"☆".repeat(5 - (review.rating_comfort || 0))}
+              </div>
+              <span className="rating-value">{review.rating_comfort || "N/A"}/5</span>
+            </div>
+            <div className="rating-item">
+              <span className="rating-label">🦵 Legroom</span>
+              <div className="rating-stars">
+                {"★".repeat(review.rating_legroom || 0)}
+                {"☆".repeat(5 - (review.rating_legroom || 0))}
+              </div>
+              <span className="rating-value">{review.rating_legroom || "N/A"}/5</span>
+            </div>
+            <div className="rating-item">
+              <span className="rating-label">👁️ Visibility</span>
+              <div className="rating-stars">
+                {"★".repeat(review.rating_visibility || 0)}
+                {"☆".repeat(5 - (review.rating_visibility || 0))}
+              </div>
+              <span className="rating-value">{review.rating_visibility || "N/A"}/5</span>
+            </div>
+            <div className="rating-item">
+              <span className="rating-label">✨ Cleanliness</span>
+              <div className="rating-stars">
+                {"★".repeat(review.rating_cleanliness || 0)}
+                {"☆".repeat(5 - (review.rating_cleanliness || 0))}
+              </div>
+              <span className="rating-value">{review.rating_cleanliness || "N/A"}/5</span>
+            </div>
+          </div>
+
+          {review.text_review && (
+            <div className="review-text">
+              <p>{review.text_review}</p>
+            </div>
+          )}
+
+          <div className="review-footer">
+            <span className="review-date">
+              {new Date(review.created_at).toLocaleDateString("hr-HR", {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+              })}
+            </span>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
 
-function ReviewForm({ venueId }) {
-  const [form, setForm] = useState({
+// ReviewForm component (same as before but with better styling)
+function ReviewForm({ venueId, token }) {
+  const [formData, setFormData] = useState({
     section: "",
     row: "",
     seat_number: "",
-    rating_comfort: "3",
-    rating_legroom: "3",
-    rating_visibility: "3",
-    rating_cleanliness: "3",
+    price: "",
+    rating_comfort: "",
+    rating_legroom: "",
+    rating_visibility: "",
+    rating_cleanliness: "",
     text_review: ""
   });
-  const [files, setFiles] = useState([]);
-  const [status, setStatus] = useState(null);
+  const [photos, setPhotos] = useState([]);
+  const [status, setStatus] = useState("");
 
   const handleChange = (e) => {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleFileChange = (e) => {
-    setFiles(Array.from(e.target.files));
+    setPhotos([...e.target.files]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus("Submitting...");
 
-    try {
-      const fd = new FormData();
-      fd.append("venue_id", venueId);
-      Object.entries(form).forEach(([key, value]) => {
-        fd.append(key, value);
-      });
-      files.forEach((file) => fd.append("photos", file));
-
-      const res = await fetch(`${API_BASE}/reviews`, {
-        method: "POST",
-        body: fd
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to submit review");
+    const formDataToSend = new FormData();
+    formDataToSend.append("venue_id", venueId);
+    Object.keys(formData).forEach((key) => {
+      if (formData[key]) {
+        formDataToSend.append(key, formData[key]);
       }
+    });
+    photos.forEach((photo) => {
+      formDataToSend.append("photos", photo);
+    });
 
-      setStatus("Review submitted successfully ✅");
-      setForm((f) => ({
-        ...f,
-        text_review: ""
-      }));
-      setFiles([]);
-    } catch (err) {
-      console.error(err);
-      setStatus(`Error: ${err.message}`);
+    try {
+      const response = await fetch(`${API_BASE}/reviews`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: formDataToSend
+      });
+
+      if (response.ok) {
+        setStatus("✅ Review submitted successfully!");
+        setFormData({
+          section: "",
+          row: "",
+          seat_number: "",
+          price: "",
+          rating_comfort: "",
+          rating_legroom: "",
+          rating_visibility: "",
+          rating_cleanliness: "",
+          text_review: ""
+        });
+        setPhotos([]);
+        setTimeout(() => setStatus(""), 3000);
+      } else {
+        setStatus("❌ Failed to submit review");
+      }
+    } catch (error) {
+      setStatus("❌ Error: " + error.message);
     }
   };
 
   return (
-    <div className="card">
-      <h2>Submit a Seat Review</h2>
-      <form onSubmit={handleSubmit} className="form">
-        <div className="grid-3">
-          <div>
-            <label className="label">Section</label>
-            <input
-              className="input"
-              name="section"
-              value={form.section}
-              onChange={handleChange}
-              placeholder="e.g. A"
-            />
+    <div className="card review-form-card">
+      <h3>Submit Your Seat Review</h3>
+      <form className="review-form" onSubmit={handleSubmit}>
+        <div className="form-section">
+          <h4 className="form-section-title">📍 Seat Location</h4>
+          <div className="grid-3">
+            <div>
+              <label className="label">Section</label>
+              <input
+                name="section"
+                className="input"
+                value={formData.section}
+                onChange={handleChange}
+                placeholder="e.g., A"
+              />
+            </div>
+            <div>
+              <label className="label">Row</label>
+              <input
+                name="row"
+                className="input"
+                value={formData.row}
+                onChange={handleChange}
+                placeholder="e.g., 5"
+              />
+            </div>
+            <div>
+              <label className="label">Seat Number</label>
+              <input
+                name="seat_number"
+                className="input"
+                value={formData.seat_number}
+                onChange={handleChange}
+                placeholder="e.g., 12"
+              />
+            </div>
           </div>
-          <div>
-            <label className="label">Row</label>
+          <div style={{ marginTop: "16px" }}>
+            <label className="label">💰 Price (€)</label>
             <input
+              name="price"
+              type="number"
+              step="0.01"
+              min="0"
               className="input"
-              name="row"
-              value={form.row}
+              value={formData.price}
               onChange={handleChange}
-              placeholder="e.g. 12"
-            />
-          </div>
-          <div>
-            <label className="label">Seat</label>
-            <input
-              className="input"
-              name="seat_number"
-              value={form.seat_number}
-              onChange={handleChange}
-              placeholder="e.g. 18"
+              placeholder="e.g., 85.50"
             />
           </div>
         </div>
 
-        <div className="grid-2">
-          <RatingSelect
-            label="Comfort"
-            name="rating_comfort"
-            value={form.rating_comfort}
-            onChange={handleChange}
-          />
-          <RatingSelect
-            label="Legroom"
-            name="rating_legroom"
-            value={form.rating_legroom}
-            onChange={handleChange}
-          />
-          <RatingSelect
-            label="Visibility"
-            name="rating_visibility"
-            value={form.rating_visibility}
-            onChange={handleChange}
-          />
-          <RatingSelect
-            label="Cleanliness"
-            name="rating_cleanliness"
-            value={form.rating_cleanliness}
-            onChange={handleChange}
-          />
+        <div className="form-section">
+          <h4 className="form-section-title">⭐ Ratings (1-5 stars)</h4>
+          <div className="grid-2">
+            <div className="rating-input">
+              <label className="label">🛋️ Comfort</label>
+              <input
+                type="number"
+                name="rating_comfort"
+                className="input"
+                min="1"
+                max="5"
+                value={formData.rating_comfort}
+                onChange={handleChange}
+                placeholder="1-5"
+              />
+            </div>
+            <div className="rating-input">
+              <label className="label">🦵 Legroom</label>
+              <input
+                type="number"
+                name="rating_legroom"
+                className="input"
+                min="1"
+                max="5"
+                value={formData.rating_legroom}
+                onChange={handleChange}
+                placeholder="1-5"
+              />
+            </div>
+            <div className="rating-input">
+              <label className="label">👁️ Visibility</label>
+              <input
+                type="number"
+                name="rating_visibility"
+                className="input"
+                min="1"
+                max="5"
+                value={formData.rating_visibility}
+                onChange={handleChange}
+                placeholder="1-5"
+              />
+            </div>
+            <div className="rating-input">
+              <label className="label">✨ Cleanliness</label>
+              <input
+                type="number"
+                name="rating_cleanliness"
+                className="input"
+                min="1"
+                max="5"
+                value={formData.rating_cleanliness}
+                onChange={handleChange}
+                placeholder="1-5"
+              />
+            </div>
+          </div>
         </div>
 
-        <div>
-          <label className="label">Describe your experience (optional)</label>
+        <div className="form-section">
+          <h4 className="form-section-title">💬 Your Experience</h4>
           <textarea
-            className="input textarea"
             name="text_review"
-            value={form.text_review}
+            className="input textarea"
+            value={formData.text_review}
             onChange={handleChange}
-            placeholder="Legroom very tight, view blocked by railing..."
+            placeholder="Share your experience with this seat..."
+            rows="4"
           />
         </div>
 
-        <div>
-          <label className="label">
-            Seat photos (optional, up to 5) – visibility, legroom, damage...
-          </label>
+        <div className="form-section">
+          <h4 className="form-section-title">📸 Photos (optional, max 5)</h4>
           <input
             type="file"
-            multiple
             accept="image/*"
+            multiple
             onChange={handleFileChange}
+            className="input"
           />
+          {photos.length > 0 && (
+            <div className="file-preview">
+              {photos.length} file(s) selected
+            </div>
+          )}
         </div>
 
-        <button type="submit" className="btn-primary">
+        <button type="submit" className="btn-primary btn-large">
           Submit Review
         </button>
-        {status && <p className="status">{status}</p>}
+        {status && <div className="form-status">{status}</div>}
       </form>
     </div>
   );
 }
 
-function RatingSelect({ label, name, value, onChange }) {
-  return (
-    <div>
-      <label className="label">{label}</label>
-      <select
-        className="input"
-        name={name}
-        value={value}
-        onChange={onChange}
-        required
-      >
-        <option value="1">1 – Very poor</option>
-        <option value="2">2 – Poor</option>
-        <option value="3">3 – OK</option>
-        <option value="4">4 – Good</option>
-        <option value="5">5 – Excellent</option>
-      </select>
-    </div>
-  );
-}
-
+// VenueGallery component
 function VenueGallery({ venueId }) {
   const [photos, setPhotos] = useState([]);
-  const [status, setStatus] = useState("Loading...");
-
-  const loadPhotos = () => {
-    setStatus("Loading...");
-    fetch(`${API_BASE}/venues/${venueId}/photos`)
-      .then((r) => r.json())
-      .then((data) => {
-        setPhotos(data);
-        setStatus(data.length === 0 ? "No photos yet." : null);
-      })
-      .catch((e) => {
-        console.error(e);
-        setStatus("Failed to load photos.");
-      });
-  };
 
   useEffect(() => {
-    loadPhotos();
+    fetch(`${API_BASE}/venues/${venueId}/photos`)
+      .then((r) => r.json())
+      .then(setPhotos)
+      .catch((e) => console.error(e));
   }, [venueId]);
 
   return (
     <div className="card">
-      <div className="card-header">
-        <h2>Seat Photo Gallery</h2>
-        <button className="btn-secondary" onClick={loadPhotos}>
-          Refresh
-        </button>
-      </div>
-
-      {status && <p className="status">{status}</p>}
-
-      <div className="gallery">
-        {photos.map((p) => (
-          <div key={p.id} className="gallery-item">
-            <img src={`http://localhost:5000${p.file_path}`} alt="Seat" />
-          </div>
-        ))}
-      </div>
+      <h3>Venue Photo Gallery</h3>
+      {photos.length === 0 ? (
+        <p className="no-content">No photos yet.</p>
+      ) : (
+        <div className="gallery">
+          {photos.map((p) => (
+            <div key={p.id} className="gallery-item">
+              <img src={`http://localhost:5000${p.file_path}`} alt="venue" />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
+// VenueInsights component
 function VenueInsights({ venueId }) {
   const [stats, setStats] = useState(null);
   const [insight, setInsight] = useState(null);
-  const [status, setStatus] = useState("Loading...");
-  const [aiStatus, setAiStatus] = useState(null);
-
-  const loadStats = () => {
-    setStatus("Loading...");
-    Promise.all([
-      fetch(`${API_BASE}/venues/${venueId}/stats`).then((r) => r.json()),
-      fetch(`${API_BASE}/venues/${venueId}/insights`).then(async (r) => {
-        if (r.status === 404) return null;
-        return r.json();
-      })
-    ])
-      .then(([statsData, insightData]) => {
-        setStats(statsData);
-        setInsight(insightData);
-        setStatus(null);
-      })
-      .catch((e) => {
-        console.error(e);
-        setStatus("Failed to load insights.");
-      });
-  };
 
   useEffect(() => {
-    loadStats();
+    fetch(`${API_BASE}/venues/${venueId}/stats`)
+      .then((r) => r.json())
+      .then(setStats)
+      .catch((e) => console.error(e));
+
+    fetch(`${API_BASE}/venues/${venueId}/insights`)
+      .then((r) => {
+        if (r.ok) return r.json();
+        return null;
+      })
+      .then(setInsight)
+      .catch((e) => console.error(e));
   }, [venueId]);
 
-  const handleGenerateAI = async () => {
-    setAiStatus("Generating AI summary...");
-    try {
-      const res = await fetch(
-        `${API_BASE}/venues/${venueId}/insights/generate`,
-        {
-          method: "POST"
-        }
-      );
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to generate insights");
-      }
-      setInsight(data);
-      setAiStatus("AI summary generated ✅");
-    } catch (err) {
-      console.error(err);
-      setAiStatus(`Error: ${err.message}`);
-    }
-  };
+  if (!stats) return <div className="loading-small">Loading...</div>;
 
   return (
     <div className="card">
-      <div className="card-header">
-        <h2>Venue Insights</h2>
-        <button className="btn-secondary" onClick={loadStats}>
-          Refresh
-        </button>
-      </div>
-
-      {status && <p className="status">{status}</p>}
-
-      {stats && (
-        <>
-          <div className="stats-grid">
-            <StatBox
-              label="Total Reviews"
-              value={stats.total_reviews || 0}
-            />
-            <StatBox
-              label="Comfort"
-              value={stats.avg_comfort?.toFixed(1) || "-"}
-            />
-            <StatBox
-              label="Legroom"
-              value={stats.avg_legroom?.toFixed(1) || "-"}
-            />
-            <StatBox
-              label="Visibility"
-              value={stats.avg_visibility?.toFixed(1) || "-"}
-            />
-            <StatBox
-              label="Cleanliness"
-              value={stats.avg_cleanliness?.toFixed(1) || "-"}
-            />
-          </div>
-
-          {stats.top_words && stats.top_words.length > 0 && (
-            <div className="top-words">
-              <h3>Frequent complaint words</h3>
-              <ul>
-                {stats.top_words.map((w) => (
-                  <li key={w.word}>
-                    {w.word} <span className="chip">×{w.count}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </>
-      )}
-
-      <div className="ai-section">
-        <div className="ai-header">
-          <h3>AI-generated Summary</h3>
-          <button className="btn-primary" onClick={handleGenerateAI}>
-            Generate / Refresh AI Insights
-          </button>
+      <h3>Venue Statistics & Insights</h3>
+      <div className="stats-grid">
+        <div className="stat-box">
+          <div className="stat-label">Total Reviews</div>
+          <div className="stat-value">{stats.total_reviews || 0}</div>
         </div>
-        {aiStatus && <p className="status">{aiStatus}</p>}
-        {insight ? (
-          <>
-            <p className="ai-time">
-              Last generated: {insight.created_at || "unknown"}
-            </p>
-            <pre className="ai-summary">{insight.summary_text}</pre>
-          </>
-        ) : (
-          <p className="muted">
-            No AI summary yet. Click the button to generate one (if the backend
-            has an OpenAI API key).
-          </p>
-        )}
+        <div className="stat-box">
+          <div className="stat-label">🛋️ Avg Comfort</div>
+          <div className="stat-value">
+            {stats.avg_comfort ? stats.avg_comfort.toFixed(1) : "N/A"}
+          </div>
+        </div>
+        <div className="stat-box">
+          <div className="stat-label">🦵 Avg Legroom</div>
+          <div className="stat-value">
+            {stats.avg_legroom ? stats.avg_legroom.toFixed(1) : "N/A"}
+          </div>
+        </div>
+        <div className="stat-box">
+          <div className="stat-label">👁️ Avg Visibility</div>
+          <div className="stat-value">
+            {stats.avg_visibility ? stats.avg_visibility.toFixed(1) : "N/A"}
+          </div>
+        </div>
       </div>
-    </div>
-  );
-}
 
-function StatBox({ label, value }) {
-  return (
-    <div className="stat-box">
-      <div className="stat-label">{label}</div>
-      <div className="stat-value">{value}</div>
+      {insight && (
+        <div className="ai-section">
+          <h4>AI-Generated Summary</h4>
+          <div className="ai-summary">{insight.summary_text}</div>
+        </div>
+      )}
     </div>
   );
 }
