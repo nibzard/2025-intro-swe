@@ -140,13 +140,57 @@ def parse_project_list(file_path: str) -> List[Project]:
     return projects
 
 
-def assign_projects_to_dates(projects: List[Project], seed: Optional[int] = None) -> Dict[str, List[Project]]:
+def pin_teams_to_dates(projects: List[Project], pin_mappings: Dict[str, str]) -> Tuple[Dict[str, List[Project]], List[Project]]:
+    """
+    Pin specific teams to their assigned dates, removing them from the shuffle pool.
+
+    Args:
+        projects: List of all projects
+        pin_mappings: Dictionary mapping project titles to target dates
+
+    Returns:
+        Tuple of (pinned_assignments dict, remaining_projects list)
+
+    Raises:
+        ValueError: If a pinned project is not found or date is invalid
+    """
+    valid_dates = {'January 26, 2026', 'February 2, 2026', 'February 9, 2026'}
+
+    # Validate dates
+    for project_title, date in pin_mappings.items():
+        if date not in valid_dates:
+            raise ValueError(f"Invalid date '{date}' for team '{project_title}'. Valid dates: {valid_dates}")
+
+    pinned_assignments = {date: [] for date in valid_dates}
+    remaining_projects = []
+    pinned_titles = set()
+
+    # Find and assign pinned projects
+    for project in projects:
+        if project.project_title in pin_mappings:
+            target_date = pin_mappings[project.project_title]
+            pinned_assignments[target_date].append(project)
+            pinned_titles.add(project.project_title)
+        else:
+            remaining_projects.append(project)
+
+    # Verify all pinned projects were found
+    for title in pin_mappings:
+        if title not in pinned_titles:
+            raise ValueError(f"Project '{title}' not found in project list")
+
+    return pinned_assignments, remaining_projects
+
+
+def assign_projects_to_dates(projects: List[Project], seed: Optional[int] = None,
+                            pinned_teams: Optional[Dict[str, str]] = None) -> Dict[str, List[Project]]:
     """
     Assign projects to presentation dates with controlled distribution.
 
     Args:
         projects: List of projects to assign
         seed: Optional random seed for reproducibility
+        pinned_teams: Optional dict mapping project titles to specific dates
 
     Returns:
         Dictionary mapping dates to lists of assigned projects
@@ -157,42 +201,73 @@ def assign_projects_to_dates(projects: List[Project], seed: Optional[int] = None
     if seed is not None:
         random.seed(seed)
 
-    # Validate project count
+    # Validate project count (allow flexibility for now)
     expected_count = 22
     if len(projects) != expected_count:
-        raise ValueError(f"Expected {expected_count} projects, found {len(projects)}")
+        print(f"⚠️  Warning: Expected {expected_count} projects, found {len(projects)}. Proceeding anyway.")
 
-    # Shuffle projects for random assignment
-    shuffled_projects = projects.copy()
-    random.shuffle(shuffled_projects)
+    # Dynamically calculate distribution based on actual project count
+    # First date gets ceil(n/3), rest get floor(n/3) or similar
+    total = len(projects)
+    base = total // 3
+    remainder = total % 3
 
-    # Define distribution
-    distribution = {
-        'January 26, 2026': 8,
-        'February 2, 2026': 7,
-        'February 9, 2026': 7
-    }
+    distribution = {}
+    dates = ['January 26, 2026', 'February 2, 2026', 'February 9, 2026']
+    for i, date in enumerate(dates):
+        distribution[date] = base + (1 if i < remainder else 0)
 
-    # Assign projects
-    assignments = {}
-    start_idx = 0
+    # Handle pinned teams if specified
+    if pinned_teams:
+        pinned_assignments, remaining_projects = pin_teams_to_dates(projects, pinned_teams)
 
-    for date, count in distribution.items():
-        end_idx = start_idx + count
-        assignments[date] = shuffled_projects[start_idx:end_idx]
-        start_idx = end_idx
+        # Validate that pinned teams don't exceed their date's capacity
+        for date, pinned in pinned_assignments.items():
+            if len(pinned) > distribution[date]:
+                raise ValueError(f"Too many teams pinned to {date}: {len(pinned)} > {distribution[date]}")
 
-    return assignments
+        # Shuffle remaining projects
+        random.shuffle(remaining_projects)
+
+        # Fill remaining slots
+        assignments = {date: [] for date in distribution}
+        for date in distribution:
+            # Add pinned teams first
+            assignments[date].extend(pinned_assignments[date])
+            # Calculate remaining slots and fill from shuffled pool
+            remaining_slots = distribution[date] - len(pinned_assignments[date])
+            assignments[date].extend(remaining_projects[:remaining_slots])
+            # Remove assigned projects from pool
+            remaining_projects = remaining_projects[remaining_slots:]
+
+        return assignments
+    else:
+        # Original behavior: shuffle all projects
+        shuffled_projects = projects.copy()
+        random.shuffle(shuffled_projects)
+
+        # Assign projects
+        assignments = {}
+        start_idx = 0
+
+        for date, count in distribution.items():
+            end_idx = start_idx + count
+            assignments[date] = shuffled_projects[start_idx:end_idx]
+            start_idx = end_idx
+
+        return assignments
 
 
 def generate_schedule_markdown(assignments: Dict[str, List[Project]],
-                            seed: Optional[int] = None) -> str:
+                            seed: Optional[int] = None,
+                            pinned_teams: Optional[Dict[str, str]] = None) -> str:
     """
     Generate markdown content for the presentation schedule.
 
     Args:
         assignments: Dictionary of date to project assignments
         seed: Random seed used for assignment (if any)
+        pinned_teams: Optional dict of pinned team assignments
 
     Returns:
         Formatted markdown string
@@ -203,6 +278,8 @@ def generate_schedule_markdown(assignments: Dict[str, List[Project]],
     lines.append(f"*Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*")
     if seed is not None:
         lines.append(f"*Random seed: {seed}*")
+    if pinned_teams:
+        lines.append(f"*Pinned teams: {len(pinned_teams)}*")
     lines.append("")
 
     # Calculate statistics
@@ -308,7 +385,25 @@ Examples:
         help='Path to project list file (default: ../projects/PROJECT_LIST.md)'
     )
 
+    parser.add_argument(
+        '--pin-team',
+        action='append',
+        metavar='TEAM=DATE',
+        help='Pin a team to a specific date (e.g., "MateSfera=February 2, 2026"). Can be used multiple times.'
+    )
+
     args = parser.parse_args()
+
+    # Parse pin-team arguments
+    pinned_teams = None
+    if args.pin_team:
+        pinned_teams = {}
+        for pin_spec in args.pin_team:
+            if '=' not in pin_spec:
+                print(f"❌ Error: Invalid pin format '{pin_spec}'. Use 'TEAM=DATE'")
+                exit(1)
+            team_name, date = pin_spec.split('=', 1)
+            pinned_teams[team_name.strip()] = date.strip()
 
     try:
         # Parse projects from file
@@ -318,12 +413,12 @@ Examples:
 
         # Assign projects to dates
         print("🎲 Assigning projects to presentation dates...")
-        assignments = assign_projects_to_dates(projects, args.seed)
+        assignments = assign_projects_to_dates(projects, args.seed, pinned_teams)
         print("✅ Projects assigned successfully")
 
         # Generate schedule content
         print("📝 Generating schedule...")
-        content = generate_schedule_markdown(assignments, args.seed)
+        content = generate_schedule_markdown(assignments, args.seed, pinned_teams)
 
         # Output or save the schedule
         if args.preview:
