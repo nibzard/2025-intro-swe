@@ -343,11 +343,10 @@ Examples:
                 output_dir = os.path.dirname(args.input)
 
             # Generate output filename
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             input_basename = os.path.basename(args.input)
-            # Remove old timestamp if present
-            base_name = re.sub(r'_\d{8}_\d{6}\.md$', '_edited.md', input_basename)
-            output_filename = f"presentation_schedule_edited_{timestamp}.md"
+            # Remove .md extension and add _edited.md
+            base_name = input_basename.replace('.md', '')
+            output_filename = f"{base_name}_edited.md"
             output_path = os.path.join(output_dir, output_filename)
 
             # Write output
