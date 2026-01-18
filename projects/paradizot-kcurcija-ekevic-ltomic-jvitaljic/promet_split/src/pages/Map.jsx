@@ -1,11 +1,7 @@
-import BusMap from '../components/BusMap';
+import FleetTracker from '../components/mapa/FleetTracker.jsx';
 
 const MapPage = () => {
-    return (
-        <div style={{ height: '100%', width: '100%' }}>
-            <BusMap />
-        </div>
-    );
+    return <FleetTracker />;
 };
 
 export default MapPage;

@@ -10,7 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "heatmap.js": "^2.0.5",
     "leaflet": "^1.9.4",
+    "leaflet-geosearch": "^4.2.2",
+    "leaflet-routing-machine": "^3.2.12",
+    "leaflet.markercluster": "^1.5.3",
     "lucide-react": "^0.562.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
