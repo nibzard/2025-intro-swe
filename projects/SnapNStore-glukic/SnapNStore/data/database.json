@@ -1,0 +1,86 @@
+{
+  "receipts": [
+    {
+      "id": 1,
+      "date": "21.02.2020",
+      "time": "14:26:38",
+      "amount": 103.69,
+      "store_name": "Trgovina njesoviton robom",
+      "payment_method": "N/A",
+      "items": [
+        {
+          "name": "Dat.: 21.02.",
+          "quantity": 1,
+          "price": 2020.14,
+          "total": 2020.14
+        },
+        {
+          "name": "m 1.00",
+          "quantity": 1,
+          "price": 15.99,
+          "total": 15.99
+        },
+        {
+          "name": "= 1.00",
+          "quantity": 1,
+          "price": 21.93,
+          "total": 21.93
+        },
+        {
+          "name": "e 1.00",
+          "quantity": 1,
+          "price": 12.74,
+          "total": 12.74
+        },
+        {
+          "name": "1.00",
+          "quantity": 1,
+          "price": 12.99,
+          "total": 12.99
+        },
+        {
+          "name": "1.00",
+          "quantity": 1,
+          "price": 11.99,
+          "total": 11.99
+        },
+        {
+          "name": "255 1.00",
+          "quantity": 1,
+          "price": 7.99,
+          "total": 7.99
+        },
+        {
+          "name": "EURO: 13,94 (1 Eur=",
+          "quantity": 1,
+          "price": 7.43,
+          "total": 7.43
+        },
+        {
+          "name": "POV",
+          "quantity": 1,
+          "price": 82.98,
+          "total": 82.98
+        }
+      ],
+      "image_path": "C:\\Users\\NiSaGiZi\\Desktop\\upi\\Cursor\\SnapNStore\\uploads\\receipt-1768858434302-787263155.jpg",
+      "raw_text": "Semovcanka Nova j.d.0.0.\nTrgovina njesoviton robom\nSemovci, S.Radica 127 A, 48350 D\nJURDJEVAC\n0IB: 79435261200\ntel: 048-280-913\nMJESTO: 1 Semovcanka Nova, Semov\nci\nRACUN: 22-1-1.\nDat.: 21.02.2020,14:26:38\nOperater :Pcela Strsljan\nSTOL/NARUDZBA : 85 o\nNaziv\n& Kolicina jmj Cijena Iznos\n== PIVO PAB 2L\nm 1.00 kom 15.99 15538\n= PIVO PAN RAD.2L\n= 1.00 kom 21.99 21.93\n= GGRODJE\ne 1.00 kom 12.74 12.74\nRAJCICA SJECKANA\n1.00 kom 12.99 12.99\nKELJ\n1.00 kg 11.99 11.99\nHRANA RIAL PSI 3 KG\n255 1.00 kom 27.99 7.99\nBae TTT a .\nE: 103,69\nEURO: 13,94 (1 Eur= 7,43567) |\nNAC.PLAC. : NOVCANICE I KOVANICE |\nPorez % Osnovica mi |\nPOV 25.00 82,98. Tom\nUkupno porezi NT E\nJIR: ac12e053-3300-496a-8add-1bd2e10nQec6\nIKI: 08a78e71e4e01080e6755ffe3bfdb|e\n[Elz] :\nHE\nIS š hs\nBrake\n\"obracun prema nap]\nFERRER ERR RRR\nNAJLUEPSA HV\nHAHA hb\n",
+      "created_at": "2026-01-19T21:33:56.338Z"
+    },
+    {
+      "id": 2,
+      "date": "N/A",
+      "time": "N/A",
+      "amount": 42,
+      "store_name": "Caffe bar MANDY",
+      "payment_method": "N/A",
+      "items": [],
+      "image_path": "C:\\Users\\NiSaGiZi\\Desktop\\upi\\Cursor\\SnapNStore\\uploads\\receipt-1768858459087-306331508.jpg",
+      "raw_text": "U.0. DEMO\n\nCaffe bar MANDY\n\n10000 ZAGREB, Zenimirova 2\n\nOB 23377745, Paro Pen:\n\nDam 2012012 vrieme: 1105\n\nRAČUN broj 1611\n\nNAV KOUČNA CIJENA IZOS\n\nGUSKOGS RoW 200 1200 2400\n\nCAPPUCCNO KOU 100 800 500\n\nNESCASTE Kou 1001000 1000\n\nUKUPNO KN: 42,00\n\nGolouna 4200\n\nrsa poreza Stopa Osnovica _imos\n\nFor 2300 ne 928\n\nFor 200 ew om\n\nOznaka operaera: ala\n\nZaštini kod izdavatelja računa:\n\nTasosbzoodzdaezadalaSabAšcOđada\n\ndie ScTeetit cic 4440-3622 48165abe57bd\n\n“HALA DOĐITE OPET+\n\n motšotvars Zagreb -www.malhr\n",
+      "created_at": "2026-01-19T21:34:20.098Z"
+    }
+  ],
+  "settings": {
+    "lastUpdate": "2026-01-19T20:35:18.515Z"
+  }
+}

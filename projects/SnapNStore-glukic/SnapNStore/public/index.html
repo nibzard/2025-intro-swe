@@ -468,9 +468,86 @@
         
         .preview-image {
             width: 100%;
-            max-width: 500px;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .previews-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .preview-wrapper {
+            position: relative;
+            width: 80px;
+            height: 80px;
             border-radius: 12px;
-            margin: 20px 0;
+            overflow: visible;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .remove-preview {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 22px;
+            height: 22px;
+            background: #ed4956;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 10;
+            transition: all 0.2s ease;
+        }
+
+        .remove-preview:hover {
+            transform: scale(1.2);
+            background: #ff5a6a;
+        }
+
+        .scan-options-overlay {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .scan-option-card {
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            width: 140px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .scan-option-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(107, 127, 159, 0.2);
+            border-color: #6B7F9F;
+        }
+
+        .scan-option-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .scan-option-label {
+            font-weight: 700;
+            color: #262626;
+            font-size: 16px;
         }
         
         .result {
@@ -740,6 +817,24 @@
             color: #262626;
             position: relative;
             z-index: 1;
+        }
+
+        .fiscal-section {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            border-top: 1px dashed rgba(0,0,0,0.1);
+            margin-top: 10px;
+            padding-top: 10px;
+        }
+
+        .fiscal-codes {
+            width: 100%;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 10px;
+            color: #8e8e8e;
+            margin-top: 5px;
+            line-height: 1.2;
         }
         
         .nav-item.active .nav-label {
@@ -1055,11 +1150,11 @@
             <label for="fileInput" class="btn btn-secondary">
                 📁 Odaberi sliku
             </label>
-            <input type="file" id="fileInput" name="receipt" accept="image/*" capture="environment">
-            <div id="imagePreview"></div>
+            <input type="file" id="fileInput" name="receipt" accept="image/*" multiple>
+            <div id="imagePreview" class="previews-container"></div>
         </div>
         
-        <div class="camera-container" id="cameraContainer">
+        <div class="camera-container" id="cameraContainer" style="display: none;">
             <video id="videoElement" autoplay playsinline></video>
             <canvas id="canvasElement" style="display: none;"></canvas>
             <div class="camera-controls">
@@ -1067,9 +1162,20 @@
                 <button class="btn btn-danger" id="cancelCameraBtn">❌ Odustani</button>
             </div>
         </div>
+
+        <div id="scanOptions" class="scan-options-overlay">
+            <div class="scan-option-card" onclick="openCamera()">
+                <div class="scan-option-icon">📷</div>
+                <div class="scan-option-label">Kamera</div>
+            </div>
+            <div class="scan-option-card" onclick="triggerFileUpload()">
+                <div class="scan-option-icon">📁</div>
+                <div class="scan-option-label">Datoteka</div>
+            </div>
+        </div>
         
         <div style="text-align: center; margin-top: 20px;">
-            <button class="btn btn-primary" id="submitBtn" disabled>🔍 Obrađi račun</button>
+            <button class="btn btn-primary" id="submitBtn" style="display: none;">🔍 Obrađi račun</button>
         </div>
         
         <div id="result" class="result"></div>
@@ -1081,14 +1187,14 @@
                 📁 Odaberi dokument s računa
             </p>
             <label for="fileInput2" class="btn btn-primary">
-                Odaberi datoteku
+                Odaberi datoteke
             </label>
-            <input type="file" id="fileInput2" name="receipt" accept="image/*">
-            <div id="imagePreview2"></div>
+            <input type="file" id="fileInput2" name="receipt" accept="image/*" multiple>
+            <div id="imagePreview2" class="previews-container"></div>
         </div>
         
         <div style="text-align: center; margin-top: 20px;">
-            <button class="btn btn-primary" id="submitBtn2" disabled>🔍 Obrađi račun</button>
+            <button class="btn btn-primary" id="submitBtn2" style="display: none;">🔍 Obrađi račun</button>
         </div>
         
         <div id="result2" class="result"></div>
@@ -1385,13 +1491,35 @@
             } else if (pageName === 'stats' || pageName === 'profile') {
                 updateStats();
             } else if (pageName === 'scan') {
-                showNotDoneYet();
+                showScanOptions();
+            } else if (pageName === 'upload') {
+                // Reset upload page state
+                uploadArea2.style.display = 'block';
+                imagePreview2.innerHTML = '';
+                submitBtn2.style.display = 'none';
             }
+        }
+
+        function showScanOptions() {
+            document.getElementById('scanOptions').style.display = 'flex';
+            uploadArea.style.display = 'none';
+            cameraContainer.style.display = 'none';
+            submitBtn.style.display = 'none';
+            if (stream) stopCamera();
+        }
+
+        function triggerFileUpload() {
+            document.getElementById('scanOptions').style.display = 'none';
+            uploadArea.style.display = 'block';
+            fileInput.click();
         }
         
         async function loadReceipts(filter = 'all') {
             try {
                 const response = await fetch('/api/receipts');
+                if (!response.ok) {
+                    throw new Error(`Server je vratio status ${response.status}`);
+                }
                 const data = await response.json();
                 
                 if (data.success) {
@@ -1399,6 +1527,7 @@
                 }
             } catch (error) {
                 console.error('Greška pri učitavanju računa:', error);
+                displayReceipts([], filter);
             }
         }
         
@@ -1460,19 +1589,23 @@
                     <div class="receipt-folder-content" id="${receiptId}">
                         <div class="receipt-details">
                             <div class="detail-row">
-                                <span class="detail-label">📅 Datum:</span>
-                                <span class="detail-value">${receipt.date || 'N/A'}</span>
-                            </div>
-                            <div class="detail-row">
                                 <span class="detail-label">🏪 Trgovina:</span>
-                                <span class="detail-value">${receipt.store_name || 'N/A'}</span>
+                                <span class="detail-value" style="font-weight: bold; color: #262626;">${receipt.store_name || 'N/A'}</span>
                             </div>
                             <div class="detail-row">
-                                <span class="detail-label">💰 Ukupna cijena:</span>
-                                <span class="detail-value amount-highlight">${receipt.amount ? receipt.amount.toFixed(2) + ' €' : 'N/A'}</span>
+                                <span class="detail-label">📅 Datum i vrijeme:</span>
+                                <span class="detail-value">${receipt.date || 'N/A'} ${receipt.time || ''}</span>
                             </div>
-                            <div class="detail-row items-section">
-                                <span class="detail-label">🛒 Artikli (${items.length}):</span>
+                            <div class="detail-row">
+                                <span class="detail-label">💳 Plaćanje:</span>
+                                <span class="detail-value">${receipt.payment_method || 'N/A'}</span>
+                            </div>
+                            <div class="detail-row" style="margin-top: 15px; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px;">
+                                <span class="detail-label" style="font-size: 18px; color: #262626;">UKUPNO EUR:</span>
+                                <span class="detail-value amount-highlight" style="font-size: 22px;">${receipt.amount ? receipt.amount.toFixed(2) + ' €' : 'N/A'}</span>
+                            </div>
+                            <div class="detail-row items-section" style="margin-top: 20px;">
+                                <span class="detail-label">🛒 Artikli i cijene (${items.length}):</span>
                             </div>
                             ${itemsHtml}
                         </div>
@@ -1523,21 +1656,43 @@
         const resultDiv = document.getElementById('result');
         let stream = null;
         
-        function showNotDoneYet() {
-            const resultDiv = document.getElementById('result');
-            if (resultDiv) {
-                resultDiv.className = 'result error show';
-                resultDiv.innerHTML = '<h3>⚠️ Not done yet</h3><p>Ova funkcionalnost još nije implementirana.</p>';
+        async function openCamera() {
+            try {
+                document.getElementById('scanOptions').style.display = 'none';
+                uploadArea.style.display = 'none';
+                cameraContainer.style.display = 'block';
+                cameraContainer.classList.add('active');
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' }, 
+                    audio: false 
+                });
+                videoElement.srcObject = stream;
+            } catch (error) {
+                console.error('Greška pri otvaranju kamere:', error);
+                cameraContainer.classList.remove('active');
+                uploadArea.style.display = 'block';
+                alert('Ne mogu pristupiti kameri. Provjeri dozvole.');
             }
         }
         
-        async function openCamera() {
-            showNotDoneYet();
-        }
-        
         captureBtn.addEventListener('click', () => {
-            resultDiv.className = 'result error show';
-            resultDiv.innerHTML = '<h3>⚠️ Not done yet</h3><p>Ova funkcionalnost još nije implementirana.</p>';
+            const context = canvasElement.getContext('2d');
+            canvasElement.width = videoElement.videoWidth;
+            canvasElement.height = videoElement.videoHeight;
+            context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+            
+            canvasElement.toBlob((blob) => {
+                const file = new File([blob], "captured-receipt.jpg", { type: "image/jpeg" });
+                
+                // Kreiraj DataTransfer objekt da bi postavili file u fileInput
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+                
+                showPreview(file, imagePreview);
+                stopCamera();
+                submitBtn.disabled = false;
+            }, 'image/jpeg');
         });
         
         cancelCameraBtn.addEventListener('click', () => {
@@ -1563,10 +1718,15 @@
             });
         });
         
+        let selectedFiles1 = [];
+        let selectedFiles2 = [];
+
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                resultDiv.className = 'result error show';
-                resultDiv.innerHTML = '<h3>⚠️ Not done yet</h3><p>Ova funkcionalnost još nije implementirana.</p>';
+                selectedFiles1 = Array.from(e.target.files);
+                showPreview(selectedFiles1, imagePreview, 1);
+                submitBtn.style.display = 'inline-block';
+                submitBtn.disabled = false;
             }
         });
         
@@ -1582,23 +1742,50 @@
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
-            resultDiv.className = 'result error show';
-            resultDiv.innerHTML = '<h3>⚠️ Not done yet</h3><p>Ova funkcionalnost još nije implementirana.</p>';
+            if (e.dataTransfer.files.length > 0) {
+                selectedFiles1 = Array.from(e.dataTransfer.files);
+                updateFileInput(fileInput, selectedFiles1);
+                showPreview(selectedFiles1, imagePreview, 1);
+                submitBtn.style.display = 'inline-block';
+                submitBtn.disabled = false;
+            }
         });
-        
+
+        function updateFileInput(input, files) {
+            const dataTransfer = new DataTransfer();
+            files.forEach(file => dataTransfer.items.add(file));
+            input.files = dataTransfer.files;
+        }
+
+        function removeFile(index, inputId) {
+            if (inputId === 1) {
+                selectedFiles1.splice(index, 1);
+                updateFileInput(fileInput, selectedFiles1);
+                showPreview(selectedFiles1, imagePreview, 1);
+                if (selectedFiles1.length === 0) {
+                    submitBtn.style.display = 'none';
+                }
+            } else {
+                selectedFiles2.splice(index, 1);
+                updateFileInput(fileInput2, selectedFiles2);
+                showPreview(selectedFiles2, imagePreview2, 2);
+                if (selectedFiles2.length === 0) {
+                    submitBtn2.style.display = 'none';
+                }
+            }
+        }
+
         submitBtn.addEventListener('click', async () => {
-            resultDiv.className = 'result error show';
-            resultDiv.innerHTML = '<h3>⚠️ Not done yet</h3><p>Ova funkcionalnost još nije implementirana.</p>';
-            return;
-            
-            if (!fileInput.files[0]) return;
+            if (!selectedFiles1.length) return;
             if (submitBtn.disabled) return;
             
             const formData = new FormData();
-            formData.append('receipt', fileInput.files[0]);
-            
+            selectedFiles1.forEach(file => {
+                formData.append('receipt', file);
+            });
+
             resultDiv.className = 'result';
-            resultDiv.innerHTML = '<div class="loading"></div> Obrađujem račun...';
+            resultDiv.innerHTML = '<div class="loading"></div> Obrađujem račune...';
             resultDiv.classList.add('show');
             submitBtn.disabled = true;
             submitBtn.textContent = 'Obrađujem...';
@@ -1613,24 +1800,31 @@
                     throw new Error(`Server greška: ${response.status} ${response.statusText}`);
                 }
                 
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    const text = await response.text();
-                    throw new Error(`Server nije vratio JSON. Odgovor: ${text.substring(0, 100)}`);
-                }
-                
                 const data = await response.json();
                 
                 if (data.success) {
                     resultDiv.className = 'result success show';
-                    resultDiv.innerHTML = `
-                        <h3>✅ Uspješno obrađeno!</h3>
-                        <div class="result-item"><strong>Datum:</strong> ${data.data.date}</div>
-                        <div class="result-item"><strong>Iznos:</strong> ${data.data.amount} €</div>
-                        <div class="result-item"><strong>Trgovina:</strong> ${data.data.storeName}</div>
-                    `;
+                    let successHtml = `<h3>✅ Obrađeno ${data.successCount} od ${data.processed} računa</h3>`;
+                    
+                    data.results.forEach(res => {
+                        if (res.success) {
+                            successHtml += `
+                                <div class="result-item">
+                                    <strong>${res.filename}:</strong> ${res.data.storeName} - ${res.data.amount} € (${res.data.date})
+                                </div>
+                            `;
+                        } else {
+                            successHtml += `
+                                <div class="result-item" style="border-left-color: #ed4956;">
+                                    <strong>${res.filename}:</strong> ❌ ${res.error}
+                                </div>
+                            `;
+                        }
+                    });
+                    
+                    resultDiv.innerHTML = successHtml;
                     loadReceipts();
-                    setTimeout(() => switchPage('home'), 2000);
+                    setTimeout(() => switchPage('home'), 3000);
                 } else {
                     resultDiv.className = 'result error show';
                     resultDiv.innerHTML = `<h3>❌ Greška</h3><p>${data.error || 'Nepoznata greška'}</p>`;
@@ -1641,11 +1835,10 @@
                 resultDiv.innerHTML = `
                     <h3>❌ Greška</h3>
                     <p>${error.message || 'Nepoznata greška'}</p>
-                    <p style="font-size: 12px; color: #999; margin-top: 10px;">Provjeri konzolu za više detalja (F12)</p>
                 `;
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Pošalji';
+                submitBtn.textContent = '🔍 Obrađi račun';
             }
         });
         
@@ -1657,23 +1850,23 @@
         
         fileInput2.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                resultDiv2.className = 'result error show';
-                resultDiv2.innerHTML = '<h3>⚠️ Not done yet</h3><p>Ova funkcionalnost još nije implementirana.</p>';
+                selectedFiles2 = Array.from(e.target.files);
+                showPreview(selectedFiles2, imagePreview2, 2);
+                submitBtn2.style.display = 'inline-block';
+                submitBtn2.disabled = false;
             }
         });
         
         submitBtn2.addEventListener('click', async () => {
-            resultDiv2.className = 'result error show';
-            resultDiv2.innerHTML = '<h3>⚠️ Not done yet</h3><p>Ova funkcionalnost još nije implementirana.</p>';
-            return;
-            
-            if (!fileInput2.files[0]) return;
+            if (!selectedFiles2.length) return;
             
             const formData = new FormData();
-            formData.append('receipt', fileInput2.files[0]);
+            selectedFiles2.forEach(file => {
+                formData.append('receipt', file);
+            });
             
             resultDiv2.className = 'result';
-            resultDiv2.innerHTML = '<div class="loading"></div> Obrađujem račun...';
+            resultDiv2.innerHTML = '<div class="loading"></div> Obrađujem račune...';
             resultDiv2.classList.add('show');
             submitBtn2.disabled = true;
             submitBtn2.textContent = 'Obrađujem...';
@@ -1688,24 +1881,31 @@
                     throw new Error(`Server greška: ${response.status} ${response.statusText}`);
                 }
                 
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    const text = await response.text();
-                    throw new Error(`Server nije vratio JSON. Odgovor: ${text.substring(0, 100)}`);
-                }
-                
                 const data = await response.json();
                 
                 if (data.success) {
                     resultDiv2.className = 'result success show';
-                    resultDiv2.innerHTML = `
-                        <h3>✅ Uspješno obrađeno!</h3>
-                        <div class="result-item"><strong>Datum:</strong> ${data.data.date}</div>
-                        <div class="result-item"><strong>Iznos:</strong> ${data.data.amount} €</div>
-                        <div class="result-item"><strong>Trgovina:</strong> ${data.data.storeName}</div>
-                    `;
+                    let successHtml = `<h3>✅ Obrađeno ${data.successCount} od ${data.processed} računa</h3>`;
+                    
+                    data.results.forEach(res => {
+                        if (res.success) {
+                            successHtml += `
+                                <div class="result-item">
+                                    <strong>${res.filename}:</strong> ${res.data.storeName} - ${res.data.amount} € (${res.data.date})
+                                </div>
+                            `;
+                        } else {
+                            successHtml += `
+                                <div class="result-item" style="border-left-color: #ed4956;">
+                                    <strong>${res.filename}:</strong> ❌ ${res.error}
+                                </div>
+                            `;
+                        }
+                    });
+                    
+                    resultDiv2.innerHTML = successHtml;
                     loadReceipts();
-                    setTimeout(() => switchPage('home'), 2000);
+                    setTimeout(() => switchPage('home'), 3000);
                 } else {
                     resultDiv2.className = 'result error show';
                     resultDiv2.innerHTML = `<h3>❌ Greška</h3><p>${data.error || 'Nepoznata greška'}</p>`;
@@ -1716,7 +1916,6 @@
                 resultDiv2.innerHTML = `
                     <h3>❌ Greška</h3>
                     <p>${error.message || 'Nepoznata greška'}</p>
-                    <p style="font-size: 12px; color: #999; margin-top: 10px;">Provjeri konzolu za više detalja (F12)</p>
                 `;
             } finally {
                 submitBtn2.disabled = false;
@@ -1724,12 +1923,21 @@
             }
         });
         
-        function showPreview(file, previewElement) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                previewElement.innerHTML = `<img src="${e.target.result}" class="preview-image" alt="Preview">`;
-            };
-            reader.readAsDataURL(file);
+        function showPreview(files, previewElement, inputId) {
+            previewElement.innerHTML = '';
+            files.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'preview-wrapper';
+                    wrapper.innerHTML = `
+                        <div class="remove-preview" onclick="removeFile(${index}, ${inputId})">×</div>
+                        <img src="${e.target.result}" class="preview-image" alt="Preview">
+                    `;
+                    previewElement.appendChild(wrapper);
+                };
+                reader.readAsDataURL(file);
+            });
         }
         
         async function updateStats() {

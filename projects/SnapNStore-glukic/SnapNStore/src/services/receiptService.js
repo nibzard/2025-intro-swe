@@ -1,68 +1,64 @@
 import OCRService from '../ocr/ocrService.js';
 import DataParser from '../parser/dataParser.js';
-import CSVStorage from '../storage/csvStorage.js';
+import LocalDatabase from '../storage/localDatabase.js';
 
 class ReceiptService {
   constructor() {
     this.ocrService = new OCRService();
     this.parser = new DataParser();
-    this.storage = new CSVStorage();
+    this.storage = new LocalDatabase();
   }
 
   async processReceipt(imagePath) {
     try {
-      console.log('Prepoznavanje teksta s računa...');
-      const rawText = await this.ocrService.recognizeText(imagePath);
+      console.log('Prepoznavanje podataka s računa...');
+      const ocrResult = await this.ocrService.recognizeText(imagePath);
       
-      if (!rawText || rawText.trim().length === 0) {
-        throw new Error('OCR nije uspio prepoznati tekst s slike');
+      if (!ocrResult) {
+        throw new Error('OCR nije uspio dohvatiti podatke');
       }
 
-      console.log('Prepoznati tekst (prvih 500 znakova):', rawText.substring(0, 500));
+      let extractedData;
+      let rawText = '';
 
-      console.log('Izdvajanje podataka...');
-      const extractedData = this.parser.parseReceiptData(rawText);
+      // Ako je ocrResult već objekt (od Gemini-a), koristi ga direktno
+      if (typeof ocrResult === 'object' && ocrResult !== null && !Array.isArray(ocrResult)) {
+        console.log('✅ Gemini AI je uspješno strukturirao podatke.');
+        extractedData = ocrResult;
+        rawText = JSON.stringify(ocrResult);
+      } else {
+        // Ako je ocrResult tekst (od Tesseract-a), koristi parser
+        console.log('📝 Analiziram tekst pomoću lokalnih pravila...');
+        rawText = ocrResult;
+        extractedData = this.parser.parseReceiptData(rawText);
+      }
       
       console.log('Izdvojeni podaci:', extractedData);
 
-      const validation = this.parser.validateData(extractedData);
-      if (!validation.isValid) {
-        console.warn('Upozorenja pri validaciji:', validation.errors);
-        console.log('Izdvojeni podaci prije spremanja:', extractedData);
-      }
-
       const receiptData = {
         date: extractedData.date || 'N/A',
+        time: extractedData.time || 'N/A',
         amount: extractedData.amount || 0,
         storeName: extractedData.storeName || 'N/A',
+        paymentMethod: extractedData.paymentMethod || 'N/A',
         items: extractedData.items || [],
         imagePath: imagePath,
         rawText: rawText
       };
       
-      if (receiptData.items.length > 0) {
-        console.log('Pronađeni artikli:', receiptData.items);
-      } else {
-        console.log('Nisu pronađeni artikli na računu');
+      // Fallback ako iznos nije prepoznat, a imamo sirovi tekst
+      if ((!receiptData.amount || receiptData.amount === 0) && typeof ocrResult === 'string') {
+        const fallbackAmount = this.parser.extractAmount(rawText);
+        if (fallbackAmount) receiptData.amount = fallbackAmount;
       }
 
-      if (!receiptData.amount || receiptData.amount === 0) {
-        console.log('Iznos nije pronađen, pokušavam alternativne metode...');
-        const amountMatch = rawText.match(/(\d+[.,]\d{2})\s*(?:EUR|€|kn|HRK|UKUPNO)/i);
-        if (amountMatch) {
-          receiptData.amount = parseFloat(amountMatch[1].replace(',', '.'));
-          console.log('Pronađen alternativni iznos:', receiptData.amount);
-        }
-      }
-
-      const receiptId = this.storage.saveReceipt(receiptData);
+      const receiptId = await this.storage.saveReceipt(receiptData);
       console.log('Račun spremljen s ID:', receiptId);
 
       return {
         success: true,
         receiptId,
-        data: receiptData,
-        validation
+        data: receiptData
       };
     } catch (error) {
       console.error('Greška pri obradi računa:', error);
@@ -73,25 +69,25 @@ class ReceiptService {
     }
   }
 
-  getAllReceipts() {
-    return this.storage.getAllReceipts();
+  async getAllReceipts() {
+    return await this.storage.getAllReceipts();
   }
 
-  searchReceipts(query) {
-    const byStore = this.storage.searchByStore(query);
+  async searchReceipts(query) {
+    const byStore = await this.storage.searchByStore(query);
     if (byStore.length > 0) {
       return byStore;
     }
-    const byDate = this.storage.searchByDate(query);
+    const byDate = await this.storage.searchByDate(query);
     return byDate;
   }
 
-  getReceiptById(id) {
-    return this.storage.getReceiptById(id);
+  async getReceiptById(id) {
+    return await this.storage.getReceiptById(id);
   }
 
-  deleteAllReceipts() {
-    return this.storage.deleteAllReceipts();
+  async deleteAllReceipts() {
+    return await this.storage.deleteAllReceipts();
   }
 }
 

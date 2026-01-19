@@ -1,17 +1,19 @@
-import express from 'express';
-import multer from 'multer';
+import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
-import { existsSync, mkdirSync } from 'fs';
-import dotenv from 'dotenv';
-import ReceiptService from './services/receiptService.js';
-import CSVExporter from './utils/csvExporter.js';
-
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Eksplicitno učitavanje .env datoteke iz korijenske mape projekta
+dotenv.config({ path: join(__dirname, '../.env') });
+
+import express from 'express';
+import multer from 'multer';
+import { existsSync, mkdirSync } from 'fs';
+import ReceiptService from './services/receiptService.js';
+import CSVExporter from './utils/csvExporter.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -55,24 +57,33 @@ app.get('/', (req, res) => {
   res.sendFile(join(__dirname, '../public/index.html'));
 });
 
-app.post('/api/receipts/process', upload.single('receipt'), async (req, res) => {
+app.post('/api/receipts/process', upload.array('receipt', 10), async (req, res) => {
   try {
-    if (!req.file) {
+    if (!req.files || req.files.length === 0) {
       return res.status(400).json({ success: false, error: 'Nijedna slika nije učitana' });
     }
 
-    const imagePath = req.file.path;
-    console.log('Primljena slika:', imagePath);
-    
-    const result = await receiptService.processReceipt(imagePath);
-    
-    console.log('Rezultat obrade:', result);
-
-    if (result.success) {
-      res.json(result);
-    } else {
-      res.status(500).json(result);
+    const results = [];
+    for (const file of req.files) {
+      const imagePath = file.path;
+      console.log('Obrađujem sliku:', imagePath);
+      
+      const result = await receiptService.processReceipt(imagePath);
+      results.push({
+        filename: file.originalname,
+        ...result
+      });
     }
+    
+    const allSuccessful = results.every(r => r.success);
+    const successCount = results.filter(r => r.success).length;
+
+    res.json({
+      success: true,
+      processed: results.length,
+      successCount,
+      results: results
+    });
   } catch (error) {
     console.error('Greška u API endpointu:', error);
     res.status(500).json({ 
@@ -82,24 +93,24 @@ app.post('/api/receipts/process', upload.single('receipt'), async (req, res) => 
   }
 });
 
-app.get('/api/receipts', (req, res) => {
-  const receipts = receiptService.getAllReceipts();
+app.get('/api/receipts', async (req, res) => {
+  const receipts = await receiptService.getAllReceipts();
   res.json({ success: true, receipts, count: receipts.length });
 });
 
-app.get('/api/receipts/search', (req, res) => {
+app.get('/api/receipts/search', async (req, res) => {
   const query = req.query.q;
   if (!query) {
     return res.status(400).json({ success: false, error: 'Query parametar "q" je obavezan' });
   }
 
-  const receipts = receiptService.searchReceipts(query);
+  const receipts = await receiptService.searchReceipts(query);
   res.json({ success: true, receipts, count: receipts.length, query });
 });
 
 app.get('/api/receipts/export', async (req, res) => {
   try {
-    const receipts = receiptService.getAllReceipts();
+    const receipts = await receiptService.getAllReceipts();
     const csvPath = await csvExporter.exportToCSV(receipts);
     
     res.json({ 
@@ -113,9 +124,9 @@ app.get('/api/receipts/export', async (req, res) => {
   }
 });
 
-app.delete('/api/receipts/delete-all', (req, res) => {
+app.delete('/api/receipts/delete-all', async (req, res) => {
   try {
-    receiptService.deleteAllReceipts();
+    await receiptService.deleteAllReceipts();
     res.json({ 
       success: true, 
       message: 'Svi računi su izbrisani'
@@ -128,7 +139,7 @@ app.delete('/api/receipts/delete-all', (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server pokrenut na http://localhost:${PORT}`);
   console.log(`📁 Upload direktorij: ${uploadsDir}`);
-  console.log(`💾 CSV datoteka: ${process.env.CSV_PATH || './data/receipts.csv'}`);
+  console.log(`💾 Lokalna baza: SnapNStore/data/database.json`);
 });
 
 process.on('SIGINT', () => {

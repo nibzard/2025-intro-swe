@@ -2,11 +2,40 @@ class DataParser {
   parseReceiptData(text) {
     const result = {
       date: this.extractDate(text),
+      time: this.extractTime(text),
       amount: this.extractAmount(text),
       storeName: this.extractStoreName(text),
+      paymentMethod: this.extractPaymentMethod(text),
       items: this.extractItems(text)
     };
     return result;
+  }
+
+  extractOIB(text) {
+    const oibMatch = text.match(/OIB[:\s]*(\d{11})/i);
+    return oibMatch ? oibMatch[1] : 'N/A';
+  }
+
+  extractTime(text) {
+    const timeMatch = text.match(/(\d{2}:\d{2}:\d{2})/);
+    return timeMatch ? timeMatch[1] : 'N/A';
+  }
+
+  extractPaymentMethod(text) {
+    if (text.match(/gotovina/i)) return 'Gotovina';
+    if (text.match(/kartic[ae]/i)) return 'Kartica';
+    if (text.match(/transakcijski/i)) return 'Transakcijski račun';
+    return 'N/A';
+  }
+
+  extractZKI(text) {
+    const zkiMatch = text.match(/ZKI[:\s]*([a-f0-9]{32})/i);
+    return zkiMatch ? zkiMatch[1].toUpperCase() : 'N/A';
+  }
+
+  extractJIR(text) {
+    const jirMatch = text.match(/JIR[:\s]*([a-f0-9-]{36})/i);
+    return jirMatch ? jirMatch[1] : 'N/A';
   }
 
   extractDate(text) {
@@ -52,119 +81,71 @@ class DataParser {
   }
 
   extractAmount(text) {
+    if (!text) return null;
+    
+    // Očisti tekst od datuma kako ne bismo čitali iznose iz njih (npr. 21.02.2024 -> izbjegni 21.02)
+    const textWithoutDates = text.replace(/\d{1,2}\.\d{1,2}\.\d{4}/g, ' [DATE] ')
+                                 .replace(/\d{1,2}\/\d{1,2}\/\d{4}/g, ' [DATE] ');
+
+    // 1. Primarni pokušaj: Specifični hrvatski iznosi
     const totalPatterns = [
       /UKUPNO\s+EUR[:\s]*(\d+[.,]\d{2})/i,
-      /UKUPNO\s+EUR\s*[:\s]*(\d+[.,]\d{2})/i,
-      /UKUPNO[:\s]+(\d+[.,]\d{2})\s*EUR/i,
-      /UKUPNO[:\s]*(\d+[.,]\d{2})/i,
+      /UKUPNO[:\s]*(\d+[.,]\d{2})\s*EUR/i,
+      /IZNOS[:\s]*(\d+[.,]\d{2})/i,
+      /PLAĆENO[:\s]*(\d+[.,]\d{2})/i,
+      /ZA\s+PLATITI[:\s]*(\d+[.,]\d{2})/i,
     ];
     
     for (const pattern of totalPatterns) {
-      const match = text.match(pattern);
+      const match = textWithoutDates.match(pattern);
       if (match) {
-        let amount = match[1] || match[0];
-        amount = amount.replace(',', '.');
-        const parsed = parseFloat(amount);
-        if (!isNaN(parsed) && parsed > 0 && parsed < 1000000) {
-          return parsed;
-        }
+        const val = parseFloat(match[1].replace(',', '.'));
+        if (!isNaN(val)) return val;
       }
     }
     
-    const allAmountPatterns = [
-      /(?:ukupno|total|iznos|plaćeno|za\s+platiti)[:\s]*(\d+[.,]\d{2})\s*(?:EUR|€|kn|HRK)?/i,
-      /(?:ukupno|total|iznos|plaćeno|za\s+platiti)\s+(?:EUR|€|kn|HRK)[:\s]*(\d+[.,]\d{2})/i,
-      /(\d+[.,]\d{2})\s*(?:EUR|€)/i,
-      /(\d+[.,]\d{2})\s*(?:kn|HRK)/i,
-    ];
+    // 2. Sekundarni pokušaj: Traži sve što sliči na cijenu (globalno pretraživanje)
+    const priceRegex = /(\d+[.,]\d{2})/g;
+    const matches = textWithoutDates.match(priceRegex);
     
-    const foundAmounts = [];
-    for (const pattern of allAmountPatterns) {
-      const matches = text.matchAll(new RegExp(pattern.source, pattern.flags));
-      for (const match of matches) {
-        if (match[1]) {
-          let amount = match[1].replace(',', '.');
-          const parsed = parseFloat(amount);
-          if (!isNaN(parsed) && parsed > 0 && parsed < 1000000 && parsed >= 0.01) {
-            foundAmounts.push(parsed);
-          }
-        }
-      }
-    }
-    
-    if (foundAmounts.length > 0) {
-      const maxAmount = Math.max(...foundAmounts);
-      if (maxAmount >= 1) {
-        return maxAmount;
-      }
-    }
-    
-    const numbers = text.match(/\d+[.,]\d{2}/g);
-    if (numbers && numbers.length > 0) {
-      const amounts = numbers.map(n => parseFloat(n.replace(',', '.')))
-        .filter(a => a > 0 && a < 1000000 && a >= 0.01);
+    if (matches && matches.length > 0) {
+      const amounts = matches.map(m => parseFloat(m.replace(',', '.')))
+                             .filter(a => a > 0 && a < 10000);
       if (amounts.length > 0) {
-        const maxAmount = Math.max(...amounts);
-        return maxAmount > 0 ? maxAmount : null;
+        return Math.max(...amounts);
       }
     }
+    
     return null;
   }
 
   extractStoreName(text) {
     const lines = text.split('\n').filter(line => line.trim().length > 0);
     
-    const isOCRError = (line) => {
-      if (line.match(/^[A-Z]\s+[A-Z]\s+[a-z]+\s+[a-z]+\s+[a-z]$/i)) return true;
-      if (line.match(/^[A-Z]\s+[a-z]+\s+[a-z]+\s+[a-z]+\s+[a-z]$/i)) return true;
-      if (line.match(/^[A-Z]\s+[A-Z]\s+[a-z]+\s+[a-z]$/i)) return true;
-      if (line.split(/\s+/).length > 4 && line.length < 20) return true;
-      if (line.match(/^[A-Z]\s+[A-Z]\s+[A-Z]/) && line.length < 15) return true;
-      return false;
-    };
-    
-    const isValidStoreName = (line) => {
-      if (!line || line.length < 3 || line.length > 60) return false;
-      if (/^\d+/.test(line)) return false;
-      if (/^\d{2}\.\d{2}\.\d{4}/.test(line)) return false;
-      if (line.match(/^(OIB|PDV|BLAGAJNA|RAČUN|Datum|Iznos|UKUPNO|Vrijeme|SPLIT|PRODAVAONICA|DJELATNIK|Blagajna)/i)) return false;
-      if (line.match(/^\d+[.,]\d{2}/)) return false;
-      if (line.includes('BLAGAJNA') || line.includes('RAČUN BR') || line.includes('VRIJEME')) return false;
-      if (isOCRError(line)) return false;
-      return true;
-    };
-    
-    const storePatterns = [
-      /^([A-ZČĆŠĐŽ][A-ZČĆŠĐŽa-zčćšđž\s\.]+(?:d\.o\.o\.|j\.d\.o\.o\.|d\.d\.|d\.o\.o)[^]*?)(?:\s+za\s+trgovinu[^]*?)?/i,
-      /^([A-ZČĆŠĐŽ][A-ZČĆŠĐŽa-zčćšđž\s\.]+(?:d\.o\.o\.|j\.d\.o\.o\.|d\.d\.|d\.o\.o))/i,
-    ];
+    // Često je OIB blizu naziva trgovine, pokušajmo ga naći
+    let oibIndex = -1;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].match(/OIB[:\s]*\d{11}/i)) {
+        oibIndex = i;
+        break;
+      }
+    }
 
-    for (const pattern of storePatterns) {
-      const match = text.match(pattern);
-      if (match && match[1]) {
-        let storeName = match[1].trim();
-        const cleanupPatterns = [
-          /\s+za\s+trgovinu.*$/i,
-          /\s+za\s+promet.*$/i,
-          /\s+i\s+promet.*$/i,
-          /\s+trgovinu.*$/i,
-        ];
-        for (const cleanupPattern of cleanupPatterns) {
-          storeName = storeName.replace(cleanupPattern, '').trim();
-        }
-        if (storeName.length > 60) {
-          storeName = storeName.substring(0, 60).trim();
-        }
-        if (isValidStoreName(storeName)) {
-          return storeName;
+    // Ako smo našli OIB, trgovina je obično 1-3 linije iznad
+    if (oibIndex > 0) {
+      for (let i = Math.max(0, oibIndex - 3); i < oibIndex; i++) {
+        const line = lines[i].trim();
+        if (this.isValidStoreName(line)) {
+          return line;
         }
       }
     }
-    
+
+    // Originalna logika kao fallback
     if (lines.length > 0) {
       for (let i = 0; i < Math.min(10, lines.length); i++) {
         const line = lines[i].trim();
-        if (isValidStoreName(line)) {
+        if (this.isValidStoreName(line)) {
           if (line.match(/^[A-ZČĆŠĐŽ\s\.]+$/) && line.length >= 3 && line.length <= 30) {
             return line;
           }
@@ -184,7 +165,7 @@ class DataParser {
       const match = text.match(pattern);
       if (match && match[1]) {
         let storeName = match[1].trim();
-        if (isValidStoreName(storeName)) {
+        if (this.isValidStoreName(storeName)) {
           return storeName;
         }
       }
@@ -195,7 +176,7 @@ class DataParser {
         const line = lines[i].trim();
         if (line.length >= 3 && 
             line.length <= 30 && 
-            !isOCRError(line) &&
+            !this.isOCRError(line) &&
             !/^\d/.test(line) &&
             !line.match(/^(OIB|PDV|BLAGAJNA|RAČUN|Datum|Iznos|UKUPNO|SPLIT|PRODAVAONICA)/i)) {
           if (line.match(/[A-ZČĆŠĐŽ]/) && line.split(/\s+/).length <= 5) {
@@ -205,6 +186,26 @@ class DataParser {
       }
     }
     return 'N/A';
+  }
+
+  isOCRError(line) {
+    if (line.match(/^[A-Z]\s+[A-Z]\s+[a-z]+\s+[a-z]+\s+[a-z]$/i)) return true;
+    if (line.match(/^[A-Z]\s+[a-z]+\s+[a-z]+\s+[a-z]+\s+[a-z]$/i)) return true;
+    if (line.match(/^[A-Z]\s+[A-Z]\s+[a-z]+\s+[a-z]$/i)) return true;
+    if (line.split(/\s+/).length > 4 && line.length < 20) return true;
+    if (line.match(/^[A-Z]\s+[A-Z]\s+[A-Z]/) && line.length < 15) return true;
+    return false;
+  }
+
+  isValidStoreName(line) {
+    if (!line || line.length < 3 || line.length > 60) return false;
+    if (/^\d+/.test(line)) return false;
+    if (/^\d{2}\.\d{2}\.\d{4}/.test(line)) return false;
+    if (line.match(/^(OIB|PDV|BLAGAJNA|RAČUN|Datum|Iznos|UKUPNO|Vrijeme|SPLIT|PRODAVAONICA|DJELATNIK|Blagajna)/i)) return false;
+    if (line.match(/^\d+[.,]\d{2}/)) return false;
+    if (line.includes('BLAGAJNA') || line.includes('RAČUN BR') || line.includes('VRIJEME')) return false;
+    if (this.isOCRError(line)) return false;
+    return true;
   }
 
   extractItems(text) {
@@ -250,40 +251,58 @@ class DataParser {
   
   parseItemLine(line) {
     line = line.replace(/\s+/g, ' ').trim();
-    const priceMatch = line.match(/(\d+[.,]\d{2})/g);
-    if (!priceMatch || priceMatch.length === 0) {
+    if (line.length < 5) return null;
+
+    // Isključi linije koje su očito zaglavlja ili dno računa
+    if (line.match(/(?:UKUPNO|POPUST|PDV|Porez|RAČUN|HVALA|OIB|Datum|Blagajna|Prodavaonica)/i)) {
       return null;
     }
-    const firstNumberIndex = line.search(/\d/);
-    if (firstNumberIndex === -1) {
-      return null;
+
+    // Format 1: "Naziv Artikli 0.5L 1,000 x 5,00 5,00" (Složeni hrvatski format)
+    // Tražimo "broj x broj" bilo gdje u liniji
+    const multiPattern = /^(.*?)\s+(\d+[.,]\d{0,3})\s*[x×*]\s*(\d+[.,]\d{2})\s+(\d+[.,]\d{2})$/i;
+    const multiMatch = line.match(multiPattern);
+    if (multiMatch) {
+      return {
+        name: this.cleanItemName(multiMatch[1]),
+        quantity: parseFloat(multiMatch[2].replace(',', '.')),
+        price: parseFloat(multiMatch[3].replace(',', '.')),
+        total: parseFloat(multiMatch[4].replace(',', '.'))
+      };
     }
-    let name = line.substring(0, firstNumberIndex).trim();
-    const prices = priceMatch.map(p => parseFloat(p.replace(',', '.')));
-    const price = Math.max(...prices);
-    if (price > 10000) {
-      return null;
+
+    // Format 2: "Naziv Artikli 10,00" (Jednostavan format: naziv pa cijena na kraju)
+    // Gledamo zadnji broj u liniji koji izgleda kao cijena
+    const priceMatches = [...line.matchAll(/(\d+[.,]\d{2})/g)];
+    if (priceMatches.length > 0) {
+      const lastMatch = priceMatches[priceMatches.length - 1];
+      const priceIndex = lastMatch.index;
+      const namePart = line.substring(0, priceIndex).trim();
+      const priceVal = parseFloat(lastMatch[0].replace(',', '.'));
+
+      if (namePart.length > 2 && priceVal > 0 && priceVal < 5000) {
+        return {
+          name: this.cleanItemName(namePart),
+          quantity: 1,
+          price: priceVal,
+          total: priceVal
+        };
+      }
     }
-    let quantity = 1;
-    const quantityMatch = line.match(/(?:kol|količina)[:\s]*(\d+)/i) || 
-                         line.match(/(\d+)\s*(?:x|×|\*)/i) ||
-                         line.match(/^(\d+)\s+/);
-    if (quantityMatch) {
-      quantity = parseInt(quantityMatch[1]) || 1;
-    }
-    name = name.replace(/[|]/g, '').trim();
-    if (name.length < 3) {
-      return null;
-    }
-    if (name.match(/(?:OIB|PDV|BLAGAJNA|PRODAVAONICA|Račun|Datum)/i)) {
-      return null;
-    }
-    return {
-      name: name,
-      quantity: quantity,
-      price: price,
-      total: price * quantity
-    };
+
+    return null;
+  }
+
+  // Pomoćna funkcija za čišćenje naziva (uklanja barkodove i nepotrebne brojeve s početka)
+  cleanItemName(name) {
+    return name
+      .replace(/^\d{5,}\s+/, '') // Uklanja duge barkodove (5+ znamenki)
+      .replace(/^[*\-]\s+/, '')   // Uklanja zvjezdice ili crtice na početku
+      .replace(/\s+\d+[.,]\d{2,3}\s*$/, '') // Uklanja cijene na kraju naziva
+      .replace(/\s+\d+\s*(?:kom|kg|l|lit|g|pak)\.?\s*$/i, '') // Uklanja "10 kom", "1 kg" na kraju
+      .replace(/\s+(?:kom|kg|l|lit|g|pak)\.?\s+/i, ' ') // Uklanja mjerne jedinice u sredini
+      .replace(/\s+(?:kom|kg|l|lit|g|pak)\.?$/i, '') // Uklanja mjerne jedinice na kraju
+      .trim();
   }
 
   validateData(data) {
