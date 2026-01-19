@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npm run build:*)",
       "Bash(gemini --help:*)",
-      "Bash(where:*)"
+      "Bash(where:*)",
+      "Bash(python scripts/edit_schedule.py:*)"
     ],
     "deny": [],
     "ask": []
