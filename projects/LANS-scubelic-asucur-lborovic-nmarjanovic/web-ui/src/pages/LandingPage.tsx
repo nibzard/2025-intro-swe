@@ -167,6 +167,10 @@ export default function LandingPage() {
               <Zap className="w-5 h-5 mr-2 inline" />
               Start Monitoring Free
             </button>
+            <button onClick={() => navigate('/app?provider=both')} className="btn-secondary text-lg px-8 py-4 hover-lift">
+              <Users className="w-5 h-5 mr-2 inline" />
+              Try Both
+            </button>
             <a
               href="https://github.com/nibzard/llm-answer-watcher"
               target="_blank"

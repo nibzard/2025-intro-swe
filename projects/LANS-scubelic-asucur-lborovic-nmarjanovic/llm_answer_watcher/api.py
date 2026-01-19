@@ -41,11 +41,11 @@ app.add_middleware(
 
 
 class ConfigData(BaseModel):
-    api_key: str
+    api_keys: dict[str, str]
     yaml_config: str
 
 
-def build_runtime_config_from_dict(raw_config: dict, api_key: str) -> RuntimeConfig:
+def build_runtime_config_from_dict(raw_config: dict, api_keys: dict[str, str]) -> RuntimeConfig:
     """
     Build a RuntimeConfig from a parsed YAML dict and API key.
 
@@ -74,6 +74,10 @@ def build_runtime_config_from_dict(raw_config: dict, api_key: str) -> RuntimeCon
             system_prompt_text = prompt_obj.prompt
         except Exception:
             system_prompt_text = "You are a helpful AI assistant."
+        
+        api_key = api_keys.get(model_config.provider)
+        if not api_key:
+            raise ValueError(f"API key for provider '{model_config.provider}' not found.")
 
         runtime_model = RuntimeModel(
             provider=model_config.provider,
@@ -123,12 +127,12 @@ async def run_watcher_endpoint(config_data: ConfigData):
     if not raw_config:
         raise HTTPException(status_code=400, detail="Configuration cannot be empty")
 
-    if not config_data.api_key:
-        raise HTTPException(status_code=400, detail="Gemini API key is required.")
+    if not config_data.api_keys:
+        raise HTTPException(status_code=400, detail="API keys are required.")
 
     # Build RuntimeConfig from the parsed YAML
     try:
-        runtime_config = build_runtime_config_from_dict(raw_config, config_data.api_key)
+        runtime_config = build_runtime_config_from_dict(raw_config, config_data.api_keys)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -195,7 +199,7 @@ async def get_run_results(run_id: str):
             # Fetch mentions
             mentions_cursor = conn.execute(
                 """
-                SELECT intent_id, brand_name, normalized_name, is_mine, rank_position, sentiment, mention_context
+                SELECT intent_id, model_name, brand_name, normalized_name, is_mine, rank_position, sentiment, mention_context
                 FROM mentions
                 WHERE run_id = ?
                 ORDER BY intent_id, is_mine DESC, rank_position ASC
@@ -206,22 +210,32 @@ async def get_run_results(run_id: str):
 
             # Structure results
             intents_data = {}
+            answer_map = {}
+
             for answer in raw_answers:
                 intent_id = answer['intent_id']
                 if intent_id not in intents_data:
                     intents_data[intent_id] = {
                         "intent_id": intent_id,
                         "prompt": answer['prompt'],
-                        "answer": answer['answer_text'],
-                        "model": answer['model_name'],
-                        "cost_usd": answer['estimated_cost_usd'],
-                        "mentions": []
+                        "answers": [],
                     }
+                
+                answer_obj = {
+                    "answer": answer['answer_text'],
+                    "model": answer['model_name'],
+                    "cost_usd": answer['estimated_cost_usd'],
+                    "mentions": []
+                }
+                intents_data[intent_id]['answers'].append(answer_obj)
+                answer_map[(intent_id, answer['model_name'])] = answer_obj
             
             for mention in mentions:
                 intent_id = mention['intent_id']
-                if intent_id in intents_data:
-                    intents_data[intent_id]["mentions"].append({
+                model_name = mention['model_name']
+                
+                if (intent_id, model_name) in answer_map:
+                    answer_map[(intent_id, model_name)]["mentions"].append({
                         "brand": mention['brand_name'],
                         "normalized_name": mention['normalized_name'],
                         "is_mine": bool(mention['is_mine']),

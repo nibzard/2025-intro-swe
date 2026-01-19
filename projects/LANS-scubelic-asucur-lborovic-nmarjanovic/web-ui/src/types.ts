@@ -51,11 +51,14 @@ export interface SearchResult {
 export interface IntentResult {
   intent_id: string;
   prompt: string;
+  answers: Answer[];
+}
+
+export interface Answer {
   answer: string;
-  mentions: BrandMention[];
   model: string;
-  tokens_used: number;
   cost_usd: number;
+  mentions: BrandMention[];
 }
 
 export interface BrandMention {
