@@ -3,7 +3,7 @@ import { useWallet } from '../context/WalletContext';
 import { CreditCard, Wallet as WalletIcon, X, Check } from 'lucide-react';
 
 const Wallet = () => {
-    const { balance, addToBalance, subtractFromBalance } = useWallet();
+    const { balance, addToBalance, subtractFromBalance, buyTicket } = useWallet();
     const [showTopUp, setShowTopUp] = useState(false);
     const [selectedAmount, setSelectedAmount] = useState(10);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('google');
@@ -12,10 +12,10 @@ const Wallet = () => {
     const [processing, setProcessing] = useState(false);
 
     const TICKETS = [
-        { id: 1, name: '1. Zona', price: 1.00, duration: '1 Sat' },
-        { id: 2, name: '2. Zona', price: 1.50, duration: '1 Sat' },
-        { id: 3, name: '3. Zona', price: 2.00, duration: '1 Sat' },
-        { id: 4, name: '4. Zona', price: 2.50, duration: '1 Sat' },
+        { id: 1, name: '1. Zona', type: '1. Zona', price: 1.00, duration: '1 Sat' },
+        { id: 2, name: '2. Zona', type: '2. Zona', price: 1.50, duration: '1 Sat' },
+        { id: 3, name: '3. Zona', type: '3. Zona', price: 2.00, duration: '1 Sat' },
+        { id: 4, name: '4. Zona', type: '4. Zona', price: 2.50, duration: '1 Sat' },
     ];
 
     const handleTopUp = () => {
@@ -37,10 +37,9 @@ const Wallet = () => {
 
         setPurchaseProcessing(true);
         setTimeout(() => {
-            subtractFromBalance(selectedTicket.price);
+            buyTicket(selectedTicket);
             setPurchaseProcessing(false);
             setSelectedTicket(null);
-            // In a real app, we would add the ticket to the user's "Tickets" list here
         }, 1000);
     };
 
