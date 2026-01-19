@@ -140,7 +140,7 @@ export default function LandingPage() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-500/10 border border-primary-500/20 mb-8 animate-fade-in-down">
             <Sparkles className="w-4 h-4 text-primary-400 animate-pulse" />
-            <span className="text-sm text-primary-300">Now with Google Gemini & Web Search</span>
+            <span className="text-sm text-primary-300">Now with Google Gemini & Groq</span>
           </div>
 
           {/* Headline */}
@@ -157,7 +157,7 @@ export default function LandingPage() {
             The first brand monitoring platform built for the age of AI search.
             <br />
             <span className="text-navy-300">
-              Track how ChatGPT, Claude, and Gemini recommend you vs. competitors.
+      Track how Gemini and Groq recommend you vs. competitors.
             </span>
           </p>
 
