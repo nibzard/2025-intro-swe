@@ -981,7 +981,11 @@ export default function Dashboard() {
                       <Brain className="w-4 h-4" /> Provider
                     </span>
                     <span className="text-sm text-navy-200 capitalize">
-                      {selectedProvider === 'google' ? 'Google Gemini' : 'Groq'}
+                      {selectedProvider === 'google'
+                        ? 'Google Gemini'
+                        : selectedProvider === 'groq'
+                          ? 'Groq'
+                          : 'Google Gemini & Groq'}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
