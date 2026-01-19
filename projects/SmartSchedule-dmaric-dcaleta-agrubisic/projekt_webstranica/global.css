@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* ===========================================================
    GLOBAL SOFT-DARK LINEAR THEME
    =========================================================== */
@@ -250,3 +251,302 @@ input:focus, textarea:focus {
     height: 18px;
 }
 
+=======
+/* ===========================================================
+   GLOBAL SOFT-DARK LINEAR THEME
+   =========================================================== */
+
+:root {
+    --bg: #1c1c1f;
+    --bg-alt: #232326;
+    --surface: #2b2c2f;
+    --surface-light: #323337;
+    --border: #3d3e42;
+    --accent: #4f7cff;
+    --accent-soft: rgba(79,124,255,0.12);
+    --text: #e5e5e7;
+    --text-soft: #a8a8b3;
+    --radius: 10px;
+    --transition: 0.20s ease;
+    --shadow: 0 4px 20px rgba(0,0,0,0.25);
+    font-family: Inter, system-ui, sans-serif;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    font-family: Inter, system-ui, sans-serif;
+}
+
+/* ===========================================================
+   TOP NAVIGATION (SS LOGO + SmartSchedule + LINKS)
+   =========================================================== */
+
+.topnav {
+    width: 100%;
+    background: var(--bg-alt);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+/* Logo */
+.logo-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-icon {
+    width: 34px;
+    height: 34px;
+    background: var(--accent);
+    color: white;
+    border-radius: 8px;
+    font-weight: 700;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 17px;
+}
+
+.logo-text {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* Navigation links */
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin: auto
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--text-soft);
+    font-size: 15px;
+    transition: var(--transition);
+}
+
+.nav-links a:hover {
+    color: var(--accent);
+}
+
+/* ===========================================================
+   LAYOUT HELPERS
+   =========================================================== */
+
+.container {
+    width: 92%;
+    max-width: 1200px;
+    margin: 30px auto;
+}
+
+.center {
+    text-align: center;
+}
+
+.flex {
+    display: flex;
+    gap: 20px;
+}
+
+.btn {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 10px 18px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 500;
+}
+.btn:hover {
+    background: var(--accent-soft);
+}
+
+.btn-gray {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-soft);
+}
+.btn-gray:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.btn-danger {
+    background: transparent;
+    border: 1px solid #a33;
+    color: #ff6b6b;
+}
+.btn-danger:hover {
+    background: rgba(163,51,51,0.06);
+}
+
+/* Inputs */
+
+input, textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 11px 12px;
+    margin-top: 12px;
+    color: var(--text);
+    transition: var(--transition);
+}
+
+input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--surface-light);
+}
+
+/* Card */
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    box-shadow: var(--shadow);
+}
+
+/* Hero section */
+
+.hero {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    margin-top: 40px;
+}
+
+.hero-text {
+    flex: 1;
+}
+
+.hero-title {
+    font-size: 38px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.hero-sub {
+    color: var(--text-soft);
+    font-size: 18px;
+    margin-bottom: 25px;
+}
+
+/* Illustration placeholder */
+
+.hero-illustration {
+    width: 50%;
+    height: 380px;
+    background: linear-gradient(135deg, #26262a, #303034);
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-soft);
+    font-size: 20px;
+}
+
+/* Month grid */
+
+.month-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.month-box {
+    padding: 20px;
+    text-align: center;
+    border-radius: var(--radius);
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+/* Worker boxes */
+
+.worker-box {
+    padding: 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 15px;
+}
+
+/* AI feedback */
+
+.ai-box {
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    margin-top: 25px;
+}
+
+/* Checkbox row */
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.checkbox-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
+/* Schedule table */
+
+.schedule-table th, .schedule-table td {
+    border: 1px solid var(--border);
+    padding: 8px;
+}
+
+.schedule-table tbody tr:nth-child(odd) {
+    background: linear-gradient(90deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));
+}
+
+.schedule-table td { cursor: pointer; }
+
+/* read-only visual */
+.read-only-schedule {
+    opacity: 0.95;
+}
+.read-only-schedule .schedule-table td { cursor: default; }
+
+/* Company settings form */
+.template-row {
+    display:flex;
+    gap:8px;
+    margin-top:8px;
+    align-items:center;
+}
+.template-row input {
+    width: 220px;
+}
+#companySettingsCard input[type="time"], #companySettingsCard input[type="number"] {
+    width: 160px;
+    margin-top:8px;
+}
+
+
+
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1

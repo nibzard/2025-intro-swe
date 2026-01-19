@@ -28,6 +28,7 @@ import logging
 # Updated: 2025-11-05
 # All prices are USD per token (calculated as price_per_million / 1,000,000)
 PRICING = {
+<<<<<<< HEAD
     "openai": {
         "gpt-4o-mini": {
             "input": 0.150 / 1_000_000,  # $0.15 per 1M input tokens
@@ -109,6 +110,8 @@ PRICING = {
             "output": 1.25 / 1_000_000,
         },
     },
+=======
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
     "google": {
         # Gemini 2.0 models
         "gemini-2.0-flash-exp": {
@@ -158,6 +161,7 @@ PRICING = {
             "output": 1.50 / 1_000_000,
         },
     },
+<<<<<<< HEAD
     "mistral": {
         "mistral-large-latest": {
             "input": 2.00 / 1_000_000,
@@ -241,6 +245,8 @@ PRICING = {
             "output": 8.00 / 1_000_000,  # $8.00 per 1M output tokens
         },
     },
+=======
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
 }
 
 # Get logger for this module

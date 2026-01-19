@@ -24,9 +24,15 @@ By providing instant feedback on posture, the app helps prevent discomfort, back
 - Track posture history per session and provide basic analytics.  
 - Configurable settings: alert sensitivity, frequency, and camera/device selection.  
 - Local-only data storage to preserve privacy.  
+<<<<<<< HEAD
 
 ### 2.2 Non-Goals (Out-of-Scope)  
 - Multi-user authentication or cloud sync.  
+=======
+- User profiles to save analytics and settings (registration and login)
+
+### 2.2 Non-Goals (Out-of-Scope)   
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
 - Advanced AI coaching beyond posture detection.  
 - Mobile app support or external app integrations in MVP.  
 - Real-time multi-person tracking.  

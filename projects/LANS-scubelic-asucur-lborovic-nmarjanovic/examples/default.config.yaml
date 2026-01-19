@@ -7,7 +7,11 @@
 #   1. Copy this file: cp examples/default.config.yaml my-config.yaml
 #   2. Update brands with your company names
 #   3. Update intents with your buyer queries
+<<<<<<< HEAD
 #   4. Set environment variables: export OPENAI_API_KEY=sk-...
+=======
+#   4. Set environment variables: export GEMINI_API_KEY=AIza...
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
 #   5. Run: llm-answer-watcher run --config my-config.yaml
 
 run_settings:
@@ -20,6 +24,7 @@ run_settings:
   # Maximum concurrent API requests (adjust based on your rate limits)
   max_concurrent_requests: 10
 
+<<<<<<< HEAD
   # LLM models to query (add more providers as needed)
   models:
     # OpenAI GPT-4o-mini (fast, cheap, recommended for testing)
@@ -27,6 +32,15 @@ run_settings:
       model_name: "gpt-4o-mini"
       env_api_key: "OPENAI_API_KEY"
       system_prompt: "openai/gpt-4-default"
+=======
+  # LLM models to query
+  models:
+    # Google Gemini (fast, cheap, recommended)
+    - provider: "google"
+      model_name: "models/gemini-2.5-flash"
+      env_api_key: "GEMINI_API_KEY"
+      system_prompt: "google/default"
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
 
 # Brand definitions - customize these for your business
 brands:
@@ -50,6 +64,7 @@ intents:
   - id: "buying-decision"
     prompt: "Which [product type] should I choose?"
 
+<<<<<<< HEAD
 # Optional: Advanced extraction settings
 # Uncomment to enable LLM-based extraction for better accuracy
 # extraction_settings:
@@ -63,6 +78,19 @@ intents:
 #   min_confidence: 0.7
 #   enable_sentiment_analysis: true
 #   enable_intent_classification: true
+=======
+extraction_settings:
+  extraction_model:
+    provider: "google"
+    model_name: "models/gemini-2.5-flash"
+    env_api_key: "GEMINI_API_KEY"
+    system_prompt: "google/default"
+  method: "function_calling"
+  fallback_to_regex: true
+  min_confidence: 0.7
+  enable_sentiment_analysis: true
+  enable_intent_classification: true
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
 
 # Optional: Budget controls to prevent runaway costs
 # Uncomment to enable cost limits

@@ -2,21 +2,35 @@
 LLM client abstraction and factory for LLM Answer Watcher.
 
 This module provides a provider-agnostic interface for interacting with
+<<<<<<< HEAD
 different LLM providers (OpenAI, Anthropic, Mistral, etc.) through a unified
 Protocol-based design.
+=======
+Google Gemini through a unified Protocol-based design.
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
 
 Key components:
 - LLMResponse: Structured dataclass holding LLM response data
 - LLMClient: Protocol defining provider-agnostic interface
+<<<<<<< HEAD
 - build_client: Factory function to create appropriate client instances
 
 The design follows the Protocol pattern for extensibility, allowing new
 providers to be added without modifying existing code, while maintaining
+=======
+- build_client: Factory function to create Gemini client instances
+
+The design follows the Protocol pattern for extensibility, while maintaining
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
 a stable internal contract for the Cloud product.
 
 Example:
     >>> from llm_runner.models import build_client
+<<<<<<< HEAD
     >>> client = build_client("openai", "gpt-4o-mini", api_key,
+=======
+    >>> client = build_client("google", "gemini-1.5-flash", api_key,
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
     ...     system_prompt="You are a helpful assistant.")
     >>> response = client.generate_answer("What are the best email warmup tools?")
     >>> print(response.answer_text)
@@ -160,6 +174,7 @@ def build_client(
     tool_choice: str = "auto",
 ) -> LLMClient:
     """
+<<<<<<< HEAD
     Factory function to create appropriate LLM client based on provider.
 
     Implements the factory pattern to instantiate provider-specific clients
@@ -191,15 +206,46 @@ def build_client(
 
     Example:
         >>> client = build_client("openai", "gpt-4o-mini", "sk-...",
+=======
+    Factory function to create Google Gemini LLM client.
+
+    Implements the factory pattern to instantiate the Gemini client
+    while returning the common LLMClient interface.
+
+    Supported providers:
+    - "google": Google Gemini API (Gemini models)
+
+    Args:
+        provider: Provider identifier (must be "google")
+        model_name: Model identifier (e.g., "gemini-1.5-flash", "gemini-1.5-pro")
+        api_key: API key for authentication (NEVER logged or persisted)
+        system_prompt: System message for context/instructions sent with requests
+        tools: Optional list of tool configurations (e.g., [{"google_search": {}}])
+        tool_choice: Tool selection mode ("auto", "required", "none"). Default: "auto"
+
+    Returns:
+        LLMClient: Gemini client implementing LLMClient protocol
+
+    Raises:
+        ValueError: If provider is not "google"
+
+    Example:
+        >>> client = build_client("google", "gemini-1.5-flash", "AIza...",
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
         ...     system_prompt="You are a helpful assistant.")
         >>> isinstance(client, LLMClient)  # Satisfies protocol
         True
         >>> response = client.generate_answer("What are the best email tools?")
         >>> # With tools enabled
+<<<<<<< HEAD
         >>> client = build_client("openai", "gpt-4o-mini", "sk-...", "...",
         ...     tools=[{"type": "web_search"}], tool_choice="auto")
         >>> # Grok example
         >>> client = build_client("grok", "grok-beta", "xai-...", "...")
+=======
+        >>> client = build_client("google", "gemini-1.5-pro", "AIza...", "...",
+        ...     tools=[{"google_search": {}}], tool_choice="auto")
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
 
     Security:
         - NEVER log the api_key parameter in any form
@@ -208,6 +254,7 @@ def build_client(
 
     Note:
         This function is the single entry point for creating LLM clients.
+<<<<<<< HEAD
         As new providers are added, register them here to maintain the
         stable internal contract for the Cloud product API.
     """
@@ -267,6 +314,9 @@ def build_client(
             tool_choice=tool_choice,
         )
 
+=======
+    """
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
     if provider == "google":
         # Import here to avoid circular dependencies and keep imports lazy
         from llm_answer_watcher.llm_runner.gemini_client import (
@@ -281,6 +331,7 @@ def build_client(
             tool_choice=tool_choice,
         )
 
+<<<<<<< HEAD
     if provider == "perplexity":
         # Import here to avoid circular dependencies and keep imports lazy
         from llm_answer_watcher.llm_runner.perplexity_client import (
@@ -299,4 +350,10 @@ def build_client(
     raise ValueError(
         f"Unsupported provider: '{provider}'. "
         f"Supported providers: openai, anthropic, mistral, grok, google, perplexity"
+=======
+    # Unknown provider - clear error message
+    raise ValueError(
+        f"Unsupported provider: '{provider}'. "
+        f"Supported providers: google"
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
     )

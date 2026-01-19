@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # ✅ **ENGINEERING SPECIFICATION – HERCircle (v0.1.0 Baseline)**
+=======
+# ✅ **ENGINEERING SPECIFICATION – HERChat (v0.1.0 Baseline)**
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
 
 ---
 
@@ -6,7 +10,11 @@
 
 ### **Project Name & Working Title:**
 
+<<<<<<< HEAD
 **HERCircle – Social & Cycle Tracking Platform for Women**
+=======
+**HERChat – Social & Cycle Tracking Platform for Women**
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
 
 ### **Version / Date:**
 
@@ -14,7 +22,11 @@ v0.1.0 (Initial Engineering Spec)
 
 ### **High-Level Goal:**
 
+<<<<<<< HEAD
 HERCircle je web aplikacija namijenjena ženama koja kombinira društvenu mrežu i praćenje menstrualnog ciklusa. Korisnicama pruža siguran prostor za dijeljenje objava, praćenje zdravlja, međusobnu podršku i izgradnju zajednice.
+=======
+HERChat je web aplikacija namijenjena ženama koja kombinira društvenu mrežu i praćenje menstrualnog ciklusa. Korisnicama pruža siguran prostor za dijeljenje objava, praćenje zdravlja, međusobnu podršku i izgradnju zajednice.
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
 
 ### **Core Value Proposition:**
 
@@ -116,7 +128,11 @@ MySQL Database
 ### **3.3 Project Directory Structure**
 
 ```text
+<<<<<<< HEAD
 hercircle/
+=======
+HERChat/
+>>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
  ├── backend/
  │   ├── routes/
  │   ├── controllers/
