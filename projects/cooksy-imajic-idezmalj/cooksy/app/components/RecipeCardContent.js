@@ -19,8 +19,8 @@ export default function RecipeCardContent({ recipe, priority = false, onFavorite
   }, [recipe.id]);
 
   const toggleLike = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault();  
+    e.stopPropagation(); 
 
     const newLiked = !liked;
     setLiked(newLiked);
@@ -40,36 +40,35 @@ export default function RecipeCardContent({ recipe, priority = false, onFavorite
   };
 
   return (
-    <Link href={`/recipe/${recipe.id}`} className="relative">
+    <Link
+      href={`/recipe/${recipe.id}`}
+      className="relative block bg-white shadow-md hover:shadow-lg rounded-xl overflow-hidden"
+    >
       <button
         onClick={toggleLike}
-        className="absolute top-3 right-3 bg-white/90 rounded-full p-2 shadow-md"
+        className="absolute top-3 right-3 bg-white/90 rounded-full p-2 shadow-md z-10"
       >
         <Heart
           className={`w-5 h-5 ${liked ? "fill-red-500 text-red-500" : "text-gray-500"}`}
         />
       </button>
-
       <Image
         src={recipe.image || "/placeholder.png"}
         alt={recipe.name}
         width={400}
         height={300}
-        className="rounded-t-xl object-cover w-full h-[240px]"
+        className="w-full h-[240px] object-cover rounded-t-xl"
         priority={priority}
       />
-
       <div className="p-4">
         <h2 className="text-lg font-semibold text-black mb-1">{recipe.name}</h2>
 
         <div className="flex items-center gap-1 text-sm text-gray-700 mb-1">
-          <Clock className="w-4 h-4" />
-          {recipe.prepTimeMinutes} min
+          <Clock className="w-4 h-4" /> {recipe.prepTimeMinutes} min
         </div>
 
         <div className="flex items-center gap-1 text-sm text-gray-700">
-          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-          {recipe.rating}
+          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /> {recipe.rating}
         </div>
       </div>
     </Link>
