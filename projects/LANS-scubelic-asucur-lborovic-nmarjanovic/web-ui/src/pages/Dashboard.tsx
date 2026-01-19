@@ -41,12 +41,16 @@ const StatsComparison = ({ results }: { results: any }) => {
       myBrandMentions: 0,
       competitorMentions: 0,
       myBrandRanks: [] as number[],
+      myBrandRank1Mentions: 0,
+      competitorRanks: [] as number[],
     },
     groq: {
       totalMentions: 0,
       myBrandMentions: 0,
       competitorMentions: 0,
       myBrandRanks: [] as number[],
+      myBrandRank1Mentions: 0,
+      competitorRanks: [] as number[],
     },
   };
 
@@ -59,9 +63,15 @@ const StatsComparison = ({ results }: { results: any }) => {
           stats[provider].myBrandMentions++;
           if (mention.rank) {
             stats[provider].myBrandRanks.push(mention.rank);
+            if (mention.rank === 1) {
+              stats[provider].myBrandRank1Mentions++;
+            }
           }
         } else {
           stats[provider].competitorMentions++;
+          if (mention.rank) {
+            stats[provider].competitorRanks.push(mention.rank);
+          }
         }
       });
     });
@@ -79,19 +89,23 @@ const StatsComparison = ({ results }: { results: any }) => {
         <div>
           <h4 className="font-bold text-lg text-primary-300 mb-3">Google Gemini</h4>
           <div className="space-y-2">
-            <div className="flex justify-between"><span>Total Mentions:</span> <span>{stats.google.totalMentions}</span></div>
+            <div className="flex justify-between"><span>Detected Mentions:</span> <span>{stats.google.totalMentions}</span></div>
             <div className="flex justify-between"><span>My Brand Mentions:</span> <span>{stats.google.myBrandMentions}</span></div>
-            <div className="flex justify-between"><span>Competitor Mentions:</span> <span>{stats.google.competitorMentions}</span></div>
+            <div className="flex justify-between"><span>#1 Ranks for My Brand:</span> <span>{stats.google.myBrandRank1Mentions}</span></div>
             <div className="flex justify-between"><span>Avg. My Brand Rank:</span> <span>{avgRank(stats.google.myBrandRanks)}</span></div>
+            <div className="flex justify-between"><span>Competitor Mentions:</span> <span>{stats.google.competitorMentions}</span></div>
+            <div className="flex justify-between"><span>Avg. Competitor Rank:</span> <span>{avgRank(stats.google.competitorRanks)}</span></div>
           </div>
         </div>
         <div>
           <h4 className="font-bold text-lg text-accent-300 mb-3">Groq</h4>
           <div className="space-y-2">
-            <div className="flex justify-between"><span>Total Mentions:</span> <span>{stats.groq.totalMentions}</span></div>
+            <div className="flex justify-between"><span>Detected Mentions:</span> <span>{stats.groq.totalMentions}</span></div>
             <div className="flex justify-between"><span>My Brand Mentions:</span> <span>{stats.groq.myBrandMentions}</span></div>
-            <div className="flex justify-between"><span>Competitor Mentions:</span> <span>{stats.groq.competitorMentions}</span></div>
+            <div className="flex justify-between"><span>#1 Ranks for My Brand:</span> <span>{stats.groq.myBrandRank1Mentions}</span></div>
             <div className="flex justify-between"><span>Avg. My Brand Rank:</span> <span>{avgRank(stats.groq.myBrandRanks)}</span></div>
+            <div className="flex justify-between"><span>Competitor Mentions:</span> <span>{stats.groq.competitorMentions}</span></div>
+            <div className="flex justify-between"><span>Avg. Competitor Rank:</span> <span>{avgRank(stats.groq.competitorRanks)}</span></div>
           </div>
         </div>
       </div>
@@ -1088,11 +1102,42 @@ export default function Dashboard() {
                       ) : (
                         <div className="bg-navy-900/40 rounded-xl p-5 mb-6 border border-navy-800/50">
                           <FormattedAnswer text={intentResult.answers[0].answer} mentions={intentResult.answers[0].mentions} />
+                          <div className="mt-4">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Target className="w-4 h-4 text-accent-400" />
+                              <h4 className="font-semibold text-navy-400 text-sm uppercase tracking-wider">Detected Mentions</h4>
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                              {intentResult.answers[0].mentions && intentResult.answers[0].mentions.length > 0 ? (
+                                intentResult.answers[0].mentions.map((mention: any, mIndex: number) => (
+                                  <div key={mIndex} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
+                                    mention.is_mine
+                                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                                      : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                                  }`}>
+                                    <span className="font-medium">{mention.brand}</span>
+                                    {mention.rank && (
+                                      <span className={`text-xs px-1.5 py-0.5 rounded ${
+                                        mention.is_mine ? 'bg-emerald-500/20' : 'bg-rose-500/20'
+                                      }`}>
+                                        #{mention.rank}
+                                      </span>
+                                    )}
+                                  </div>
+                                ))
+                              ) : (
+                                <span className="text-sm text-navy-500 italic text-center w-full py-2 bg-navy-900/20 rounded-lg border border-dashed border-navy-800">
+                                  No brand mentions detected
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
                   ))}
                 </div>
+                {selectedProvider === 'both' && <StatsComparison results={results} />}
               </>
             ) : results && results.intents_data && results.intents_data.length === 0 ? (
               <div className="text-center">
