@@ -25,6 +25,19 @@ export interface Database {
           reputation: number
           created_at: string
           updated_at: string
+          github_url: string | null
+          linkedin_url: string | null
+          website_url: string | null
+          twitter_url: string | null
+          year_of_study: number | null
+          graduation_year: number | null
+          courses: string | null
+          academic_interests: string | null
+          skills: string | null
+          profile_color: string
+          profile_banner_url: string | null
+          email_verified: boolean
+          email_verified_at: string | null
         }
         Insert: {
           id: string
@@ -39,6 +52,19 @@ export interface Database {
           reputation?: number
           created_at?: string
           updated_at?: string
+          github_url?: string | null
+          linkedin_url?: string | null
+          website_url?: string | null
+          twitter_url?: string | null
+          year_of_study?: number | null
+          graduation_year?: number | null
+          courses?: string | null
+          academic_interests?: string | null
+          skills?: string | null
+          profile_color?: string
+          profile_banner_url?: string | null
+          email_verified?: boolean
+          email_verified_at?: string | null
         }
         Update: {
           id?: string
@@ -53,6 +79,19 @@ export interface Database {
           reputation?: number
           created_at?: string
           updated_at?: string
+          github_url?: string | null
+          linkedin_url?: string | null
+          website_url?: string | null
+          twitter_url?: string | null
+          year_of_study?: number | null
+          graduation_year?: number | null
+          courses?: string | null
+          academic_interests?: string | null
+          skills?: string | null
+          profile_color?: string
+          profile_banner_url?: string | null
+          email_verified?: boolean
+          email_verified_at?: string | null
         }
       }
       categories: {
@@ -104,8 +143,10 @@ export interface Database {
           reply_count: number
           last_reply_at: string | null
           last_reply_by: string | null
+          has_solution: boolean
           created_at: string
           updated_at: string
+          edited_at: string | null
         }
         Insert: {
           id?: string
@@ -120,8 +161,10 @@ export interface Database {
           reply_count?: number
           last_reply_at?: string | null
           last_reply_by?: string | null
+          has_solution?: boolean
           created_at?: string
           updated_at?: string
+          edited_at?: string | null
         }
         Update: {
           id?: string
@@ -136,8 +179,10 @@ export interface Database {
           reply_count?: number
           last_reply_at?: string | null
           last_reply_by?: string | null
+          has_solution?: boolean
           created_at?: string
           updated_at?: string
+          edited_at?: string | null
         }
       }
       replies: {
@@ -152,6 +197,7 @@ export interface Database {
           downvotes: number
           created_at: string
           updated_at: string
+          edited_at: string | null
         }
         Insert: {
           id?: string
@@ -164,6 +210,7 @@ export interface Database {
           downvotes?: number
           created_at?: string
           updated_at?: string
+          edited_at?: string | null
         }
         Update: {
           id?: string
@@ -176,6 +223,7 @@ export interface Database {
           downvotes?: number
           created_at?: string
           updated_at?: string
+          edited_at?: string | null
         }
       }
       votes: {
@@ -224,6 +272,35 @@ export interface Database {
           created_at?: string
         }
       }
+      email_verification_tokens: {
+        Row: {
+          id: string
+          user_id: string
+          email: string
+          token: string
+          expires_at: string
+          created_at: string
+          used_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          email: string
+          token: string
+          expires_at: string
+          created_at?: string
+          used_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          email?: string
+          token?: string
+          expires_at?: string
+          created_at?: string
+          used_at?: string | null
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -235,4 +312,136 @@ export interface Database {
       user_role: UserRole
     }
   }
+}
+
+/**
+ * Convenience type exports for easier use in components
+ */
+export type Profile = Database['public']['Tables']['profiles']['Row'];
+export type Category = Database['public']['Tables']['categories']['Row'];
+export type Topic = Database['public']['Tables']['topics']['Row'];
+export type Reply = Database['public']['Tables']['replies']['Row'];
+export type Vote = Database['public']['Tables']['votes']['Row'];
+export type TopicView = Database['public']['Tables']['topic_views']['Row'];
+
+// Additional types for new features
+export type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
+export type ReportType = 'spam' | 'harassment' | 'inappropriate' | 'misinformation' | 'other';
+
+export interface Bookmark {
+  id: string;
+  user_id: string;
+  topic_id: string;
+  created_at: string;
+}
+
+export interface Report {
+  id: string;
+  reporter_id: string;
+  topic_id: string | null;
+  reply_id: string | null;
+  report_type: ReportType;
+  description: string | null;
+  status: ReportStatus;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  admin_notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Extended types with relations
+ */
+export interface TopicWithAuthor extends Topic {
+  author: Profile;
+}
+
+export interface TopicWithRelations extends Topic {
+  author: Profile;
+  category: Category;
+}
+
+export interface ReplyWithAuthor extends Reply {
+  author: Profile;
+}
+
+export interface CategoryWithStats extends Category {
+  topic_count?: number;
+  last_post_at?: string | null;
+}
+
+/**
+ * Attachment types
+ */
+export interface Attachment {
+  id: string;
+  topic_id?: string;
+  reply_id?: string;
+  file_name: string;
+  file_url: string;
+  file_type: string;
+  file_size: number;
+  uploaded_by: string;
+  created_at: string;
+}
+
+/**
+ * Reply with full relations and attachments
+ */
+export interface ReplyWithRelations extends Reply {
+  author: Profile;
+  attachments?: Attachment[];
+  user_vote?: {
+    vote_type: number;
+  } | null;
+  parent_reply?: ReplyWithAuthor | null;
+}
+
+/**
+ * Search result types
+ */
+export interface SearchResult {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  created_at: string;
+  reply_count: number;
+  view_count: number;
+  has_solution: boolean;
+  author: {
+    username: string;
+    avatar_url: string | null;
+  };
+  category: {
+    name: string;
+    slug: string;
+    color: string | null;
+  };
+}
+
+export interface SearchFilters {
+  query: string;
+  category?: string;
+  author?: string;
+  hasSolution?: boolean;
+  sortBy?: 'relevance' | 'recent' | 'popular';
+}
+
+/**
+ * API response types
+ */
+export interface ApiResponse<T = unknown> {
+  data?: T;
+  error?: string;
+  success: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  count: number;
+  page?: number;
+  pageSize?: number;
+  totalPages?: number;
 }

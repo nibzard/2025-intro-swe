@@ -1,0 +1,164 @@
+# LLM SEO Optimization Template
+# Optimize your brand presence in LLM responses
+# Cost: ~$0.30 per run (comprehensive optimization analysis)
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/llm-seo.db"
+
+  models:
+    # Test across multiple LLMs to optimize for all
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+      tools:
+        - type: "web_search"
+
+    - provider: "anthropic"
+      model_name: "claude-3-5-haiku-20241022"
+      env_api_key: "ANTHROPIC_API_KEY"
+
+    - provider: "google"
+      model_name: "gemini-2.0-flash-exp"
+      env_api_key: "GEMINI_API_KEY"
+      tools:
+        - google_search: {}
+
+    - provider: "perplexity"
+      model_name: "sonar"
+      env_api_key: "PERPLEXITY_API_KEY"
+
+extraction_settings:
+  extraction_model:
+    provider: "openai"
+    model_name: "gpt-4o-mini"
+    env_api_key: "OPENAI_API_KEY"
+  method: "function_calling"
+  fallback_to_regex: true
+  enable_sentiment_analysis: true
+  enable_intent_classification: true
+
+brands:
+  mine: ["YourBrand", "YourProduct"]
+  competitors: ["TopCompetitor", "SecondPlace", "ThirdPlace"]
+
+# Target queries to optimize for
+intents:
+  # High-value buyer intent queries
+  - id: "best-in-category"
+    prompt: "What are the best [YOUR_CATEGORY] tools?"
+
+    operations:
+      # Analyze current ranking factors
+      - id: "ranking-factor-analysis"
+        description: "Identify why top results rank"
+        prompt: |
+          Analyze why the top 3 brands rank highly in this response.
+
+          Top 3: {ranked:top_3}
+          Response: {intent:response}
+
+          For each top brand, identify:
+          1. Specific phrases/keywords associated with them
+          2. Features/capabilities highlighted
+          3. Use cases mentioned
+          4. Social proof (if any - reviews, adoption, etc.)
+          5. Unique angles emphasized
+
+          What patterns make brands rank highly?
+        model: "gpt-4o-mini"
+
+      # Generate optimization strategy
+      - id: "optimization-strategy"
+        description: "How to improve our ranking"
+        prompt: |
+          Create an optimization strategy for {brand:mine} to rank higher for "{intent:prompt}".
+
+          Our current rank: {rank:mine}
+          Ranking factors: {operation:ranking-factor-analysis}
+
+          Recommend:
+          1. Content to create (specific titles and topics)
+          2. Keywords/phrases to emphasize
+          3. Use cases to highlight
+          4. Social proof to build
+          5. Unique positioning angle
+          6. On-site optimizations (meta descriptions, structured data, etc.)
+          7. Off-site optimizations (PR, partnerships, community engagement)
+
+          Prioritize by likely impact.
+        depends_on: ["ranking-factor-analysis"]
+        model: "gpt-4o-mini"
+
+  - id: "category-alternatives"
+    prompt: "What are alternatives to TopCompetitor?"
+
+    operations:
+      # Track if we appear as alternative
+      - id: "alternative-positioning-analysis"
+        description: "Are we positioned as alternative?"
+        prompt: |
+          Analyze whether {brand:mine} appears as an alternative to TopCompetitor.
+
+          Response: {intent:response}
+          Appeared: {brand:appeared}
+
+          If we appear:
+          - How are we positioned?
+          - What differentiators are highlighted?
+          - Is positioning favorable or unfavorable?
+
+          If we don't appear:
+          - Why might we be missing?
+          - What signals indicate we should be included?
+          - What content/presence gaps exist?
+        model: "gpt-4o-mini"
+
+      # Generate alternative positioning strategy
+      - id: "alternative-strategy"
+        description: "Strategy to appear in alternative queries"
+        prompt: |
+          Create a strategy for {brand:mine} to appear prominently in "alternatives to TopCompetitor" queries.
+
+          Analysis: {operation:alternative-positioning-analysis}
+
+          Recommend:
+          1. Comparison content to create (us vs TopCompetitor)
+          2. Keywords/phrases for alternative queries
+          3. Unique differentiators to emphasize
+          4. Where to publish (blog, comparison sites, forums, etc.)
+          5. Community engagement opportunities
+        depends_on: ["alternative-positioning-analysis"]
+        model: "gpt-4o-mini"
+
+# LLM SEO optimization checklist:
+#
+# 1. Content Optimization
+#    - Create comparison pages (us vs competitors)
+#    - Build category authority pages
+#    - Publish use case studies
+#    - Maintain active blog with target keywords
+#
+# 2. On-Site SEO
+#    - Optimize meta descriptions with target phrases
+#    - Add structured data (Organization, Product, Review schemas)
+#    - Create FAQ pages addressing common queries
+#    - Build internal linking structure
+#
+# 3. Off-Site Signals
+#    - Get featured in industry publications
+#    - Participate in relevant communities (Reddit, forums)
+#    - Build partnerships with complementary tools
+#    - Encourage customer reviews and testimonials
+#
+# 4. Monitoring & Iteration
+#    - Run this config weekly
+#    - Track rank changes over time
+#    - Measure which optimizations move the needle
+#    - Iterate based on results
+#
+# 5. Multi-LLM Strategy
+#    - Different LLMs may weight signals differently
+#    - Optimize for all major LLMs (ChatGPT, Claude, Gemini, Perplexity)
+#    - Track which LLMs favor your brand
+#    - Tailor content for each LLM's preferences

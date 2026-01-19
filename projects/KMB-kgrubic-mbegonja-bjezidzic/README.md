@@ -39,21 +39,21 @@ onda će korisnici lakše:
 
 TuneBuddy je web aplikacija koja povezuje korisnike na temelju njihovog glazbenog ukusa te im preporučuje događaje poput koncerata i festivala u njihovoj blizini.
 
-Korisnik se registrira (e-mail ili GitHub login), unosi svoje preferirane izvođače i žanrove, a aplikacija pomoću jednostavnog algoritma uspoređuje podatke s drugim korisnicima. Rezultat je lista korisnika sa sličnim glazbenim ukusom — tzv. „matchani korisnici“.
+Korisnik se registrira (e-mail), unosi svoje preferirane izvođače i žanrove, a aplikacija pomoću jednostavnog algoritma uspoređuje podatke s drugim korisnicima. Rezultat je lista korisnika sa sličnim glazbenim ukusom — tzv. „matchani korisnici“.
 
-TuneBuddy također koristi geolokaciju kako bi korisniku prikazao događaje u okolici i omogućio stvaranje novih društvenih kontakata. Osim pregleda događaja i korisnika, aplikacija uključuje chat sustav koji omogućuje jednostavnu komunikaciju između matchanih korisnika.
+TuneBuddy također, na temelju unesene lokacije, korisniku prikazuje događaje u okolici i omogućava stvaranje novih društvenih kontakata. Osim pregleda događaja i korisnika, aplikacija uključuje chat sustav koji omogućuje jednostavnu komunikaciju između matchanih korisnika.
 
 Cilj projekta je stvoriti digitalnu platformu u kojoj glazba postaje sredstvo upoznavanja, povezivanja i otkrivanja novih iskustava.
 
 
 ## Ključne funkcionalnosti
 
-- Registracija i prijava korisnika (e-mail ili GitHub)
-- Unos omiljenih izvođača i glazbenih žanrova
+- Registracija i prijava korisnika (e-mail)
+- Unos omiljenih izvođača, glazbenih žanrova, lokacije te kratkog opisa
 - Algoritam za preporuku korisnika sa sličnim ukusom
-- Prikaz korisnika u blizini (geolokacija)
-- Preporuke koncerata i festivala (Ticketmaster API)
-- Prikaz informacija o izvođačima (Spotify API)
+- Prikaz korisnika u blizini
+- Preporuke koncerata i festivala
+- Prikaz informacija o izvođačima
 - Chat s „matchanim“ korisnicima
 - Moderan, responzivan UI u Reactu
 

@@ -1,0 +1,87 @@
+# High Concurrency Example
+# Process many queries in parallel for fast results
+# Cost: ~$0.12 per run (6 intents × 4 models)
+# Time: ~20 seconds (vs ~2 minutes sequential)
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  # IMPORTANT: High concurrency setting
+  # Increase from default (10) to maximize parallelism
+  # WARNING: Respect provider rate limits!
+  max_concurrent_requests: 20
+
+  models:
+    # OpenAI (supports ~10 concurrent requests)
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+
+    # Anthropic (more conservative rate limits)
+    - provider: "anthropic"
+      model_name: "claude-3-5-haiku-20241022"
+      env_api_key: "ANTHROPIC_API_KEY"
+
+    # Google Gemini (supports ~3 concurrent per key)
+    - provider: "google"
+      model_name: "gemini-2.0-flash-exp"
+      env_api_key: "GEMINI_API_KEY"
+
+    # Perplexity (check dashboard for limits)
+    - provider: "perplexity"
+      model_name: "sonar"
+      env_api_key: "PERPLEXITY_API_KEY"
+
+brands:
+  mine: ["YourBrand"]
+  competitors: ["CompetitorA", "CompetitorB", "CompetitorC"]
+
+# Large intent list for testing parallelism
+intents:
+  - id: "best-tools"
+    prompt: "What are the best project management tools?"
+
+  - id: "tool-comparison"
+    prompt: "Compare the top project management platforms"
+
+  - id: "buying-guide"
+    prompt: "How do I choose project management software?"
+
+  - id: "alternatives"
+    prompt: "What are alternatives to CompetitorA?"
+
+  - id: "features"
+    prompt: "What features should I look for in project management tools?"
+
+  - id: "pricing"
+    prompt: "How much do project management tools cost?"
+
+# Total queries: 6 intents × 4 models = 24 queries
+# With max_concurrent_requests=20: Runs in ~20 seconds
+# Without parallelism (sequential): Would take ~2 minutes
+
+# Rate limit guidance by provider:
+# - OpenAI Tier 1: ~10 requests/second → use max_concurrent=10
+# - OpenAI Tier 2: ~50 requests/second → use max_concurrent=20
+# - Anthropic: ~5 requests/second → reduce to max_concurrent=5
+# - Google Gemini: ~3 requests/second per key → max_concurrent=3
+# - Perplexity: Check dashboard → typically ~10
+#
+# Mixed providers: Use conservative max_concurrent (10-15)
+# to avoid hitting slowest provider's limits
+
+# Tips for high-volume monitoring:
+#
+# 1. Use fastest models (gpt-4o-mini, gemini-flash)
+# 2. Skip web search for speed (unless required)
+# 3. Use regex extraction (faster than function calling)
+# 4. Increase max_concurrent_requests carefully
+# 5. Monitor for rate limit errors (429 status)
+# 6. Use multiple API keys for same provider (doubles capacity)
+
+# Example: 100 queries in parallel
+# - 20 intents × 5 models = 100 queries
+# - max_concurrent_requests=20
+# - Time: ~60 seconds
+# - Cost: ~$0.50 with gpt-4o-mini

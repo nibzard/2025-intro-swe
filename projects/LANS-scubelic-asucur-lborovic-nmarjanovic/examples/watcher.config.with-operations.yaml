@@ -1,0 +1,143 @@
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+      system_prompt: "openai/gpt-4-default"
+
+    - provider: "openai"
+      model_name: "gpt-5-nano"  # Fast model for operations
+      env_api_key: "OPENAI_API_KEY"
+
+  use_llm_rank_extraction: false
+
+# Optional: Enable function calling for better extraction accuracy
+extraction_settings:
+  extraction_model:
+    provider: "openai"
+    model_name: "gpt-5-nano"
+    env_api_key: "OPENAI_API_KEY"
+    system_prompt: "openai/extraction-default"
+  method: "function_calling"
+  fallback_to_regex: true
+  min_confidence: 0.7
+
+brands:
+  mine:
+    - "Lemwarm"
+    - "Lemlist"
+
+  competitors:
+    - "Instantly"
+    - "HubSpot"
+    - "Apollo.io"
+    - "Woodpecker"
+
+# Global operations run for EVERY intent
+global_operations:
+  - id: "quality-score"
+    description: "Rate LLM response quality"
+    prompt: |
+      Rate this LLM response on a scale of 1-10 for accuracy and completeness:
+
+      Question: {intent:prompt}
+      Response: {intent:response}
+
+      Provide a single number score (1-10) and brief justification.
+    model: "gpt-5-nano"
+    enabled: true
+
+intents:
+  - id: "best-email-warmup-tools"
+    prompt: "What are the best email warmup tools?"
+
+    # Custom operations for this specific intent
+    operations:
+      - id: "content-gaps"
+        description: "Identify content opportunities to improve ranking"
+        prompt: |
+          You are a content strategist. Analyze this LLM response and identify specific content opportunities that could improve the ranking of {brand:mine}.
+
+          My brand: {brand:mine}
+          My current rank: {rank:mine}
+          Competitors mentioned: {competitors:mentioned}
+
+          Full LLM Response:
+          {intent:response}
+
+          Provide 3-5 specific, actionable content recommendations that would help us rank higher in LLM responses for this query.
+        model: "gpt-4o-mini"
+        enabled: true
+
+      - id: "competitor-strengths"
+        description: "Extract competitor value propositions"
+        prompt: |
+          Extract the key strengths and value propositions mentioned for each competitor in this response.
+
+          Competitors: {competitors:mentioned}
+
+          Response: {intent:response}
+
+          For each competitor, list their key strengths mentioned (max 3 per competitor).
+        model: "gpt-5-nano"
+        output_format: "text"
+
+      - id: "action-items"
+        description: "Generate prioritized action items"
+        prompt: |
+          Based on these analyses:
+
+          Content Gaps Identified:
+          {operation:content-gaps}
+
+          Competitor Strengths:
+          {operation:competitor-strengths}
+
+          Generate 3 specific, prioritized action items for our product and marketing teams to improve our ranking for "{intent:prompt}".
+
+          Format as a numbered list with brief explanations.
+        depends_on: ["content-gaps", "competitor-strengths"]
+        model: "gpt-4o-mini"
+
+  - id: "email-warmup-comparison"
+    prompt: "Compare the top email warmup tools for improving deliverability"
+
+    operations:
+      - id: "feature-extraction"
+        description: "Extract features mentioned for each tool"
+        prompt: |
+          Extract the specific features mentioned for each email warmup tool in this response.
+
+          Response: {intent:response}
+
+          List the features by tool name. Focus on concrete features, not marketing language.
+        model: "gpt-5-nano"
+
+      - id: "pricing-analysis"
+        description: "Extract pricing information if mentioned"
+        prompt: |
+          Extract any pricing information mentioned for email warmup tools in this response.
+
+          Response: {intent:response}
+
+          If no pricing is mentioned, state "No pricing information provided".
+        model: "gpt-5-nano"
+
+      - id: "competitive-summary"
+        description: "Generate executive summary"
+        prompt: |
+          Create a brief executive summary (3-4 sentences) about how {brand:mine} is positioned relative to competitors based on this analysis:
+
+          My brand rank: {rank:mine}
+          Competitors mentioned: {competitors:mentioned}
+
+          Features analysis:
+          {operation:feature-extraction}
+
+          Pricing analysis:
+          {operation:pricing-analysis}
+        depends_on: ["feature-extraction", "pricing-analysis"]
+        model: "gpt-4o-mini"

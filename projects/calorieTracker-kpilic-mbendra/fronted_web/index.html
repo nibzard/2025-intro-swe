@@ -2,52 +2,100 @@
 <html lang="hr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calorie Tracker AI</title>
+    <title>Kalorijski Dnevnik</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Dnevni Calorie Tracker</h1>
+    <div id="app-container">
+        <h1>Kalorijski Dnevnik</h1>
 
-        <div class="summary">
-            <p>Dnevni cilj: 2000 kcal</p>
-            <p>Trenutno uneseno: <span id="current-calories">0</span> kcal</p>
-            <p id="status-message" class="status-ok">Ostalo: 2000 kcal. Dobro je!</p>
+       <section id="phase-1-profile">
+    <h2>Moj Profil i Ciljevi</h2>
+    <div class="stats-grid">
+        <div class="input-group">
+            <label>Dob:</label>
+            <input type="number" id="user-age" placeholder="npr. 25" value="">
         </div>
-
-        <hr>
-
-        <h2>1. Ručni unos (ili pretraživanje)</h2>
-        <form id="meal-form">
-            <label for="meal-name">Naziv Obroka:</label>
-            <input type="text" id="meal-name" placeholder="Npr. Piletina, Riža, Jabuka..." required>
-
-            <label for="calorie-amount">Kalorije (kcal / 100g) - *Ostavite prazno za automatsko pretraživanje!*</label>
-            <input type="number" id="calorie-amount" placeholder="Npr. 350">
-
-            <button type="submit">Dodaj Obrok / Pretraži Kalorije</button>
-        </form>
-        
-        <hr>
-
-        <h2>2. Analiza Obroka Putem Slike</h2>
-        <form id="analyze-form">
-            <label for="meal-photo">Odaberite sliku obroka:</label>
-            <input type="file" id="meal-photo" accept="image/*">
-            <button type="button" id="analyze-btn">Analiziraj Sliku</button>
-        </form>
-        
-        <div id="analysis-result" class="result-box">
-            </div>
-
-        <hr>
-
-        <h2>Dnevnik Obroka</h2>
-        <ul id="meal-list">
-            </ul>
+        <div class="input-group">
+            <label>Težina (kg):</label>
+            <input type="number" id="user-weight" placeholder="npr. 80" value="">
+        </div>
+        <div class="input-group">
+            <label>Visina (cm):</label>
+            <input type="number" id="user-height" placeholder="npr. 180" value="">
+        </div>
+        <div class="input-group">
+            <label>Ciljana težina (kg):</label>
+            <input type="number" id="target-weight" placeholder="npr. 75" value="">
+        </div>
+        <div class="input-group" style="grid-column: span 2;">
+            <label>Razina aktivnosti:</label>
+            <select id="user-activity">
+                <option value="sedentary">Sjedilački (uredski posao)</option>
+                <option value="lightly_active">Lagano aktivan (šetnje)</option>
+                <option value="moderately_active" selected>Umjereno aktivan (trening 3-5x)</option>
+                <option value="very_active">Vrlo aktivan (težak rad/svaki dan trening)</option>
+            </select>
+        </div>
+    </div>
+    
+    
+    <div style="display: flex; gap: 10px; margin-top: 15px;">
+        <button id="calculate-tdee-btn">Izračunaj TDEE (AI)</button>
+        <button id="set-manual-goal-btn" class="secondary-btn">Koristi postavljeni cilj</button>
     </div>
 
+    <div class="input-group" style="margin-top:10px;">
+        <label>Dnevni cilj (kcal):</label>
+        <input type="number" id="daily-goal" value="2000">
+    </div>
+</section>
+
+        <div id="phase-2-diary" style="display: none;">
+            <div id="left-column">
+                <section>
+                    <h2>1. Brzi Unos (Tekst)</h2>
+                    <select id="text-meal-category">
+                        <option value="Doručak">Doručak</option>
+                        <option value="Ručak">Ručak</option>
+                        <option value="Večera">Večera</option>
+                    </select>
+                    <input type="text" id="meal-name" placeholder="Što ste jeli?">
+                    <input type="number" id="grams" value="100">
+                    <button id="add-meal-btn">Dodaj Obrok</button>
+                </section>
+
+                <section>
+                    <h2>2. Analiza Slike</h2>
+                    <select id="image-meal-category">
+                        <option value="Doručak">Doručak</option>
+                        <option value="Ručak">Ručak</option>
+                        <option value="Večera">Večera</option>
+                    </select>
+                    <input type="file" id="meal-image-file" accept="image/*">
+                    <button id="analyze-btn">Skeniraj tanjur</button>
+                </section>
+            </div>
+
+            <div id="right-column">
+                <section id="stats-section">
+                    <div class="chart-container">
+                        <canvas id="macrosChart"></canvas>
+                        <div class="chart-text"><span id="kcal-val">0</span><br><small>kcal</small></div>
+                    </div>
+                    <p style="text-align: center;">Preostalo: <span id="remain-val">0</span> kcal</p>
+                    <button id="back-to-profile-btn" class="secondary-btn">← Uredi Profil</button>
+                </section>
+                
+                <div class="meal-columns">
+                    <div class="col"><h3>Doručak</h3><ul id="log-Doručak"></ul></div>
+                    <div class="col"><h3>Ručak</h3><ul id="log-Ručak"></ul></div>
+                    <div class="col"><h3>Večera</h3><ul id="log-Večera"></ul></div>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
