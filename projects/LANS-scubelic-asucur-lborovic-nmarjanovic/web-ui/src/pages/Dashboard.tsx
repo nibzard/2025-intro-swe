@@ -113,6 +113,54 @@ const StatsComparison = ({ results }: { results: any }) => {
   );
 };
 
+const TokenUsageStats = ({ results, selectedProvider, selectedGoogleModel, selectedGroqModel }: { results: any, selectedProvider: string, selectedGoogleModel: string, selectedGroqModel: string }) => {
+  if (!results || !results.intents_data) return null;
+
+  const modelInfo = {
+    google: {
+      used: 0,
+    },
+    groq: {
+      used: 0,
+    },
+  };
+
+  // Calculate tokens used from API response
+  results.intents_data.forEach((intent: any) => {
+    intent.answers.forEach((answer: any) => {
+      const provider = answer.model.includes('gemini') ? 'google' : 'groq';
+      if (answer.usage) {
+        modelInfo[provider].used += answer.usage.total_tokens || 0;
+      }
+    });
+  });
+
+  return (
+    <div className="glass-card p-6 mt-8">
+      <h3 className="text-xl font-bold text-navy-200 mb-4">Token Usage</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {(selectedProvider === 'google' || selectedProvider === 'both') && (
+          <div>
+            <h4 className="font-bold text-lg text-primary-300 mb-3">Google Gemini ({selectedGoogleModel})</h4>
+            <div className="space-y-2">
+              <div className="flex justify-between"><span>Tokens Used:</span> <span>{modelInfo.google.used}</span></div>
+            </div>
+          </div>
+        )}
+        {(selectedProvider === 'groq' || selectedProvider === 'both') && (
+          <div>
+            <h4 className="font-bold text-lg text-accent-300 mb-3">Groq ({selectedGroqModel})</h4>
+            <div className="space-y-2">
+              <div className="flex justify-between"><span>Tokens Used:</span> <span>{modelInfo.groq.used}</span></div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+
 // API base URL: use environment variable or default based on environment
 const API_BASE_URL = import.meta.env.VITE_API_URL ||
   (import.meta.env.PROD ? '/api' : 'http://127.0.0.1:8000');
@@ -1142,6 +1190,7 @@ export default function Dashboard() {
                   ))}
                 </div>
                 {selectedProvider === 'both' && <StatsComparison results={results} />}
+                <TokenUsageStats results={results} selectedProvider={selectedProvider} selectedGoogleModel={selectedGoogleModel} selectedGroqModel={selectedGroqModel} />
               </>
             ) : results && results.intents_data && results.intents_data.length === 0 ? (
               <div className="text-center">

@@ -172,6 +172,7 @@ async def run_watcher_endpoint(config_data: ConfigData):
 
 @app.get("/results/{run_id}")
 async def get_run_results(run_id: str):
+    import json
     # Determine SQLite DB path based on typical output location
     # In a real app, this might come from a config or be passed from the run_watcher call
     sqlite_db_path = "./output/watcher.db" 
@@ -188,7 +189,7 @@ async def get_run_results(run_id: str):
             # Fetch raw answers
             answers_cursor = conn.execute(
                 """
-                SELECT intent_id, prompt, answer_text, model_name, estimated_cost_usd
+                SELECT intent_id, prompt, answer_text, model_name, estimated_cost_usd, usage_meta_json
                 FROM answers_raw
                 WHERE run_id = ?
                 """,
@@ -221,11 +222,19 @@ async def get_run_results(run_id: str):
                         "answers": [],
                     }
                 
+                usage_meta = {}
+                if answer['usage_meta_json']:
+                    try:
+                        usage_meta = json.loads(answer['usage_meta_json'])
+                    except (json.JSONDecodeError, TypeError):
+                        pass # Keep usage_meta empty if parsing fails
+
                 answer_obj = {
                     "answer": answer['answer_text'],
                     "model": answer['model_name'],
                     "cost_usd": answer['estimated_cost_usd'],
-                    "mentions": []
+                    "mentions": [],
+                    "usage": usage_meta
                 }
                 intents_data[intent_id]['answers'].append(answer_obj)
                 answer_map[(intent_id, answer['model_name'])] = answer_obj
