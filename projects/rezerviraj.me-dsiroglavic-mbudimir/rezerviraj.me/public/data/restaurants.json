@@ -1,0 +1,706 @@
+{
+  "restaurants": [
+  {
+    "id": 1,
+    "name": "Bistro Zagreb Central",
+    "city": "Zagreb",
+    "rating": 4.7,
+    "seats": 85,
+    "price_range": "$$",
+    "image": "https://images.unsplash.com/photo-1567880905822-56f8e06fe630?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2FmZXxlbnwwfHwwfHx8MA%3D%3D",
+    "opening_hours": {
+      "Mon": "09:00-22:00",
+      "Tue": "09:00-22:00",
+      "Wed": "09:00-22:00",
+      "Thu": "09:00-22:00",
+      "Fri": "09:00-23:00",
+      "Sat": "10:00-23:00",
+      "Sun": "10:00-21:00"
+    }
+  },
+  {
+    "id": 2,
+    "name": "Oceanview Grill",
+    "city": "Split",
+    "rating": 4.6,
+    "seats": 120,
+    "price_range": "$$$",
+    "image": "https://images.unsplash.com/photo-1523139348426-081681667818?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8Z3JpbGxpbmd8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "10:00-22:00",
+      "Tue": "10:00-22:00",
+      "Wed": "10:00-22:00",
+      "Thu": "10:00-23:00",
+      "Fri": "10:00-23:00",
+      "Sat": "10:00-23:00",
+      "Sun": "10:00-21:00"
+    }
+  },
+  {
+    "id": 3,
+    "name": "La Piazza Italiana",
+    "city": "Rome",
+    "rating": 4.8,
+    "seats": 70,
+    "price_range": "$$",
+    "image": "https://images.unsplash.com/photo-1644917777632-04f68ce502dd?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8cGl6emVyaWF8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "11:00-23:30",
+      "Tue": "11:00-23:30",
+      "Wed": "11:00-23:30",
+      "Thu": "11:00-23:30",
+      "Fri": "11:00-00:00",
+      "Sat": "11:00-00:00",
+      "Sun": "11:00-22:00"
+    }
+  },
+  {
+    "id": 4,
+    "name": "Tokyo Sushi House",
+    "city": "Tokyo",
+    "rating": 4.9,
+    "seats": 55,
+    "price_range": "$$$",
+    "image": "https://plus.unsplash.com/premium_photo-1668146927669-f2edf6e86f6f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8c3VzaGl8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "12:00-22:30",
+      "Tue": "12:00-22:30",
+      "Wed": "12:00-22:30",
+      "Thu": "12:00-23:00",
+      "Fri": "12:00-23:30",
+      "Sat": "12:00-23:30",
+      "Sun": "12:00-21:30"
+    }
+  },
+  {
+    "id": 5,
+    "name": "Café de Paris",
+    "city": "Paris",
+    "rating": 4.3,
+    "seats": 65,
+    "price_range": "$$$",
+    "image": "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2FmZmV8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "08:00-22:00",
+      "Tue": "08:00-22:00",
+      "Wed": "08:00-22:00",
+      "Thu": "08:00-22:00",
+      "Fri": "08:00-23:00",
+      "Sat": "08:00-23:00",
+      "Sun": "09:00-21:00"
+    }
+  },
+  {
+    "id": 6,
+    "name": "Berlin Bratwurst",
+    "city": "Berlin",
+    "rating": 4.4,
+    "seats": 50,
+    "price_range": "$",
+    "image": "https://plus.unsplash.com/premium_photo-1695802466188-1115413e53c9?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YnJhdHd1cnN0fGVufDB8fDB8fHww",
+    "opening_hours": {
+      "Mon": "10:00-20:00",
+      "Tue": "10:00-20:00",
+      "Wed": "10:00-20:00",
+      "Thu": "10:00-21:00",
+      "Fri": "10:00-22:00",
+      "Sat": "10:00-22:00",
+      "Sun": "10:00-19:00"
+    }
+  },
+  {
+    "id": 7,
+    "name": "Taco Fiesta",
+    "city": "Mexico City",
+    "rating": 4.6,
+    "seats": 90,
+    "price_range": "$",
+    "image": "https://plus.unsplash.com/premium_photo-1678051059940-4dc15ee93179?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8dGFjbyUyMGZpZXN0YXxlbnwwfHwwfHx8MA%3D%3D",
+    "opening_hours": {
+      "Mon": "11:00-23:00",
+      "Tue": "11:00-23:00",
+      "Wed": "11:00-23:00",
+      "Thu": "11:00-23:00",
+      "Fri": "11:00-00:00",
+      "Sat": "11:00-00:00",
+      "Sun": "11:00-21:00"
+    }
+  },
+  {
+    "id": 8,
+    "name": "Samba Grill",
+    "city": "Rio de Janeiro",
+    "rating": 4.2,
+    "seats": 130,
+    "price_range": "$$",
+    "image": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Z3JpbGx8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "12:00-00:00",
+      "Tue": "12:00-00:00",
+      "Wed": "12:00-00:00",
+      "Thu": "12:00-00:00",
+      "Fri": "12:00-01:00",
+      "Sat": "12:00-01:00",
+      "Sun": "12:00-22:00"
+    }
+  },
+  {
+    "id": 9,
+    "name": "New York Pizza Co",
+    "city": "New York",
+    "rating": 4.1,
+    "seats": 75,
+    "price_range": "$$",
+    "image": "https://images.unsplash.com/photo-1716237389458-be18cf75fafe?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8cGl6emVyaWF8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "10:00-23:30",
+      "Tue": "10:00-23:30",
+      "Wed": "10:00-23:30",
+      "Thu": "10:00-23:30",
+      "Fri": "10:00-00:30",
+      "Sat": "10:00-00:30",
+      "Sun": "10:00-22:30"
+    }
+  },
+  {
+    "id": 10,
+    "name": "London Fish & Chips",
+    "city": "London",
+    "rating": 4.5,
+    "seats": 70,
+    "price_range": "$$",
+    "image": "https://plus.unsplash.com/premium_photo-1693222065169-e447289b609d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8ZmlzaCUyMHJlc3RhdXJhbnR8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "11:00-22:00",
+      "Tue": "11:00-22:00",
+      "Wed": "11:00-22:00",
+      "Thu": "11:00-22:00",
+      "Fri": "11:00-23:00",
+      "Sat": "11:00-23:00",
+      "Sun": "11:00-21:00"
+    }
+  },
+{
+    "id": 11,
+    "name": "Sydney Harbour Café",
+    "city": "Sydney",
+    "rating": 4.7,
+    "seats": 100,
+    "price_range": "$$$",
+    "image": "https://plus.unsplash.com/premium_photo-1665664893068-b775cae202dc?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y2FmZmUlMjBiYXJ8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "09:00-22:00",
+      "Tue": "09:00-22:00",
+      "Wed": "09:00-22:00",
+      "Thu": "09:00-22:00",
+      "Fri": "09:00-23:00",
+      "Sat": "09:00-23:00",
+      "Sun": "09:00-21:00"
+    }
+  },
+  {
+    "id": 12,
+    "name": "Toronto Maple Diner",
+    "city": "Toronto",
+    "rating": 4.3,
+    "seats": 60,
+    "price_range": "$$",
+    "image": "https://images.unsplash.com/photo-1707334724033-e997675f8c10?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZGlubmVyJTIwcmVzdG9yYW58ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "08:00-21:00",
+      "Tue": "08:00-21:00",
+      "Wed": "08:00-21:00",
+      "Thu": "08:00-21:00",
+      "Fri": "08:00-22:00",
+      "Sat": "08:00-22:00",
+      "Sun": "09:00-20:00"
+    }
+  },
+  {
+    "id": 13,
+    "name": "Cape Town Sunset Grill",
+    "city": "Cape Town",
+    "rating": 4.5,
+    "seats": 85,
+    "price_range": "$$",
+    "image": "https://images.unsplash.com/photo-1534177616072-ef7dc120449d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Z3JpbGx8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "10:00-22:00",
+      "Tue": "10:00-22:00",
+      "Wed": "10:00-22:00",
+      "Thu": "10:00-22:00",
+      "Fri": "10:00-23:00",
+      "Sat": "10:00-23:00",
+      "Sun": "10:00-21:00"
+    }
+  },
+  {
+    "id": 14,
+    "name": "Athens Taverna",
+    "city": "Athens",
+    "rating": 4.4,
+    "seats": 55,
+    "price_range": "$$",
+    "image": "https://plus.unsplash.com/premium_photo-1661883237884-263e8de8869b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cmVzdGF1cmFudHxlbnwwfHwwfHx8MA%3D%3D",
+    "opening_hours": {
+      "Mon": "12:00-23:00",
+      "Tue": "12:00-23:00",
+      "Wed": "12:00-23:00",
+      "Thu": "12:00-23:00",
+      "Fri": "12:00-00:00",
+      "Sat": "12:00-00:00",
+      "Sun": "12:00-21:30"
+    }
+  },
+  {
+    "id": 15,
+    "name": "Mumbai Spice Bazaar",
+    "city": "Mumbai",
+    "rating": 4.8,
+    "seats": 90,
+    "price_range": "$$",
+    "image": "https://images.unsplash.com/photo-1506368249639-73a05d6f6488?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8c3BpY2V8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "11:00-23:30",
+      "Tue": "11:00-23:30",
+      "Wed": "11:00-23:30",
+      "Thu": "11:00-23:30",
+      "Fri": "11:00-00:00",
+      "Sat": "11:00-00:00",
+      "Sun": "11:00-22:00"
+    }
+  },
+  {
+    "id": 16,
+    "name": "Lisbon Ocean Breeze",
+    "city": "Lisbon",
+    "rating": 4.2,
+    "seats": 60,
+    "price_range": "$$",
+    "image": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8cmVzdGF1cmFudHxlbnwwfHwwfHx8MA%3D%3D",
+    "opening_hours": {
+      "Mon": "10:00-22:00",
+      "Tue": "10:00-22:00",
+      "Wed": "10:00-22:00",
+      "Thu": "10:00-22:00",
+      "Fri": "10:00-23:00",
+      "Sat": "10:00-23:00",
+      "Sun": "10:00-21:00"
+    }
+  },
+  {
+    "id": 17,
+    "name": "Amsterdam Canal Bistro",
+    "city": "Amsterdam",
+    "rating": 4.5,
+    "seats": 75,
+    "price_range": "$$$",
+    "image": "https://plus.unsplash.com/premium_photo-1723122130905-9d58b90d35d2?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YmlzdHJvfGVufDB8fDB8fHww",
+    "opening_hours": {
+      "Mon": "09:00-22:00",
+      "Tue": "09:00-22:00",
+      "Wed": "09:00-22:00",
+      "Thu": "09:00-22:00",
+      "Fri": "09:00-23:00",
+      "Sat": "09:00-23:00",
+      "Sun": "09:00-21:00"
+    }
+  },
+  {
+    "id": 18,
+    "name": "Prague Old Town Café",
+    "city": "Prague",
+    "rating": 4.6,
+    "seats": 80,
+    "price_range": "$$",
+    "image": "https://plus.unsplash.com/premium_photo-1663932464735-e0946d833749?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8Y2FmZmUlMjBiYXJ8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "08:00-21:00",
+      "Tue": "08:00-21:00",
+      "Wed": "08:00-21:00",
+      "Thu": "08:00-21:00",
+      "Fri": "08:00-22:00",
+      "Sat": "08:00-22:00",
+      "Sun": "09:00-20:00"
+    }
+  },
+  {
+    "id": 19,
+    "name": "Vienna Wiener Grill",
+    "city": "Vienna",
+    "rating": 4.3,
+    "seats": 65,
+    "price_range": "$$",
+    "image": "https://plus.unsplash.com/premium_photo-1695658519567-3dcd1001da03?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8Z3JpbGx8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "10:00-22:00",
+      "Tue": "10:00-22:00",
+      "Wed": "10:00-22:00",
+      "Thu": "10:00-22:00",
+      "Fri": "10:00-23:00",
+      "Sat": "10:00-23:00",
+      "Sun": "10:00-21:00"
+    }
+  },
+  {
+    "id": 20,
+    "name": "Budapest Danube Café",
+    "city": "Budapest",
+    "rating": 4.4,
+    "seats": 70,
+    "price_range": "$$",
+    "image": "https://plus.unsplash.com/premium_photo-1663012978924-5bfd443ac932?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGNhZmUlMjBiYXJ8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "09:00-21:00",
+      "Tue": "09:00-21:00",
+      "Wed": "09:00-21:00",
+      "Thu": "09:00-21:00",
+      "Fri": "09:00-22:00",
+      "Sat": "09:00-22:00",
+      "Sun": "10:00-20:00"
+    }
+  },
+{
+    "id": 21,
+    "name": "Zagreb Gourmet Spot",
+    "city": "Zagreb",
+    "rating": 4.6,
+    "seats": 70,
+    "price_range": "$$",
+    "image": "https://plus.unsplash.com/premium_photo-1675676541760-a1db82652731?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Z291cm1ldCUyMHNwb3R8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "09:00-22:00",
+      "Tue": "09:00-22:00",
+      "Wed": "09:00-22:00",
+      "Thu": "09:00-22:00",
+      "Fri": "09:00-23:00",
+      "Sat": "10:00-23:00",
+      "Sun": "10:00-21:00"
+    }
+  },
+  {
+    "id": 22,
+    "name": "Split Riviera Café",
+    "city": "Split",
+    "rating": 4.7,
+    "seats": 95,
+    "price_range": "$$$",
+    "image": "https://images.unsplash.com/photo-1694115848114-c3d68f941042?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fHNwbGl0JTIwY2FmZmV8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "10:00-22:00",
+      "Tue": "10:00-22:00",
+      "Wed": "10:00-22:00",
+      "Thu": "10:00-23:00",
+      "Fri": "10:00-23:00",
+      "Sat": "10:00-23:00",
+      "Sun": "10:00-21:00"
+    }
+  },
+  {
+    "id": 23,
+    "name": "Rome Trattoria Bella",
+    "city": "Rome",
+    "rating": 4.5,
+    "seats": 80,
+    "price_range": "$$",
+    "image": "https://images.unsplash.com/photo-1702132341930-1813b0a0ea31?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cm9tZSUyMHRhcnR0b3JpYSUyMGNhZmV8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "11:00-23:30",
+      "Tue": "11:00-23:30",
+      "Wed": "11:00-23:30",
+      "Thu": "11:00-23:30",
+      "Fri": "11:00-00:00",
+      "Sat": "11:00-00:00",
+      "Sun": "11:00-22:00"
+    }
+  },
+  {
+    "id": 24,
+    "name": "Tokyo Tempura House",
+    "city": "Tokyo",
+    "rating": 4.9,
+    "seats": 60,
+    "price_range": "$$$",
+    "image": "https://plus.unsplash.com/premium_photo-1726862768396-efd73cb857e6?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8dG9raW8lMjBmb29kfGVufDB8fDB8fHww",
+    "opening_hours": {
+      "Mon": "12:00-22:30",
+      "Tue": "12:00-22:30",
+      "Wed": "12:00-22:30",
+      "Thu": "12:00-23:00",
+      "Fri": "12:00-23:30",
+      "Sat": "12:00-23:30",
+      "Sun": "12:00-21:30"
+    }
+  },
+  {
+    "id": 25,
+    "name": "Paris Saint-Germain Café",
+    "city": "Paris",
+    "rating": 4.4,
+    "seats": 75,
+    "price_range": "$$$",
+    "image": "https://images.unsplash.com/photo-1746031590095-600cd2b1092a?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fFBhcml6JTIwY2FmZmV8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "08:00-22:00",
+      "Tue": "08:00-22:00",
+      "Wed": "08:00-22:00",
+      "Thu": "08:00-22:00",
+      "Fri": "08:00-23:00",
+      "Sat": "08:00-23:00",
+      "Sun": "09:00-21:00"
+    }
+  },
+  {
+    "id": 26,
+    "name": "Berlin Kreuzberg Eatery",
+    "city": "Berlin",
+    "rating": 4.2,
+    "seats": 50,
+    "price_range": "$",
+    "image": "https://plus.unsplash.com/premium_photo-1723120354673-c0f4337e2adf?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8ZWF0ZXJ5fGVufDB8fDB8fHww",
+    "opening_hours": {
+      "Mon": "10:00-20:00",
+      "Tue": "10:00-20:00",
+      "Wed": "10:00-20:00",
+      "Thu": "10:00-21:00",
+      "Fri": "10:00-22:00",
+      "Sat": "10:00-22:00",
+      "Sun": "10:00-19:00"
+    }
+  },
+  {
+    "id": 27,
+    "name": "Mexico City Azteca",
+    "city": "Mexico City",
+    "rating": 4.5,
+    "seats": 85,
+    "price_range": "$",
+    "image": "https://plus.unsplash.com/premium_photo-1680293485552-80e2bcc5207b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bWV4aWNvJTIwZm9vZHxlbnwwfHwwfHx8MA%3D%3D",
+    "opening_hours": {
+      "Mon": "11:00-23:00",
+      "Tue": "11:00-23:00",
+      "Wed": "11:00-23:00",
+      "Thu": "11:00-23:00",
+      "Fri": "11:00-00:00",
+      "Sat": "11:00-00:00",
+      "Sun": "11:00-21:00"
+    }
+  },
+  {
+    "id": 28,
+    "name": "Rio Carnival Bites",
+    "city": "Rio de Janeiro",
+    "rating": 4.3,
+    "seats": 110,
+    "price_range": "$$",
+    "image": "https://plus.unsplash.com/premium_photo-1687959301565-10b771e3f583?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Yml0ZXN8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "12:00-00:00",
+      "Tue": "12:00-00:00",
+      "Wed": "12:00-00:00",
+      "Thu": "12:00-00:00",
+      "Fri": "12:00-01:00",
+      "Sat": "12:00-01:00",
+      "Sun": "12:00-22:00"
+    }
+  },
+  {
+    "id": 29,
+    "name": "New York Brooklyn Grill",
+    "city": "New York",
+    "rating": 4.2,
+    "seats": 65,
+    "price_range": "$$",
+    "image": "https://images.unsplash.com/photo-1627947063935-55577ec3c2e1?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Z3JpbGx8ZW58MHx8MHx8fDA%3D",
+    "opening_hours": {
+      "Mon": "10:00-23:30",
+      "Tue": "10:00-23:30",
+      "Wed": "10:00-23:30",
+      "Thu": "10:00-23:30",
+      "Fri": "10:00-00:30",
+      "Sat": "10:00-00:30",
+      "Sun": "10:00-22:30"
+    }
+  },
+  {
+    "id": 30,
+    "name": "London Oxford Diner",
+    "city": "London",
+    "rating": 4.6,
+    "seats": 70,
+    "price_range": "$$",
+    "image": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZGlubmVyfGVufDB8fDB8fHww",
+    "opening_hours": {
+      "Mon": "11:00-22:00",
+      "Tue": "11:00-22:00",
+      "Wed": "11:00-22:00",
+      "Thu": "11:00-22:00",
+      "Fri": "11:00-23:00",
+      "Sat": "11:00-23:00",
+      "Sun": "11:00-21:00"
+    }
+  },
+        {
+      "id": 31,
+      "name": "Sydney Opera Bistro",
+      "city": "Sydney",
+      "rating": 4.8,
+      "seats": 90,
+      "price_range": "$$$",
+      "image": "https://images.unsplash.com/photo-1636405189493-181ecf851006?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8YmlzdHJvfGVufDB8fDB8fHww",
+      "opening_hours": {
+        "Mon": "09:00-22:00",
+        "Tue": "09:00-22:00",
+        "Wed": "09:00-22:00",
+        "Thu": "09:00-22:00",
+        "Fri": "09:00-23:00",
+        "Sat": "09:00-23:00",
+        "Sun": "09:00-21:00"
+      }
+    },
+    {
+      "id": 32,
+      "name": "Toronto Lakeview Café",
+      "city": "Toronto",
+      "rating": 4.3,
+      "seats": 60,
+      "price_range": "$$",
+      "image": "https://images.unsplash.com/photo-1592139626163-f3cdffc6126a?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8Y2FmZSUyMHRva3lvfGVufDB8fDB8fHww",
+      "opening_hours": {
+        "Mon": "08:00-21:00",
+        "Tue": "08:00-21:00",
+        "Wed": "08:00-21:00",
+        "Thu": "08:00-21:00",
+        "Fri": "08:00-22:00",
+        "Sat": "08:00-22:00",
+        "Sun": "09:00-20:00"
+      }
+    },
+    {
+      "id": 33,
+      "name": "Cape Town Table Bay Grill",
+      "city": "Cape Town",
+      "rating": 4.5,
+      "seats": 80,
+      "price_range": "$$",
+      "image": "https://images.unsplash.com/photo-1632158929962-a929c9e87570?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fGdyaWxsaW5nfGVufDB8fDB8fHww",
+      "opening_hours": {
+        "Mon": "10:00-22:00",
+        "Tue": "10:00-22:00",
+        "Wed": "10:00-22:00",
+        "Thu": "10:00-22:00",
+        "Fri": "10:00-23:00",
+        "Sat": "10:00-23:00",
+        "Sun": "10:00-21:00"
+      }
+    },
+    {
+      "id": 34,
+      "name": "Athens Parthenon Taverna",
+      "city": "Athens",
+      "rating": 4.4,
+      "seats": 60,
+      "price_range": "$$",
+      "image": "https://plus.unsplash.com/premium_photo-1670984940156-c7f833fe8397?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8dGF2ZXJuYXxlbnwwfHwwfHx8MA%3D%3D",
+      "opening_hours": {
+        "Mon": "12:00-23:00",
+        "Tue": "12:00-23:00",
+        "Wed": "12:00-23:00",
+        "Thu": "12:00-23:00",
+        "Fri": "12:00-00:00",
+        "Sat": "12:00-00:00",
+        "Sun": "12:00-21:30"
+      }
+    },
+    {
+      "id": 35,
+      "name": "Mumbai Gateway Spice",
+      "city": "Mumbai",
+      "rating": 4.7,
+      "seats": 95,
+      "price_range": "$$",
+      "image": "https://images.unsplash.com/photo-1697294872375-9942fd94d2a7?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c3BpY2UlMjByZXN0dXJhbnR8ZW58MHx8MHx8fDA%3D",
+      "opening_hours": {
+        "Mon": "11:00-23:30",
+        "Tue": "11:00-23:30",
+        "Wed": "11:00-23:30",
+        "Thu": "11:00-23:30",
+        "Fri": "11:00-00:00",
+        "Sat": "11:00-00:00",
+        "Sun": "11:00-22:00"
+      }
+    },
+    {
+      "id": 36,
+      "name": "Lisbon Tagus Grill",
+      "city": "Lisbon",
+      "rating": 4.2,
+      "seats": 55,
+      "price_range": "$$",
+      "image": "https://plus.unsplash.com/premium_photo-1664391878396-a72747167869?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bGlzYWJvbiUyMGdyaWxsfGVufDB8fDB8fHww",
+      "opening_hours": {
+        "Mon": "10:00-22:00",
+        "Tue": "10:00-22:00",
+        "Wed": "10:00-22:00",
+        "Thu": "10:00-22:00",
+        "Fri": "10:00-23:00",
+        "Sat": "10:00-23:00",
+        "Sun": "10:00-21:00"
+      }
+    },
+    {
+      "id": 37,
+      "name": "Amsterdam Jordaan Café",
+      "city": "Amsterdam",
+      "rating": 4.6,
+      "seats": 75,
+      "price_range": "$$$",
+      "image": "https://images.unsplash.com/photo-1555511894-e1e34e35c953?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Y2FmZmUlMjBiYXJ8ZW58MHx8MHx8fDA%3D",
+      "opening_hours": {
+        "Mon": "09:00-22:00",
+        "Tue": "09:00-22:00",
+        "Wed": "09:00-22:00",
+        "Thu": "09:00-22:00",
+        "Fri": "09:00-23:00",
+        "Sat": "09:00-23:00",
+        "Sun": "09:00-21:00"
+      }
+    },
+    {
+      "id": 38,
+      "name": "Prague Charles Bridge Bistro",
+      "city": "Prague",
+      "rating": 4.5,
+      "seats": 85,
+      "price_range": "$$",
+      "image": "https://images.unsplash.com/photo-1654161053835-34c071d3bcff?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJhZ3VlJTIwYmlzdHJvfGVufDB8fDB8fHww",
+      "opening_hours": {
+        "Mon": "08:00-21:00",
+        "Tue": "08:00-21:00",
+        "Wed": "08:00-21:00",
+        "Thu": "08:00-21:00",
+        "Fri": "08:00-22:00",
+        "Sat": "08:00-22:00",
+        "Sun": "09:00-20:00"
+      }
+    },
+    {
+      "id": 39,
+      "name": "Vienna Schönbrunn Diner",
+      "city": "Vienna",
+      "rating": 4.4,
+      "seats": 70,
+      "price_range": "$$",
+      "image": "https://plus.unsplash.com/premium_photo-1677000666741-17c3c57139a2?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8ZGlubmVyfGVufDB8fDB8fHww",
+      "opening_hours": {
+        "Mon": "10:00-22:00",
+        "Tue": "10:00-22:00",
+        "Wed": "10:00-22:00",
+        "Thu": "10:00-22:00",
+        "Fri": "10:00-23:00",
+        "Sat": "10:00-23:00",
+        "Sun": "10:00-21:00"
+      }
+    }
+]
+}
