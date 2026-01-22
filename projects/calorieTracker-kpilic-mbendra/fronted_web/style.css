@@ -12,7 +12,9 @@ button:hover { background: #6d28d9; }
 .col { background: #121212; padding: 10px; border-radius: 10px; min-height: 200px; border: 1px solid #222; }
 .meal-card { background: #222; padding: 10px; border-radius: 8px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #7c3aed; }
 .meal-card button { width: auto; background: #ef4444; padding: 4px 8px; margin: 0; }
-.secondary-btn { background: #333; }
+.secondary-btn { 
+    background: #333; 
+}
 #registerModal .modal-dialog {
   width: 400px;
   margin: 100px auto;
