@@ -39,3 +39,27 @@ button:hover { background: #6d28d9; }
     border: 1px solid #7c3aed;
     width: 350px;
 }
+
+/* Kontejner za sve obroke */
+.diary-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Stil za svaku pojedinu sekciju (Doručak, Ručak...) */
+.meal-section {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.meal-section h3 {
+    color: #7c3aed; /* Ljubičasta boja naslova */
+    margin-bottom: 15px;
+    border-bottom: 1px solid rgba(124, 58, 237, 0.3);
+    padding-bottom: 5px;
+}
