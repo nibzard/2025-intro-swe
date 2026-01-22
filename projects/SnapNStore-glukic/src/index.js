@@ -19,7 +19,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(join(__dirname, '../public')));
 
 // Prilagodba za Vercel (korištenje /tmp za privremene datoteke)
 const isVercel = process.env.VERCEL === '1';
