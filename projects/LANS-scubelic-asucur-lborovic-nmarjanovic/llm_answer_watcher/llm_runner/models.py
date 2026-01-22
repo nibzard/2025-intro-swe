@@ -158,27 +158,28 @@ def build_client(
     tool_choice: str = "auto",
 ) -> LLMClient:
     """
-    Factory function to create Google Gemini LLM client.
+    Factory function to create LLM client for supported providers.
 
-    Implements the factory pattern to instantiate the Gemini client
+    Implements the factory pattern to instantiate provider-specific clients
     while returning the common LLMClient interface.
 
     Supported providers:
     - "google": Google Gemini API (Gemini models)
+    - "groq": Groq API (Llama, Mixtral, Gemma models with fast inference)
 
     Args:
-        provider: Provider identifier (must be "google")
-        model_name: Model identifier (e.g., "gemini-1.5-flash", "gemini-1.5-pro")
+        provider: Provider identifier ("google" or "groq")
+        model_name: Model identifier (e.g., "gemini-1.5-flash", "llama-3.1-8b-instant")
         api_key: API key for authentication (NEVER logged or persisted)
         system_prompt: System message for context/instructions sent with requests
         tools: Optional list of tool configurations (e.g., [{"google_search": {}}])
         tool_choice: Tool selection mode ("auto", "required", "none"). Default: "auto"
 
     Returns:
-        LLMClient: Gemini client implementing LLMClient protocol
+        LLMClient: Provider client implementing LLMClient protocol
 
     Raises:
-        ValueError: If provider is not "google"
+        ValueError: If provider is not supported
 
     Example:
         >>> client = build_client("google", "gemini-1.5-flash", "AIza...",
@@ -186,9 +187,9 @@ def build_client(
         >>> isinstance(client, LLMClient)  # Satisfies protocol
         True
         >>> response = client.generate_answer("What are the best email tools?")
-        >>> # With tools enabled
-        >>> client = build_client("google", "gemini-1.5-pro", "AIza...", "...",
-        ...     tools=[{"google_search": {}}], tool_choice="auto")
+        >>> # With Groq
+        >>> client = build_client("groq", "llama-3.1-8b-instant", "gsk-...",
+        ...     system_prompt="You are a helpful assistant.")
 
     Security:
         - NEVER log the api_key parameter in any form
@@ -212,8 +213,22 @@ def build_client(
             tool_choice=tool_choice,
         )
 
+    if provider == "groq":
+        # Import here to avoid circular dependencies and keep imports lazy
+        from llm_answer_watcher.llm_runner.groq_client import (
+            GroqClient,
+        )
+
+        return GroqClient(
+            model_name=model_name,
+            api_key=api_key,
+            system_prompt=system_prompt,
+            tools=tools,
+            tool_choice=tool_choice,
+        )
+
     # Unknown provider - clear error message
     raise ValueError(
         f"Unsupported provider: '{provider}'. "
-        f"Supported providers: google"
+        f"Supported providers: google, groq"
     )
