@@ -1,0 +1,16 @@
+Upute za postavljanje API ključeva (API Setup Instructions)
+ 
+Da biste pokrenuli aplikaciju, slijedite ove korake:
+
+1. Kreirajte datoteku naziva '.env' u glavnom folderu projekta.
+2. Unutar '.env' datoteke dodajte sljedeće linije:
+
+   GEMINI_API_KEY=vaš_gemini_api_ključ
+   GOOGLE_APPLICATION_CREDENTIALS=./vaša-google-cloud-vision-datoteka.json
+
+3. Google Cloud Vision JSON:
+   - JSON datoteku koju ste preuzeli s Google Clouda spremite u glavni folder projekta.
+   - Osigurajte da se naziv u .env datoteci podudara s nazivom vaše JSON datoteke.
+
+NAPOMENA: 
+Datoteke .env i *.json su dodane u .gitignore, što znači da ih Git neće pratiti niti učitavati na GitHub. Na taj način vaši ključevi ostaju sigurni i vidljivi samo vama.
