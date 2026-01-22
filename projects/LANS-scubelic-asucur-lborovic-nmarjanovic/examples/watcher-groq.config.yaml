@@ -1,0 +1,69 @@
+# Example configuration using Groq for ultra-fast inference
+#
+# Groq provides blazing-fast inference using custom LPU hardware.
+# Supported models include Llama, Mixtral, and Gemma families.
+#
+# Environment variable required:
+#   GROQ_API_KEY: Your Groq API key from https://console.groq.com/
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  # Maximum concurrent API requests
+  # Groq has generous rate limits, can handle higher concurrency
+  max_concurrent_requests: 10
+
+  models:
+    # Llama 3.3 70B - Best quality for general tasks
+    - provider: "groq"
+      model_name: "llama-3.3-70b-versatile"
+      env_api_key: "GROQ_API_KEY"
+      system_prompt: "groq/default"
+
+    # Llama 3.1 8B - Fastest inference, great for simple tasks
+    - provider: "groq"
+      model_name: "llama-3.1-8b-instant"
+      env_api_key: "GROQ_API_KEY"
+      system_prompt: "groq/default"
+
+    # Mixtral 8x7B - Good balance of speed and quality
+    # - provider: "groq"
+    #   model_name: "mixtral-8x7b-32768"
+    #   env_api_key: "GROQ_API_KEY"
+    #   system_prompt: "groq/default"
+
+  use_llm_rank_extraction: false
+
+# Extraction settings using Groq's fast models
+extraction_settings:
+  extraction_model:
+    provider: "groq"
+    model_name: "llama-3.1-8b-instant"  # Fast model for extraction
+    env_api_key: "GROQ_API_KEY"
+    system_prompt: "groq/default"
+
+  method: "function_calling"
+  fallback_to_regex: true
+  min_confidence: 0.7
+  enable_sentiment_analysis: true
+  enable_intent_classification: true
+
+brands:
+  mine:
+    - "Lemwarm"
+    - "Lemlist"
+
+  competitors:
+    - "Instantly"
+    - "Apollo.io"
+    - "Woodpecker"
+    - "Mailwarm"
+    - "Warmup Inbox"
+
+intents:
+  - id: "best-email-warmup-tools"
+    prompt: "What are the best email warmup tools?"
+
+  - id: "email-warmup-comparison"
+    prompt: "Compare the top email warmup tools for improving deliverability"
