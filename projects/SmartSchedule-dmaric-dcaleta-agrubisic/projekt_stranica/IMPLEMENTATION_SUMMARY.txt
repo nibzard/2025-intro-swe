@@ -1,0 +1,91 @@
+✅ REORGANIZACIJA KOMPLETNA
+
+📦 Backend (Node.js)
+├── ✅ server.js - Express proxy za Gemini API
+├── ✅ test-openai.js - Test skripta
+├── ✅ package.json - Zavisnosti (express, cors, dotenv, node-fetch)
+├── ✅ package-lock.json - Lock file
+├── ✅ .env - GEMINI_API_KEY (ČUVAN OD GIT-A!)
+├── ✅ .gitignore - Čuva tajne (.env, node_modules)
+├── ✅ node_modules/ - Instalirane zavisnosti
+└── ✅ README.md - Backend instrukcije
+
+🎨 Frontend (HTML/CSS/JS)
+├── ✅ index.html - Login/Registracija
+├── ✅ dashboard.html - Dashboard
+├── ✅ business-create.html - Kreiraj raspored
+├── ✅ business-final.html - Finalizacija rasporeda
+├── ✅ personal.html - Osobni raspored
+├── ✅ css/global.css - Stilovi
+├── ✅ js/auth.js - Autentifikacija (+ OIB za poslodavce)
+├── ✅ js/navigation.js - Navigacija
+├── ✅ js/schedules.js - Rasporedi + Gemini proxy
+├── ✅ js/personal.js - Osobni rasporedi
+├── ✅ js/utils.js - Utility funkcije
+├── ✅ js/api-key.js - PRAZAN (sigurnost - bez API key-a!)
+└── ✅ README.md - Frontend info
+
+🚀 KAKO POKRENUTI
+
+Terminal 1 - Backend:
+  cd backend
+  npm install          (samo prvi put)
+  node server.js
+  
+  Očekivani output:
+  Gemini proxy listening on http://localhost:3001
+
+Terminal 2 - Frontend:
+  Otvori: projekt_nibzar3/SmartSchedule/index.html
+  U pregledniku
+
+🔐 SIGURNOST IMPLEMENTIRANA
+
+✅ Frontend NIKADA ne vidi AI key
+✅ AI key je SAMO u backend .env datoteci
+✅ .gitignore čuva .env od Git commita
+✅ Frontend koristi fetch() za komunikaciju sa backendom
+✅ Backend ima CORS enabled za frontend zahtjeve
+✅ FRONTEND JE ČIST - samo HTML/CSS/JS (bez node_modules!)
+
+📊 KOMUNIKACIJA
+
+Frontend (Browser)
+    │
+    │ fetch('http://localhost:3001/gemini-proxy')
+    │ sa prompt-om
+    │
+    ▼
+Backend (Node.js Express)
+    │ (čuva .env sa AI KEY)
+    │
+    │ Gemini API Key iz .env
+    │
+    ▼
+Google Gemini API
+    │
+    │ Odgovor
+    │
+    ▼
+Frontend (Browser)
+    │
+    ▼
+Prikaži rezultate
+
+
+🎯 REZULTAT
+
+✨ Separirana arhitektura:
+   - Backend: Node.js Express proxy
+   - Frontend: Čist HTML/CSS/JS
+   
+✨ Maksimalna sigurnost:
+   - AI key nikada ne napušta server
+   - Frontend je sigurno servirati bilo gdje
+   
+✨ Produkcija-ready:
+   - Build proces za frontend (samo kopija)
+   - Backend se pokreće sa node server.js
+   - Skalabilan dizajn
+
+GOTOVO! 🎉

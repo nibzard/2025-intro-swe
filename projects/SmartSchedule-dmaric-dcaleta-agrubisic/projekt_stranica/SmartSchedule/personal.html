@@ -1,0 +1,39 @@
+<!-- personal.html - Unos dostupnosti radnika -->
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartSchedule - Moja dostupnost</title>
+  <link rel="stylesheet" href="css/global.css">
+</head>
+<body>
+  <div id="profileCorner" style="position:absolute;top:18px;right:24px;background:#20243a;padding:8px 16px;border-radius:8px;color:#3a7afe;font-weight:bold;font-size:1.1em;z-index:10;display:flex;align-items:center;gap:16px;"></div>
+  <div class="container personal-container">
+    <h2>Pristup rasporedu</h2>
+    <div style="margin:18px 0;">
+      <label for="scheduleCodeInput">Unesi kod rasporeda:</label>
+      <input type="text" id="scheduleCodeInput" maxlength="12" style="width:160px;text-transform:uppercase;">
+      <button id="loadScheduleBtn" type="button">Prikaži moj raspored</button>
+    </div>
+    <div id="personalSchedule"></div>
+  </div>
+  <script src="js/auth.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/personal.js"></script>
+<script>
+// Prikaz profila u kutu
+document.addEventListener('DOMContentLoaded', function() {
+  const session = sessionStorage.getItem('sessionUser');
+  if (session) {
+    const user = JSON.parse(session);
+    const profileDiv = document.getElementById('profileCorner');
+    if (profileDiv) {
+      profileDiv.innerHTML = `${user.username}#${user.id || ''} <button id='cornerLogoutBtn' style='margin-left:12px;background:#3a7afe;color:#fff;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;'>Odjava</button>`;
+      document.getElementById('cornerLogoutBtn').onclick = function() { sessionStorage.removeItem('sessionUser'); window.location.href = 'index.html'; };
+    }
+  }
+});
+</script>
+</body>
+</html>
