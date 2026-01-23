@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartSchedule – Poslovni raspored</title>
+  <link rel="stylesheet" href="css/global.css">
+</head>
+<body>
+
+<div id="profileCorner" style="position:absolute;top:18px;right:24px;background:#20243a;padding:8px 16px;border-radius:8px;color:#3a7afe;font-weight:bold;font-size:1.1em;display:flex;gap:12px;align-items:center;"></div>
+
+<div class="container business-final-container">
+  <h2 id="scheduleTitle">Poslovni raspored</h2>
+  <div id="scheduleNameBox" style="margin-bottom:6px;"></div>
+  <div id="scheduleCodeBox" style="margin-bottom:16px;"></div>
+  <div id="scheduleTable"></div>
+
+  <div id="workerRequestsBox"></div>
+
+  <div class="schedule-actions" style="margin-top:20px;">
+    <button id="saveSchedule">Spremi</button>
+    <button id="aiGenerateBtn" style="background:#3a7afe;color:#fff;">Generiraj automatski (AI)</button>
+  </div>
+</div>
+
+
+<script src="js/api-key.js"></script>
+<script src="js/schedules.js"></script>
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+  // SESSION & INIT
+  const sessionRaw = sessionStorage.getItem("sessionUser");
+  if (!sessionRaw) {
+    location.href = "index.html";
+    return;
+  }
+  const session = JSON.parse(sessionRaw);
+  const isBoss = session.isBoss === true;
+  const code = localStorage.getItem("scheduleCode");
+
+  // AI GENERATE BUTTON
+  const aiBtn = document.getElementById("aiGenerateBtn");
+  if (aiBtn && isBoss) {
+    aiBtn.onclick = async function() {
+      aiBtn.disabled = true;
+      aiBtn.textContent = "Generiram...";
+      try {
+        const aiJson = await generateScheduleWithAI(code);
+        alert("AI je generirao raspored! Klikni 'Spremi' za spremanje ili ručno izmijeni.");
+        window.location.reload();
+      } catch (e) {
+        alert("Greška pri generiranju AI rasporeda: " + e);
+      }
+      aiBtn.disabled = false;
+      aiBtn.textContent = "Generiraj automatski (AI)";
+    };
+
+  }
+
+  /* PROFILE */
+  const profile = document.getElementById("profileCorner");
+  profile.innerHTML = `
+    ${session.username}
+    <button id="logoutBtn" style="background:#3a7afe;color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;">
+      Odjava
+    </button>
+  `;
+  document.getElementById("logoutBtn").onclick = function () {
+    sessionStorage.removeItem("sessionUser");
+    location.href = "index.html";
+  };
+
+  /* LOAD DATA */
+  const allSchedules = JSON.parse(localStorage.getItem("allSchedules") || "{}");
+  const scheduleInfo = allSchedules[code] || {};
+  const workers = Array.isArray(scheduleInfo.workers) ? scheduleInfo.workers : [];
+  const business = JSON.parse(localStorage.getItem("business") || "{}");
+  if (!business.workDays) business.workDays = 7;
+
+  const days = ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"];
+
+  document.getElementById("scheduleNameBox").innerHTML =
+    scheduleInfo.name ? `<b>Naziv:</b> ${scheduleInfo.name}` : "";
+
+  document.getElementById("scheduleCodeBox").innerHTML =
+    code ? `<b>Kod rasporeda:</b> ${code}` : "";
+
+  const tableDiv = document.getElementById("scheduleTable");
+
+  if (!workers.length) {
+    tableDiv.innerHTML = "<p>Nema radnika.</p>";
+    return;
+  }
+  const SHIFT_MAP = {
+    "Morning": "08:00 - 15:00",
+    "Afternoon": "14:00 - 21:00",
+    "Mid": "10:00 - 14:00",
+    "Off": "Slobodno"
+  };
+
+  /* TABLE */
+  let html = "<form id='scheduleForm'><table><tr><th>Radnik</th>";
+  days.forEach(d => html += `<th>${d}</th>`);
+  html += "</tr>";
+
+  workers.forEach(w => {
+    const workerKey = w.username + '#' + w.id;
+    html += `<tr><td>${workerKey}</td>`;
+
+    days.forEach((d, di) => {
+      if (business.workDays === 6 && di === 6) {
+        html += `<td>Slobodno</td>`;
+      } else {
+        let existing = scheduleInfo.schedule?.[workerKey]?.[di] || "";
+
+// ako je AI vratio Morning / Afternoon / Off
+      if (SHIFT_MAP[existing]) {
+        existing = SHIFT_MAP[existing];
+      }
+
+      let od = "";
+      let doo = "";
+
+      if (existing === "Slobodno") {
+        od = "Slobodno";
+        doo = "";
+      } else if (existing.includes(" - ")) {
+        [od, doo] = existing.split(" - ");
+      }
+
+
+        html += `<td style="width:120px;">
+          <input type="text" name="${workerKey}_${di}_od" value="${od}" style="width:45%;margin-right:2px;">
+          <span style="color:#aaa;">-</span>
+          <input type="text" name="${workerKey}_${di}_do" value="${doo}" style="width:45%;margin-left:2px;">
+        </td>`;
+      }
+    });
+
+    html += "</tr>";
+  });
+
+  html += "<tr><td colspan='8'><button type='submit'>Spremi raspored</button></td></tr>";
+  html += "</table></form>";
+  tableDiv.innerHTML = html;
+
+  /* READ ONLY FOR WORKER */
+  if (!isBoss) {
+    document.querySelectorAll("select").forEach(s => s.disabled = true);
+    document.querySelector(".schedule-actions").style.display = "none";
+  }
+
+  /* SAVE */
+  const form = document.getElementById("scheduleForm");
+  if (form && isBoss) {
+    form.onsubmit = function (e) {
+      e.preventDefault();
+      const schedule = {};
+      workers.forEach(w => {
+        const workerKey = w.username + '#' + w.id;
+        schedule[workerKey] = [];
+        days.forEach((d, di) => {
+          if (business.workDays === 6 && di === 6) {
+            schedule[workerKey][di] = "Slobodno";
+          } else {
+            const od = document.querySelector(`input[name='${workerKey}_${di}_od']`).value.trim();
+            const doo = document.querySelector(`input[name='${workerKey}_${di}_do']`).value.trim();
+            if (od && doo) {
+              schedule[workerKey][di] = od + ' - ' + doo;
+            } else {
+              schedule[workerKey][di] = '';
+            }
+          }
+        });
+      });
+      scheduleInfo.schedule = schedule;
+      allSchedules[code] = scheduleInfo;
+      localStorage.setItem("allSchedules", JSON.stringify(allSchedules));
+      alert("Raspored spremljen");
+    };
+    // Prikaz zahtjeva ispod tablice
+    const requestsDiv = document.getElementById("workerRequestsBox");
+    const allRequests = JSON.parse(localStorage.getItem("workerRequests") || "{}");
+    const requests = allRequests[code] || {};
+    let reqHtml = "";
+    if (Object.keys(requests).length) {
+      reqHtml += '<div style="background:#20243a;padding:16px 18px;border-radius:8px;box-shadow:0 2px 12px #0005;margin-top:32px;">';
+      reqHtml += '<h3 style="margin-top:0;color:#3a7afe;">Zahtjevi radnika za AI</h3>';
+      reqHtml += '<ul style="list-style:disc inside;padding-left:18px;margin:0;">';
+      Object.entries(requests).forEach(([user, text]) => {
+        reqHtml += `<li style='margin-bottom:10px;color:#fff;'><b>${user}</b>: ${text}</li>`;
+      });
+      reqHtml += '</ul></div>';
+    }
+    requestsDiv.innerHTML = reqHtml;
+  }
+
+});
+</script>
+
+</body>
+</html>
