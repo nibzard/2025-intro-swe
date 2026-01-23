@@ -51,11 +51,14 @@ export interface SearchResult {
 export interface IntentResult {
   intent_id: string;
   prompt: string;
+  answers: Answer[];
+}
+
+export interface Answer {
   answer: string;
-  mentions: BrandMention[];
   model: string;
-  tokens_used: number;
   cost_usd: number;
+  mentions: BrandMention[];
 }
 
 export interface BrandMention {
@@ -72,10 +75,6 @@ export const GEMINI_MODELS = [
 
 export const GROQ_MODELS = [
   { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', description: 'Best quality for general tasks' },
-  { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B Instant', description: 'Fastest inference, great for simple tasks' },
-  { id: 'llama-3.1-70b-versatile', name: 'Llama 3.1 70B', description: 'High-quality responses with fast speed' },
-  { id: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B', description: 'Good balance of speed and quality' },
-  { id: 'gemma2-9b-it', name: 'Gemma 2 9B', description: 'Google\'s Gemma model on Groq' },
 ] as const;
 
 export type Provider = 'google' | 'groq';

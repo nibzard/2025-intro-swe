@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useCallback, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Search,
   Settings,
@@ -28,9 +28,138 @@ import {
   FileText,
   ArrowLeft,
 } from 'lucide-react';
-import type { WatcherConfig, Intent, BrandMention, Provider } from '../types.ts';
+import type { WatcherConfig, Intent, BrandMention, Provider, ModelConfig } from '../types.ts';
 import { GEMINI_MODELS, GROQ_MODELS } from '../types.ts';
 import yaml from 'js-yaml';
+
+const StatsComparison = ({ results }: { results: any }) => {
+  if (!results || !results.intents_data) return null;
+
+  const stats = {
+    google: {
+      totalMentions: 0,
+      myBrandMentions: 0,
+      competitorMentions: 0,
+      myBrandRanks: [] as number[],
+      myBrandRank1Mentions: 0,
+      competitorRanks: [] as number[],
+    },
+    groq: {
+      totalMentions: 0,
+      myBrandMentions: 0,
+      competitorMentions: 0,
+      myBrandRanks: [] as number[],
+      myBrandRank1Mentions: 0,
+      competitorRanks: [] as number[],
+    },
+  };
+
+  results.intents_data.forEach((intent: any) => {
+    intent.answers.forEach((answer: any) => {
+      const provider = answer.model.includes('gemini') ? 'google' : 'groq';
+      stats[provider].totalMentions += answer.mentions.length;
+      answer.mentions.forEach((mention: any) => {
+        if (mention.is_mine) {
+          stats[provider].myBrandMentions++;
+          if (mention.rank) {
+            stats[provider].myBrandRanks.push(mention.rank);
+            if (mention.rank === 1) {
+              stats[provider].myBrandRank1Mentions++;
+            }
+          }
+        } else {
+          stats[provider].competitorMentions++;
+          if (mention.rank) {
+            stats[provider].competitorRanks.push(mention.rank);
+          }
+        }
+      });
+    });
+  });
+
+  const avgRank = (ranks: number[]) => {
+    if (ranks.length === 0) return 'N/A';
+    return (ranks.reduce((a, b) => a + b, 0) / ranks.length).toFixed(2);
+  };
+
+  return (
+    <div className="glass-card p-6 mt-8">
+      <h3 className="text-xl font-bold text-navy-200 mb-4">Model Comparison</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h4 className="font-bold text-lg text-primary-300 mb-3">Google Gemini</h4>
+          <div className="space-y-2">
+            <div className="flex justify-between"><span>Detected Mentions:</span> <span>{stats.google.totalMentions}</span></div>
+            <div className="flex justify-between"><span>My Brand Mentions:</span> <span>{stats.google.myBrandMentions}</span></div>
+            <div className="flex justify-between"><span>#1 Ranks for My Brand:</span> <span>{stats.google.myBrandRank1Mentions}</span></div>
+            <div className="flex justify-between"><span>Avg. My Brand Rank:</span> <span>{avgRank(stats.google.myBrandRanks)}</span></div>
+            <div className="flex justify-between"><span>Competitor Mentions:</span> <span>{stats.google.competitorMentions}</span></div>
+            <div className="flex justify-between"><span>Avg. Competitor Rank:</span> <span>{avgRank(stats.google.competitorRanks)}</span></div>
+          </div>
+        </div>
+        <div>
+          <h4 className="font-bold text-lg text-accent-300 mb-3">Groq</h4>
+          <div className="space-y-2">
+            <div className="flex justify-between"><span>Detected Mentions:</span> <span>{stats.groq.totalMentions}</span></div>
+            <div className="flex justify-between"><span>My Brand Mentions:</span> <span>{stats.groq.myBrandMentions}</span></div>
+            <div className="flex justify-between"><span>#1 Ranks for My Brand:</span> <span>{stats.groq.myBrandRank1Mentions}</span></div>
+            <div className="flex justify-between"><span>Avg. My Brand Rank:</span> <span>{avgRank(stats.groq.myBrandRanks)}</span></div>
+            <div className="flex justify-between"><span>Competitor Mentions:</span> <span>{stats.groq.competitorMentions}</span></div>
+            <div className="flex justify-between"><span>Avg. Competitor Rank:</span> <span>{avgRank(stats.groq.competitorRanks)}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const TokenUsageStats = ({ results, selectedProvider, selectedGoogleModel, selectedGroqModel }: { results: any, selectedProvider: string, selectedGoogleModel: string, selectedGroqModel: string }) => {
+  if (!results || !results.intents_data) return null;
+
+  const modelInfo = {
+    google: {
+      used: 0,
+    },
+    groq: {
+      used: 0,
+    },
+  };
+
+  // Calculate tokens used from API response
+  results.intents_data.forEach((intent: any) => {
+    intent.answers.forEach((answer: any) => {
+      const provider = answer.model.includes('gemini') ? 'google' : 'groq';
+      if (answer.usage) {
+        modelInfo[provider].used += answer.usage.total_tokens || 0;
+      }
+    });
+  });
+
+  return (
+    <div className="glass-card p-6 mt-8">
+      <h3 className="text-xl font-bold text-navy-200 mb-4">Token Usage</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {(selectedProvider === 'google' || selectedProvider === 'both') && (
+          <div>
+            <h4 className="font-bold text-lg text-primary-300 mb-3">Google Gemini ({selectedGoogleModel})</h4>
+            <div className="space-y-2">
+              <div className="flex justify-between"><span>Tokens Used:</span> <span>{modelInfo.google.used}</span></div>
+            </div>
+          </div>
+        )}
+        {(selectedProvider === 'groq' || selectedProvider === 'both') && (
+          <div>
+            <h4 className="font-bold text-lg text-accent-300 mb-3">Groq ({selectedGroqModel})</h4>
+            <div className="space-y-2">
+              <div className="flex justify-between"><span>Tokens Used:</span> <span>{modelInfo.groq.used}</span></div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 
 // API base URL: use environment variable or default based on environment
 const API_BASE_URL = import.meta.env.VITE_API_URL ||
@@ -131,27 +260,41 @@ const FormattedAnswer = ({ text, mentions = [] }: { text: string; mentions?: Bra
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Set provider from query param
+  useEffect(() => {
+    const providerParam = searchParams.get('provider');
+    if (providerParam === 'both') {
+      setSelectedProvider('both');
+    } else if (providerParam === 'google' || providerParam === 'groq') {
+      setSelectedProvider(providerParam);
+    }
+  }, [searchParams]);
 
   // State
   const [activeTab, setActiveTab] = useState<'config' | 'results'>('config');
-  const [apiKey, setApiKey] = useState('');
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState<Provider>('google');
+  const [selectedProvider, setSelectedProvider] = useState<Provider | 'both'>('google');
+  const [apiKeys, setApiKeys] = useState({ google: '', groq: '' });
   const [selectedModel, setSelectedModel] = useState<string>(GEMINI_MODELS[0].id);
+  const [selectedGoogleModel, setSelectedGoogleModel] = useState<string>(GEMINI_MODELS[0].id);
+  const [selectedGroqModel, setSelectedGroqModel] = useState<string>(GROQ_MODELS[0].id);
   const [enableWebSearch, setEnableWebSearch] = useState(true);
 
   // Get available models based on selected provider
   const availableModels = selectedProvider === 'google' ? GEMINI_MODELS : GROQ_MODELS;
 
   // Handle provider change - reset model to first available
-  const handleProviderChange = (provider: Provider) => {
+  const handleProviderChange = (provider: Provider | 'both') => {
     setSelectedProvider(provider);
     if (provider === 'google') {
       setSelectedModel(GEMINI_MODELS[0].id);
       setEnableWebSearch(true); // Google supports web search
-    } else {
+    } else if (provider === 'groq') {
       setSelectedModel(GROQ_MODELS[0].id);
       setEnableWebSearch(false); // Groq doesn't support web search yet
+    } else {
+      setEnableWebSearch(true);
     }
   };
   const [myBrands, setMyBrands] = useState<string[]>(['']);
@@ -162,29 +305,51 @@ export default function Dashboard() {
   const [showYamlPreview, setShowYamlPreview] = useState(false);
   const [runId, setRunId] = useState<string | null>(null);
   const [results, setResults] = useState<any | null>(null);
+  const [showApiKey, setShowApiKey] = useState(false);
 
 
   // Generate YAML config
   const generateConfig = useCallback((): WatcherConfig => {
-    const envApiKey = selectedProvider === 'google' ? 'GEMINI_API_KEY' : 'GROQ_API_KEY';
-    const systemPrompt = selectedProvider === 'google'
-      ? "google/gemini-grounding"
-      : "You are an unbiased market analyst. Provide factual, balanced recommendations. IMPORTANT: Structure your response using bullet points for lists and short paragraphs. Highlight key entities (brands, products, metrics) in **bold** to make them stand out. Avoid long blocks of text.";
+    let models: ModelConfig[] = [];
+
+    if (selectedProvider === 'both') {
+      models = [
+        {
+          provider: 'google',
+          model_name: selectedGoogleModel,
+          env_api_key: 'GEMINI_API_KEY',
+          system_prompt: "google/gemini-grounding",
+          ...(enableWebSearch && { tools: [{ google_search: {} }] }),
+        },
+        {
+          provider: 'groq',
+          model_name: selectedGroqModel,
+          env_api_key: 'GROQ_API_KEY',
+          system_prompt: "You are an unbiased market analyst. Provide factual, balanced recommendations. IMPORTANT: Structure your response using bullet points for lists and short paragraphs. Highlight key entities (brands, products, metrics) in **bold** to make them stand out. Avoid long blocks of text.",
+        },
+      ];
+    } else {
+      const envApiKey = selectedProvider === 'google' ? 'GEMINI_API_KEY' : 'GROQ_API_KEY';
+      const systemPrompt = selectedProvider === 'google'
+        ? "google/gemini-grounding"
+        : "You are an unbiased market analyst. Provide factual, balanced recommendations. IMPORTANT: Structure your response using bullet points for lists and short paragraphs. Highlight key entities (brands, products, metrics) in **bold** to make them stand out. Avoid long blocks of text.";
+      models = [
+        {
+          provider: selectedProvider,
+          model_name: selectedModel,
+          env_api_key: envApiKey,
+          system_prompt: systemPrompt,
+          ...(selectedProvider === 'google' && enableWebSearch && { tools: [{ google_search: {} }] }),
+        },
+      ];
+    }
 
     const config: WatcherConfig = {
       run_settings: {
         output_dir: './output',
         sqlite_db_path: './output/watcher.db',
         max_concurrent_requests: 10,
-        models: [
-          {
-            provider: selectedProvider,
-            model_name: selectedModel,
-            env_api_key: envApiKey,
-            system_prompt: systemPrompt,
-            ...(selectedProvider === 'google' && enableWebSearch && { tools: [{ google_search: {} }] }),
-          },
-        ],
+        models: models,
         use_llm_rank_extraction: false,
       },
       brands: {
@@ -199,7 +364,7 @@ export default function Dashboard() {
         })),
     };
     return config;
-  }, [selectedProvider, selectedModel, enableWebSearch, myBrands, competitors, intents]);
+  }, [selectedProvider, selectedModel, selectedGoogleModel, selectedGroqModel, enableWebSearch, myBrands, competitors, intents]);
 
   const yamlOutput = yaml.dump(generateConfig(), { lineWidth: -1 });
 
@@ -263,9 +428,16 @@ export default function Dashboard() {
   };
 
   const runSearch = async () => {
-    if (!apiKey) {
-      alert(`Please enter your ${selectedProvider === 'google' ? 'Gemini' : 'Groq'} API key`);
-      return;
+    if (selectedProvider === 'both') {
+      if (!apiKeys.google || !apiKeys.groq) {
+        alert('Please enter API keys for both Google and Groq');
+        return;
+      }
+    } else {
+      if (!apiKeys[selectedProvider]) {
+        alert(`Please enter your ${selectedProvider === 'google' ? 'Gemini' : 'Groq'} API key`);
+        return;
+      }
     }
     setIsRunning(true);
     setResults(null);
@@ -274,7 +446,7 @@ export default function Dashboard() {
       const response = await fetch(`${API_BASE_URL}/run_watcher`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ api_key: apiKey, yaml_config: yamlOutput }),
+        body: JSON.stringify({ api_keys: apiKeys, yaml_config: yamlOutput }),
       });
 
       if (!response.ok) {
@@ -317,33 +489,37 @@ export default function Dashboard() {
   const downloadResultsCSV = () => {
     if (!results || !results.intents_data) return;
 
-    const headers = ['Intent ID', 'Prompt', 'Answer', 'Brand', 'Rank', 'Is Mine'];
+    const headers = ['Intent ID', 'Prompt', 'Model', 'Answer', 'Brand', 'Rank', 'Is Mine'];
     const rows = [headers.join(',')];
 
     results.intents_data.forEach((intent: any) => {
-      if (intent.mentions && intent.mentions.length > 0) {
-        intent.mentions.forEach((mention: any) => {
+      intent.answers.forEach((answer: any) => {
+        if (answer.mentions && answer.mentions.length > 0) {
+          answer.mentions.forEach((mention: any) => {
+            const row = [
+              `"${intent.intent_id}"`,
+              `"${intent.prompt.replace(/"/g, '""')}"`,
+              `"${answer.model}"`,
+              `"${answer.answer.replace(/"/g, '""')}"`,
+              `"${mention.brand}"`,
+              mention.rank || '',
+              mention.is_mine ? 'Yes' : 'No'
+            ];
+            rows.push(row.join(','));
+          });
+        } else {
           const row = [
-            `"${intent.intent_id}"`,
-            `"${intent.prompt.replace(/"/g, '""')}"`,
-            `"${intent.answer.replace(/"/g, '""')}"`,
-            `"${mention.brand}"`,
-            mention.rank || '',
-            mention.is_mine ? 'Yes' : 'No'
+              `"${intent.intent_id}"`,
+              `"${intent.prompt.replace(/"/g, '""')}"`,
+              `"${answer.model}"`,
+              `"${answer.answer.replace(/"/g, '""')}"`,
+              '',
+              '',
+              ''
           ];
           rows.push(row.join(','));
-        });
-      } else {
-        const row = [
-            `"${intent.intent_id}"`,
-            `"${intent.prompt.replace(/"/g, '""')}"`,
-            `"${intent.answer.replace(/"/g, '""')}"`,
-            '',
-            '',
-            ''
-        ];
-        rows.push(row.join(','));
-      }
+        }
+      });
     });
 
     const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
@@ -364,17 +540,21 @@ export default function Dashboard() {
 
     results.intents_data.forEach((intent: any) => {
       text += `Query: ${intent.prompt}\n`;
-      text += `ID: ${intent.intent_id}\n`;
-      text += `Answer:\n${intent.answer}\n\n`;
-      text += 'Mentions:\n';
-      if (intent.mentions && intent.mentions.length > 0) {
-        intent.mentions.forEach((mention: any) => {
-          text += `- ${mention.brand} (Rank: ${mention.rank || 'N/A'}) - ${mention.is_mine ? 'My Brand' : 'Competitor'}\n`;
-        });
-      } else {
-        text += 'No mentions found.\n';
-      }
-      text += '\n----------------------------------------\n\n';
+      text += `ID: ${intent.intent_id}\n\n`;
+      intent.answers.forEach((answer: any) => {
+        text += `Model: ${answer.model}\n`;
+        text += `Answer:\n${answer.answer}\n\n`;
+        text += 'Mentions:\n';
+        if (answer.mentions && answer.mentions.length > 0) {
+          answer.mentions.forEach((mention: any) => {
+            text += `- ${mention.brand} (Rank: ${mention.rank || 'N/A'}) - ${mention.is_mine ? 'My Brand' : 'Competitor'}\n`;
+          });
+        } else {
+          text += 'No mentions found.\n';
+        }
+        text += '\n';
+      });
+      text += '----------------------------------------\n\n';
     });
 
     const blob = new Blob([text], { type: 'text/plain' });
@@ -387,7 +567,9 @@ export default function Dashboard() {
   };
 
   const isConfigValid =
-    apiKey &&
+    (selectedProvider === 'both'
+      ? apiKeys.google && apiKeys.groq
+      : selectedProvider && apiKeys[selectedProvider]) &&
     myBrands.some((b) => b.trim()) &&
     intents.some((i) => i.id.trim() && i.prompt.trim());
 
@@ -454,47 +636,61 @@ export default function Dashboard() {
 
                 <div className="space-y-4">
                   {/* Provider Selection */}
-                  <div>
-                    <label className="label">Provider</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => handleProviderChange('google')}
-                        className={`p-3 rounded-xl border transition-all ${
-                          selectedProvider === 'google'
-                            ? 'bg-primary-500/20 border-primary-500 text-primary-300'
-                            : 'bg-navy-800/30 border-navy-700/50 text-navy-400 hover:border-navy-600'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 justify-center">
-                          <Sparkles className="w-4 h-4" />
-                          <span className="font-medium">Google Gemini</span>
-                        </div>
-                        <p className="text-xs mt-1 opacity-70">With web search</p>
-                      </button>
-                      <button
-                        onClick={() => handleProviderChange('groq')}
-                        className={`p-3 rounded-xl border transition-all ${
-                          selectedProvider === 'groq'
-                            ? 'bg-primary-500/20 border-primary-500 text-primary-300'
-                            : 'bg-navy-800/30 border-navy-700/50 text-navy-400 hover:border-navy-600'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 justify-center">
-                          <Zap className="w-4 h-4" />
-                          <span className="font-medium">Groq</span>
-                        </div>
-                        <p className="text-xs mt-1 opacity-70">Ultra-fast inference</p>
-                      </button>
-                    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <button
+                      onClick={() => handleProviderChange('google')}
+                      className={`p-3 rounded-xl border transition-all ${
+                        selectedProvider === 'google'
+                          ? 'bg-primary-500/20 border-primary-500 text-primary-300'
+                          : 'bg-navy-800/30 border-navy-700/50 text-navy-400 hover:border-navy-600'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 justify-center">
+                        <Sparkles className="w-4 h-4" />
+                        <span className="font-medium">Google Gemini</span>
+                      </div>
+                      <p className="text-xs mt-1 opacity-70">With web search</p>
+                    </button>
+                    <button
+                      onClick={() => handleProviderChange('groq')}
+                      className={`p-3 rounded-xl border transition-all ${
+                        selectedProvider === 'groq'
+                          ? 'bg-primary-500/20 border-primary-500 text-primary-300'
+                          : 'bg-navy-800/30 border-navy-700/50 text-navy-400 hover:border-navy-600'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 justify-center">
+                        <Zap className="w-4 h-4" />
+                        <span className="font-medium">Groq</span>
+                      </div>
+                      <p className="text-xs mt-1 opacity-70">Ultra-fast inference</p>
+                    </button>
+                    <button
+                      onClick={() => handleProviderChange('both')}
+                      className={`p-3 rounded-xl border transition-all ${
+                        selectedProvider === 'both'
+                          ? 'bg-accent-500/20 border-accent-500 text-accent-300'
+                          : 'bg-navy-800/30 border-navy-700/50 text-navy-400 hover:border-navy-600'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 justify-center">
+                        <Users className="w-4 h-4" />
+                        <span className="font-medium">Try Both</span>
+                      </div>
+                      <p className="text-xs mt-1 opacity-70">Compare models</p>
+                    </button>
                   </div>
 
+                {selectedProvider !== 'both' ? (
                   <div>
                     <label className="label">{selectedProvider === 'google' ? 'Gemini' : 'Groq'} API Key</label>
                     <div className="relative">
                       <input
                         type={showApiKey ? 'text' : 'password'}
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
+                        value={selectedProvider === 'google' ? apiKeys.google : apiKeys.groq}
+                        onChange={(e) =>
+                          setApiKeys({ ...apiKeys, [selectedProvider]: e.target.value })
+                        }
                         placeholder={selectedProvider === 'google' ? 'AIzaSy...' : 'gsk_...'}
                         className="input-field pr-12"
                       />
@@ -528,7 +724,32 @@ export default function Dashboard() {
                       )}
                     </p>
                   </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="label">Google Gemini API Key</label>
+                      <input
+                        type="password"
+                        value={apiKeys.google}
+                        onChange={(e) => setApiKeys({ ...apiKeys, google: e.target.value })}
+                        placeholder="AIzaSy..."
+                        className="input-field"
+                      />
+                    </div>
+                    <div>
+                      <label className="label">Groq API Key</label>
+                      <input
+                        type="password"
+                        value={apiKeys.groq}
+                        onChange={(e) => setApiKeys({ ...apiKeys, groq: e.target.value })}
+                        placeholder="gsk_..."
+                        className="input-field"
+                      />
+                    </div>
+                  </div>
+                )}
 
+                {selectedProvider !== 'both' ? (
                   <div>
                     <label className="label">Model</label>
                     <div className="relative">
@@ -549,26 +770,54 @@ export default function Dashboard() {
                       {availableModels.find((m) => m.id === selectedModel)?.description}
                     </p>
                   </div>
-
-                  {selectedProvider === 'google' && (
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => setEnableWebSearch(!enableWebSearch)}
-                        className={`relative w-12 h-6 rounded-full transition-colors ${
-                          enableWebSearch ? 'bg-primary-500' : 'bg-navy-700'
-                        }`}
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="label">Google Model</label>
+                      <select
+                        value={selectedGoogleModel}
+                        onChange={(e) => setSelectedGoogleModel(e.target.value)}
+                        className="input-field"
                       >
-                        <div
-                          className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-transform ${
-                            enableWebSearch ? 'translate-x-6' : 'translate-x-0.5'
-                          }`}
-                        />
-                      </button>
-                      <span className="text-sm text-navy-300">Enable Google Search grounding</span>
+                        {GEMINI_MODELS.map((model) => (
+                          <option key={model.id} value={model.id}>{model.name}</option>
+                        ))}
+                      </select>
                     </div>
-                  )}
-                </div>
-              </section>
+                    <div>
+                      <label className="label">Groq Model</label>
+                      <select
+                        value={selectedGroqModel}
+                        onChange={(e) => setSelectedGroqModel(e.target.value)}
+                        className="input-field"
+                      >
+                        {GROQ_MODELS.map((model) => (
+                          <option key={model.id} value={model.id}>{model.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {selectedProvider === 'google' && (
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setEnableWebSearch(!enableWebSearch)}
+                      className={`relative w-12 h-6 rounded-full transition-colors ${
+                        enableWebSearch ? 'bg-primary-500' : 'bg-navy-700'
+                      }`}
+                    >
+                      <div
+                        className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-transform ${
+                          enableWebSearch ? 'translate-x-6' : 'translate-x-0.5'
+                        }`}
+                      />
+                    </button>
+                    <span className="text-sm text-navy-300">Enable Google Search grounding</span>
+                  </div>
+                )}
+              </div>
+            </section>
 
               {/* Brands Section */}
               <section className="glass-card p-6">
@@ -780,7 +1029,11 @@ export default function Dashboard() {
                       <Brain className="w-4 h-4" /> Provider
                     </span>
                     <span className="text-sm text-navy-200 capitalize">
-                      {selectedProvider === 'google' ? 'Google Gemini' : 'Groq'}
+                      {selectedProvider === 'google'
+                        ? 'Google Gemini'
+                        : selectedProvider === 'groq'
+                          ? 'Groq'
+                          : 'Google Gemini & Groq'}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -828,74 +1081,117 @@ export default function Dashboard() {
             </div>
           </div>
         ) : (
-          /* Results Tab */
-          <div className="glass-card p-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-              <h2 className="text-2xl font-bold text-navy-200">
-                Search Results for Run: <span className="text-primary-400">{runId}</span>
-              </h2>
-              {results && results.intents_data && results.intents_data.length > 0 && (
-                <div className="flex gap-2">
-                  <button onClick={downloadResultsCSV} className="btn-secondary text-sm px-3 py-2" title="Download CSV">
-                    <Download className="w-4 h-4 mr-2 inline" /> CSV
-                  </button>
-                  <button onClick={downloadResultsJSON} className="btn-secondary text-sm px-3 py-2" title="Download JSON">
-                    <Code className="w-4 h-4 mr-2 inline" /> JSON
-                  </button>
-                  <button onClick={downloadResultsText} className="btn-secondary text-sm px-3 py-2" title="Download Text">
-                    <FileText className="w-4 h-4 mr-2 inline" /> TXT
-                  </button>
-                </div>
-              )}
-            </div>
+          <div className="glass-card p-8"> {/* Outer div for the Results Tab, acts as single root element */}
             {results && results.intents_data && results.intents_data.length > 0 ? (
+              <> {/* React Fragment to return multiple elements */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                  <h2 className="text-2xl font-bold text-navy-200">
+                    Search Results for Run: <span className="text-primary-400">{runId}</span>
+                  </h2>
+                  {results && results.intents_data && results.intents_data.length > 0 && (
+                    <div className="flex gap-2">
+                      <button onClick={downloadResultsCSV} className="btn-secondary text-sm px-3 py-2" title="Download CSV">
+                        <Download className="w-4 h-4 mr-2 inline" /> CSV
+                      </button>
+                      <button onClick={downloadResultsJSON} className="btn-secondary text-sm px-3 py-2" title="Download JSON">
+                        <Code className="w-4 h-4 mr-2 inline" /> JSON
+                      </button>
+                      <button onClick={downloadResultsText} className="btn-secondary text-sm px-3 py-2" title="Download Text">
+                        <FileText className="w-4 h-4 mr-2 inline" /> TXT
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <div className="space-y-8">
-                    {results.intents_data.map((intentResult: any) => (
-                        <div key={intentResult.intent_id} className="p-6 bg-navy-800/20 rounded-2xl border border-navy-700/40 hover:border-navy-600/60 transition-colors">
-                            <div className="flex items-start gap-4 mb-4">
-                              <div className="w-8 h-8 rounded-lg bg-primary-500/20 flex items-center justify-center shrink-0">
-                                <MessageSquare className="w-4 h-4 text-primary-400" />
-                              </div>
-                              <h3 className="font-bold text-xl text-navy-100">{intentResult.prompt}</h3>
-                            </div>
+                  {results.intents_data.map((intentResult: any) => (
+                    <div key={intentResult.intent_id} className="p-6 bg-navy-800/20 rounded-2xl border border-navy-700/40 hover:border-navy-600/60 transition-colors">
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className="w-8 h-8 rounded-lg bg-primary-500/20 flex items-center justify-center shrink-0">
+                          <MessageSquare className="w-4 h-4 text-primary-400" />
+                        </div>
+                        <h3 className="font-bold text-xl text-navy-100">{intentResult.prompt}</h3>
+                      </div>
 
-                            <div className="bg-navy-900/40 rounded-xl p-5 mb-6 border border-navy-800/50">
-                                <FormattedAnswer text={intentResult.answer} mentions={intentResult.mentions} />
-                            </div>
-
-                            <div>
+                      {selectedProvider === 'both' ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {intentResult.answers.map((answer: any, index: number) => (
+                            <div key={index} className="bg-navy-900/40 rounded-xl p-5 border border-navy-800/50">
+                              <h4 className="font-bold text-lg text-primary-300 mb-3">{answer.model}</h4>
+                              <FormattedAnswer text={answer.answer} mentions={answer.mentions} />
+                              <div className="mt-4">
                                 <div className="flex items-center gap-2 mb-3">
                                   <Target className="w-4 h-4 text-accent-400" />
                                   <h4 className="font-semibold text-navy-400 text-sm uppercase tracking-wider">Detected Mentions</h4>
                                 </div>
                                 <div className="flex flex-wrap gap-3">
-                                    {intentResult.mentions && intentResult.mentions.length > 0 ? (
-                                      intentResult.mentions.map((mention: any, index: number) => (
-                                          <div key={index} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
-                                            mention.is_mine
-                                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                                              : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                                  {answer.mentions && answer.mentions.length > 0 ? (
+                                    answer.mentions.map((mention: any, mIndex: number) => (
+                                      <div key={mIndex} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
+                                        mention.is_mine
+                                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                                          : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                                      }`}>
+                                        <span className="font-medium">{mention.brand}</span>
+                                        {mention.rank && (
+                                          <span className={`text-xs px-1.5 py-0.5 rounded ${
+                                            mention.is_mine ? 'bg-emerald-500/20' : 'bg-rose-500/20'
                                           }`}>
-                                              <span className="font-medium">{mention.brand}</span>
-                                              {mention.rank && (
-                                                <span className={`text-xs px-1.5 py-0.5 rounded ${
-                                                  mention.is_mine ? 'bg-emerald-500/20' : 'bg-rose-500/20'
-                                                }`}>
-                                                  #{mention.rank}
-                                                </span>
-                                              )}
-                                          </div>
-                                      ))
-                                    ) : (
-                                      <span className="text-sm text-navy-500 italic text-center w-full py-2 bg-navy-900/20 rounded-lg border border-dashed border-navy-800">
-                                        No brand mentions detected in this answer
+                                            #{mention.rank}
+                                          </span>
+                                        )}
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <span className="text-sm text-navy-500 italic text-center w-full py-2 bg-navy-900/20 rounded-lg border border-dashed border-navy-800">
+                                      No brand mentions detected
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="bg-navy-900/40 rounded-xl p-5 mb-6 border border-navy-800/50">
+                          <FormattedAnswer text={intentResult.answers[0].answer} mentions={intentResult.answers[0].mentions} />
+                          <div className="mt-4">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Target className="w-4 h-4 text-accent-400" />
+                              <h4 className="font-semibold text-navy-400 text-sm uppercase tracking-wider">Detected Mentions</h4>
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                              {intentResult.answers[0].mentions && intentResult.answers[0].mentions.length > 0 ? (
+                                intentResult.answers[0].mentions.map((mention: any, mIndex: number) => (
+                                  <div key={mIndex} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
+                                    mention.is_mine
+                                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                                      : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                                  }`}>
+                                    <span className="font-medium">{mention.brand}</span>
+                                    {mention.rank && (
+                                      <span className={`text-xs px-1.5 py-0.5 rounded ${
+                                        mention.is_mine ? 'bg-emerald-500/20' : 'bg-rose-500/20'
+                                      }`}>
+                                        #{mention.rank}
                                       </span>
                                     )}
-                                </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <span className="text-sm text-navy-500 italic text-center w-full py-2 bg-navy-900/20 rounded-lg border border-dashed border-navy-800">
+                                  No brand mentions detected
+                                </span>
+                              )}
                             </div>
+                          </div>
                         </div>
-                    ))}
+                      )}
+                    </div>
+                  ))}
                 </div>
+                {selectedProvider === 'both' && <StatsComparison results={results} />}
+                <TokenUsageStats results={results} selectedProvider={selectedProvider} selectedGoogleModel={selectedGoogleModel} selectedGroqModel={selectedGroqModel} />
+              </>
             ) : results && results.intents_data && results.intents_data.length === 0 ? (
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-900/30 flex items-center justify-center">
