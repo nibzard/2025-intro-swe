@@ -39,3 +39,5 @@ Aplikacija:
 - omogućava ravnotežu poslovnog i privatnog života  
 - pruža jasno i lako razumljivo sučelje  
 - omogućuje AI optimizaciju vremenskih obaveza
+
+-update sa AI-om
