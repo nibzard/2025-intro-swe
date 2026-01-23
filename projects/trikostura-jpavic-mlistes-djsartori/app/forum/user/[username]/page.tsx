@@ -10,6 +10,13 @@ import { SendMessageButton } from '@/components/messages/send-message-button';
 import { FollowButton } from '@/components/user/follow-button';
 import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { getFollowStatus } from '../actions';
+<<<<<<< HEAD
+=======
+import { getUserAchievements, checkAndAwardAchievements } from '@/lib/achievements';
+import { BadgeShowcaseComponent } from '@/components/gamification/badge-showcase';
+import { ActivityCalendar } from '@/components/gamification/activity-calendar';
+import { StatsDashboard } from '@/components/gamification/stats-dashboard';
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 
 interface PageProps {
   params: Promise<{ username: string }>;
@@ -23,8 +30,13 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
+<<<<<<< HEAD
 // Disable caching for profile pages to always show latest data
 export const revalidate = 0;
+=======
+// Cache profile pages for 1 minute for better performance
+export const revalidate = 60;
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 
 export default async function Page({ params }: PageProps) {
   const { username } = await params;
@@ -48,15 +60,28 @@ export default async function Page({ params }: PageProps) {
 
   const isOwnProfile = user?.id === profile.id;
 
+<<<<<<< HEAD
   // Run all profile data queries in parallel
   const [
     followStatus,
     { data: topicsData },
     { data: repliesData }
+=======
+  // Get all data in minimal parallel queries
+  const [
+    followStatus,
+    { data: topics },
+    { data: replies },
+    achievements,
+    { data: activityData },
+    { count: totalTopics },
+    { count: totalReplies }
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
   ] = await Promise.all([
     !isOwnProfile && user
       ? getFollowStatus(profile.id)
       : Promise.resolve({ isFollowing: false }),
+<<<<<<< HEAD
     supabase
       .from('topics')
       .select('*')
@@ -69,10 +94,46 @@ export default async function Page({ params }: PageProps) {
       .eq('author_id', profile.id)
       .order('created_at', { ascending: false })
       .limit(10)
+=======
+    // Topics with category in ONE query
+    supabase
+      .from('topics')
+      .select('*, category:categories(id, name, slug, color)')
+      .eq('author_id', profile.id)
+      .order('created_at', { ascending: false })
+      .limit(10),
+    // Replies with topic in ONE query
+    supabase
+      .from('replies')
+      .select('*, topic:topics(id, title, slug)')
+      .eq('author_id', profile.id)
+      .order('created_at', { ascending: false })
+      .limit(10),
+    // Check and award achievements BEFORE returning (blocking)
+    checkAndAwardAchievements(profile.id).then(() => 
+      getUserAchievements(profile.id)
+    ),
+    supabase
+      .from('user_activity')
+      .select('activity_date, topics_count, replies_count')
+      .eq('user_id', profile.id)
+      .order('activity_date', { ascending: false })
+      .limit(365), // Only last year for performance
+    // Count queries are cheap
+    supabase
+      .from('topics')
+      .select('*', { count: 'exact', head: true })
+      .eq('author_id', profile.id),
+    supabase
+      .from('replies')
+      .select('*', { count: 'exact', head: true })
+      .eq('author_id', profile.id)
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
   ]);
 
   const { isFollowing } = followStatus;
 
+<<<<<<< HEAD
   // Get categories for topics and topics for replies in parallel
   const categoryIds = topicsData ? [...new Set(topicsData.map((t: any) => t.category_id))] : [];
   const topicIds = repliesData ? [...new Set(repliesData.map((r: any) => r.topic_id))] : [];
@@ -112,10 +173,107 @@ export default async function Page({ params }: PageProps) {
   // Calculate statistics
   const topicCount = topics?.length || 0;
   const replyCount = replies?.length || 0;
+=======
+  // Calculate statistics from limited data
+  const topicCount = totalTopics || 0;
+  const replyCount = totalReplies || 0;
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 
   const profileColor = profile.profile_color || '#3B82F6';
   const skills = profile.skills ? profile.skills.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
 
+<<<<<<< HEAD
+=======
+  // Process activity data for calendar
+  const activity = activityData?.map((a: any) => ({
+    date: a.activity_date,
+    count: a.topics_count + a.replies_count,
+  })) || [];
+
+  // Calculate streaks
+  const calculateStreak = (dates: string[]): number => {
+    if (dates.length === 0) return 0;
+    const sortedDates = dates.sort().reverse();
+    let streak = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < sortedDates.length; i++) {
+      const expectedDate = new Date(today);
+      expectedDate.setDate(expectedDate.getDate() - i);
+      const expectedDateStr = expectedDate.toISOString().split('T')[0];
+
+      if (sortedDates[i] === expectedDateStr) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+
+    return streak;
+  };
+
+  const calculateLongestStreak = (dates: string[]): number => {
+    if (dates.length === 0) return 0;
+    const sortedDates = [...new Set(dates)].sort();
+    let longestStreak = 1;
+    let currentStreak = 1;
+
+    for (let i = 1; i < sortedDates.length; i++) {
+      const prevDate = new Date(sortedDates[i - 1]);
+      const currDate = new Date(sortedDates[i]);
+      const diffTime = currDate.getTime() - prevDate.getTime();
+      const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+      if (diffDays === 1) {
+        currentStreak++;
+        longestStreak = Math.max(longestStreak, currentStreak);
+      } else {
+        currentStreak = 1;
+      }
+    }
+
+    return longestStreak;
+  };
+
+  const activityDates = activityData?.map((a: any) => a.activity_date) || [];
+  const currentStreak = calculateStreak(activityDates);
+  const longestStreak = calculateLongestStreak(activityDates);
+
+  // Calculate lightweight stats from limited data
+  const totalViews = topics?.reduce((sum: number, t: any) => sum + (t.view_count || 0), 0) || 0;
+  const totalUpvotes = replies?.reduce((sum: number, r: any) => sum + (r.upvotes || 0), 0) || 0;
+  const solutionsMarked = replies?.filter((r: any) => r.is_solution).length || 0;
+
+  // Topics by category (from limited set)
+  const topicsByCategoryMap = new Map<string, { category: string; color: string; count: number }>();
+  topics?.forEach((topic: any) => {
+    const catId = topic.category?.id;
+    if (catId) {
+      const existing = topicsByCategoryMap.get(catId);
+      if (existing) {
+        existing.count++;
+      } else {
+        topicsByCategoryMap.set(catId, {
+          category: topic.category.name,
+          color: topic.category.color,
+          count: 1
+        });
+      }
+    }
+  });
+
+  const topicsByCategory = Array.from(topicsByCategoryMap.values())
+    .sort((a, b) => b.count - a.count);
+
+  const stats = {
+    totalViews,
+    totalUpvotes,
+    solutionsMarked,
+    topicsByCategory,
+  };
+
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
   // Calculate user level based on reputation
   const reputation = profile.reputation || 0;
   const level = Math.floor(reputation / 100) + 1;
@@ -491,6 +649,25 @@ export default async function Page({ params }: PageProps) {
         </CardContent>
       </Card>
 
+<<<<<<< HEAD
+=======
+      {/* Gamification Components */}
+      <div className="space-y-6">
+        {/* Activity Calendar */}
+        <ActivityCalendar
+          activity={activity}
+          currentStreak={currentStreak}
+          longestStreak={longestStreak}
+        />
+
+        {/* Stats Dashboard */}
+        <StatsDashboard stats={stats} />
+
+        {/* Badge Showcase */}
+        <BadgeShowcaseComponent achievements={achievements} />
+      </div>
+
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Recent Topics */}
         <Card className="border-2 border-gray-100 dark:border-gray-800 shadow-xl hover:shadow-2xl transition-shadow">

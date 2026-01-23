@@ -260,6 +260,7 @@ This installs additional tools:
 - **mkdocs** - Documentation builder
 - **mkdocs-material** - Material theme for MkDocs
 
+<<<<<<< HEAD
 ## Docker Installation (Optional)
 
 For containerized deployment:
@@ -290,6 +291,75 @@ docker build -t llm-answer-watcher .
 docker run -e OPENAI_API_KEY=$OPENAI_API_KEY \
            -v $(pwd)/output:/app/output \
            llm-answer-watcher run --config config.yaml
+=======
+## Docker Installation (Recommended)
+
+The easiest way to run LLM Answer Watcher is with Docker. This starts both the API server and web interface.
+
+### Quick Start with Docker Compose
+
+```bash
+# Clone the repository
+git clone https://github.com/nibzard/llm-answer-watcher.git
+cd llm-answer-watcher
+
+# Build and start both services
+docker-compose up --build
+
+# Or run in background (detached mode)
+docker-compose up -d --build
+```
+
+After startup:
+
+- **Web UI**: [http://localhost:3000](http://localhost:3000)
+- **API Server**: [http://localhost:8000](http://localhost:8000)
+
+### Stopping the Services
+
+```bash
+# Stop all services
+docker-compose down
+
+# Stop and remove volumes (clears data)
+docker-compose down -v
+```
+
+### Docker Architecture
+
+The Docker setup includes two services:
+
+| Service | Port | Description |
+|---------|------|-------------|
+| `backend` | 8000 | FastAPI server for LLM queries |
+| `web-ui` | 3000 | React web interface |
+
+### Data Persistence
+
+Results and the SQLite database are persisted in the `./output` directory, which is mounted as a volume:
+
+```yaml
+volumes:
+  - ./output:/app/output
+```
+
+### Building Individual Images
+
+If you need to build images separately:
+
+```bash
+# Build backend only
+docker build -t llm-watcher-backend .
+
+# Build web-ui only
+docker build -t llm-watcher-ui ./web-ui
+
+# Run backend standalone
+docker run -p 8000:8000 -v $(pwd)/output:/app/output llm-watcher-backend
+
+# Run web-ui standalone (requires backend running)
+docker run -p 3000:80 llm-watcher-ui
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 ```
 
 ## Troubleshooting

@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
+<<<<<<< HEAD
       "Bash(npm run build:*)"
+=======
+      "Bash(npm run build:*)",
+      "Bash(gemini --help:*)",
+      "Bash(where:*)"
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
     ],
     "deny": [],
     "ask": []

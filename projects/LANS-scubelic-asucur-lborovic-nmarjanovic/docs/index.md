@@ -7,15 +7,23 @@
 [![Tests](https://github.com/nibzard/llm-answer-watcher/workflows/Tests/badge.svg)](https://github.com/nibzard/llm-answer-watcher/actions/workflows/test.yml)
 [![Coverage](https://codecov.io/gh/nibzard/llm-answer-watcher/branch/main/graph/badge.svg)](https://codecov.io/gh/nibzard/llm-answer-watcher)
 
+<<<<<<< HEAD
 **Monitor how Large Language Models talk about your brand versus competitors in buyer-intent queries**
 
 [Get Started](getting-started/quick-start.md){ .md-button .md-button--primary }
 [View on GitHub](https://github.com/nibzard/llm-answer-watcher){ .md-button }
+=======
+**Pratite kako veliki jezični modeli govore o vašem brendu u usporedbi s konkurencijom.**
+
+[Započnite (Engleski)](getting-started/quick-start.md){ .md-button .md-button--primary }
+[Pogledaj na GitHub-u](https://github.com/nibzard/llm-answer-watcher){ .md-button }
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 
 </div>
 
 ---
 
+<<<<<<< HEAD
 ## What is LLM Answer Watcher?
 
 LLM Answer Watcher is a production-ready CLI tool that helps you understand how AI models like ChatGPT, Claude, and others represent your brand when users ask buyer-intent questions.
@@ -45,6 +53,53 @@ See LLM Answer Watcher in action:
 - Cost tracking and results summary
 
 **Try it yourself:** Run `llm-answer-watcher demo` for an interactive demo (no API keys needed!)
+=======
+## Što je LLM Answer Watcher?
+
+LLM Answer Watcher je CLI alat koji vam pomaže razumjeti kako AI modeli poput ChatGPT-a, Claude-a i drugih predstavljaju vaš brend kada korisnici postavljaju pitanja s namjerom kupnje.
+
+Kako pretraga potpomognuta umjetnom inteligencijom postaje sveprisutna, praćenje prisutnosti vašeg brenda u odgovorima LLM-a ključno je za:
+
+- **Vidljivost brenda**: Pratite pojavljuje li se vaš proizvod u preporukama umjetne inteligencije.
+- **Konkurentska analiza**: Pogledajte koji se konkurenti spominju uz vas.
+- **Pozicioniranje na tržištu**: Shvatite svoj rang u usporedbi s alternativama.
+- **Analiza trendova**: Povijesni podaci pokazuju kako se vaša prisutnost mijenja tijekom vremena.
+
+## Brzi početak na hrvatskom
+
+### 1. Instalacija
+
+Otvorite terminal i instalirajte potrebne pakete:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Konfiguracija
+
+Kopirajte primjer konfiguracijske datoteke:
+
+```bash
+cp examples/default.config.yaml moja-konfiguracija.yaml
+```
+
+Uredite `moja-konfiguracija.yaml` i definirajte svoje brendove, konkurente i upite koje želite pratiti. Ne zaboravite postaviti svoje API ključeve kao varijable okruženja.
+
+Na primjer, za Google Gemini:
+```bash
+export GEMINI_API_KEY="vas-api-kljuc"
+```
+
+### 3. Pokretanje
+
+Pokrenite praćenje pomoću svoje konfiguracijske datoteke:
+
+```bash
+llm-answer-watcher run --config moja-konfiguracija.yaml
+```
+
+Rezultati će biti spremljeni u `output` direktorij, uključujući HTML izvještaj i SQLite bazu podataka.
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 
 ---
 

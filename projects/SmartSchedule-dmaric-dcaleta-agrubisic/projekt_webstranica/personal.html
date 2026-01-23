@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="hr">
 <head>
@@ -108,3 +109,151 @@ document.querySelectorAll(".nav-links a").forEach(a => {
 
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <title>SmartSchedule – Osobni Raspored</title>
+    <link rel="stylesheet" href="global.css">
+</head>
+
+<body>
+
+<!-- TOP NAVIGATION -->
+<div class="topnav" style="position:relative;">
+
+    <!-- LOGO LEFT -->
+    <div class="logo-box">
+        <div class="logo-icon">SS</div>
+        <div class="logo-text">SmartSchedule</div>
+    </div>
+
+    <!-- CENTERED NAVIGATION -->
+    <div class="nav-links" style="
+        position:absolute;
+        left:50%;
+        transform:translateX(-50%);
+    ">
+        <a href="index.html" data-link="index">Početna</a>
+        <a href="dashboard.html" data-link="dashboard">Dashboard</a>
+
+    </div>
+
+    <!-- USER AREA -->
+    <div id="userArea" style="position:absolute; right:12px; top:12px;"></div>
+</div>
+
+
+<script>
+/* OGRANIČENJE NAVIGACIJE – samo index + trenutna + prethodna */
+const currentPage = document.location.pathname.split("/").pop().replace(".html","");
+
+/* Hijerarhija kretanja */
+const steps = ["index","dashboard","personal","create","final"];
+
+/* Nađi index trenutne stranice */
+const currentIndex = steps.indexOf(currentPage);
+
+/* Prođi kroz sve linkove */
+document.querySelectorAll(".nav-links a").forEach(a => {
+    const page = a.getAttribute("data-link");
+    const pageIndex = steps.indexOf(page);
+
+    /* Pravilo: dopušteno ako je <= currentIndex */
+    if (pageIndex <= currentIndex) {
+        // dopušteno
+        a.style.pointerEvents = "auto";
+        a.style.opacity = "1";
+    } else {
+        // zaključano
+        a.style.pointerEvents = "none";
+        a.style.opacity = "0.35";
+    }
+});
+</script>
+
+
+<div class="container" style="display:flex; gap:30px; margin-top:40px;">
+
+    <!-- SIDEBAR: LISTA SUDIONIKA -->
+    <div class="card" style="width:260px; flex-shrink:0;">
+        <h2>Sudionici</h2>
+        <p style="color:var(--text-soft); margin-top:8px;">Popis korisnika koji su pristupili rasporedu</p>
+
+        <ul style="margin-top:20px; padding-left:18px;">
+            <li>Ti (vlasnik)</li>
+        </ul>
+
+        <div style="margin-top:25px;">
+            <p style="color:var(--text-soft);">Šifra rasporeda:</p>
+            <div class="card" style="padding:14px; margin-top:5px; text-align:center;">
+                <strong>A9F3D2</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN: KALENDAR -->
+    <div style="flex:1;">
+        <h1>Kalendar 2025.</h1>
+        <p style="color:var(--text-soft); margin-top:6px;">Kliknite bilo koji mjesec za unos slobodnog vremena</p>
+
+        <!-- GRID MJESECI -->
+        <div class="month-grid">
+
+            <div class="month-box" data-month="0">Siječanj</div>
+            <div class="month-box" data-month="1">Veljača</div>
+            <div class="month-box" data-month="2">Ožujak</div>
+            <div class="month-box" data-month="3">Travanj</div>
+            <div class="month-box" data-month="4">Svibanj</div>
+            <div class="month-box" data-month="5">Lipanj</div>
+            <div class="month-box" data-month="6">Srpanj</div>
+            <div class="month-box" data-month="7">Kolovoz</div>
+            <div class="month-box" data-month="8">Rujan</div>
+            <div class="month-box" data-month="9">Listopad</div>
+            <div class="month-box" data-month="10">Studeni</div>
+            <div class="month-box" data-month="11">Prosinac</div>
+
+        </div>
+
+        <button id="personalAiBtn" class="btn" style="margin-top:30px;">AI – Pronađi najbolje vrijeme</button>
+        <div id="personalAiResult" style="margin-top:10px; color:var(--text-soft);"></div>
+    </div>
+
+</div>
+
+<script src="auth.js"></script>
+<script src="personal.js"></script>
+<script>
+// require login
+const user = ssAuth.requireAuth('index.html');
+// show in participants list
+const ul = document.querySelector('.card ul');
+if (ul) {
+    ul.innerHTML = `<li><strong>${user.name}</strong> (vi)</li>` + ul.innerHTML;
+}
+// show user area
+const ua = document.getElementById('userArea');
+if (ua) ua.innerHTML = `<span style="color:var(--text-soft); margin-right:10px;">${user.name}</span> <button class="btn-gray" onclick="ssAuth.logout(); location.href='index.html';">Odjava</button>`;
+
+// attach month click handlers
+document.querySelectorAll('.month-box').forEach(el=>{
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', ()=>{
+        const mi = parseInt(el.dataset.month, 10);
+        ssPersonal.openMonthEditor(mi);
+    });
+});
+
+// AI button
+document.getElementById('personalAiBtn').addEventListener('click', ()=>{
+    const rec = ssPersonal.aiRecommendForPersonal(user.id);
+    const el = document.getElementById('personalAiResult');
+    if (!rec || !rec.length) el.innerText = 'Nema preporuka';
+    else el.innerHTML = rec.map(r=>`• Preporučeno: ${r.day}. ${r.month}.`).join('<br>');
+});
+</script>
+
+</body>
+</html>
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42

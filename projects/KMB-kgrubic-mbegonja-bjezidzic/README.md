@@ -39,21 +39,36 @@ onda će korisnici lakše:
 
 TuneBuddy je web aplikacija koja povezuje korisnike na temelju njihovog glazbenog ukusa te im preporučuje događaje poput koncerata i festivala u njihovoj blizini.
 
+<<<<<<< HEAD
 Korisnik se registrira (e-mail ili GitHub login), unosi svoje preferirane izvođače i žanrove, a aplikacija pomoću jednostavnog algoritma uspoređuje podatke s drugim korisnicima. Rezultat je lista korisnika sa sličnim glazbenim ukusom — tzv. „matchani korisnici“.
 
 TuneBuddy također koristi geolokaciju kako bi korisniku prikazao događaje u okolici i omogućio stvaranje novih društvenih kontakata. Osim pregleda događaja i korisnika, aplikacija uključuje chat sustav koji omogućuje jednostavnu komunikaciju između matchanih korisnika.
+=======
+Korisnik se registrira (e-mail), unosi svoje preferirane izvođače i žanrove, a aplikacija pomoću jednostavnog algoritma uspoređuje podatke s drugim korisnicima. Rezultat je lista korisnika sa sličnim glazbenim ukusom — tzv. „matchani korisnici“.
+
+TuneBuddy također, na temelju unesene lokacije, korisniku prikazuje događaje u okolici i omogućava stvaranje novih društvenih kontakata. Osim pregleda događaja i korisnika, aplikacija uključuje chat sustav koji omogućuje jednostavnu komunikaciju između matchanih korisnika.
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 
 Cilj projekta je stvoriti digitalnu platformu u kojoj glazba postaje sredstvo upoznavanja, povezivanja i otkrivanja novih iskustava.
 
 
 ## Ključne funkcionalnosti
 
+<<<<<<< HEAD
 - Registracija i prijava korisnika (e-mail ili GitHub)
 - Unos omiljenih izvođača i glazbenih žanrova
 - Algoritam za preporuku korisnika sa sličnim ukusom
 - Prikaz korisnika u blizini (geolokacija)
 - Preporuke koncerata i festivala (Ticketmaster API)
 - Prikaz informacija o izvođačima (Spotify API)
+=======
+- Registracija i prijava korisnika (e-mail)
+- Unos omiljenih izvođača, glazbenih žanrova, lokacije te kratkog opisa
+- Algoritam za preporuku korisnika sa sličnim ukusom
+- Prikaz korisnika u blizini
+- Preporuke koncerata i festivala
+- Prikaz informacija o izvođačima
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 - Chat s „matchanim“ korisnicima
 - Moderan, responzivan UI u Reactu
 

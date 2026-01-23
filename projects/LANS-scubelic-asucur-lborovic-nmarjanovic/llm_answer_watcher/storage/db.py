@@ -32,7 +32,11 @@ from ..utils.time import utc_timestamp
 logger = logging.getLogger(__name__)
 
 # Current schema version - increment when migrations are added
+<<<<<<< HEAD
 CURRENT_SCHEMA_VERSION = 5
+=======
+CURRENT_SCHEMA_VERSION = 6
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 
 
 def init_db_if_needed(db_path: str) -> None:
@@ -194,6 +198,11 @@ def apply_migrations(
                 _migrate_to_v4(conn)
             elif target_version == 5:
                 _migrate_to_v5(conn)
+<<<<<<< HEAD
+=======
+            elif target_version == 6:
+                _migrate_to_v6(conn)
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
             # Future migrations go here:
             # elif target_version == 6:
             #     _migrate_to_v6(conn)
@@ -657,6 +666,37 @@ def _migrate_to_v5(conn: sqlite3.Connection) -> None:
     logger.debug("Added browser runner metadata columns to answers_raw (schema v5)")
 
 
+<<<<<<< HEAD
+=======
+def _migrate_to_v6(conn: sqlite3.Connection) -> None:
+    """
+    Migrate database schema to version 6.
+
+    Adds run_insights table to store AI-generated executive summaries/insights
+    for the entire run. This enables displaying a "Conclusion" section
+    in the UI.
+
+    Args:
+        conn: Active SQLite database connection
+    """
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS run_insights (
+            run_id TEXT PRIMARY KEY,
+            insight_text TEXT NOT NULL,
+            model_provider TEXT NOT NULL,
+            model_name TEXT NOT NULL,
+            input_tokens INTEGER NOT NULL DEFAULT 0,
+            output_tokens INTEGER NOT NULL DEFAULT 0,
+            cost_usd REAL NOT NULL DEFAULT 0.0,
+            timestamp_utc TEXT NOT NULL,
+            FOREIGN KEY (run_id) REFERENCES runs(run_id)
+        )
+    """)
+    
+    logger.debug("Created run_insights table (schema v6)")
+
+
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 # ============================================================================
 # Database Operations (CRUD)
 # ============================================================================
@@ -1554,3 +1594,77 @@ def get_run_summary(conn: sqlite3.Connection, run_id: str) -> dict | None:
         "total_models": row[3],
         "total_cost_usd": row[4],
     }
+<<<<<<< HEAD
+=======
+
+
+def insert_run_insight(
+    conn: sqlite3.Connection,
+    run_id: str,
+    insight_text: str,
+    model_provider: str,
+    model_name: str,
+    input_tokens: int,
+    output_tokens: int,
+    cost_usd: float,
+    timestamp_utc: str,
+) -> None:
+    """
+    Insert a run insight record.
+    """
+    conn.execute(
+        """
+        INSERT OR REPLACE INTO run_insights (
+            run_id,
+            insight_text,
+            model_provider,
+            model_name,
+            input_tokens,
+            output_tokens,
+            cost_usd,
+            timestamp_utc
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            run_id,
+            insight_text,
+            model_provider,
+            model_name,
+            input_tokens,
+            output_tokens,
+            cost_usd,
+            timestamp_utc,
+        ),
+    )
+    logger.debug(f"Inserted insight for run {run_id}")
+
+
+def get_run_insight(conn: sqlite3.Connection, run_id: str) -> dict | None:
+    """
+    Retrieve the insight for a run.
+    """
+    cursor = conn.execute(
+        """
+        SELECT
+            insight_text,
+            model_provider,
+            model_name,
+            cost_usd,
+            timestamp_utc
+        FROM run_insights
+        WHERE run_id = ?
+        """,
+        (run_id,),
+    )
+    row = cursor.fetchone()
+    if row is None:
+        return None
+        
+    return {
+        "insight_text": row[0],
+        "model_provider": row[1],
+        "model_name": row[2],
+        "cost_usd": row[3],
+        "timestamp_utc": row[4],
+    }
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42

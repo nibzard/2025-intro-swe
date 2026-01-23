@@ -29,7 +29,10 @@ export default async function BookmarksPage() {
     .order('created_at', { ascending: false });
 
   if (bookmarkError) {
+<<<<<<< HEAD
     console.error('Bookmarks query error:', bookmarkError);
+=======
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
@@ -45,8 +48,13 @@ export default async function BookmarksPage() {
         </div>
         <Card>
           <CardContent className="p-6">
+<<<<<<< HEAD
             <p className="text-red-600 font-mono text-sm">
               {bookmarkError.message || 'Nepoznata greška'}
+=======
+            <p className="text-red-600 text-sm">
+              Došlo je do greške prilikom učitavanja vaših oznaka. Molimo pokušajte ponovno kasnije.
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
             </p>
           </CardContent>
         </Card>
@@ -54,10 +62,18 @@ export default async function BookmarksPage() {
     );
   }
 
+<<<<<<< HEAD
   // If no bookmarks, return early
   if (!bookmarkData || bookmarkData.length === 0) {
     const bookmarks = [];
   } else {
+=======
+  // Initialize bookmarks array
+  let bookmarks: any[] = [];
+
+  // If we have bookmark data, fetch the related topics
+  if (bookmarkData && bookmarkData.length > 0) {
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
     // Get topic IDs
     const topicIds = bookmarkData.map((b: any) => b.topic_id);
 
@@ -78,14 +94,22 @@ export default async function BookmarksPage() {
       .in('id', topicIds);
 
     // Combine bookmarks with topics
+<<<<<<< HEAD
     var bookmarks = bookmarkData.map((bookmark: any) => ({
+=======
+    bookmarks = bookmarkData.map((bookmark: any) => ({
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
       ...bookmark,
       topics: topicsData?.find((topic: any) => topic.id === bookmark.topic_id)
     })).filter((bookmark: any) => bookmark.topics); // Only keep bookmarks with valid topics
   }
 
   // Count valid bookmarks
+<<<<<<< HEAD
   const validBookmarksCount = bookmarks?.length || 0;
+=======
+  const validBookmarksCount = bookmarks.length;
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 
   return (
     <div className="space-y-6">

@@ -6,6 +6,10 @@
       "dom.iterable",
       "esnext"
     ],
+<<<<<<< HEAD
+=======
+    "types": [],
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,

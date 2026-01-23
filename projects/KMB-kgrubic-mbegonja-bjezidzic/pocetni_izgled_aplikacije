@@ -1,0 +1,115 @@
+# Početni izgled aplikacije
+
+U nastavku su prikazani svi glavni ekrani aplikacije koje smo do sada osmislile, svaki s kratkim opisom i pripadajućom slikom.
+
+---
+
+## 🟪 Prijava korisnika
+Ekran za prijavu u aplikaciju pomoću e-maila i lozinke.
+
+![Prijava](SLIKE_EKRANA/prijava.png)
+
+---
+
+## 🟪 Registracija korisnika
+Ekran za stvaranje novog korisničkog računa.
+
+![Registracija](SLIKE_EKRANA/registracija.png)
+
+---
+
+## 🟦 Profil korisnika
+Upis osnovnih informacija korisnika i kratkog opisa preferenci.
+
+![Profil korisnika](SLIKE_EKRANA/opis.png)
+
+---
+
+## 🟧 Pregled interesnih preferencija
+Stranica na kojoj korisnik definira svoje preferencije (najdraži izvođaći i žanrovi).
+
+![Preference](SLIKE_EKRANA/preference.png)
+
+---
+
+## 🟦 Matchevi
+Stranica koja prikazuje korisnike s kojima je ostvareno podudaranje.
+
+![Matchevi](SLIKE_EKRANA/matchevi.png)
+
+---
+
+## 🟫 Informacije o događajima
+Informacije preferenci o matchanoj osobi.
+
+![Info](SLIKE_EKRANA/info.png)
+
+---
+
+## 🟩 Chat (verzija 1)
+Osnovni chat prikaz.
+
+![Prazan chat](SLIKE_EKRANA/chat1.png)
+
+---
+
+## 🟩 Chat (verzija 2)
+Druga verzija chat ekrana — moguće s različitim prikazom poruka ili dodatnim opcijama.
+
+![Chat s osobom](SLIKE_EKRANA/chat2.png)
+
+---
+
+## 🟨 Pregled koncerata (verzija 1)
+Prvi prikaz dostupnih koncerata. Detaljni opis događaja ili koncerata.
+
+![Koncerti1](SLIKE_EKRANA/koncerti1.png)
+
+---
+
+## 🟨 Pregled koncerata (verzija 2)
+Prikaz dostupnih koncerata. Detaljni opis događaja ili koncerata.
+
+![Koncerti2](SLIKE_EKRANA/koncerti2.png)
+
+---
+
+## 🟪 Zainteresirani korisnici
+Prikaz gumba koji omogućuje povezivanje s osobama koje su zainteresirane za isti događaj.
+
+![Zainteresirani](SLIKE_EKRANA/zainteresirana.png)
+
+---
+
+## 🟦 Ulaznice
+Pregled dostupnih ulaznica ili već kupljenih. Gumb za link na stranicu za prodaju ulaznica.
+
+![Ulaznice](SLIKE_EKRANA/ulaznice.png)
+
+---
+
+## 🟩 Ekran profila (verzija 1)
+Prikaz profila korisnika s osnovnim informacijama koje se mogu mijenjati i dodati slika profila.
+
+![Profil 1](SLIKE_EKRANA/profil1.png)
+
+---
+
+## 🟩 Ekran profila (verzija 2)
+Prikaz profila – mogućnost mijenjanja lozinke, brisanja računa, te na kraju mogućnost spremanja promjena.
+
+![Profil 2](SLIKE_EKRANA/profil2.png)
+
+---
+
+## 🟥 Reset lozinke
+Ekran na kojem korisnik može zatražiti novu lozinku.
+
+![Reset lozinke](SLIKE_EKRANA/reset_lozinke.png)
+
+---
+
+
+
+
+

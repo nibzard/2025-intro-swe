@@ -258,7 +258,13 @@ class GeminiClient:
 
         # Build API endpoint URL
         # Format: /v1beta/models/{model}:generateContent?key={api_key}
+<<<<<<< HEAD
         api_url = f"{GEMINI_API_BASE_URL}/models/{self.model_name}:generateContent"
+=======
+        # Handle both "gemini-1.5-flash" and "models/gemini-1.5-flash" formats
+        model_path = self.model_name if self.model_name.startswith("models/") else f"models/{self.model_name}"
+        api_url = f"{GEMINI_API_BASE_URL}/{model_path}:generateContent"
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 
         # Build headers (NEVER log api_key)
         headers = {
@@ -299,7 +305,21 @@ class GeminiClient:
                 response.raise_for_status()
 
         except httpx.HTTPStatusError as e:
+<<<<<<< HEAD
             # Log error (NEVER log api_key)
+=======
+            # Log specific warning for rate limit errors
+            if e.response.status_code == 429:
+                retry_after = e.response.headers.get("Retry-After")
+                logger.warning(
+                    f"Gemini API rate limit exceeded (429 Too Many Requests). "
+                    f"Retry-After: {retry_after}. "
+                    f"Consider reducing 'max_concurrent_requests' in your config file. "
+                    f"Model: {self.model_name}"
+                )
+
+            # Log generic error (NEVER log api_key)
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
             error_detail = self._extract_error_detail(e.response)
             logger.error(
                 f"Gemini API HTTP error: "

@@ -1,5 +1,9 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+<<<<<<< HEAD
 import { Users, MessageSquare, MessagesSquare, TrendingUp, Flag } from 'lucide-react';
+=======
+import { Users, MessageSquare, MessagesSquare, TrendingUp, Flag, Shield } from 'lucide-react';
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 import Link from 'next/link';
 import { Avatar } from '@/components/ui/avatar';
 
@@ -259,7 +263,11 @@ export default async function AdminDashboard() {
         <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">
           Brze Akcije
         </h2>
+<<<<<<< HEAD
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+=======
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
           <Link
             href="/admin/users"
             className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-colors"
@@ -305,6 +313,18 @@ export default async function AdminDashboard() {
               Prijave Sadrzaja
             </span>
           </Link>
+<<<<<<< HEAD
+=======
+          <Link
+            href="/admin/moderation"
+            className="flex flex-col items-center gap-2 p-3 sm:p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 transition-colors"
+          >
+            <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-purple-600" />
+            <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white text-center">
+              Filter Sadržaja
+            </span>
+          </Link>
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
         </div>
       </div>
     </div>

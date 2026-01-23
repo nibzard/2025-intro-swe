@@ -2,7 +2,28 @@
   "permissions": {
     "allow": [
       "Bash(python3:*)",
+<<<<<<< HEAD
       "Bash(gh auth status:*)"
+=======
+      "Bash(gh auth status:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(wc:*)",
+      "Bash(rm:*)",
+      "Bash(npm create vite:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(npm run dev:*)",
+      "Bash(python -m uvicorn:*)",
+      "Bash(curl:*)",
+      "Bash(python -m json.tool:*)",
+      "Bash(sqlite3:*)",
+      "Bash(python:*)",
+      "Bash(cat:*)",
+      "Bash(docker-compose build:*)"
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
     ],
     "deny": [],
     "ask": []

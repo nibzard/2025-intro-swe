@@ -32,6 +32,7 @@ export async function login(
     return { error: 'Nevažeći email ili lozinka' };
   }
 
+<<<<<<< HEAD
   // Check if profile exists, if not recreate it
   if (data.user) {
     const { data: profile } = await supabase
@@ -55,6 +56,17 @@ export async function login(
   }
 
   revalidatePath('/', 'layout');
+=======
+  // Check if email is verified (if email confirmation is enabled)
+  if (data.user && !data.user.email_confirmed_at) {
+    // Sign out the user since they haven't verified their email
+    await supabase.auth.signOut();
+    return { error: 'Molimo potvrdite svoj email prije prijave. Provjerite svoju poštu.' };
+  }
+
+  // Revalidate forum page to show updated user state
+  revalidatePath('/forum');
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
   redirect('/forum');
 }
 
@@ -83,6 +95,7 @@ export async function register(
   const supabase = await createServerSupabaseClient();
   const adminClient = createAdminClient();
 
+<<<<<<< HEAD
   // Check if username or email is already taken
   const { data: existingByUsername } = await supabase
     .from('profiles')
@@ -149,6 +162,28 @@ export async function register(
     }
   } catch (error) {
     console.error('Error checking orphaned auth users:', error);
+=======
+  // Check if username or email is already taken (single parallel query)
+  const [existingByUsername, existingByEmail] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id')
+      .eq('username', username)
+      .maybeSingle(),
+    supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle()
+  ]);
+
+  if (existingByUsername.data) {
+    return { error: 'Korisničko ime je već zauzeto' };
+  }
+
+  if (existingByEmail.data) {
+    return { error: 'Email je već zauzet' };
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
   }
 
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
@@ -188,14 +223,23 @@ export async function register(
     }
   }
 
+<<<<<<< HEAD
   revalidatePath('/', 'layout');
+=======
+  // Only revalidate auth pages, not the entire app
+  revalidatePath('/auth/verify-email');
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
   redirect('/auth/verify-email');
 }
 
 export async function logout() {
   const supabase = await createServerSupabaseClient();
   await supabase.auth.signOut();
+<<<<<<< HEAD
   revalidatePath('/', 'layout');
+=======
+  // No need to revalidate - redirect will clear cache
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
   redirect('/');
 }
 

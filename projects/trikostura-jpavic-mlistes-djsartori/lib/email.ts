@@ -325,10 +325,15 @@ export async function sendEmailVerification(email: string, verificationCode: str
       `,
     });
 
+<<<<<<< HEAD
     console.log('Email sent successfully:', result.messageId);
     return { success: true, id: result.messageId };
   } catch (error) {
     console.error('Email send error:', error);
+=======
+    return { success: true, id: result.messageId };
+  } catch (error) {
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
     return { success: false, error };
   }
 }
@@ -633,10 +638,15 @@ export async function sendPasswordResetEmail(email: string, resetCode: string) {
       `,
     });
 
+<<<<<<< HEAD
     console.log('Password reset email sent:', result.messageId);
     return { success: true, id: result.messageId };
   } catch (error) {
     console.error('Password reset email error:', error);
+=======
+    return { success: true, id: result.messageId };
+  } catch (error) {
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
     return { success: false, error };
   }
 }

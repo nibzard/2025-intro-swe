@@ -9,11 +9,19 @@ import { Avatar } from '@/components/ui/avatar';
 import { MarkdownRenderer } from '@/components/forum/markdown-renderer';
 import { MarkdownEditor } from '@/components/forum/markdown-editor';
 import { AdvancedAttachmentList } from '@/components/forum/advanced-attachment-list';
+<<<<<<< HEAD
+=======
+import { ReactionPicker } from '@/components/forum/reaction-picker';
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 import { ThumbsUp, ThumbsDown, MoreVertical, Edit2, Trash2, Quote, Link2, CheckCircle, Flag } from 'lucide-react';
 import { ReportDialog } from './report-dialog';
 import { createClient } from '@/lib/supabase/client';
 import { editReply } from '@/app/forum/reply/actions';
 import { deleteReplyAction, markSolutionAction } from '@/app/forum/actions';
+<<<<<<< HEAD
+=======
+import { checkAndAwardAchievements } from '@/app/forum/achievements/actions';
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 import { toast } from 'sonner';
 import { useButtonAnimation } from '@/hooks/use-button-animation';
 
@@ -183,6 +191,14 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
         }
       }
 
+<<<<<<< HEAD
+=======
+      // Check achievements for reply author when they receive upvotes
+      if (voteType === 1 && reply.author_id !== user.id) {
+        await checkAndAwardAchievements(reply.author_id);
+      }
+
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
       // Success feedback
       if (previousVote === voteType) {
         toast.success('Glas uklonjen');
@@ -542,6 +558,19 @@ export const ReplyCard = memo(function ReplyCard({ reply, userVote, isLoggedIn, 
             </div>
             <AdvancedAttachmentList attachments={reply.attachments || []} />
 
+<<<<<<< HEAD
+=======
+            {/* Reaction Picker */}
+            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <ReactionPicker
+                replyId={reply.id}
+                reactions={reply.reactions || []}
+                currentUserId={currentUserId}
+                compact
+              />
+            </div>
+
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
             {isSolution && (
               <div className="mt-3 sm:mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 text-green-800 dark:text-green-200 rounded-lg text-sm font-bold shadow-md ring-2 ring-green-500/20 animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <CheckCircle className="w-4 h-4" />

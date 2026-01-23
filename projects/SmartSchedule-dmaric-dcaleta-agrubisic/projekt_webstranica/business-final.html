@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="hr">
 <head>
@@ -138,3 +139,556 @@ function saveSchedule() {
 
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <title>SmartSchedule – Poslovni Raspored</title>
+    <link rel="stylesheet" href="global.css">
+</head>
+
+<body>
+
+<!-- TOP NAVIGATION -->
+<div class="topnav" style="position:relative;">
+
+    <!-- LOGO LEFT -->
+    <div class="logo-box">
+        <div class="logo-icon">SS</div>
+        <div class="logo-text">SmartSchedule</div>
+    </div>
+
+    <!-- CENTERED NAVIGATION -->
+    <div class="nav-links" style="
+        position:absolute;
+        left:50%;
+        transform:translateX(-50%);
+    ">
+        <a href="index.html" data-link="index">Početna</a>
+        <a href="dashboard.html" data-link="dashboard">Dashboard</a>
+
+    </div>
+
+    <!-- USER AREA -->
+    <div id="userArea" style="position:absolute; right:12px; top:12px;"></div>
+</div>
+
+<!-- FIXED JS SCRIPT – radi na svim stranicama -->
+<script>
+// mapiranje naziva datoteka na korake
+const pageMap = {
+    "index": "index",
+    "dashboard": "dashboard",
+    "personal": "personal",
+    "business-create": "create",
+    "business-final": "final"
+};
+
+// dohvati trenutnu html datoteku
+let rawName = document.location.pathname.split("/").pop().replace(".html", "");
+
+if (rawName === "") rawName = "index";
+
+// prevedi datoteku u logički naziv
+const currentPage = pageMap[rawName] || "index";
+
+// redoslijed stranica
+const steps = ["index", "dashboard", "personal", "create", "final"];
+
+const currentIndex = steps.indexOf(currentPage);
+
+// prolaz kroz sve linkove
+document.querySelectorAll(".nav-links a").forEach(a => {
+    const page = a.getAttribute("data-link");
+    const pageIndex = steps.indexOf(page);
+
+    if (pageIndex !== -1 && pageIndex <= currentIndex) {
+        a.style.pointerEvents = "auto";
+        a.style.opacity = "1";
+    } else {
+        a.style.pointerEvents = "none";
+        a.style.opacity = "0.35";
+    }
+});
+</script>
+
+
+<!-- PAGE CONTENT -->
+<div class="container">
+
+    <h1>Poslovni raspored</h1>
+    <p style="color:var(--text-soft); margin-top:6px;">Pregled i AI optimizirani tjedni raspored</p>
+
+    <!-- STATUS -->
+    <div id="statusBadge" 
+         style="margin-top:18px; color:var(--accent); font-weight:600;">
+        ⚠ Sadržaj nije spremljen
+    </div>
+
+    <!-- RASPORED (table) -->
+    <div class="card" style="margin-top:20px;">
+        <h2 id="scheduleTitle">Tjedni raspored</h2>
+        <p style="color:var(--text-soft); margin-top:5px;">Prikaz radnih smjena</p>
+
+        <div id="scheduleContainer" style="margin-top:20px;"></div>
+
+    </div>
+
+    <!-- GUMBI -->
+    <div style="margin-top:18px;" class="flex">
+        <button id="editBtn" class="btn-gray">Uredi</button>
+        <button id="saveBtn" class="btn">Spremi</button>
+        <button id="aiBtn" class="btn-gray">AI – Analiziraj</button>
+        <button id="aiComposeBtn" class="btn-gray" style="display:none; margin-left:8px;">AI – Sastavi raspored</button>
+        <!-- publish / lock buttons will be injected for owners -->
+        <div id="ownerControls" style="margin-left:8px;"></div>
+    </div>
+
+    <!-- AI POVRATNA INFORMACIJA -->
+    <div class="ai-box" id="aiBox" style="margin-top:14px; display:none;">
+        <h3>Povratna informacija AI</h3>
+        <div id="aiContent" style="color:var(--text-soft);"></div>
+    </div>
+
+    <!-- Audit / history -->
+    <div id="auditBox" style="margin-top:14px; display:none;">
+        <h3>Pregled aktivnosti</h3>
+        <div id="auditContent" style="color:var(--text-soft);"></div>
+    </div>
+
+</div>
+
+<script>
+// Prikaz AI gumba za automatsko sastavljanje rasporeda (lokalni AI)
+function showAIComposeButton(schedule, canEdit) {
+    const btn = document.getElementById('aiComposeBtn');
+    if (!btn) return;
+    if (canEdit && schedule && schedule.status !== 'locked') {
+        btn.style.display = 'inline-block';
+        btn.onclick = function() {
+            const res = ssSchedules.aiProposeSchedule(schedule);
+            if (res && res.error) return alert('AI greška: ' + res.error);
+            const r = ssSchedules.acceptProposal(schedule);
+            if (r && r.error) return alert('Ne mogu prihvatiti prijedlog: ' + r.error);
+            loadScheduleByCode(schedule.code);
+            alert('AI prijedlog automatski primijenjen i spremljen!');
+        };
+    } else {
+        btn.style.display = 'none';
+    }
+}
+let editing = false;
+
+function startEditing() {
+    editing = true;
+    document.getElementById("statusBadge").textContent = "✎ Raspored se uređuje";
+    document.getElementById("statusBadge").style.color = "#facc15"; 
+}
+
+function saveSchedule() {
+    editing = false;
+    document.getElementById("statusBadge").textContent = "✔ Raspored je spremljen – Šifra: W92KDL";
+    document.getElementById("statusBadge").style.color = "var(--accent)";
+}
+</script>
+
+<script src="auth.js"></script>
+<script src="schedules.js"></script>
+<script>
+const user = ssAuth.requireAuth();
+// personalize
+const h1 = document.querySelector('h1');
+if (h1) h1.innerText = `Poslovni raspored — ${user.name}`;
+const ua = document.getElementById('userArea');
+if (ua) ua.innerHTML = `<span style="color:var(--text-soft); margin-right:10px;">${user.name}</span> <button class="btn-gray" onclick="ssAuth.logout(); location.href='index.html';">Odjava</button>`;
+
+// load schedule from query or session
+function _qs(name){
+    const url = new URL(location.href);
+    return url.searchParams.get(name);
+}
+
+let currentSchedule = null;
+let unsaved = false;
+
+function setStatusSaved(code){
+    const badge = document.getElementById('statusBadge');
+    badge.innerText = `✔ Raspored je spremljen – Šifra: ${code}`;
+    badge.style.color = 'var(--accent)';
+}
+
+function setStatusEditing(){
+    const badge = document.getElementById('statusBadge');
+    badge.innerText = `✎ Raspored se uređuje`;
+    badge.style.color = '#facc15';
+}
+
+function loadScheduleByCode(code){
+    const s = ssSchedules.getScheduleByCode(code);
+    if (!s) return null;
+    currentSchedule = s;
+    document.getElementById('scheduleTitle').innerText = `Tjedni raspored — ${s.code}`;
+    ssSchedules.renderScheduleTable(s,'scheduleContainer',{onChange: (changed)=>{ unsaved = changed; if (changed) setStatusEditing(); }});
+    setStatusSaved(s.code);
+    // ai box
+    const aiBox = document.getElementById('aiBox');
+    aiBox.style.display = 'none';
+    document.getElementById('aiContent').innerText = '';
+
+    // editing permissions
+    const canEdit = (user.id === s.ownerId) && s.status !== 'locked';
+    // Prikaz AI gumba za sastavljanje rasporeda
+    showAIComposeButton(s, canEdit);
+
+    // remove or show buttons based on permissions
+    const editBtn = document.getElementById('editBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const aiBtn = document.getElementById('aiBtn');
+
+    // schedule-specific settings editor
+    function renderScheduleSettings(schedule){
+        // only owners can edit
+        const ownerOnly = (user.id === schedule.ownerId);
+        // create card if not exists
+        let card = document.getElementById('scheduleSettingsCard');
+        if (!card) {
+            card = document.createElement('div');
+            card.className = 'card';
+            card.id = 'scheduleSettingsCard';
+            card.style.marginTop = '18px';
+            card.innerHTML = `
+                <h3 style="margin-bottom:16px;">Postavke ovog rasporeda</h3>
+                <div style="margin-top:10px; display:flex; flex-direction:column; gap:18px; max-width:340px;">
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <label for="sch_workdays">Radni dani:</label>
+                        <select id="sch_workdays" style="padding:6px; border-radius:4px;">
+                            <option value="pon-sub">Ponedjeljak - Subota</option>
+                            <option value="pon-ned">Ponedjeljak - Nedjelja</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <label for="sch_worktime">Radno vrijeme (npr. 07:00-21:00):</label>
+                        <input id="sch_worktime" type="text" pattern="^\d{2}:\d{2}-\d{2}:\d{2}$" placeholder="07:00-21:00" style="padding:6px; border-radius:4px;">
+                    </div>
+                    <div style="margin-top:8px;">
+                        <button id="sch_saveBtn" class="btn">Spremi postavke rasporeda</button>
+                        <div style="margin-top:12px;" id="sch_settingsMsg"></div>
+                    </div>
+                </div>
+            `;
+            const container = document.querySelector('.container');
+            if (container) container.appendChild(card);
+
+
+            // save handler
+            card.querySelector('#sch_saveBtn').addEventListener('click', ()=>{
+                if (!ownerOnly) return alert('Nemate ovlasti za promjenu postavki ovog rasporeda');
+                if (schedule.status === 'locked') return alert('Raspored je zaključan i postavke se ne mogu mijenjati');
+                const worktimeEl = document.getElementById('sch_worktime');
+                const worktime = worktimeEl ? worktimeEl.value : '';
+                const settings = { workTime: worktime };
+                try {
+                    schedule.companySettings = settings;
+                    ssSchedules.updateSchedule(schedule);
+                    document.getElementById('sch_settingsMsg').innerText = 'Postavke spremljene';
+                    setTimeout(()=> document.getElementById('sch_settingsMsg').innerText = '', 2000);
+                    // AUTOMATSKI OSVJEŽI TABLICU RASPOREDA prema novim postavkama
+                    ssSchedules.renderScheduleTable(schedule, 'scheduleContainer', { onChange: (changed)=>{ unsaved = changed; if (changed) setStatusEditing(); } });
+                } catch (e) {
+                    document.getElementById('sch_settingsMsg').innerText = 'Greška: ' + e.message;
+                }
+            });
+        }
+
+        // populate fields
+        const s = schedule.companySettings || {};
+        var worktimeEl = document.getElementById('sch_worktime');
+        if (worktimeEl) worktimeEl.value = s.workTime || '';
+
+        // hide card for non-owners
+        if (user.id !== schedule.ownerId) card.style.display = 'none';
+        else card.style.display = 'block';
+    }
+
+    renderScheduleSettings(s);
+
+    // if locked, show badge
+    if (s.status === 'locked') {
+        const badge = document.getElementById('statusBadge');
+        badge.innerText = '🔒 Raspored je zaključan';
+        badge.style.color = '#a8a8b3';
+    }
+
+    // render table with permissions
+    ssSchedules.renderScheduleTable(s,'scheduleContainer',{onChange: (changed)=>{ unsaved = changed; if (changed) setStatusEditing(); }, allowEdit: canEdit});
+
+    if (!canEdit) {
+        if (editBtn) editBtn.remove();
+        if (saveBtn) saveBtn.remove();
+        if (aiBtn) aiBtn.remove();
+    }
+
+    // status badge display
+    const badge = document.getElementById('statusBadge');
+    if (s.status === 'locked') {
+        badge.innerText = '🔒 Raspored je zaključan';
+        badge.style.color = '#a8a8b3';
+    } else if (s.status === 'published') {
+        badge.innerText = `✔ Raspored je objavljen – Šifra: ${s.code}`;
+        badge.style.color = 'var(--accent)';
+    } else {
+        badge.innerText = `✔ Raspored je spremljen – Šifra: ${s.code}`;
+        badge.style.color = 'var(--accent)';
+    }
+
+    // render table with permissions
+    ssSchedules.renderScheduleTable(s,'scheduleContainer',{onChange: (changed)=>{ unsaved = changed; if (changed) setStatusEditing(); }, allowEdit: canEdit});
+
+    // show audit history
+    const auditBox = document.getElementById('auditBox');
+    const auditContent = document.getElementById('auditContent');
+    if (s.audit && s.audit.length) {
+        auditBox.style.display = 'block';
+        const users = ssAuth.getUsers();
+        auditContent.innerHTML = s.audit.slice().reverse().map(a=>{
+            const u = users.find(x=>x.id === a.by);
+            const name = u ? u.name : a.by;
+            const when = new Date(a.at).toLocaleString();
+            const actionMap = { published: 'Objavljen', locked: 'Zaključan', draft: 'Skica' };
+            const actionText = actionMap[a.action] || a.action;
+            return `<div>• <strong>${actionText}</strong> — ${name} @ ${when}</div>`;
+        }).join('');
+    } else {
+        auditBox.style.display = 'none';
+        auditContent.innerHTML = '';
+    }
+
+    // owner controls for publish/lock
+    const ownerControls = document.getElementById('ownerControls');
+    ownerControls.innerHTML = '';
+    if (user.id === s.ownerId) {
+        const pub = document.createElement('button');
+        pub.className = 'btn-gray';
+        pub.innerText = s.status === 'published' ? 'Poništi objavu' : 'Objavi';
+        pub.onclick = ()=>{
+            const target = s.status === 'published' ? 'draft' : 'published';
+            const res = ssSchedules.setScheduleStatus(s, target);
+            if (res && res.error) return alert(res.error);
+            loadScheduleByCode(s.code);
+        };
+        ownerControls.appendChild(pub);
+
+        const lock = document.createElement('button');
+        lock.className = 'btn-danger';
+        lock.style.marginLeft = '8px';
+        lock.innerText = 'Zaključaj (neobrnivo)';
+        lock.onclick = ()=>{
+            if (!confirm('Jeste li sigurni? Zaključavanje se ne može poništiti.')) return;
+            const res = ssSchedules.setScheduleStatus(s, 'locked');
+            if (res && res.error) return alert(res.error);
+            loadScheduleByCode(s.code);
+        };
+        ownerControls.appendChild(lock);
+    } else {
+        ownerControls.innerHTML = '';
+    }
+
+}
+
+// init
+(function(){
+    const code = _qs('code') || sessionStorage.getItem('ss_current_schedule');
+    if (!code) { location.href = 'dashboard.html'; return; }
+    const schedule = ssSchedules.getScheduleByCode(code);
+    if (!schedule) { alert('Raspored ne postoji'); location.href='dashboard.html'; return; }
+    loadScheduleByCode(schedule.code);
+})();
+
+// button handlers
+const editEl = document.getElementById('editBtn');
+if (editEl) editEl.addEventListener('click', ()=>{ setStatusEditing(); unsaved = true; });
+
+const saveEl = document.getElementById('saveBtn');
+if (saveEl) saveEl.addEventListener('click', ()=>{
+    if (!currentSchedule) return;
+    try {
+        ssSchedules.updateSchedule(currentSchedule);
+        unsaved = false;
+        setStatusSaved(currentSchedule.code);
+        alert('Raspored spremljen');
+    } catch (e) {
+        alert('Greška pri spremanju: ' + e.message);
+    }
+});
+
+const aiEl = document.getElementById('aiBtn');
+if (aiEl) aiEl.addEventListener('click', ()=>{
+    if (!currentSchedule) return;
+    const res = ssSchedules.aiAnalyzeSchedule(currentSchedule);
+    if (res && res.error) return alert(res.error);
+    document.getElementById('aiContent').innerHTML = res.feedback.map(f=>`<div>• ${f}</div>`).join('');
+    document.getElementById('aiBox').style.display = 'block';
+});
+
+// Render AI controls (local + OpenAI) for owner; called after schedule is loaded
+function renderAIControls(schedule, canEdit){
+    const controls = document.querySelector('.flex');
+    if (!controls) return;
+    // clear previous AI buttons if any
+    const prevLocal = document.getElementById('ai_local_btn');
+    if (prevLocal) prevLocal.remove();
+    const prevOpen = document.getElementById('ai_openai_btn');
+    if (prevOpen) prevOpen.remove();
+
+    if (!canEdit || !schedule || schedule.status === 'locked') return;
+
+    // local AI propose button
+    const btn = document.createElement('button');
+    btn.id = 'ai_local_btn';
+    btn.className = 'btn-gray';
+    btn.innerText = 'AI – Predloži raspored';
+    btn.style.marginLeft = '8px';
+    btn.onclick = ()=>{
+        const res = ssSchedules.aiProposeSchedule(schedule);
+        if (res && res.error) return alert(res.error);
+        // show small preview and accept
+        const preview = document.createElement('div');
+        preview.style.padding = '12px';
+        preview.style.background = 'var(--surface)';
+        preview.style.border = '1px solid var(--border)';
+        preview.style.marginTop = '12px';
+        preview.innerText = 'AI je predložio raspored. Kliknite Potvrdi da prihvatite.';
+        const accept = document.createElement('button');
+        accept.className = 'btn';
+        accept.innerText = 'Prihvati prijedlog';
+        accept.onclick = ()=>{
+            const r = ssSchedules.acceptProposal(schedule);
+            if (r && r.error) return alert(r.error);
+            loadScheduleByCode(schedule.code);
+            alert('Prijedlog prihvaćen i spremljen');
+            preview.remove();
+        };
+        preview.appendChild(accept);
+        const container = document.querySelector('.container');
+        container.appendChild(preview);
+    };
+    controls.appendChild(btn);
+
+    // OpenAI button
+    const btn2 = document.createElement('button');
+    btn2.id = 'ai_openai_btn';
+    btn2.className = 'btn-gray';
+    btn2.innerText = 'AI – OpenAI predlog';
+    btn2.style.marginLeft = '8px';
+    btn2.onclick = async ()=>{
+        // get API key
+        let key = localStorage.getItem('ss_openai_key') || '';
+        if (!key) {
+            key = prompt('Unesite OpenAI API ključ (bez razmaka). Ostavite prazan za odustajanje.');
+            if (!key) return;
+            const remember = confirm('Želite li zapamtiti ključ lokalno u ovom pregledniku? (Samo lokalno)');
+            if (remember) localStorage.setItem('ss_openai_key', key);
+        }
+
+        if (!schedule) { alert('Nije učitan raspored. Osvježite stranicu i pokušajte ponovno.'); return; }
+        if (!schedule.workers || !schedule.workers.length) { alert('Raspored nema radnika. Dodajte radnike prije korištenja AI.'); return; }
+
+        btn2.innerText = 'Generiram...';
+        btn2.disabled = true;
+
+        try {
+            console.log('OpenAI request start for schedule', schedule.code);
+            const res = await ssSchedules.aiProposeWithOpenAI(schedule, { apiKey: key, model: 'gpt-4o-mini' });
+            console.log('OpenAI response', res);
+
+            btn2.innerText = 'AI – OpenAI predlog';
+            btn2.disabled = false;
+
+            if (res && res.error) { showTransientError(`OpenAI error: ${res.error}`); console.error('OpenAI error detail:', res); return; }
+            if (!res || !res.proposal || !res.proposal.shifts) { showTransientError('Nije primljen valjan prijedlog od OpenAI. Pogledajte konzolu za detalje.'); console.log('Invalid OpenAI response', res); return; }
+
+            // preview
+            const preview = document.createElement('div');
+            preview.style.padding = '12px';
+            preview.style.background = 'var(--surface)';
+            preview.style.border = '1px solid var(--border)';
+            preview.style.marginTop = '12px';
+
+            if (res.warnings && res.warnings.length){
+                const warn = document.createElement('div'); warn.style.color = '#c33'; warn.style.marginBottom = '8px'; warn.innerHTML = `<strong>Upozorenja:</strong><br>${res.warnings.map(w=>`• ${w}`).join('<br>')}`; preview.appendChild(warn);
+            } else { const note = document.createElement('div'); note.style.color = 'var(--text-soft)'; note.style.marginBottom = '8px'; note.innerText = 'Nema upozorenja'; preview.appendChild(note); }
+
+            const previewTitle = document.createElement('div'); previewTitle.style.fontWeight = '600'; previewTitle.style.marginBottom = '8px'; previewTitle.innerText = 'Pregled prijedloga (preview)'; preview.appendChild(previewTitle);
+
+            const tempSchedule = { id: schedule.id + '_preview', code: schedule.code + '-PRE', ownerId: schedule.ownerId, workers: schedule.workers, shifts: res.proposal.shifts, createdAt: Date.now(), status: 'draft', companySettings: schedule.companySettings };
+            const tblId = 'openaiPreviewTable'; const tblContainer = document.createElement('div'); tblContainer.id = tblId; preview.appendChild(tblContainer); ssSchedules.renderScheduleTable(tempSchedule, tblId, { allowEdit: false });
+
+            const controlsDiv = document.createElement('div'); controlsDiv.style.marginTop = '10px'; controlsDiv.style.display = 'flex'; controlsDiv.style.gap = '10px';
+            const accept = document.createElement('button'); accept.className = 'btn'; accept.innerText = 'Prihvati prijedlog (OpenAI)'; accept.onclick = ()=>{ schedule.proposal = res.proposal; const r = ssSchedules.acceptProposal(schedule); if (r && r.error) return alert('Ne mogu prihvatiti prijedlog: ' + r.error); loadScheduleByCode(schedule.code); alert('Prijedlog prihvaćen i spremljen'); preview.remove(); };
+            const closeBtn = document.createElement('button'); closeBtn.className = 'btn-gray'; closeBtn.innerText = 'Zatvori'; closeBtn.onclick = ()=> preview.remove(); controlsDiv.appendChild(accept); controlsDiv.appendChild(closeBtn); preview.appendChild(controlsDiv);
+
+            const container = document.querySelector('.container'); container.appendChild(preview);
+
+        } catch (err) { console.error('OpenAI call failed', err); showTransientError('Greška pri pozivu OpenAI: ' + (err && err.message ? err.message : String(err))); btn2.innerText = 'AI – OpenAI predlog'; btn2.disabled = false; }
+    };
+    controls.appendChild(btn2);
+}
+
+// helper: transient error box
+function showTransientError(text){
+    const c = document.querySelector('.container');
+    const d = document.createElement('div');
+    d.style.background = 'rgba(255,220,220,0.8)';
+    d.style.color = '#700';
+    d.style.padding = '10px';
+    d.style.border = '1px solid #f2b6b6';
+    d.style.borderRadius = '8px';
+    d.style.marginTop = '10px';
+    d.innerText = text;
+    c.insertBefore(d, c.firstChild);
+    setTimeout(()=> d.remove(), 6000);
+}
+// warn on unload when unsaved
+window.addEventListener('beforeunload', (e)=>{
+    if (unsaved) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
+</script>
+
+<!-- GLOBAL ERROR HANDLER -->
+<script>
+// Prikaz svih runtime grešaka na stranici u crvenom boxu na vrhu
+window.addEventListener('error', function(event) {
+    const c = document.querySelector('.container') || document.body;
+    const d = document.createElement('div');
+    d.style.background = 'rgba(255,220,220,0.95)';
+    d.style.color = '#700';
+    d.style.padding = '12px';
+    d.style.border = '2px solid #c33';
+    d.style.borderRadius = '8px';
+    d.style.marginTop = '10px';
+    d.style.fontWeight = 'bold';
+    d.innerText = 'Greška: ' + event.message + '\n' + (event.filename ? (event.filename + ':' + event.lineno) : '');
+    c.insertBefore(d, c.firstChild);
+});
+window.addEventListener('unhandledrejection', function(event) {
+    const c = document.querySelector('.container') || document.body;
+    const d = document.createElement('div');
+    d.style.background = 'rgba(255,220,220,0.95)';
+    d.style.color = '#700';
+    d.style.padding = '12px';
+    d.style.border = '2px solid #c33';
+    d.style.borderRadius = '8px';
+    d.style.marginTop = '10px';
+    d.style.fontWeight = 'bold';
+    d.innerText = 'Greška (promis): ' + (event.reason && event.reason.message ? event.reason.message : event.reason);
+    c.insertBefore(d, c.firstChild);
+});
+</script>
+
+</body>
+</html>
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42

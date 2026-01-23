@@ -28,6 +28,7 @@ import logging
 # Updated: 2025-11-05
 # All prices are USD per token (calculated as price_per_million / 1,000,000)
 PRICING = {
+<<<<<<< HEAD
     "openai": {
         "gpt-4o-mini": {
             "input": 0.150 / 1_000_000,  # $0.15 per 1M input tokens
@@ -109,6 +110,8 @@ PRICING = {
             "output": 1.25 / 1_000_000,
         },
     },
+=======
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
     "google": {
         # Gemini 2.0 models
         "gemini-2.0-flash-exp": {
@@ -158,6 +161,7 @@ PRICING = {
             "output": 1.50 / 1_000_000,
         },
     },
+<<<<<<< HEAD
     "mistral": {
         "mistral-large-latest": {
             "input": 2.00 / 1_000_000,
@@ -239,6 +243,53 @@ PRICING = {
         "sonar-deep-research": {
             "input": 2.00 / 1_000_000,  # $2.00 per 1M input tokens
             "output": 8.00 / 1_000_000,  # $8.00 per 1M output tokens
+=======
+    "groq": {
+        # Llama 3.3 models (latest)
+        "llama-3.3-70b-versatile": {
+            "input": 0.59 / 1_000_000,  # $0.59 per 1M input tokens
+            "output": 0.79 / 1_000_000,  # $0.79 per 1M output tokens
+        },
+        # Llama 3.2 models
+        "llama-3.2-90b-vision-preview": {
+            "input": 0.90 / 1_000_000,  # $0.90 per 1M input tokens
+            "output": 0.90 / 1_000_000,  # $0.90 per 1M output tokens
+        },
+        "llama-3.2-11b-vision-preview": {
+            "input": 0.18 / 1_000_000,  # $0.18 per 1M input tokens
+            "output": 0.18 / 1_000_000,  # $0.18 per 1M output tokens
+        },
+        "llama-3.2-3b-preview": {
+            "input": 0.06 / 1_000_000,  # $0.06 per 1M input tokens
+            "output": 0.06 / 1_000_000,  # $0.06 per 1M output tokens
+        },
+        "llama-3.2-1b-preview": {
+            "input": 0.04 / 1_000_000,  # $0.04 per 1M input tokens
+            "output": 0.04 / 1_000_000,  # $0.04 per 1M output tokens
+        },
+        # Llama 3.1 models
+        "llama-3.1-70b-versatile": {
+            "input": 0.59 / 1_000_000,  # $0.59 per 1M input tokens
+            "output": 0.79 / 1_000_000,  # $0.79 per 1M output tokens
+        },
+        "llama-3.1-8b-instant": {
+            "input": 0.05 / 1_000_000,  # $0.05 per 1M input tokens
+            "output": 0.08 / 1_000_000,  # $0.08 per 1M output tokens
+        },
+        # Mixtral models
+        "mixtral-8x7b-32768": {
+            "input": 0.24 / 1_000_000,  # $0.24 per 1M input tokens
+            "output": 0.24 / 1_000_000,  # $0.24 per 1M output tokens
+        },
+        # Gemma models
+        "gemma2-9b-it": {
+            "input": 0.20 / 1_000_000,  # $0.20 per 1M input tokens
+            "output": 0.20 / 1_000_000,  # $0.20 per 1M output tokens
+        },
+        "gemma-7b-it": {
+            "input": 0.07 / 1_000_000,  # $0.07 per 1M input tokens
+            "output": 0.07 / 1_000_000,  # $0.07 per 1M output tokens
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
         },
     },
 }

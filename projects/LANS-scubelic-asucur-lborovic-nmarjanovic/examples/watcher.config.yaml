@@ -4,11 +4,16 @@ run_settings:
 
   # Maximum concurrent API requests (default: 10)
   # Conservative limit respects provider rate limits while enabling parallelism
+<<<<<<< HEAD
   # Based on research: OpenAI ~5-10, Anthropic limited, Gemini ~3 per key
+=======
+  # Based on research: Gemini ~3 per key
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
   # Increase for higher quotas, decrease if hitting rate limits
   max_concurrent_requests: 10
 
   models:
+<<<<<<< HEAD
     - provider: "openai"
       model_name: "gpt-4o-mini"
       env_api_key: "OPENAI_API_KEY"
@@ -20,11 +25,17 @@ run_settings:
     # Each provider has different API requirements - config does direct passthrough
     - provider: "google"
       model_name: "gemini-2.0-flash-exp"
+=======
+    # Google Gemini with Google Search grounding
+    - provider: "google"
+      model_name: "models/gemini-2.5-flash"
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
       env_api_key: "GEMINI_API_KEY"
       system_prompt: "google/gemini-grounding"
       tools:
         - google_search: {}  # Google API format for Search grounding
 
+<<<<<<< HEAD
     # - provider: "anthropic"
     #   model_name: "claude-3-5-haiku-20241022"
     #   env_api_key: "ANTHROPIC_API_KEY"
@@ -35,16 +46,25 @@ run_settings:
     #   env_api_key: "MISTRAL_API_KEY"
     #   # No system_prompt specified - will use mistral/default.json
 
+=======
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
   use_llm_rank_extraction: false
 
 # Extraction settings (optional - enables function calling for better accuracy)
 # If not specified, defaults to regex-based extraction (backward compatible)
 extraction_settings:
   extraction_model:
+<<<<<<< HEAD
     provider: "openai"
     model_name: "gpt-4o-mini"  # Fast + cheap model optimized for extraction
     env_api_key: "OPENAI_API_KEY"
     system_prompt: "openai/extraction-default"  # Specialized extraction prompt
+=======
+    provider: "google"
+    model_name: "models/gemini-2.5-flash"  # Fast + cheap model optimized for extraction
+    env_api_key: "GEMINI_API_KEY"
+    system_prompt: "google/default"
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 
   # Extraction method: function_calling (recommended), regex, or hybrid
   method: "function_calling"
@@ -78,4 +98,8 @@ intents:
     prompt: "What are the best email warmup tools?"
 
   - id: "email-warmup-comparison"
+<<<<<<< HEAD
     prompt: "Compare the top email warmup tools for improving deliverability"
+=======
+    prompt: "Compare the top email warmup tools for improving deliverability"
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42

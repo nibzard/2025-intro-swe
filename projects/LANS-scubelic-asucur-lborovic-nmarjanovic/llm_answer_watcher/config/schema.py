@@ -33,6 +33,7 @@ class ModelConfig(BaseModel):
     Specifies which LLM to call and where to find its API key in the environment.
 
     Attributes:
+<<<<<<< HEAD
         provider: LLM provider name (openai, anthropic, google, mistral)
         model_name: Specific model identifier (e.g., "gpt-4o-mini")
         env_api_key: Environment variable name containing the API key
@@ -48,6 +49,20 @@ class ModelConfig(BaseModel):
     """
 
     provider: Literal["openai", "anthropic", "google", "mistral", "grok", "perplexity"]
+=======
+        provider: LLM provider name (google, groq)
+        model_name: Specific model identifier (e.g., "gemini-1.5-flash", "llama-3.1-8b-instant")
+        env_api_key: Environment variable name containing the API key
+        system_prompt: Optional relative path to system prompt JSON (e.g., "google/default")
+                      If not specified, uses provider default
+        tools: Optional list of tool configurations.
+               Google format: [{"google_search": {}}] (dictionary with tool name as key)
+               Config is passed directly to provider API without translation.
+        tool_choice: Tool selection mode ("auto", "required", "none"). Default: "auto"
+    """
+
+    provider: Literal["google", "groq"]
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
     model_name: str
     env_api_key: str
     system_prompt: str | None = None
@@ -169,13 +184,22 @@ class ExtractionModelConfig(BaseModel):
     Separate from answer-generating models for cost/latency optimization.
 
     Attributes:
+<<<<<<< HEAD
         provider: LLM provider name (openai, anthropic, google, mistral)
         model_name: Specific model identifier (e.g., "gpt-5-nano")
+=======
+        provider: LLM provider name (google, groq)
+        model_name: Specific model identifier (e.g., "gemini-1.5-flash", "llama-3.1-8b-instant")
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
         env_api_key: Environment variable name containing the API key
         system_prompt: Optional relative path to system prompt JSON
     """
 
+<<<<<<< HEAD
     provider: Literal["openai", "anthropic", "google", "mistral", "grok", "perplexity"]
+=======
+    provider: Literal["google", "groq"]
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
     model_name: str
     env_api_key: str
     system_prompt: str | None = None
@@ -251,6 +275,12 @@ class RunSettings(BaseModel):
         sqlite_db_path: Path to SQLite database for historical tracking
         max_concurrent_requests: Maximum number of parallel API requests (default: 10)
                                 Respects provider rate limits. Range: 1-50.
+<<<<<<< HEAD
+=======
+        request_delay_seconds: Delay between consecutive API requests in seconds (default: 0)
+                              Use to avoid rate limiting (429 errors). Range: 0-60.
+                              Recommended: 1-2 seconds for Google Gemini free tier.
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
         models: List of LLM models to query for each intent (LEGACY - use runners instead)
                Optional when using the new runners format
         operation_models: List of LLM models used ONLY for operations, not intent queries
@@ -263,6 +293,10 @@ class RunSettings(BaseModel):
     output_dir: str
     sqlite_db_path: str
     max_concurrent_requests: int = 10
+<<<<<<< HEAD
+=======
+    request_delay_seconds: float = 0.0
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
     models: list[ModelConfig] = []  # Now optional with default empty list
     operation_models: list[ModelConfig] = []  # Models used only for operations
     use_llm_rank_extraction: bool = False
@@ -302,6 +336,24 @@ class RunSettings(BaseModel):
             )
         return v
 
+<<<<<<< HEAD
+=======
+    @field_validator("request_delay_seconds")
+    @classmethod
+    def validate_request_delay_seconds(cls, v: float) -> float:
+        """
+        Validate request_delay_seconds is within reasonable limits.
+
+        A delay between requests helps avoid rate limiting (429 errors).
+        Range: 0-60 seconds. Recommended: 1-2 seconds for free tier APIs.
+        """
+        if not 0 <= v <= 60:
+            raise ValueError(
+                f"request_delay_seconds must be between 0 and 60 (got: {v})"
+            )
+        return v
+
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
     @field_validator("models")
     @classmethod
     def validate_models(cls, v: list[ModelConfig]) -> list[ModelConfig]:

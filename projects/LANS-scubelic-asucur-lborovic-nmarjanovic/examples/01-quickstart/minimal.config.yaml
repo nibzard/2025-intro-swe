@@ -5,9 +5,15 @@
 run_settings:
   output_dir: "./output"
   models:
+<<<<<<< HEAD
     - provider: "openai"
       model_name: "gpt-4o-mini"
       env_api_key: "OPENAI_API_KEY"
+=======
+    - provider: "google"
+      model_name: "gemini-1.5-flash"
+      env_api_key: "GEMINI_API_KEY"
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 
 brands:
   mine: ["YourBrand"]

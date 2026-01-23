@@ -33,9 +33,22 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** Aplikacija odnosno jednostavni planer za pregledno praćenje studentskih obveza, rokova i napretka kroz semestar
 
+<<<<<<< HEAD
 ### Paradižot - Karlo Ćurčija & Ela Kević & Lucija Tomić & Jere Vitaljić
 * **Project:** Promet aplikacija
 * **Folder:** `PrometApp-kcurcija-ekevic-ltomic-jvitaljic/`
+=======
+### K&M - Katarina Pilić & Marino Bendra
+* **Project:** Calorie Tracker
+* **Folder:** calorieTracker-kpilic-mbendra
+* **Status:** In Progress
+* **Description:** Aplikacija za brojanje kalorija pomoću slike ili ručnog unosa hrane
+
+
+### Paradižot - Karlo Ćurčija & Ela Kević & Lucija Tomić & Jere Vitaljić
+* **Project:** Promet aplikacija
+* **Folder:** `paradizot-kcurcija-ekevic-ltomic-jvitaljic/`
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 * **Status:** In Progress
 * **Description:** Popravak i poboljšanje već postojeće aplikacije Promet Split
 
@@ -65,7 +78,11 @@ This file lists all team projects for the SWE course. Students add their project
 
 ### DDA - Domina Marić Banje,Domagoj Čaleta,Antonio Grubišić Ćabo
 * **Project:** SmartSchedule
+<<<<<<< HEAD
 * **Folder:** SmartSchedule-dmaric-dcaleta-agrubsic/
+=======
+* **Folder:** `DDA-DMarBan-DCaleta-AGrubCabo/`
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 * **Status:** In Progress
 * **Description:** Aplikacija za izradu rasporeda
 
@@ -81,12 +98,33 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** Using technologies to track the position of the body and/or head, the app provides real-time alerts to users about incorrect or unhealthy posture during sitting.
 
+<<<<<<< HEAD
 ### KMB - Karmen Grubić & Matea Begonja & Barbara Jezidžić
 * **Project:** TuneBuddy
 * **Folder:** `KMB-kgrubic-mbegonja-bjezidzic`
 * **Status:** In Progress
 * **Description:** Connect through music
 
+=======
+### Garderoba - Marijan Ević
+* **Project:** Garderoba Management Application
+* **Folder:** `garderoba/`
+* **Status:** In Progress
+* **Description:** Aplikacija za organizaciju i raspodjelu nošnji folklornih ansambala
+
+### KMB - Karmen Grubić & Matea Begonja & Barbara Jezidžić
+* **Project:** TuneBuddy
+* **Folder:** `KMB-kgrubic-mbegonja-bjezidzic/`
+* **Status:** In Progress
+* **Description:** Connect through music
+
+### KSKS - Josip Ćužić & Augustin Olujić & Lana Peričić & Mirta Đogaš
+* **Project:** Old School Hip Hop Recommendations API
+* **Folder:** `KSKS-jcuzic-aolujic-lpericic-mdogas/`
+* **Status:** In Progress
+* **Description:** RESTful API za pretragu i preporuke klasične hip hop glazbe (1980-2000)
+
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 ### JNIP - Jana Novaković & Iva Puljić
 * **Project:** Budgetly
 * **Folder:** `JNIP-jananovakovic-ivapuljic/`
@@ -95,10 +133,23 @@ This file lists all team projects for the SWE course. Students add their project
 
 ### [R M] - [Karolina Mihaljević] & [Đana Rogulj]
 * **Project:** [Team connect]
+<<<<<<< HEAD
 * **Folder:** `povezivanje-timova-Rogulj-Mihaljevics/`
 * **Status:** [In Progress]
 * **Description:** [Povezivanje timova na određenoj lokaciji]
 
+=======
+* **Folder:** `povezivanje-timova-Rogulj-Mihaljevic/`
+* **Status:** [In Progress]
+* **Description:** [Povezivanje timova na određenoj lokaciji]
+
+### SeatReview - Ivan Tvidić & Antonio Sušnjar & Luka Tesić & Jurica Česljar
+* **Project:** Seat Review - Venue Seating Comfort Evaluation
+* **Folder:** `SeatReview-itavic-asusnjar-ltesic-jcesljar/`
+* **Status:** In Progress
+* **Description:** A system for evaluating seating comfort in public venues like stadiums and theaters
+
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 ### Carla Bajić
 * **Project:** BookSeeker
 * **Folder:** BookSeeker-carla3791/
@@ -117,8 +168,34 @@ This file lists all team projects for the SWE course. Students add their project
 * **Status:** In Progress
 * **Description:** Aplikacija koja korisnicima omogućuje planiranje i organizaciju putovanja uz dodatne preporuke.
 
+<<<<<<< HEAD
 ### PC Builder - Stipe Barišić & Luka Ćirković
 * **Project:** PC Builder
 * **Folder:** `stipzard/ai-git-project-stipe/`
 * **Status:** In Progress
 * **Description:** Upisivanje vaseg budžeta i sastavljanje najboljeg racunara za taj budžet.
+=======
+### SnapNStore
+* **Project:** SnapNStore - Digital Receipt Manager
+* **Folder:** `SnapNStore/`
+* **Status:** In Progress
+* **Description:** Aplikacija za automatsko prepoznavanje i pohranu računa pomoću OCR tehnologije
+
+### trikostura - Jan Pavić & Damjan Josip Sartori & Marino Listeš
+* **Project:** Studentski Forum
+* **Folder:** `trikostura-jpavic-mlistes-djsartori/`
+* **Status:** In Progress
+* **Description:** Online forum za studente svih sveučilišta u Hrvatskoj s mogućnošću stvaranja tema i diskusija
+
+### PC Builder - Stipe Barišić & Luka Ćirković
+* **Project:** PC Builder
+* **Folder:** `1950-stipebarisic-lukacirkovic/`
+* **Status:** In Progress
+* **Description:** Upisivanje vaseg budžeta i sastavljanje najboljeg racunara za taj budžet.
+
+### SnapNStore - Gianna Lukić
+* **Project:** SnapNStore
+* **Folder:** `SnapNStore-glukic/`
+* **Status:** In Progress
+* **Description:** Skeniranje računa i spremanje u aplikaciju kao garancija.
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42

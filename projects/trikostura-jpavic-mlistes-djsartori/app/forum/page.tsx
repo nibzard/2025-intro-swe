@@ -36,8 +36,16 @@ interface TopicWithCategoryAndAuthor extends Topic {
   author: Pick<Profile, 'username' | 'avatar_url'> | null;
 }
 
+<<<<<<< HEAD
 // Revalidate every 120 seconds (2 minutes) for better cache performance
 export const revalidate = 120;
+=======
+// Revalidate every 5 minutes for better cache performance
+export const revalidate = 300;
+
+// Use edge runtime for faster response on Vercel
+export const runtime = 'nodejs';
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 
 const TOPICS_PER_PAGE = 15;
 
@@ -65,8 +73,11 @@ export default async function ForumPage({
 
   const [
     { data: categories },
+<<<<<<< HEAD
     { data: allTopics },
     { data: recentTopicsByCategory },
+=======
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
     { data: trendingTopics },
     { data: recentTopics, count: totalTopics }
   ] = await Promise.all([
@@ -76,6 +87,7 @@ export default async function ForumPage({
       .select('id, name, slug, description, icon, color, order_index')
       .order('order_index', { ascending: true }),
 
+<<<<<<< HEAD
     // Get all topics with minimal data for counting
     supabase
       .from('topics')
@@ -89,6 +101,9 @@ export default async function ForumPage({
       .limit(50), // Reduced from 100 to 50
 
     // Get trending topics (most views + replies in last 7 days)
+=======
+    // Get trending topics (most views + replies in last 7 days) with all data
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
     supabase
       .from('topics')
       .select(`
@@ -105,7 +120,11 @@ export default async function ForumPage({
       .order('view_count', { ascending: false })
       .limit(5),
 
+<<<<<<< HEAD
     // Get recent topics with selective fields
+=======
+    // Get recent topics with all data in ONE query
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
     supabase
       .from('topics')
       .select(`
@@ -119,31 +138,65 @@ export default async function ForumPage({
         view_count,
         reply_count,
         category_id,
+<<<<<<< HEAD
         author_id,
         author:profiles!topics_author_id_fkey(username, avatar_url),
         category:categories(name, slug, color)
+=======
+        author:profiles!topics_author_id_fkey(username, avatar_url),
+        category:categories(name, slug, color, icon)
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
       `, { count: 'exact' })
       .order('is_pinned', { ascending: false })
       .order('created_at', { ascending: false })
       .range(offset, offset + TOPICS_PER_PAGE - 1)
   ]);
 
+<<<<<<< HEAD
   // Build maps for efficient lookup
   const topicCountByCategory = new Map<string, number>();
   const latestTopicByCategory = new Map<string, LatestTopicData>();
 
   // Count topics per category
   allTopics?.forEach((topic: TopicMinimal) => {
+=======
+  // Get category stats in one lightweight query (count only)
+  const { data: categoryTopicCounts } = await supabase
+    .from('topics')
+    .select('category_id')
+    .order('created_at', { ascending: false });
+
+  // Build maps for efficient lookup
+  const topicCountByCategory = new Map<string, number>();
+  const latestTopicByCategory = new Map<string, any>();
+
+  // Count topics per category
+  categoryTopicCounts?.forEach((topic: { category_id: string }) => {
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
     topicCountByCategory.set(
       topic.category_id,
       (topicCountByCategory.get(topic.category_id) || 0) + 1
     );
   });
 
+<<<<<<< HEAD
   // Find latest topic per category
   (recentTopicsByCategory as unknown as LatestTopicData[])?.forEach((topic) => {
     if (!latestTopicByCategory.has(topic.category_id)) {
       latestTopicByCategory.set(topic.category_id, topic);
+=======
+  // Find latest topic per category from recentTopics
+  recentTopics?.forEach((topic: any) => {
+    if (!latestTopicByCategory.has(topic.category_id)) {
+      latestTopicByCategory.set(topic.category_id, {
+        id: topic.id,
+        title: topic.title,
+        slug: topic.slug,
+        created_at: topic.created_at,
+        category_id: topic.category_id,
+        author: topic.author
+      });
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
     }
   });
 

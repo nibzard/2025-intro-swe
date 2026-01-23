@@ -31,15 +31,26 @@ export async function Navbar() {
       .single();
     profile = data as Profile | null;
 
+<<<<<<< HEAD
     // Fetch notifications
     const { data: notificationData } = await supabase
       .from('notifications')
       .select('*')
+=======
+    // Fetch notifications with actor data in a single query (eliminates N+1)
+    const { data: notificationData } = await supabase
+      .from('notifications')
+      .select(`
+        *,
+        actor:profiles!actor_id(id, username, avatar_url)
+      `)
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(20);
 
     if (notificationData) {
+<<<<<<< HEAD
       // Get unique actor IDs
       const actorIds = [...new Set(notificationData.map((n: any) => n.actor_id).filter(Boolean))];
 
@@ -58,6 +69,9 @@ export async function Navbar() {
         actor: n.actor_id ? actorsMap.get(n.actor_id) : null,
       })) as Notification[];
 
+=======
+      notifications = notificationData as Notification[];
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
       unreadCount = notifications.filter((n) => !n.is_read).length;
     }
   }
@@ -92,6 +106,15 @@ export async function Navbar() {
                 Korisnici
               </NavLink>
               <NavLink
+<<<<<<< HEAD
+=======
+                href="/forum/leaderboard"
+                className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+              >
+                Ljestvica
+              </NavLink>
+              <NavLink
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
                 href="/forum/search"
                 className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
               >

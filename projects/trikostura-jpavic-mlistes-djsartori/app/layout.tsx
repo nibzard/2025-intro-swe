@@ -4,6 +4,10 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+<<<<<<< HEAD
+=======
+import { PerformanceMonitor } from "@/components/performance-monitor";
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 import "./globals.css";
 
 const inter = Inter({
@@ -58,6 +62,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+<<<<<<< HEAD
+=======
+          <PerformanceMonitor />
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
           {children}
           <Toaster position="top-right" richColors closeButton />
           <Analytics />

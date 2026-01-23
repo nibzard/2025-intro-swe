@@ -2,7 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+<<<<<<< HEAD
 import { Menu, X, Home, Search, Settings, User, LogOut, Plus, Users, Bookmark, Mail } from 'lucide-react';
+=======
+import { Menu, X, Home, Search, Settings, User, LogOut, Plus, Users, Bookmark, Mail, Trophy } from 'lucide-react';
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
 import { logout } from '@/app/auth/actions';
@@ -100,6 +104,18 @@ export function MobileNav({ user, profile }: MobileNavProps) {
                     </Link>
 
                     <Link
+<<<<<<< HEAD
+=======
+                      href="/forum/leaderboard"
+                      onClick={closeMenu}
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors"
+                    >
+                      <Trophy className="w-5 h-5" />
+                      Ljestvica
+                    </Link>
+
+                    <Link
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
                       href="/forum/search"
                       onClick={closeMenu}
                       className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors"
@@ -174,6 +190,18 @@ export function MobileNav({ user, profile }: MobileNavProps) {
                     </Link>
 
                     <Link
+<<<<<<< HEAD
+=======
+                      href="/forum/leaderboard"
+                      onClick={closeMenu}
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors"
+                    >
+                      <Trophy className="w-5 h-5" />
+                      Ljestvica
+                    </Link>
+
+                    <Link
+>>>>>>> 187ad88d5e209059cc273b46e6724c42f6acae42
                       href="/forum/search"
                       onClick={closeMenu}
                       className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors"
