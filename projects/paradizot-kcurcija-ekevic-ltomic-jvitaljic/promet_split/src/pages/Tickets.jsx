@@ -1,16 +1,12 @@
-import { useState } from 'react'; // Fixed import
+import { useState } from 'react';
 import TicketCard from '../components/TicketCard';
+import { useWallet } from '../context/WalletContext';
+import { QrCode, X } from 'lucide-react';
 
 const Tickets = () => {
+    const { tickets, activateTicket, deactivateTicket } = useWallet();
     const [activeTab, setActiveTab] = useState('active');
-
-    // Mock data
-    const tickets = [
-        { id: 1, type: '1 Sat', status: 'active' },
-        { id: 2, type: '24 Sata', status: 'not_activated' },
-        { id: 3, type: '1 Sat', status: 'expired' },
-        { id: 4, type: '1 Sat', status: 'expired' },
-    ];
+    const [expandedQrTicket, setExpandedQrTicket] = useState(null);
 
     const filteredTickets = tickets.filter(t => {
         if (activeTab === 'active') return t.status === 'active';
@@ -18,6 +14,28 @@ const Tickets = () => {
         if (activeTab === 'expired') return t.status === 'expired';
         return true;
     });
+
+    const handleActivate = (ticketId) => {
+        // Check if there is already an active ticket
+        const hasActive = tickets.some(t => t.status === 'active');
+        if (hasActive) {
+            alert('Već imate aktivnu kartu! Morate je isključiti ili pričekati da istekne prije aktivacije nove.');
+            return;
+        }
+
+        if (window.confirm('Jeste li sigurni da želite aktivirati kartu?')) {
+            activateTicket(ticketId);
+            setActiveTab('active'); // Switch to active tab to see the newly activated ticket
+        }
+    };
+
+    const handleDeactivate = (ticketId) => {
+        if (window.confirm('Jeste li sigurni da želite isključiti kartu? Karta će postati nevažeća.')) {
+            deactivateTicket(ticketId);
+            // Optionally stick to active tab (ticket disappears) or switch to expired?
+            // User likely expects it to disappear from "Active", so staying on Active tab is fine.
+        }
+    };
 
     return (
         <div style={{ padding: '1.5rem', paddingBottom: '2rem' }}>
@@ -61,9 +79,12 @@ const Tickets = () => {
                     filteredTickets.map(ticket => (
                         <TicketCard
                             key={ticket.id}
-                            type={ticket.type}
+                            type={ticket.name || ticket.type} // Fallback for various data shapes
                             status={ticket.status}
-                            onActivate={() => alert('Aktivacija...')} // Mock activation
+                            expires={ticket.expiresAt}
+                            onActivate={() => handleActivate(ticket.id)}
+                            onDeactivate={() => handleDeactivate(ticket.id)}
+                            onQrClick={() => setExpandedQrTicket(ticket)}
                         />
                     ))
                 ) : (
@@ -72,6 +93,74 @@ const Tickets = () => {
                     </div>
                 )}
             </div>
+
+            {/* QR Zoom Modal */}
+            {expandedQrTicket && (
+                <div
+                    onClick={() => setExpandedQrTicket(null)}
+                    style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 300,
+                        background: 'rgba(0,0,0,0.85)',
+                        backdropFilter: 'blur(5px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '2rem'
+                    }}
+                >
+                    <div
+                        className="scale-in"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            background: 'white',
+                            padding: '2rem',
+                            borderRadius: '2rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '1.5rem',
+                            maxWidth: '90%',
+                            width: '350px'
+                        }}
+                    >
+                        <div style={{ display: 'flex', width: '100%', justifyContent: 'flex-end' }}>
+                            <button
+                                onClick={() => setExpandedQrTicket(null)}
+                                style={{
+                                    background: '#f3f4f6',
+                                    border: 'none',
+                                    borderRadius: '50%',
+                                    padding: '0.5rem',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                <X color="#1a1a1a" size={24} />
+                            </button>
+                        </div>
+
+                        <div style={{
+                            width: '200px',
+                            height: '200px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <QrCode color="#1a1a1a" size={200} />
+                        </div>
+
+                        <div style={{ textAlign: 'center', color: '#1a1a1a' }}>
+                            <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+                                {expandedQrTicket.name || expandedQrTicket.type}
+                            </h3>
+                            <p style={{ opacity: 0.6 }}>
+                                Pokažite ovaj kod kontroloru
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

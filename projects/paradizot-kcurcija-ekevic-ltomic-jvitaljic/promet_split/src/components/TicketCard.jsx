@@ -1,6 +1,6 @@
 import { QrCode, Clock, Calendar } from 'lucide-react';
 
-const TicketCard = ({ type, status, expires, onActivate }) => {
+const TicketCard = ({ type, status, expires, onActivate, onQrClick, onDeactivate }) => {
     const isActive = status === 'active';
     const isExpired = status === 'expired';
 
@@ -44,17 +44,22 @@ const TicketCard = ({ type, status, expires, onActivate }) => {
                         gap: '0.25rem'
                     }}>
                         {status === 'not_activated' && 'Spremna za aktivaciju'}
-                        {status === 'active' && 'Istječe za: 45 min'}
+                        {status === 'active' && 'Aktivna'}
                         {status === 'expired' && 'Istekla'}
                     </span>
                 </div>
-                <div style={{
-                    background: 'white',
-                    padding: '0.5rem',
-                    borderRadius: '0.5rem'
-                }}>
-                    <QrCode color="#1a1a1a" size={40} />
-                </div>
+                {status !== 'not_activated' && (
+                    <div
+                        onClick={onQrClick}
+                        style={{
+                            background: 'white',
+                            padding: '0.5rem',
+                            borderRadius: '0.5rem',
+                            cursor: 'pointer'
+                        }}>
+                        <QrCode color="#1a1a1a" size={40} />
+                    </div>
+                )}
             </div>
 
             <div style={{
@@ -68,8 +73,14 @@ const TicketCard = ({ type, status, expires, onActivate }) => {
             }}>
                 {isActive || isExpired ? (
                     <div style={{ display: 'flex', gap: '1rem' }}>
-                        <span style={{ display: 'flex', items: 'center', gap: '0.25rem' }}><Clock size={14} /> 14:30</span>
-                        <span style={{ display: 'flex', items: 'center', gap: '0.25rem' }}><Calendar size={14} /> 12.01.2026</span>
+                        <span style={{ display: 'flex', items: 'center', gap: '0.25rem' }}>
+                            <Clock size={14} />
+                            {expires ? new Date(expires).toLocaleTimeString('hr-HR', { timeZone: 'Europe/Zagreb', hour: '2-digit', minute: '2-digit', hour12: false }) : '--:--'}
+                        </span>
+                        <span style={{ display: 'flex', items: 'center', gap: '0.25rem' }}>
+                            <Calendar size={14} />
+                            {expires ? new Date(expires).toLocaleDateString('hr-HR', { timeZone: 'Europe/Zagreb' }) : '--.--.----'}
+                        </span>
                     </div>
                 ) : (
                     <span>Vrijedi 1 sat od aktivacije</span>
@@ -89,6 +100,23 @@ const TicketCard = ({ type, status, expires, onActivate }) => {
                         }}
                     >
                         Aktiviraj
+                    </button>
+                )}
+
+                {status === 'active' && (
+                    <button
+                        onClick={onDeactivate}
+                        style={{
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            color: '#ef4444',
+                            border: '1px solid #ef4444',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '0.5rem',
+                            fontWeight: 600,
+                            fontSize: '0.85rem'
+                        }}
+                    >
+                        Isključi
                     </button>
                 )}
             </div>
