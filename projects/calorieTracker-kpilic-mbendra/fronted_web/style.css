@@ -12,7 +12,9 @@ button:hover { background: #6d28d9; }
 .col { background: #121212; padding: 10px; border-radius: 10px; min-height: 200px; border: 1px solid #222; }
 .meal-card { background: #222; padding: 10px; border-radius: 8px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #7c3aed; }
 .meal-card button { width: auto; background: #ef4444; padding: 4px 8px; margin: 0; }
-.secondary-btn { background: #333; }
+.secondary-btn { 
+    background: #333; 
+}
 #registerModal .modal-dialog {
   width: 400px;
   margin: 100px auto;
@@ -38,4 +40,28 @@ button:hover { background: #6d28d9; }
     border-radius: 15px;
     border: 1px solid #7c3aed;
     width: 350px;
+}
+
+/* Kontejner za sve obroke */
+.diary-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Stil za svaku pojedinu sekciju (Doručak, Ručak...) */
+.meal-section {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.meal-section h3 {
+    color: #7c3aed; /* Ljubičasta boja naslova */
+    margin-bottom: 15px;
+    border-bottom: 1px solid rgba(124, 58, 237, 0.3);
+    padding-bottom: 5px;
 }
