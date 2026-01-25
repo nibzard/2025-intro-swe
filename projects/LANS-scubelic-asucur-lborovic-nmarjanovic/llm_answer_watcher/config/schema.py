@@ -33,25 +33,8 @@ class ModelConfig(BaseModel):
     Specifies which LLM to call and where to find its API key in the environment.
 
     Attributes:
-<<<<<<< HEAD
-        provider: LLM provider name (openai, anthropic, google, mistral)
-        model_name: Specific model identifier (e.g., "gpt-4o-mini")
-        env_api_key: Environment variable name containing the API key
-        system_prompt: Optional relative path to system prompt JSON (e.g., "openai/gpt-4-default")
-                      If not specified, uses provider default (e.g., "openai/default")
-        tools: Optional list of tool configurations. Format differs by provider:
-               - OpenAI: [{"type": "web_search"}] (typed tool specification)
-               - Google: [{"google_search": {}}] (dictionary with tool name as key)
-               - Perplexity: Not needed (native web search)
-               Config is passed directly to provider API without translation.
-        tool_choice: Tool selection mode ("auto", "required", "none"). Default: "auto"
-                    Note: Only used by OpenAI. Google auto-decides when to use tools.
-    """
-
-    provider: Literal["openai", "anthropic", "google", "mistral", "grok", "perplexity"]
-=======
-        provider: LLM provider name (google only)
-        model_name: Specific model identifier (e.g., "gemini-1.5-flash")
+        provider: LLM provider name (google, groq)
+        model_name: Specific model identifier (e.g., "gemini-1.5-flash", "llama-3.1-8b-instant")
         env_api_key: Environment variable name containing the API key
         system_prompt: Optional relative path to system prompt JSON (e.g., "google/default")
                       If not specified, uses provider default
@@ -61,8 +44,7 @@ class ModelConfig(BaseModel):
         tool_choice: Tool selection mode ("auto", "required", "none"). Default: "auto"
     """
 
-    provider: Literal["google"]
->>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
+    provider: Literal["google", "groq"]
     model_name: str
     env_api_key: str
     system_prompt: str | None = None
@@ -184,22 +166,13 @@ class ExtractionModelConfig(BaseModel):
     Separate from answer-generating models for cost/latency optimization.
 
     Attributes:
-<<<<<<< HEAD
-        provider: LLM provider name (openai, anthropic, google, mistral)
-        model_name: Specific model identifier (e.g., "gpt-5-nano")
-=======
-        provider: LLM provider name (google only)
-        model_name: Specific model identifier (e.g., "gemini-1.5-flash")
->>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
+        provider: LLM provider name (google, groq)
+        model_name: Specific model identifier (e.g., "gemini-1.5-flash", "llama-3.1-8b-instant")
         env_api_key: Environment variable name containing the API key
         system_prompt: Optional relative path to system prompt JSON
     """
 
-<<<<<<< HEAD
-    provider: Literal["openai", "anthropic", "google", "mistral", "grok", "perplexity"]
-=======
-    provider: Literal["google"]
->>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
+    provider: Literal["google", "groq"]
     model_name: str
     env_api_key: str
     system_prompt: str | None = None

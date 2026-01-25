@@ -161,92 +161,53 @@ PRICING = {
             "output": 1.50 / 1_000_000,
         },
     },
-<<<<<<< HEAD
-    "mistral": {
-        "mistral-large-latest": {
-            "input": 2.00 / 1_000_000,
-            "output": 6.00 / 1_000_000,
+    "groq": {
+        # Llama 3.3 models (latest)
+        "llama-3.3-70b-versatile": {
+            "input": 0.59 / 1_000_000,  # $0.59 per 1M input tokens
+            "output": 0.79 / 1_000_000,  # $0.79 per 1M output tokens
         },
-        "mistral-small-latest": {
-            "input": 0.20 / 1_000_000,
-            "output": 0.60 / 1_000_000,
+        # Llama 3.2 models
+        "llama-3.2-90b-vision-preview": {
+            "input": 0.90 / 1_000_000,  # $0.90 per 1M input tokens
+            "output": 0.90 / 1_000_000,  # $0.90 per 1M output tokens
         },
-        "codestral-latest": {
-            "input": 0.20 / 1_000_000,
-            "output": 0.60 / 1_000_000,
+        "llama-3.2-11b-vision-preview": {
+            "input": 0.18 / 1_000_000,  # $0.18 per 1M input tokens
+            "output": 0.18 / 1_000_000,  # $0.18 per 1M output tokens
         },
-    },
-    "grok": {
-        # Grok Beta (Initial release - November 2024)
-        "grok-beta": {
-            "input": 5.00 / 1_000_000,  # $5.00 per 1M input tokens
-            "output": 15.00 / 1_000_000,  # $15.00 per 1M output tokens
+        "llama-3.2-3b-preview": {
+            "input": 0.06 / 1_000_000,  # $0.06 per 1M input tokens
+            "output": 0.06 / 1_000_000,  # $0.06 per 1M output tokens
         },
-        # Grok 2 Models (December 2024)
-        "grok-2-1212": {
-            "input": 2.00 / 1_000_000,  # $2.00 per 1M input tokens
-            "output": 10.00 / 1_000_000,  # $10.00 per 1M output tokens
+        "llama-3.2-1b-preview": {
+            "input": 0.04 / 1_000_000,  # $0.04 per 1M input tokens
+            "output": 0.04 / 1_000_000,  # $0.04 per 1M output tokens
         },
-        "grok-2-vision-1212": {
-            "input": 2.00 / 1_000_000,
-            "output": 10.00 / 1_000_000,
+        # Llama 3.1 models
+        "llama-3.1-70b-versatile": {
+            "input": 0.59 / 1_000_000,  # $0.59 per 1M input tokens
+            "output": 0.79 / 1_000_000,  # $0.79 per 1M output tokens
         },
-        # Grok 2 latest (alias)
-        "grok-2-latest": {
-            "input": 2.00 / 1_000_000,
-            "output": 10.00 / 1_000_000,
+        "llama-3.1-8b-instant": {
+            "input": 0.05 / 1_000_000,  # $0.05 per 1M input tokens
+            "output": 0.08 / 1_000_000,  # $0.08 per 1M output tokens
         },
-        # Grok 3 Models (February 2025)
-        "grok-3": {
-            "input": 3.00 / 1_000_000,  # $3.00 per 1M input tokens
-            "output": 15.00 / 1_000_000,  # $15.00 per 1M output tokens
+        # Mixtral models
+        "mixtral-8x7b-32768": {
+            "input": 0.24 / 1_000_000,  # $0.24 per 1M input tokens
+            "output": 0.24 / 1_000_000,  # $0.24 per 1M output tokens
         },
-        "grok-3-mini": {
-            "input": 3.00 / 1_000_000,  # $3.00 per 1M input tokens (same as grok-3)
-            "output": 15.00 / 1_000_000,  # $15.00 per 1M output tokens
+        # Gemma models
+        "gemma2-9b-it": {
+            "input": 0.20 / 1_000_000,  # $0.20 per 1M input tokens
+            "output": 0.20 / 1_000_000,  # $0.20 per 1M output tokens
         },
-        "grok-3-fast": {
-            "input": 5.00 / 1_000_000,  # $5.00 per 1M input tokens
-            "output": 25.00 / 1_000_000,  # $25.00 per 1M output tokens
-        },
-        # Grok 3 latest (alias)
-        "grok-3-latest": {
-            "input": 3.00 / 1_000_000,
-            "output": 15.00 / 1_000_000,
+        "gemma-7b-it": {
+            "input": 0.07 / 1_000_000,  # $0.07 per 1M input tokens
+            "output": 0.07 / 1_000_000,  # $0.07 per 1M output tokens
         },
     },
-    "perplexity": {
-        # Sonar Models - Grounded LLMs with web search
-        # Note: Sonar models also have request fees ($5-$14 per 1k requests)
-        # that vary by search context size. Request fees not yet implemented in v1.
-        "sonar": {
-            "input": 1.00 / 1_000_000,  # $1.00 per 1M input tokens
-            "output": 1.00 / 1_000_000,  # $1.00 per 1M output tokens
-        },
-        "sonar-pro": {
-            "input": 3.00 / 1_000_000,  # $3.00 per 1M input tokens
-            "output": 15.00 / 1_000_000,  # $15.00 per 1M output tokens
-        },
-        "sonar-reasoning": {
-            "input": 1.00 / 1_000_000,  # $1.00 per 1M input tokens
-            "output": 5.00 / 1_000_000,  # $5.00 per 1M output tokens
-        },
-        "sonar-reasoning-pro": {
-            "input": 2.00 / 1_000_000,  # $2.00 per 1M input tokens
-            "output": 8.00 / 1_000_000,  # $8.00 per 1M output tokens
-        },
-        # Sonar Deep Research has additional costs:
-        # - Citations: $2 per 1M tokens
-        # - Searches: $5 per 1k searches
-        # - Reasoning: $3 per 1M tokens
-        # These are not yet implemented in v1.
-        "sonar-deep-research": {
-            "input": 2.00 / 1_000_000,  # $2.00 per 1M input tokens
-            "output": 8.00 / 1_000_000,  # $8.00 per 1M output tokens
-        },
-    },
-=======
->>>>>>> 04342a810ea5441727877f814c8d4fc9141799b1
 }
 
 # Get logger for this module

@@ -65,6 +65,7 @@
 * **Description:** RESTful API za pretragu i preporuke klasične hip hop glazbe (1980-2000)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ### 7. BookSeeker
 =======
 ### 6. BookSeeker
@@ -73,6 +74,8 @@
 * **Folder:** `BookSeeker-carla3791/`
 * **Status:** In Progress
 * **Description:** BookSeeker is a personal digital library and an intelligent book search engine. Users can search for books based on remembering the plot, characters, or details, while the app organizes and keeps track of all selected books in a private library.
+=======
+>>>>>>> 3127acfbe1bdcb764ef04404ec50ad73809e2c05
 
 <<<<<<< HEAD
 ### 8. SnapNStore - Digital Receipt Manager
@@ -188,6 +191,12 @@
 * **Folder:** `trikostura-jpavic-mlistes-djsartori/`
 * **Status:** In Progress
 * **Description:** Online forum za studente svih sveučilišta u Hrvatskoj s mogućnošću stvaranja tema i diskusija
+
+### 6. BookSeeker
+* **Team:** Carla Bajić - Carla Bajić
+* **Folder:** `BookSeeker-carla3791/`
+* **Status:** In Progress
+* **Description:** BookSeeker is a personal digital library and an intelligent book search engine. Users can search for books based on remembering the plot, characters, or details, while the app organizes and keeps track of all selected books in a private library.  
 
 ---
 

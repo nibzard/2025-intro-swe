@@ -1,26 +1,26 @@
 {
-  "generated_at": "2025-11-14T09:46:20.452180",
+  "generated_at": "2026-01-19T15:43:07.121670",
   "summary": {
     "total_students": 52,
-    "students_with_activity": 26,
-    "students_no_activity": 26,
-    "activity_percentage": 50.0,
-    "lab01_completion_count": 5,
-    "lab01_completion_percentage": 9.6,
-    "lab03_folder_count": 20,
-    "lab03_folder_percentage": 38.5,
-    "total_projects": 21,
+    "students_with_activity": 29,
+    "students_no_activity": 23,
+    "activity_percentage": 55.8,
+    "lab01_completion_count": 10,
+    "lab01_completion_percentage": 19.2,
+    "lab03_folder_count": 21,
+    "lab03_folder_percentage": 40.4,
+    "total_projects": 22,
     "projects_in_roster": 12,
-    "orphaned_projects": 9
+    "orphaned_projects": 10
   },
   "students": [
     {
       "name": "Carla Bajić",
       "email": "carla.bajic@gmail.com",
       "github_username": "carla3791",
-      "total_commits": 25,
+      "total_commits": 56,
       "first_commit_date": "2025-11-03",
-      "last_commit_date": "2025-11-12",
+      "last_commit_date": "2025-12-02",
       "lab01_complete": false,
       "lab03_folder": false,
       "project_folder": null,
@@ -32,15 +32,15 @@
       "name": "Stipe Barišić",
       "email": "stipemreze@gmail.com",
       "github_username": "stipzard",
-      "total_commits": 7,
+      "total_commits": 16,
       "first_commit_date": "2025-11-08",
-      "last_commit_date": "2025-11-10",
+      "last_commit_date": "2025-12-08",
       "lab01_complete": true,
       "lab03_folder": false,
       "project_folder": "1950-stipebarisic-lukacirkovic",
-      "project_commits": 3,
+      "project_commits": 6,
       "is_project_lead": true,
-      "status": "Active"
+      "status": "Very Active"
     },
     {
       "name": "Marino Bendra",
@@ -74,43 +74,43 @@
       "name": "Marin Boban",
       "email": "79663595+ma31n@users.noreply.github.com",
       "github_username": "ma31n",
-      "total_commits": 2,
+      "total_commits": 9,
       "first_commit_date": "2025-10-28",
-      "last_commit_date": "2025-11-03",
+      "last_commit_date": "2025-12-15",
       "lab01_complete": false,
       "lab03_folder": true,
       "project_folder": "BobanKuzmanic-nkuzmanic-mboban",
       "project_commits": 0,
       "is_project_lead": false,
-      "status": "Low Activity"
+      "status": "Active"
     },
     {
       "name": "Ivan Bobanac",
       "email": "ivanbobanac97@gmail.com",
       "github_username": "ivanbobanac",
-      "total_commits": 3,
+      "total_commits": 13,
       "first_commit_date": "2025-11-02",
-      "last_commit_date": "2025-11-08",
+      "last_commit_date": "2026-01-19",
       "lab01_complete": true,
       "lab03_folder": false,
       "project_folder": "BB-ibobanac-mblazevic",
-      "project_commits": 1,
+      "project_commits": 0,
       "is_project_lead": true,
-      "status": "Low Activity"
+      "status": "Active"
     },
     {
       "name": "Luka Borović",
       "email": "124844612+lucinho17@users.noreply.github.com",
       "github_username": "lucinho17",
-      "total_commits": 1,
+      "total_commits": 3,
       "first_commit_date": "2025-11-03",
-      "last_commit_date": "2025-11-03",
+      "last_commit_date": "2025-12-12",
       "lab01_complete": false,
       "lab03_folder": true,
       "project_folder": "LANS-scubelic-asucur-lborovic-nmarjanovic",
-      "project_commits": 0,
+      "project_commits": 1,
       "is_project_lead": false,
-      "status": "Minimal Activity"
+      "status": "Low Activity"
     },
     {
       "name": "Marijan Budimir",
@@ -130,29 +130,29 @@
       "name": "Danijela Bušić",
       "email": "busicdanijela81@gmail.com",
       "github_username": "busicdanijela",
-      "total_commits": 1,
+      "total_commits": 6,
       "first_commit_date": "2025-11-10",
-      "last_commit_date": "2025-11-10",
+      "last_commit_date": "2025-12-09",
       "lab01_complete": false,
       "lab03_folder": true,
       "project_folder": null,
       "project_commits": 0,
       "is_project_lead": false,
-      "status": "Minimal Activity"
+      "status": "Active"
     },
     {
       "name": "Domagoj Čaleta",
       "email": "domagojcaleta5@gmail.com",
       "github_username": "domocal",
-      "total_commits": 3,
+      "total_commits": 12,
       "first_commit_date": "2025-11-02",
-      "last_commit_date": "2025-11-07",
+      "last_commit_date": "2026-01-11",
       "lab01_complete": false,
       "lab03_folder": true,
       "project_folder": "SmartSchedule-dmaric-dcaleta-agrubsic",
       "project_commits": 0,
       "is_project_lead": false,
-      "status": "Low Activity"
+      "status": "Active"
     },
     {
       "name": "Jakov Češljar",
@@ -186,35 +186,35 @@
       "name": "Stipe Ćubelić",
       "email": "stipe.cubelic2005s@gmail.com",
       "github_username": "Stipe15",
-      "total_commits": 0,
-      "first_commit_date": null,
-      "last_commit_date": null,
+      "total_commits": 12,
+      "first_commit_date": "2025-12-10",
+      "last_commit_date": "2026-01-16",
       "lab01_complete": false,
       "lab03_folder": true,
       "project_folder": "LANS-scubelic-asucur-lborovic-nmarjanovic",
-      "project_commits": 0,
+      "project_commits": 12,
       "is_project_lead": true,
-      "status": "Lead Only - Verify"
+      "status": "Active"
     },
     {
       "name": "Karlo Ćurčija",
       "email": "kcurcija@pmfst.hr",
       "github_username": "notKarlo/KarloCurcija",
-      "total_commits": 3,
+      "total_commits": 22,
       "first_commit_date": "2025-11-07",
-      "last_commit_date": "2025-11-09",
+      "last_commit_date": "2025-12-05",
       "lab01_complete": false,
       "lab03_folder": true,
       "project_folder": "paradizot-kcurcija-ekevic-ltomic-jvitaljic",
-      "project_commits": 2,
+      "project_commits": 20,
       "is_project_lead": true,
-      "status": "Low Activity"
+      "status": "Very Active"
     },
     {
       "name": "Josip Ćužić",
       "email": "josipcuzic1@gmail.com",
       "github_username": "Zlicone/jcuzic",
-      "total_commits": 2,
+      "total_commits": 4,
       "first_commit_date": "2025-11-03",
       "last_commit_date": "2025-11-07",
       "lab01_complete": false,
@@ -256,7 +256,7 @@
       "name": "Marijan Ević",
       "email": "133985548+evian126@users.noreply.github.com",
       "github_username": "evian126",
-      "total_commits": 5,
+      "total_commits": 10,
       "first_commit_date": "2025-10-24",
       "last_commit_date": "2025-11-07",
       "lab01_complete": false,
@@ -270,15 +270,15 @@
       "name": "Karmen Grubić",
       "email": "karmengrubic@gmail.com",
       "github_username": "kagela58",
-      "total_commits": 3,
+      "total_commits": 12,
       "first_commit_date": "2025-11-06",
-      "last_commit_date": "2025-11-10",
+      "last_commit_date": "2025-12-12",
       "lab01_complete": false,
       "lab03_folder": true,
       "project_folder": "KMB-kgrubic-mbegonja-bjezidzic",
-      "project_commits": 0,
+      "project_commits": 4,
       "is_project_lead": true,
-      "status": "Low Activity"
+      "status": "Active"
     },
     {
       "name": "Antonio Grubišić Ćabo",
@@ -298,15 +298,15 @@
       "name": "Barbara Jezidžić",
       "email": "bjezidzic@pmfst.hr",
       "github_username": "barbjez",
-      "total_commits": 1,
+      "total_commits": 4,
       "first_commit_date": "2025-11-06",
-      "last_commit_date": "2025-11-06",
+      "last_commit_date": "2025-11-20",
       "lab01_complete": false,
       "lab03_folder": true,
       "project_folder": "KMB-kgrubic-mbegonja-bjezidzic",
-      "project_commits": 0,
+      "project_commits": 2,
       "is_project_lead": false,
-      "status": "Minimal Activity"
+      "status": "Low Activity"
     },
     {
       "name": "Ela Kević",
@@ -326,7 +326,7 @@
       "name": "Nikša Kuzmanić",
       "email": "nike.kuzmanic@hotmail.com",
       "github_username": "Niksa-1",
-      "total_commits": 5,
+      "total_commits": 10,
       "first_commit_date": "2025-11-03",
       "last_commit_date": "2025-11-10",
       "lab01_complete": true,
@@ -354,29 +354,29 @@
       "name": "Gianna Lukić",
       "email": "gianna.sapienti.sat@gmail.com",
       "github_username": "Gianna",
-      "total_commits": 10,
+      "total_commits": 25,
       "first_commit_date": "2025-11-02",
-      "last_commit_date": "2025-11-12",
+      "last_commit_date": "2025-12-13",
       "lab01_complete": false,
       "lab03_folder": true,
       "project_folder": null,
       "project_commits": 0,
       "is_project_lead": false,
-      "status": "Active"
+      "status": "Very Active"
     },
     {
       "name": "Iva Majić",
       "email": "ivamajic03@gmail.com",
       "github_username": "maiva667",
-      "total_commits": 8,
+      "total_commits": 44,
       "first_commit_date": "2025-10-30",
-      "last_commit_date": "2025-11-05",
-      "lab01_complete": false,
+      "last_commit_date": "2026-01-19",
+      "lab01_complete": true,
       "lab03_folder": true,
       "project_folder": "cooksy-imajic-idezmalj",
-      "project_commits": 4,
+      "project_commits": 33,
       "is_project_lead": true,
-      "status": "Active"
+      "status": "Very Active"
     },
     {
       "name": "Domina Marić Banje",
@@ -396,7 +396,7 @@
       "name": "Nikola Marjanović",
       "email": "nikolamarjanovic7421@gmail.com",
       "github_username": "nxi2005",
-      "total_commits": 1,
+      "total_commits": 2,
       "first_commit_date": "2025-11-03",
       "last_commit_date": "2025-11-03",
       "lab01_complete": false,
@@ -404,35 +404,35 @@
       "project_folder": "LANS-scubelic-asucur-lborovic-nmarjanovic",
       "project_commits": 0,
       "is_project_lead": false,
-      "status": "Minimal Activity"
+      "status": "Low Activity"
     },
     {
       "name": "Karolina Mihaljević",
       "email": "kmihaljev@pmfst.hr",
       "github_username": "Karoll47",
-      "total_commits": 11,
+      "total_commits": 24,
       "first_commit_date": "2025-11-07",
-      "last_commit_date": "2025-11-13",
+      "last_commit_date": "2025-12-02",
       "lab01_complete": true,
       "lab03_folder": true,
       "project_folder": "povezivanje-timova-Rogulj-Mihaljevic",
-      "project_commits": 6,
+      "project_commits": 14,
       "is_project_lead": true,
-      "status": "Active"
+      "status": "Very Active"
     },
     {
       "name": "Jana Novaković",
       "email": "novakovicjana40@gmail.com",
       "github_username": "jananovakovic",
-      "total_commits": 4,
+      "total_commits": 9,
       "first_commit_date": "2025-11-09",
-      "last_commit_date": "2025-11-09",
+      "last_commit_date": "2026-01-17",
       "lab01_complete": true,
       "lab03_folder": false,
       "project_folder": "JNIP-jananovakovic-ivapuljic",
-      "project_commits": 2,
+      "project_commits": 5,
       "is_project_lead": true,
-      "status": "Low Activity"
+      "status": "Active"
     },
     {
       "name": "Augustin Olujić",
@@ -480,15 +480,15 @@
       "name": "Katarina Pilić",
       "email": "katarinapilic2@gmail.com",
       "github_username": "makalu28",
-      "total_commits": 11,
+      "total_commits": 38,
       "first_commit_date": "2025-11-01",
-      "last_commit_date": "2025-11-08",
+      "last_commit_date": "2026-01-17",
       "lab01_complete": false,
       "lab03_folder": true,
       "project_folder": "calorieTracker-kpilic-mbendra",
-      "project_commits": 3,
+      "project_commits": 18,
       "is_project_lead": true,
-      "status": "Active"
+      "status": "Very Active"
     },
     {
       "name": "Nikolina Plazibat",
@@ -508,85 +508,85 @@
       "name": "Iva Puljić",
       "email": null,
       "github_username": "ivapuljic",
-      "total_commits": 0,
-      "first_commit_date": null,
-      "last_commit_date": null,
-      "lab01_complete": false,
+      "total_commits": 8,
+      "first_commit_date": "2025-12-01",
+      "last_commit_date": "2026-01-17",
+      "lab01_complete": true,
       "lab03_folder": false,
       "project_folder": "JNIP-jananovakovic-ivapuljic",
-      "project_commits": 0,
+      "project_commits": 4,
       "is_project_lead": false,
-      "status": "No Git Activity"
+      "status": "Active"
     },
     {
       "name": "Đana Rogulj",
       "email": "drogulj1@pmfst.hr",
       "github_username": "danrog101",
-      "total_commits": 0,
-      "first_commit_date": null,
-      "last_commit_date": null,
-      "lab01_complete": false,
-      "lab03_folder": false,
+      "total_commits": 2,
+      "first_commit_date": "2025-12-01",
+      "last_commit_date": "2025-12-01",
+      "lab01_complete": true,
+      "lab03_folder": true,
       "project_folder": "povezivanje-timova-Rogulj-Mihaljevic",
       "project_commits": 0,
       "is_project_lead": false,
-      "status": "No Git Activity"
+      "status": "Low Activity"
     },
     {
       "name": "Emma Salopek",
       "email": "emma.salopek7@gmail.com",
       "github_username": "emmasalopek",
-      "total_commits": 1,
+      "total_commits": 23,
       "first_commit_date": "2025-11-09",
-      "last_commit_date": "2025-11-09",
-      "lab01_complete": false,
+      "last_commit_date": "2026-01-11",
+      "lab01_complete": true,
       "lab03_folder": true,
       "project_folder": null,
       "project_commits": 0,
       "is_project_lead": true,
-      "status": "Minimal Activity"
+      "status": "Very Active"
     },
     {
       "name": "Damjan Sartori",
       "email": "damjansartori@gmail.com",
       "github_username": "aeldarian1",
-      "total_commits": 3,
+      "total_commits": 534,
       "first_commit_date": "2025-10-24",
-      "last_commit_date": "2025-11-05",
+      "last_commit_date": "2025-12-12",
       "lab01_complete": false,
       "lab03_folder": false,
       "project_folder": null,
       "project_commits": 0,
       "is_project_lead": false,
-      "status": "Low Activity"
+      "status": "Very Active"
     },
     {
       "name": "David Siroglavić",
       "email": "david.siroglavic24@gmail.com",
       "github_username": "davids2510",
-      "total_commits": 1,
+      "total_commits": 22,
       "first_commit_date": "2025-11-07",
-      "last_commit_date": "2025-11-07",
+      "last_commit_date": "2026-01-15",
       "lab01_complete": false,
       "lab03_folder": false,
       "project_folder": "rezerviraj.me-dsiroglavic-mbudimir",
-      "project_commits": 1,
+      "project_commits": 18,
       "is_project_lead": true,
-      "status": "Minimal Activity"
+      "status": "Very Active"
     },
     {
       "name": "Ante Šućur",
       "email": "a.sucur2@gmail.com",
       "github_username": "Suki122",
-      "total_commits": 2,
+      "total_commits": 9,
       "first_commit_date": "2025-11-03",
-      "last_commit_date": "2025-11-03",
+      "last_commit_date": "2026-01-11",
       "lab01_complete": false,
       "lab03_folder": true,
       "project_folder": "LANS-scubelic-asucur-lborovic-nmarjanovic",
-      "project_commits": 0,
+      "project_commits": 5,
       "is_project_lead": false,
-      "status": "Low Activity"
+      "status": "Active"
     },
     {
       "name": "Ante Šušnjar",
@@ -676,21 +676,21 @@
       "name": "Tamara Višić",
       "email": null,
       "github_username": "tvisic",
-      "total_commits": 5,
+      "total_commits": 35,
       "first_commit_date": "2025-10-24",
-      "last_commit_date": "2025-11-12",
-      "lab01_complete": false,
+      "last_commit_date": "2025-12-12",
+      "lab01_complete": true,
       "lab03_folder": true,
       "project_folder": "404-atezak-tvisic",
-      "project_commits": 1,
+      "project_commits": 20,
       "is_project_lead": false,
-      "status": "Active"
+      "status": "Very Active"
     },
     {
       "name": "Jere Vitaljić",
       "email": "jerevitaljic123@gmail.com",
       "github_username": "JerryBebe",
-      "total_commits": 1,
+      "total_commits": 2,
       "first_commit_date": "2025-11-10",
       "last_commit_date": "2025-11-10",
       "lab01_complete": false,
@@ -698,7 +698,7 @@
       "project_folder": "paradizot-kcurcija-ekevic-ltomic-jvitaljic",
       "project_commits": 0,
       "is_project_lead": false,
-      "status": "Minimal Activity"
+      "status": "Low Activity"
     },
     {
       "name": "Blago Vukšić",
@@ -745,7 +745,7 @@
   ],
   "projects": {
     "1950-stipebarisic-lukacirkovic": {
-      "total_commits": 3,
+      "total_commits": 6,
       "contributors": [
         "stipzard"
       ],
@@ -759,11 +759,12 @@
       "in_roster": true
     },
     "404-atezak-tvisic": {
-      "total_commits": 1,
+      "total_commits": 20,
       "contributors": [
+        "Tamara Višić",
         "TV134"
       ],
-      "contributor_count": 1,
+      "contributor_count": 2,
       "team_name": "404",
       "team_lead": "atezak",
       "team_members": [
@@ -772,33 +773,33 @@
       ],
       "in_roster": true
     },
-    "BB-ibobanac-mblazevic": {
-      "total_commits": 1,
+    "BB-ibobanac-mblazevic11": {
+      "total_commits": 6,
       "contributors": [
-        "ivanbobanac"
-      ],
-      "contributor_count": 1,
-      "team_name": "BB",
-      "team_lead": "ivanbobanac",
-      "team_members": [
         "Ivan Bobanac",
         "Mateo Blažević"
       ],
-      "in_roster": true
+      "contributor_count": 2,
+      "team_name": "Unknown",
+      "team_lead": "Unknown",
+      "team_members": [],
+      "in_roster": false
     },
     "BobanKuzmanic-MarinBoban-NikšaKuzmanić": {
-      "total_commits": 3,
+      "total_commits": 10,
       "contributors": [
-        "Niksa-1"
+        "Marin Boban",
+        "Niksa-1",
+        "unknown"
       ],
-      "contributor_count": 1,
+      "contributor_count": 3,
       "team_name": "Unknown",
       "team_lead": "Unknown",
       "team_members": [],
       "in_roster": false
     },
     "BookSeeker-carla3791": {
-      "total_commits": 1,
+      "total_commits": 6,
       "contributors": [
         "carla3791"
       ],
@@ -808,12 +809,24 @@
       "team_members": [],
       "in_roster": false
     },
-    "JNIP-jananovakovic-ivapuljic": {
-      "total_commits": 2,
+    "HERChat-esalopek-dbusic": {
+      "total_commits": 13,
       "contributors": [
-        "jananovakovic"
+        "emmasalopek"
       ],
       "contributor_count": 1,
+      "team_name": "Unknown",
+      "team_lead": "Unknown",
+      "team_members": [],
+      "in_roster": false
+    },
+    "JNIP-jananovakovic-ivapuljic": {
+      "total_commits": 9,
+      "contributors": [
+        "ivapuljic",
+        "jananovakovic"
+      ],
+      "contributor_count": 2,
       "team_name": "JNIP",
       "team_lead": "jananovakovic",
       "team_members": [
@@ -822,23 +835,31 @@
       ],
       "in_roster": true
     },
-    "KMB-projekt": {
-      "total_commits": 2,
+    "KMB-kgrubic-mbegonja-bjezidzic": {
+      "total_commits": 8,
       "contributors": [
-        "kagela58"
+        "barbjez",
+        "kagela58",
+        "Nikola Balic"
       ],
-      "contributor_count": 1,
-      "team_name": "Unknown",
-      "team_lead": "Unknown",
-      "team_members": [],
-      "in_roster": false
+      "contributor_count": 3,
+      "team_name": "KMB",
+      "team_lead": "kagela58",
+      "team_members": [
+        "Karmen Grubić",
+        "Matea Begonja",
+        "Barbara Jezidžić"
+      ],
+      "in_roster": true
     },
     "KSKS-jcuzic-aolujic-lpericic-mdogas": {
-      "total_commits": 1,
+      "total_commits": 11,
       "contributors": [
-        "Josip"
+        "Augustin",
+        "Josip",
+        "lanapericic810"
       ],
-      "contributor_count": 1,
+      "contributor_count": 3,
       "team_name": "KsKs",
       "team_lead": "Zlicone/jcuzic",
       "team_members": [
@@ -850,11 +871,14 @@
       "in_roster": true
     },
     "LANS-scubelic-asucur-lborovic-nmarjanovic": {
-      "total_commits": 3,
+      "total_commits": 24,
       "contributors": [
-        "Stipe Ćubelić"
+        "Luka Borović",
+        "Stipe Ćubelić",
+        "Stipe15",
+        "Suki122"
       ],
-      "contributor_count": 1,
+      "contributor_count": 4,
       "team_name": "LANS",
       "team_lead": "Stipe15",
       "team_members": [
@@ -865,45 +889,72 @@
       ],
       "in_roster": true
     },
-    "SeatReview-itavic-asusnjar-ltesic-jcesljar": {
-      "total_commits": 1,
+    "Melodia-bvuksicc": {
+      "total_commits": 2,
       "contributors": [
-        "itavic371"
+        "blago vuksic"
       ],
       "contributor_count": 1,
+      "team_name": "Unknown",
+      "team_lead": "Unknown",
+      "team_members": [],
+      "in_roster": false
+    },
+    "NK-Klara99-1nikolina23": {
+      "total_commits": 4,
+      "contributors": [
+        "1nikolina23"
+      ],
+      "contributor_count": 1,
+      "team_name": "Unknown",
+      "team_lead": "Unknown",
+      "team_members": [],
+      "in_roster": false
+    },
+    "SeatReview-itavic-asusnjar-ltesic-jcesljar": {
+      "total_commits": 6,
+      "contributors": [
+        "itavic371",
+        "jakces"
+      ],
+      "contributor_count": 2,
       "team_name": "Unknown",
       "team_lead": "Unknown",
       "team_members": [],
       "in_roster": false
     },
     "SmartSchedule-dmaric-dcaleta-agrubisic": {
-      "total_commits": 1,
+      "total_commits": 12,
       "contributors": [
-        "dbanmar"
+        "dbanmar",
+        "domocal",
+        "tonigru"
       ],
-      "contributor_count": 1,
+      "contributor_count": 3,
       "team_name": "Unknown",
       "team_lead": "Unknown",
       "team_members": [],
       "in_roster": false
     },
-    "SnapNStore": {
+    "SnapNStore-glukic": {
       "total_commits": 4,
       "contributors": [
-        "Gianna"
+        "Gianna",
+        "nkkko"
       ],
-      "contributor_count": 1,
+      "contributor_count": 2,
       "team_name": "Unknown",
       "team_lead": "Unknown",
       "team_members": [],
       "in_roster": false
     },
     "calorieTracker-kpilic-mbendra": {
-      "total_commits": 3,
+      "total_commits": 23,
       "contributors": [
-        "makalu28"
+        "makalu28",
+        "marben1512"
       ],
-      "contributor_count": 1,
+      "contributor_count": 2,
       "team_name": "K&M",
       "team_lead": "makalu28",
       "team_members": [
@@ -912,23 +963,14 @@
       ],
       "in_roster": true
     },
-    "climate-analyzers-asmith-bjohnson": {
-      "total_commits": 1,
-      "contributors": [
-        "nkkko"
-      ],
-      "contributor_count": 1,
-      "team_name": "Unknown",
-      "team_lead": "Unknown",
-      "team_members": [],
-      "in_roster": false
-    },
     "cooksy-imajic-idezmalj": {
-      "total_commits": 4,
+      "total_commits": 37,
       "contributors": [
-        "maiva667"
+        "ivadez",
+        "maiva667",
+        "Nikola Balic"
       ],
-      "contributor_count": 1,
+      "contributor_count": 3,
       "team_name": "IvaIva",
       "team_lead": "maiva667",
       "team_members": [
@@ -938,7 +980,7 @@
       "in_roster": true
     },
     "garderoba": {
-      "total_commits": 1,
+      "total_commits": 2,
       "contributors": [
         "evian126"
       ],
@@ -949,12 +991,13 @@
       "in_roster": false
     },
     "paradizot-kcurcija-ekevic-ltomic-jvitaljic": {
-      "total_commits": 3,
+      "total_commits": 34,
       "contributors": [
         "KarloCurcija",
-        "Lucija Tomić"
+        "Lucija Tomić",
+        "notKarlo"
       ],
-      "contributor_count": 2,
+      "contributor_count": 3,
       "team_name": "Paradižot",
       "team_lead": "notKarlo/KarloCurcija",
       "team_members": [
@@ -966,11 +1009,13 @@
       "in_roster": true
     },
     "povezivanje-timova-Rogulj-Mihaljevic": {
-      "total_commits": 6,
+      "total_commits": 21,
       "contributors": [
-        "Karoll47"
+        "Đana Rogulj",
+        "Karoll47",
+        "Nikola Balic"
       ],
-      "contributor_count": 1,
+      "contributor_count": 3,
       "team_name": "RM",
       "team_lead": "Karoll47",
       "team_members": [
@@ -980,7 +1025,7 @@
       "in_roster": true
     },
     "rezerviraj.me-dsiroglavic-mbudimir": {
-      "total_commits": 1,
+      "total_commits": 18,
       "contributors": [
         "davids2510"
       ],
@@ -993,19 +1038,8 @@
       ],
       "in_roster": true
     },
-    "teamup-sports": {
-      "total_commits": 1,
-      "contributors": [
-        "Đana Rogulj"
-      ],
-      "contributor_count": 1,
-      "team_name": "Unknown",
-      "team_lead": "Unknown",
-      "team_members": [],
-      "in_roster": false
-    },
     "trikostura-jpavic-mlistes-djsartori": {
-      "total_commits": 1,
+      "total_commits": 524,
       "contributors": [
         "aeldarian1"
       ],

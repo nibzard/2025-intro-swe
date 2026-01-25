@@ -14,7 +14,7 @@ export interface RunSettings {
 }
 
 export interface ModelConfig {
-  provider: 'google';
+  provider: 'google' | 'groq';
   model_name: string;
   env_api_key: string;
   system_prompt?: string;
@@ -51,11 +51,14 @@ export interface SearchResult {
 export interface IntentResult {
   intent_id: string;
   prompt: string;
+  answers: Answer[];
+}
+
+export interface Answer {
   answer: string;
-  mentions: BrandMention[];
   model: string;
-  tokens_used: number;
   cost_usd: number;
+  mentions: BrandMention[];
 }
 
 export interface BrandMention {
@@ -69,3 +72,9 @@ export interface BrandMention {
 export const GEMINI_MODELS = [
   { id: 'models/gemini-2.5-flash', name: 'Gemini 2.5 Flash', description: 'Latest and fastest model (recommended)' },
 ] as const;
+
+export const GROQ_MODELS = [
+  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', description: 'Best quality for general tasks' },
+] as const;
+
+export type Provider = 'google' | 'groq';

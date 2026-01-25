@@ -3,7 +3,11 @@ import { useWallet } from '../context/WalletContext';
 import { CreditCard, Wallet as WalletIcon, X, Check } from 'lucide-react';
 
 const Wallet = () => {
+<<<<<<< HEAD
     const { balance, addToBalance, subtractFromBalance } = useWallet();
+=======
+    const { balance, addToBalance, subtractFromBalance, buyTicket } = useWallet();
+>>>>>>> 3127acfbe1bdcb764ef04404ec50ad73809e2c05
     const [showTopUp, setShowTopUp] = useState(false);
     const [selectedAmount, setSelectedAmount] = useState(10);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('google');
@@ -12,10 +16,17 @@ const Wallet = () => {
     const [processing, setProcessing] = useState(false);
 
     const TICKETS = [
+<<<<<<< HEAD
         { id: 1, name: '1. Zona', price: 1.00, duration: '1 Sat' },
         { id: 2, name: '2. Zona', price: 1.50, duration: '1 Sat' },
         { id: 3, name: '3. Zona', price: 2.00, duration: '1 Sat' },
         { id: 4, name: '4. Zona', price: 2.50, duration: '1 Sat' },
+=======
+        { id: 1, name: '1. Zona', type: '1. Zona', price: 1.00, duration: '1 Sat' },
+        { id: 2, name: '2. Zona', type: '2. Zona', price: 1.50, duration: '1 Sat' },
+        { id: 3, name: '3. Zona', type: '3. Zona', price: 2.00, duration: '1 Sat' },
+        { id: 4, name: '4. Zona', type: '4. Zona', price: 2.50, duration: '1 Sat' },
+>>>>>>> 3127acfbe1bdcb764ef04404ec50ad73809e2c05
     ];
 
     const handleTopUp = () => {
@@ -37,10 +48,16 @@ const Wallet = () => {
 
         setPurchaseProcessing(true);
         setTimeout(() => {
+<<<<<<< HEAD
             subtractFromBalance(selectedTicket.price);
             setPurchaseProcessing(false);
             setSelectedTicket(null);
             // In a real app, we would add the ticket to the user's "Tickets" list here
+=======
+            buyTicket(selectedTicket);
+            setPurchaseProcessing(false);
+            setSelectedTicket(null);
+>>>>>>> 3127acfbe1bdcb764ef04404ec50ad73809e2c05
         }, 1000);
     };
 

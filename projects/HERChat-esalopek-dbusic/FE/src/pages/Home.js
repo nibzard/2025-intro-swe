@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Heart,
   MessageCircle,
@@ -8,83 +8,138 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useHistory } from "react-router-dom/cjs/react-router-dom";
+import { apiClient } from "../api/client";
 import LogoIcon from "../assets/logo.png";
 
 export default function HERChat() {
   const history = useHistory();
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      author: "Sarah Johnson",
-      avatar: "SJ",
-      time: "2 hours ago",
-      content:
-        "Just finished reading 'Atomic Habits' and I'm feeling so inspired! Small changes really do make a big difference. What book has changed your perspective lately? 📚✨",
-      likes: 24,
-      comments: 8,
-      shares: 3,
-      liked: false,
-    },
-    {
-      id: 2,
-      author: "Emma Williams",
-      avatar: "EW",
-      time: "5 hours ago",
-      content:
-        "Morning yoga session complete! Starting the day with mindfulness has been a game-changer for my mental health. How do you start your mornings? 🧘‍♀️",
-      likes: 45,
-      comments: 12,
-      shares: 5,
-      liked: true,
-    },
-    {
-      id: 3,
-      author: "Maya Patel",
-      avatar: "MP",
-      time: "1 day ago",
-      content:
-        "Finally launched my side business! To all the women out there hesitating - take the leap! You're stronger than you think 💪💼",
-      likes: 67,
-      comments: 23,
-      shares: 15,
-      liked: false,
-    },
-  ]);
-
+  const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
 
-  const handleLike = (postId) => {
-    setPosts(
-      posts.map((post) => {
-        if (post.id === postId) {
-          return {
-            ...post,
-            liked: !post.liked,
-            likes: post.liked ? post.likes - 1 : post.likes + 1,
-          };
-        }
-        return post;
-      })
-    );
-  };
+  // Fetch current user and posts on mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Get current user
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        setCurrentUser(user);
 
-  const handlePost = () => {
-    if (newPost.trim()) {
-      const post = {
-        id: posts.length + 1,
-        author: "You",
-        avatar: "YO",
-        time: "Just now",
-        content: newPost,
-        likes: 0,
-        comments: 0,
-        shares: 0,
-        liked: false,
-      };
-      setPosts([post, ...posts]);
-      setNewPost("");
+        // Fetch posts
+        const postsData = await apiClient.getPosts();
+        setPosts(postsData || []);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error loading data:", err);
+        setError("Failed to load posts");
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  const handleLike = async (postId) => {
+    try {
+      const post = posts.find(p => p.id === postId);
+      
+      // Check if already liked
+      const isLiked = posts.find(p => p.id === postId)?.liked;
+
+      if (isLiked) {
+        await apiClient.removeFavorite(postId);
+      } else {
+        await apiClient.addFavorite(postId);
+      }
+
+      // Update local state
+      setPosts(
+        posts.map((p) => {
+          if (p.id === postId) {
+            return {
+              ...p,
+              liked: !p.liked,
+              likes: p.liked ? p.likes - 1 : p.likes + 1,
+            };
+          }
+          return p;
+        })
+      );
+    } catch (err) {
+      console.error("Error liking post:", err);
     }
   };
+
+  const handlePost = async () => {
+    if (!newPost.trim()) return;
+
+    try {
+      const response = await apiClient.createPost(newPost);
+      
+      // Add new post to beginning of list
+      const newPostObj = {
+        id: response.post.id,
+        user_id: currentUser.id,
+        content: newPost,
+        image_url: null,
+        created_at: new Date().toISOString(),
+        username: currentUser.username,
+        avatar_url: currentUser.avatar_url,
+        likes: 0,
+        comments: 0,
+        liked: false,
+      };
+
+      setPosts([newPostObj, ...posts]);
+      setNewPost("");
+      setError("");
+    } catch (err) {
+      console.error("Error posting:", err);
+      setError(err.message || "Failed to post");
+    }
+  };
+
+  const handleShare = () => {
+    alert("Share feature coming soon!");
+  };
+
+  const handleComment = (postId) => {
+    const comment = prompt("Add a comment:");
+    if (comment) {
+      handleCommentSubmit(postId, comment);
+    }
+  };
+
+  const handleCommentSubmit = async (postId, content) => {
+    try {
+      await apiClient.createComment(postId, content);
+      
+      // Update local state
+      setPosts(
+        posts.map((p) => {
+          if (p.id === postId) {
+            return {
+              ...p,
+              comments: p.comments + 1,
+            };
+          }
+          return p;
+        })
+      );
+    } catch (err) {
+      console.error("Error commenting:", err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={styles.container}>
+        <p style={{ textAlign: "center", paddingTop: "2rem" }}>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.container}>
@@ -109,10 +164,16 @@ export default function HERChat() {
             <h1 style={styles.logoText}>HERChat</h1>
           </div>
           <div style={styles.headerButtons}>
-            <button style={styles.btnLogout} onClick={() => history.push("/")}>
+            <button style={styles.btnLogout} onClick={() => {
+              localStorage.removeItem("token");
+              localStorage.removeItem("user");
+              history.push("/");
+            }}>
               Log out
             </button>
-            <button style={styles.btnProfile}>Profile</button>
+            <button style={styles.btnProfile} onClick={() => history.push("/profile")}>
+              Profile
+            </button>
           </div>
         </div>
       </header>
@@ -150,9 +211,15 @@ export default function HERChat() {
                 <h2 style={styles.titleText}>Trending</h2>
               </div>
               <div style={styles.trendingTags}>
-                <div style={styles.tag}>#WomenInBusiness</div>
-                <div style={styles.tag}>#SelfCare</div>
-                <div style={styles.tag}>#WellnessJourney</div>
+                <div style={styles.tag} onClick={() => alert("Hashtag filter coming soon!")}>
+                  #WomenInBusiness
+                </div>
+                <div style={styles.tag} onClick={() => alert("Hashtag filter coming soon!")}>
+                  #SelfCare
+                </div>
+                <div style={styles.tag} onClick={() => alert("Hashtag filter coming soon!")}>
+                  #WellnessJourney
+                </div>
               </div>
             </div>
 
@@ -171,6 +238,13 @@ export default function HERChat() {
 
           {/* Main Content */}
           <div style={styles.mainContent}>
+            {/* Error Message */}
+            {error && (
+              <div style={{ ...styles.createPostCard, backgroundColor: "#ffebee", borderColor: "#ef5350" }}>
+                <p style={{ color: "#c62828" }}>{error}</p>
+              </div>
+            )}
+
             {/* Create Post */}
             <div style={styles.createPostCard}>
               <textarea
@@ -187,45 +261,63 @@ export default function HERChat() {
             </div>
 
             {/* Posts Feed */}
-            {posts.map((post) => (
-              <div key={post.id} style={styles.postCard}>
-                <div style={styles.postHeader}>
-                  <div style={styles.postAvatar}>{post.avatar}</div>
-                  <div style={styles.postInfo}>
-                    <h3 style={styles.postAuthor}>{post.author}</h3>
-                    <p style={styles.postTime}>{post.time}</p>
+            {posts.length === 0 ? (
+              <div style={styles.postCard}>
+                <p style={{ textAlign: "center", color: "#999" }}>
+                  No posts yet. Create one to get started!
+                </p>
+              </div>
+            ) : (
+              posts.map((post) => (
+                <div key={post.id} style={styles.postCard}>
+                  <div style={styles.postHeader}>
+                    <div style={styles.postAvatar}>
+                      {(post.username || post.author || "U").substring(0, 2).toUpperCase()}
+                    </div>
+                    <div style={styles.postInfo}>
+                      <h3 style={styles.postAuthor}>
+                        {post.username || post.author}
+                      </h3>
+                      <p style={styles.postTime}>{post.time || "Just now"}</p>
+                    </div>
+                  </div>
+                  <p style={styles.postContent}>{post.content}</p>
+
+                  {/* Action Buttons */}
+                  <div style={styles.postActionsBar}>
+                    <button
+                      onClick={() => handleLike(post.id)}
+                      style={{
+                        ...styles.actionBtn,
+                        ...(post.liked && styles.actionBtnLiked),
+                      }}
+                    >
+                      <Heart
+                        size={20}
+                        fill={post.liked ? "#ec407a" : "none"}
+                        stroke={post.liked ? "#ec407a" : "currentColor"}
+                        strokeWidth={2}
+                      />
+                      <span style={styles.actionBtnText}>{post.likes || 0}</span>
+                    </button>
+                    <button 
+                      style={styles.actionBtn}
+                      onClick={() => handleComment(post.id)}
+                    >
+                      <MessageCircle size={20} />
+                      <span style={styles.actionBtnText}>{post.comments || 0}</span>
+                    </button>
+                    <button 
+                      style={styles.actionBtn}
+                      onClick={handleShare}
+                    >
+                      <Share2 size={20} />
+                      <span style={styles.actionBtnText}>Share</span>
+                    </button>
                   </div>
                 </div>
-                <p style={styles.postContent}>{post.content}</p>
-
-                {/* Action Buttons */}
-                <div style={styles.postActionsBar}>
-                  <button
-                    onClick={() => handleLike(post.id)}
-                    style={{
-                      ...styles.actionBtn,
-                      ...(post.liked && styles.actionBtnLiked),
-                    }}
-                  >
-                    <Heart
-                      size={20}
-                      fill={post.liked ? "#ec407a" : "none"}
-                      stroke={post.liked ? "#ec407a" : "currentColor"}
-                      strokeWidth={2}
-                    />
-                    <span style={styles.actionBtnText}>{post.likes}</span>
-                  </button>
-                  <button style={styles.actionBtn}>
-                    <MessageCircle size={20} />
-                    <span style={styles.actionBtnText}>{post.comments}</span>
-                  </button>
-                  <button style={styles.actionBtn}>
-                    <Share2 size={20} />
-                    <span style={styles.actionBtnText}>{post.shares}</span>
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -371,6 +463,8 @@ const styles = {
     fontWeight: "600",
     color: "#555",
     fontSize: "0.9rem",
+    cursor: "pointer",
+    transition: "all 0.3s",
   },
   communityText: {
     color: "#666",
