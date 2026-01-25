@@ -1,6 +1,10 @@
 # SeatReview - Stadium Seat Review Application
 
+**Live Demo (Frontend):** https://frontend-five-sigma-96.vercel.app
+
 Aplikacija za pregled i ocjenjivanje sjedala na stadionima, dvoranama i kazalistima.
+
+> **Napomena:** Frontend je deployean na Vercel. Backend zahtijeva lokalno pokretanje jer koristi SQLite bazu podataka.
 
 ## Funkcionalnosti
 
