@@ -167,9 +167,9 @@ Prosjecne ocjene prikazane u plavom krugu s progress barovima za svaku kategorij
 ## Autori
 
 - Ivan Tavic (itavic)
-- Ana Susnjar (asusnjar)
+- Ante Susnjar (asusnjar)
 - Luka Tesic (ltesic)
-- Josip Cesljar (jcesljar)
+- Jakov Cesljar (jcesljar)
 
 **Kolegij:** Uvod u programsko inzenjerstvo
 **Akademska godina:** 2024/2025
