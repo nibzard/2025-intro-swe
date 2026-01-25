@@ -8,10 +8,21 @@ function Photo360Viewer({ venueId }) {
   const [photos, setPhotos] = useState([]);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showVirtualTour, setShowVirtualTour] = useState(false);
 
   useEffect(() => {
     fetchVenueAndPhotos();
   }, [venueId]);
+
+  const getTourUrl = () => {
+    if (!venue || !venue.virtual_tour_url) return '';
+    let url = venue.virtual_tour_url;
+    if (url.includes('matterport.com')) {
+      const separator = url.includes('?') ? '&' : '?';
+      url += `${separator}play=1&qs=1&brand=0&mls=2&wh=0&guides=0&title=0`;
+    }
+    return url;
+  };
 
   const fetchVenueAndPhotos = async () => {
     try {
@@ -42,25 +53,48 @@ function Photo360Viewer({ venueId }) {
     return <div className="loading-small">Ucitavanje 360° prikaza...</div>;
   }
 
+  const hasVirtualTour = venue && venue.virtual_tour_url;
+
   return (
     <div className="photo-360-section">
       {/* Virtual Tour (iframe) */}
-      {venue?.virtual_tour_url && (
-        <div className="card virtual-tour-card">
-          <h3>🌐 Virtualna Setnja - {venue.name}</h3>
-          <div className="virtual-tour-container">
-            <iframe
-              src={venue.virtual_tour_url}
-              width="100%"
-              height="500"
-              frameBorder="0"
-              allowFullScreen
-              title="Virtual Tour"
-              style={{ borderRadius: "12px" }}
-            />
+      {hasVirtualTour && (
+        <div className="virtual-tour-section">
+          <div className="virtual-tour-header">
+            <h3>🌐 360° Virtualna Šetnja - {venue.name}</h3>
+            <p className="gallery-subtitle">Istražite {venue.name} u 360° panoramskom prikazu</p>
           </div>
+
+          {!showVirtualTour ? (
+            <div className="virtual-tour-preview" onClick={() => setShowVirtualTour(true)}>
+              <div className="virtual-tour-overlay">
+                <div className="play-button">
+                  <span>▶</span>
+                </div>
+                <span className="tour-label">Kliknite za virtualnu šetnju</span>
+              </div>
+            </div>
+          ) : (
+            <div className="virtual-tour-container">
+              <div className="virtual-tour-controls">
+                <button
+                  className="close-tour-btn"
+                  onClick={() => setShowVirtualTour(false)}
+                >
+                  ✕ Zatvori virtualnu šetnju
+                </button>
+              </div>
+              <iframe
+                src={getTourUrl()}
+                title="360 Virtual Tour"
+                className="virtual-tour-iframe"
+                allowFullScreen
+                style={{ width: "100%", height: "600px", border: "none", borderRadius: "12px" }}
+              />
+            </div>
+          )}
           <p className="virtual-tour-hint">
-            Koristite mis za rotaciju pogleda. Kliknite na tocke za kretanje.
+            Koristite miš za rotaciju pogleda. Kliknite na točke za kretanje.
           </p>
         </div>
       )}
