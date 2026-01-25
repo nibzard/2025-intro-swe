@@ -229,57 +229,83 @@ db.serialize(() => {
     }
   });
 
-  // Seed admin user and bot users with reviews
-  db.get("SELECT COUNT(*) AS count FROM User", async (err, row) => {
-    if (err) return console.error("Error checking users:", err);
+  // Seed admin user
+  db.get("SELECT COUNT(*) AS count FROM User WHERE email = 'admin@seatreview.hr'", async (err, row) => {
+    if (err) return console.error("Error checking admin:", err);
     if (row.count === 0) {
       const hash = await bcrypt.hash("Admin123!", 10);
       db.run(
         "INSERT INTO User (email, password_hash, is_verified, is_admin) VALUES (?, ?, 1, 1)",
         ["admin@seatreview.hr", hash],
-        async () => {
-          console.log("Seeded admin user: admin@seatreview.hr / Admin123!");
+        () => console.log("Seeded admin user: admin@seatreview.hr / Admin123!")
+      );
+    }
+  });
 
-          // Create bot users
+  // Seed bot users and reviews (always check and add if missing)
+  setTimeout(async () => {
+    try {
+      // Check if reviews exist
+      db.get("SELECT COUNT(*) AS count FROM Review", async (err, reviewRow) => {
+        if (err) return console.error("Error checking reviews:", err);
+
+        if (reviewRow.count === 0) {
+          console.log("No reviews found, seeding bot users and reviews...");
+
           const botUsers = [
-            { email: "marko.horvat@gmail.com", name: "Marko Horvat" },
-            { email: "ana.babic@gmail.com", name: "Ana Babić" },
-            { email: "ivan.kovacevic@gmail.com", name: "Ivan Kovačević" },
-            { email: "petra.novak@gmail.com", name: "Petra Novak" },
-            { email: "luka.matic@gmail.com", name: "Luka Matić" },
-            { email: "maja.juric@gmail.com", name: "Maja Jurić" },
-            { email: "tomislav.peric@gmail.com", name: "Tomislav Perić" },
-            { email: "kristina.knezevic@gmail.com", name: "Kristina Knežević" }
+            { email: "marko.horvat@gmail.com" },
+            { email: "ana.babic@gmail.com" },
+            { email: "ivan.kovacevic@gmail.com" },
+            { email: "petra.novak@gmail.com" },
+            { email: "luka.matic@gmail.com" },
+            { email: "maja.juric@gmail.com" },
+            { email: "tomislav.peric@gmail.com" },
+            { email: "kristina.knezevic@gmail.com" }
           ];
 
           const botHash = await bcrypt.hash("BotUser123!", 10);
           const userIds = [];
 
+          // Create bot users
           for (const bot of botUsers) {
-            await new Promise((resolve, reject) => {
+            await new Promise((resolve) => {
               db.run(
-                "INSERT INTO User (email, password_hash, is_verified, is_admin) VALUES (?, ?, 1, 0)",
+                "INSERT OR IGNORE INTO User (email, password_hash, is_verified, is_admin) VALUES (?, ?, 1, 0)",
                 [bot.email, botHash],
                 function(err) {
-                  if (err) reject(err);
-                  else {
+                  if (!err && this.lastID) {
                     userIds.push(this.lastID);
-                    resolve();
                   }
+                  resolve();
                 }
               );
             });
           }
 
-          console.log("Seeded bot users:", botUsers.length);
+          // Get all bot user IDs (in case they already existed)
+          await new Promise((resolve) => {
+            db.all(
+              "SELECT id FROM User WHERE email IN (?, ?, ?, ?, ?, ?, ?, ?)",
+              botUsers.map(b => b.email),
+              (err, rows) => {
+                if (!err && rows) {
+                  userIds.length = 0;
+                  rows.forEach(r => userIds.push(r.id));
+                }
+                resolve();
+              }
+            );
+          });
 
-          // Create sample reviews for Stadion Poljud (venue_id = 1)
+          console.log("Bot user IDs:", userIds);
+
+          // Sample reviews for Stadion Poljud
           const sampleReviews = [
             { section: "ZAPAD", row: "5", seat: "12", comfort: 5, legroom: 4, visibility: 5, cleanliness: 4, price: 150, text: "Odličan pogled na cijeli teren! Sjedio sam na utakmici protiv Dinama i atmosfera je bila nevjerojatna. Preporučujem svima." },
             { section: "ZAPAD", row: "10", seat: "8", comfort: 4, legroom: 4, visibility: 5, cleanliness: 5, price: 120, text: "Super pozicija, vidi se sve. Sjedalo je udobno, samo malo tijesno za duže noge." },
             { section: "ISTOK", row: "3", seat: "22", comfort: 4, legroom: 3, visibility: 4, cleanliness: 4, price: 100, text: "Dobra vrijednost za novac. Pogled je ok, sunce zna smetati popodne." },
             { section: "ISTOK", row: "8", seat: "15", comfort: 5, legroom: 5, visibility: 5, cleanliness: 5, price: 130, text: "Najbolje mjesto na kojem sam ikad gledao utakmicu! Savršen pogled na gol." },
-            { section: "SJEVER", row: "2", seat: "45", comfort: 3, legroom: 3, visibility: 4, cleanliness: 3, price: 50, text: "Torcida sektor - atmosfera 10/10! Sjedalo nije najudobnije ali tko sjedi na Sjeveru? 😄" },
+            { section: "SJEVER", row: "2", seat: "45", comfort: 3, legroom: 3, visibility: 4, cleanliness: 3, price: 50, text: "Torcida sektor - atmosfera 10/10! Sjedalo nije najudobnije ali tko sjedi na Sjeveru?" },
             { section: "SJEVER", row: "7", seat: "30", comfort: 3, legroom: 2, visibility: 3, cleanliness: 3, price: 40, text: "Za pravu navijačku atmosferu, ovo je mjesto. Ne očekujte luksuz." },
             { section: "JUG", row: "1", seat: "10", comfort: 4, legroom: 4, visibility: 5, cleanliness: 4, price: 80, text: "Jako blizu terena, osjećaš se kao dio igre. Odlično za fotografiranje." },
             { section: "JUG", row: "12", seat: "25", comfort: 4, legroom: 4, visibility: 4, cleanliness: 4, price: 70, text: "Solidno mjesto, dobra cijena. Pogled na Marjan je bonus!" },
@@ -289,9 +315,10 @@ db.serialize(() => {
             { section: "SJEVER", row: "5", seat: "50", comfort: 3, legroom: 3, visibility: 4, cleanliness: 3, price: 45, text: "Prava navijačka tribina! Bakljade, pjesma, atmosfera - nezaboravno iskustvo." }
           ];
 
+          // Insert reviews
           for (let i = 0; i < sampleReviews.length; i++) {
             const review = sampleReviews[i];
-            const userId = userIds[i % userIds.length];
+            const userId = userIds[i % userIds.length] || null;
 
             db.run(`
               INSERT INTO Review (venue_id, user_id, section, row, seat_number, price, rating_comfort, rating_legroom, rating_visibility, rating_cleanliness, text_review)
@@ -299,11 +326,13 @@ db.serialize(() => {
             `, [1, userId, review.section, review.row, review.seat, review.price, review.comfort, review.legroom, review.visibility, review.cleanliness, review.text]);
           }
 
-          console.log("Seeded sample reviews:", sampleReviews.length);
+          console.log("Seeded", sampleReviews.length, "sample reviews for Stadion Poljud");
         }
-      );
+      });
+    } catch (err) {
+      console.error("Error seeding data:", err);
     }
-  });
+  }, 1000); // Wait 1 second for tables to be created
 });
 
 // --- HELPERS ---
