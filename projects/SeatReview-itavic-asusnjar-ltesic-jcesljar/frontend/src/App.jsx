@@ -290,6 +290,8 @@ function App() {
 // AllReviews component with voting
 function AllReviews({ venueId, onProfileClick }) {
   const { token } = useAuth();
+  const { language } = useLanguage();
+  const t = translations[language];
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [votes, setVotes] = useState({});
@@ -342,7 +344,7 @@ function AllReviews({ venueId, onProfileClick }) {
 
   const handleVote = async (reviewId, voteType) => {
     if (!token) {
-      alert("Morate biti prijavljeni da biste glasali");
+      alert(t.mustBeLoggedInToVote);
       return;
     }
 
@@ -365,39 +367,39 @@ function AllReviews({ venueId, onProfileClick }) {
     }
   };
 
-  if (loading) return <div className="loading-small">Loading reviews...</div>;
+  if (loading) return <div className="loading-small">{t.loadingReviews}</div>;
 
   if (reviews.length === 0) {
     return (
       <div className="card">
-        <p className="no-content">No reviews yet. Be the first to review!</p>
+        <p className="no-content">{t.noReviewsYet}</p>
       </div>
     );
   }
 
   return (
     <div className="reviews-container">
-      <h3 className="reviews-header">All Reviews ({reviews.length})</h3>
+      <h3 className="reviews-header">{t.allReviews} ({reviews.length})</h3>
       {reviews.map((review) => (
         <div key={review.id} className="review-card">
           <div className="review-header">
             <div className="review-location">
-              <span className="review-badge">Section: {review.section || "N/A"}</span>
-              <span className="review-badge">Row: {review.row || "N/A"}</span>
-              <span className="review-badge">Seat: {review.seat_number || "N/A"}</span>
+              <span className="review-badge">{t.section}: {review.section || "N/A"}</span>
+              <span className="review-badge">{t.row}: {review.row || "N/A"}</span>
+              <span className="review-badge">{t.seat}: {review.seat_number || "N/A"}</span>
             </div>
             <div
               className="review-user clickable-user"
               onClick={() => review.user_email && onProfileClick && onProfileClick(review.user_email)}
-              title="Kliknite za prikaz profila"
+              title={t.clickToViewProfile}
             >
-              {review.user_email?.split("@")[0] || "Anonymous"}
+              {review.user_email?.split("@")[0] || t.anonymous}
             </div>
           </div>
 
           <div className="review-ratings">
             <div className="rating-item">
-              <span className="rating-label">Comfort</span>
+              <span className="rating-label">{t.comfort}</span>
               <div className="rating-stars">
                 {"★".repeat(review.rating_comfort || 0)}
                 {"☆".repeat(5 - (review.rating_comfort || 0))}
@@ -405,7 +407,7 @@ function AllReviews({ venueId, onProfileClick }) {
               <span className="rating-value">{review.rating_comfort || "N/A"}/5</span>
             </div>
             <div className="rating-item">
-              <span className="rating-label">Legroom</span>
+              <span className="rating-label">{t.legroom}</span>
               <div className="rating-stars">
                 {"★".repeat(review.rating_legroom || 0)}
                 {"☆".repeat(5 - (review.rating_legroom || 0))}
@@ -413,7 +415,7 @@ function AllReviews({ venueId, onProfileClick }) {
               <span className="rating-value">{review.rating_legroom || "N/A"}/5</span>
             </div>
             <div className="rating-item">
-              <span className="rating-label">Visibility</span>
+              <span className="rating-label">{t.visibility}</span>
               <div className="rating-stars">
                 {"★".repeat(review.rating_visibility || 0)}
                 {"☆".repeat(5 - (review.rating_visibility || 0))}
@@ -421,7 +423,7 @@ function AllReviews({ venueId, onProfileClick }) {
               <span className="rating-value">{review.rating_visibility || "N/A"}/5</span>
             </div>
             <div className="rating-item">
-              <span className="rating-label">Cleanliness</span>
+              <span className="rating-label">{t.cleanliness}</span>
               <div className="rating-stars">
                 {"★".repeat(review.rating_cleanliness || 0)}
                 {"☆".repeat(5 - (review.rating_cleanliness || 0))}
@@ -438,7 +440,7 @@ function AllReviews({ venueId, onProfileClick }) {
 
           <div className="review-footer">
             <span className="review-date">
-              {new Date(review.created_at).toLocaleDateString("hr-HR", {
+              {new Date(review.created_at).toLocaleDateString(language === 'hr' ? "hr-HR" : "en-US", {
                 year: "numeric",
                 month: "long",
                 day: "numeric"
@@ -448,7 +450,7 @@ function AllReviews({ venueId, onProfileClick }) {
               <button
                 className={`vote-btn vote-like ${userVotes[review.id] === 'like' ? 'active' : ''}`}
                 onClick={() => handleVote(review.id, 'like')}
-                title="Svidja mi se"
+                title={t.like}
               >
                 <span className="vote-icon">👍</span>
                 <span className="vote-count">{votes[review.id]?.likes || 0}</span>
@@ -456,7 +458,7 @@ function AllReviews({ venueId, onProfileClick }) {
               <button
                 className={`vote-btn vote-dislike ${userVotes[review.id] === 'dislike' ? 'active' : ''}`}
                 onClick={() => handleVote(review.id, 'dislike')}
-                title="Ne svidja mi se"
+                title={t.dislike}
               >
                 <span className="vote-icon">👎</span>
                 <span className="vote-count">{votes[review.id]?.dislikes || 0}</span>
@@ -471,6 +473,8 @@ function AllReviews({ venueId, onProfileClick }) {
 
 // ReviewForm component
 function ReviewForm({ venueId, token }) {
+  const { language } = useLanguage();
+  const t = translations[language];
   const [formData, setFormData] = useState({
     section: "",
     row: "",
@@ -495,7 +499,7 @@ function ReviewForm({ venueId, token }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setStatus("Submitting...");
+    setStatus(t.submitting);
 
     const formDataToSend = new FormData();
     formDataToSend.append("venue_id", venueId);
@@ -518,7 +522,7 @@ function ReviewForm({ venueId, token }) {
       });
 
       if (response.ok) {
-        setStatus("Review submitted successfully!");
+        setStatus(t.reviewSubmitted);
         setFormData({
           section: "",
           row: "",
@@ -533,7 +537,7 @@ function ReviewForm({ venueId, token }) {
         setPhotos([]);
         setTimeout(() => setStatus(""), 3000);
       } else {
-        setStatus("Failed to submit review");
+        setStatus(t.reviewFailed);
       }
     } catch (error) {
       setStatus("Error: " + error.message);
@@ -543,20 +547,20 @@ function ReviewForm({ venueId, token }) {
   if (!token) {
     return (
       <div className="card">
-        <p className="no-content">Morate biti prijavljeni da biste ostavili recenziju.</p>
+        <p className="no-content">{t.mustBeLoggedInToReview}</p>
       </div>
     );
   }
 
   return (
     <div className="card review-form-card">
-      <h3>Submit Your Seat Review</h3>
+      <h3>{t.submitYourReview}</h3>
       <form className="review-form" onSubmit={handleSubmit}>
         <div className="form-section">
-          <h4 className="form-section-title">Seat Location</h4>
+          <h4 className="form-section-title">{t.seatLocation}</h4>
           <div className="grid-3">
             <div>
-              <label className="label">Section</label>
+              <label className="label">{t.section}</label>
               <input
                 name="section"
                 className="input"
@@ -566,7 +570,7 @@ function ReviewForm({ venueId, token }) {
               />
             </div>
             <div>
-              <label className="label">Row</label>
+              <label className="label">{t.row}</label>
               <input
                 name="row"
                 className="input"
@@ -576,7 +580,7 @@ function ReviewForm({ venueId, token }) {
               />
             </div>
             <div>
-              <label className="label">Seat Number</label>
+              <label className="label">{t.seatNumber}</label>
               <input
                 name="seat_number"
                 className="input"
@@ -587,7 +591,7 @@ function ReviewForm({ venueId, token }) {
             </div>
           </div>
           <div style={{ marginTop: "16px" }}>
-            <label className="label">Price</label>
+            <label className="label">{t.price}</label>
             <input
               name="price"
               type="number"
@@ -602,10 +606,10 @@ function ReviewForm({ venueId, token }) {
         </div>
 
         <div className="form-section">
-          <h4 className="form-section-title">Ratings (1-5 stars)</h4>
+          <h4 className="form-section-title">{t.ratings15}</h4>
           <div className="grid-2">
             <div className="rating-input">
-              <label className="label">Comfort</label>
+              <label className="label">{t.comfort}</label>
               <input
                 type="number"
                 name="rating_comfort"
@@ -618,7 +622,7 @@ function ReviewForm({ venueId, token }) {
               />
             </div>
             <div className="rating-input">
-              <label className="label">Legroom</label>
+              <label className="label">{t.legroom}</label>
               <input
                 type="number"
                 name="rating_legroom"
@@ -631,7 +635,7 @@ function ReviewForm({ venueId, token }) {
               />
             </div>
             <div className="rating-input">
-              <label className="label">Visibility</label>
+              <label className="label">{t.visibility}</label>
               <input
                 type="number"
                 name="rating_visibility"
@@ -644,7 +648,7 @@ function ReviewForm({ venueId, token }) {
               />
             </div>
             <div className="rating-input">
-              <label className="label">Cleanliness</label>
+              <label className="label">{t.cleanliness}</label>
               <input
                 type="number"
                 name="rating_cleanliness"
@@ -660,19 +664,19 @@ function ReviewForm({ venueId, token }) {
         </div>
 
         <div className="form-section">
-          <h4 className="form-section-title">Your Experience</h4>
+          <h4 className="form-section-title">{t.yourExperience}</h4>
           <textarea
             name="text_review"
             className="input textarea"
             value={formData.text_review}
             onChange={handleChange}
-            placeholder="Share your experience with this seat..."
+            placeholder={t.shareYourExperience}
             rows="4"
           />
         </div>
 
         <div className="form-section">
-          <h4 className="form-section-title">Photos (optional, max 5)</h4>
+          <h4 className="form-section-title">{t.photosOptional}</h4>
           <input
             type="file"
             accept="image/*"
@@ -682,13 +686,13 @@ function ReviewForm({ venueId, token }) {
           />
           {photos.length > 0 && (
             <div className="file-preview">
-              {photos.length} file(s) selected
+              {photos.length} {t.filesSelected}
             </div>
           )}
         </div>
 
         <button type="submit" className="btn-primary btn-large">
-          Submit Review
+          {t.submitReview}
         </button>
         {status && <div className="form-status">{status}</div>}
       </form>
@@ -698,6 +702,8 @@ function ReviewForm({ venueId, token }) {
 
 // VenueGallery component with Virtual Tour
 function VenueGallery({ venueId }) {
+  const { language } = useLanguage();
+  const t = translations[language];
   const [photos, setPhotos] = useState([]);
   const [selectedSection, setSelectedSection] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -736,7 +742,7 @@ function VenueGallery({ venueId }) {
   const sections = Object.keys(sectionGroups);
 
   if (loading) {
-    return <div className="loading-small">Loading gallery...</div>;
+    return <div className="loading-small">{t.loadingGallery}</div>;
   }
 
   const hasVirtualTour = venue && venue.virtual_tour_url;
@@ -757,8 +763,8 @@ function VenueGallery({ venueId }) {
       {hasVirtualTour && (
         <div className="virtual-tour-section">
           <div className="virtual-tour-header">
-            <h3>360 Virtualna Setnja</h3>
-            <p className="gallery-subtitle">Istrazite {venue.name} u 360 panoramskom prikazu</p>
+            <h3>{t.virtualTour360}</h3>
+            <p className="gallery-subtitle">{t.explore360} {venue.name} {t.inPanoramicView}</p>
           </div>
 
           {!showVirtualTour ? (
@@ -767,7 +773,7 @@ function VenueGallery({ venueId }) {
                 <div className="play-button">
                   <span>▶</span>
                 </div>
-                <span className="tour-label">Kliknite za virtualnu setnju</span>
+                <span className="tour-label">{t.clickForVirtualTour}</span>
               </div>
             </div>
           ) : (
@@ -777,7 +783,7 @@ function VenueGallery({ venueId }) {
                   className="close-tour-btn"
                   onClick={() => setShowVirtualTour(false)}
                 >
-                  Zatvori virtualnu setnju
+                  {t.closeVirtualTour}
                 </button>
               </div>
               <iframe
@@ -793,13 +799,13 @@ function VenueGallery({ venueId }) {
 
       {/* Gallery Header */}
       <div className="gallery-header">
-        <h3>Seat Views by Section</h3>
-        <p className="gallery-subtitle">Click on a section to see views from that area</p>
+        <h3>{t.seatViewsBySection}</h3>
+        <p className="gallery-subtitle">{t.clickOnSection}</p>
       </div>
 
       {sections.length === 0 ? (
         <div className="no-photos-message">
-          <p className="no-content">No seat view photos yet. Be the first to share your view!</p>
+          <p className="no-content">{t.noPhotosYet}</p>
         </div>
       ) : (
         <>
@@ -833,8 +839,8 @@ function VenueGallery({ venueId }) {
                       </div>
                     )}
                     <div className="section-card-overlay">
-                      <span className="section-name">Section {sectionName}</span>
-                      <span className="photo-count">{photoCount} {photoCount === 1 ? 'photo' : 'photos'}</span>
+                      <span className="section-name">{t.section} {sectionName}</span>
+                      <span className="photo-count">{photoCount} {photoCount === 1 ? t.photo : t.photos}</span>
                     </div>
                   </div>
                   <div className="section-card-info">
@@ -845,11 +851,11 @@ function VenueGallery({ venueId }) {
                           <span className="rating-text">{avgRating.toFixed(1)}</span>
                         </>
                       ) : (
-                        <span className="no-rating">No ratings yet</span>
+                        <span className="no-rating">{t.noRatingsYet}</span>
                       )}
                     </div>
                     <div className="section-reviews-count">
-                      {photoCount} {photoCount === 1 ? 'view' : 'views'}
+                      {photoCount} {photoCount === 1 ? t.view : t.views}
                     </div>
                   </div>
                 </div>
@@ -861,7 +867,7 @@ function VenueGallery({ venueId }) {
           {selectedSection && (
             <div className="section-expanded">
               <div className="section-expanded-header">
-                <h4>Views from Section {selectedSection}</h4>
+                <h4>{t.viewsFromSection} {selectedSection}</h4>
                 <button className="close-btn" onClick={() => setSelectedSection(null)}>X</button>
               </div>
               <div className="section-photos-grid">
@@ -873,12 +879,12 @@ function VenueGallery({ venueId }) {
                     />
                     <div className="photo-info">
                       <span className="photo-location">
-                        Row {photo.row || '?'}, Seat {photo.seat_number || '?'}
+                        {t.row} {photo.row || '?'}, {t.seat} {photo.seat_number || '?'}
                       </span>
                       {photo.text_review && (
                         <p className="photo-comment">"{photo.text_review}"</p>
                       )}
-                      <span className="photo-author">by {photo.user_email?.split('@')[0] || 'Anonymous'}</span>
+                      <span className="photo-author">{t.by} {photo.user_email?.split('@')[0] || t.anonymous}</span>
                     </div>
                   </div>
                 ))}
@@ -893,6 +899,8 @@ function VenueGallery({ venueId }) {
 
 // VenueInsights component
 function VenueInsights({ venueId }) {
+  const { language } = useLanguage();
+  const t = translations[language];
   const [stats, setStats] = useState(null);
   const [insight, setInsight] = useState(null);
 
@@ -911,7 +919,7 @@ function VenueInsights({ venueId }) {
       .catch((e) => console.error(e));
   }, [venueId]);
 
-  if (!stats) return <div className="loading-small">Loading...</div>;
+  if (!stats) return <div className="loading-small">{t.loading}</div>;
 
   // Calculate overall average from all rating categories
   const calculateOverallAvg = () => {
@@ -923,7 +931,7 @@ function VenueInsights({ venueId }) {
 
   return (
     <div className="card insights-card">
-      <h3>Statistike i Uvidi</h3>
+      <h3>{t.statisticsAndInsights}</h3>
 
       {/* Overall Average - Main Highlight */}
       <div className="overall-rating-box">
@@ -933,16 +941,16 @@ function VenueInsights({ venueId }) {
           </span>
           <span className="overall-rating-max">/5</span>
         </div>
-        <div className="overall-rating-label">Prosječna Ocjena</div>
-        <div className="overall-rating-reviews">{stats.total_reviews || 0} recenzija</div>
+        <div className="overall-rating-label">{t.averageRating}</div>
+        <div className="overall-rating-reviews">{stats.total_reviews || 0} {t.reviews}</div>
       </div>
 
       {/* Detailed Ratings */}
       <div className="stats-detailed">
-        <h4>Detaljne Ocjene</h4>
+        <h4>{t.detailedRatings}</h4>
         <div className="rating-bars">
           <div className="rating-bar-item">
-            <span className="rating-bar-label">🪑 Udobnost</span>
+            <span className="rating-bar-label">🪑 {t.comfort}</span>
             <div className="rating-bar-track">
               <div
                 className="rating-bar-fill"
@@ -952,7 +960,7 @@ function VenueInsights({ venueId }) {
             <span className="rating-bar-value">{stats.avg_comfort ? stats.avg_comfort.toFixed(1) : "N/A"}</span>
           </div>
           <div className="rating-bar-item">
-            <span className="rating-bar-label">👁️ Vidljivost</span>
+            <span className="rating-bar-label">👁️ {t.visibility}</span>
             <div className="rating-bar-track">
               <div
                 className="rating-bar-fill"
@@ -962,7 +970,7 @@ function VenueInsights({ venueId }) {
             <span className="rating-bar-value">{stats.avg_visibility ? stats.avg_visibility.toFixed(1) : "N/A"}</span>
           </div>
           <div className="rating-bar-item">
-            <span className="rating-bar-label">🦵 Prostor za noge</span>
+            <span className="rating-bar-label">🦵 {t.legroom}</span>
             <div className="rating-bar-track">
               <div
                 className="rating-bar-fill"
@@ -972,7 +980,7 @@ function VenueInsights({ venueId }) {
             <span className="rating-bar-value">{stats.avg_legroom ? stats.avg_legroom.toFixed(1) : "N/A"}</span>
           </div>
           <div className="rating-bar-item">
-            <span className="rating-bar-label">✨ Čistoća</span>
+            <span className="rating-bar-label">✨ {t.cleanliness}</span>
             <div className="rating-bar-track">
               <div
                 className="rating-bar-fill"
@@ -988,14 +996,14 @@ function VenueInsights({ venueId }) {
       {stats.avg_price && (
         <div className="price-info-box">
           <span className="price-icon">💰</span>
-          <span className="price-label">Prosječna cijena:</span>
+          <span className="price-label">{t.averagePrice}:</span>
           <span className="price-value">{stats.avg_price.toFixed(0)} €</span>
         </div>
       )}
 
       {insight && (
         <div className="ai-section">
-          <h4>🤖 AI Sažetak</h4>
+          <h4>🤖 {t.aiSummary}</h4>
           <div className="ai-summary">{insight.summary_text}</div>
         </div>
       )}

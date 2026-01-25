@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import API_URL from "./config";
+import { useLanguage } from "./LanguageContext";
+import { translations } from "./translations";
 
 const API_BASE = `${API_URL}/api`;
 
 function ViewHistory({ onNavigateToSeat }) {
+  const { language } = useLanguage();
+  const t = translations[language];
   const { token } = useAuth();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,43 +48,43 @@ function ViewHistory({ onNavigateToSeat }) {
   if (!token) {
     return (
       <div className="card">
-        <p className="no-content">Morate biti prijavljeni da biste vidjeli povijest.</p>
+        <p className="no-content">{t.mustBeLoggedInHistory}</p>
       </div>
     );
   }
 
   if (loading) {
-    return <div className="loading-small">Ucitavanje povijesti...</div>;
+    return <div className="loading-small">{t.loadingHistory}</div>;
   }
 
   if (history.length === 0) {
     return (
       <div className="card">
-        <p className="no-content">Nemate povijest pregledavanja.</p>
+        <p className="no-content">{t.noViewHistory}</p>
       </div>
     );
   }
 
   return (
     <div className="history-container">
-      <h3>Povijest pregledavanja</h3>
+      <h3>{t.viewHistory}</h3>
       <div className="history-list">
         {history.map((item) => (
           <div key={item.id} className="history-card">
             <div className="history-info">
               <h4>{item.venue_name}</h4>
               <p>
-                Sekcija {item.section}, Red {item.row}, Sjedalo {item.seat_number}
+                {t.section} {item.section}, {t.row} {item.row}, {t.seat} {item.seat_number}
               </p>
               <span className="history-date">
-                Pregledano: {new Date(item.viewed_at).toLocaleString("hr-HR")}
+                {t.viewed}: {new Date(item.viewed_at).toLocaleString(language === 'hr' ? "hr-HR" : "en-US")}
               </span>
             </div>
             <button
               className="btn-secondary"
               onClick={() => handleNavigate(item)}
             >
-              Pogledaj ponovo
+              {t.viewAgain}
             </button>
           </div>
         ))}

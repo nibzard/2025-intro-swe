@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
 import API_URL from "./config";
+import { useLanguage } from "./LanguageContext";
+import { translations } from "./translations";
 
 const API_BASE = `${API_URL}/api`;
 
 function Leaderboard() {
+  const { language } = useLanguage();
+  const t = translations[language];
   const [leaders, setLeaders] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,20 +30,20 @@ function Leaderboard() {
   };
 
   if (loading) {
-    return <div className="loading-small">Ucitavanje ljestvice...</div>;
+    return <div className="loading-small">{t.loadingLeaderboard}</div>;
   }
 
   if (leaders.length === 0) {
     return (
       <div className="card">
-        <p className="no-content">Nema recenzija za prikaz ljestvice.</p>
+        <p className="no-content">{t.noReviewsForLeaderboard}</p>
       </div>
     );
   }
 
   return (
     <div className="leaderboard-container">
-      <h3>Top Recenzenti</h3>
+      <h3>{t.topReviewers}</h3>
       <div className="leaderboard-list">
         {leaders.map((leader, index) => (
           <div key={leader.user_id} className="leaderboard-card">
@@ -50,13 +54,13 @@ function Leaderboard() {
               {index > 2 && <span className="rank-number">#{index + 1}</span>}
             </div>
             <div className="leaderboard-info">
-              <h4>{leader.email?.split("@")[0] || "Korisnik"}</h4>
+              <h4>{leader.email?.split("@")[0] || t.user}</h4>
               <div className="leaderboard-stats">
                 <span className="stat">
-                  <strong>{leader.review_count}</strong> recenzija
+                  <strong>{leader.review_count}</strong> {t.reviewsCount}
                 </span>
                 <span className="stat">
-                  <strong>{leader.total_likes || 0}</strong> lajkova
+                  <strong>{leader.total_likes || 0}</strong> {t.likesCount}
                 </span>
               </div>
             </div>

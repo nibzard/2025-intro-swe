@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
 import API_URL from "./config";
+import { useLanguage } from "./LanguageContext";
+import { translations } from "./translations";
 
 const API_BASE = `${API_URL}/api`;
 
 function Photo360Viewer({ venueId }) {
+  const { language } = useLanguage();
+  const t = translations[language];
   const [venue, setVenue] = useState(null);
   const [photos, setPhotos] = useState([]);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -45,7 +49,7 @@ function Photo360Viewer({ venueId }) {
   };
 
   if (loading) {
-    return <div className="loading-small">Ucitavanje 360° prikaza...</div>;
+    return <div className="loading-small">{t.loading360View}</div>;
   }
 
   const hasVirtualTour = venue && venue.virtual_tour_url;
@@ -56,8 +60,8 @@ function Photo360Viewer({ venueId }) {
       {hasVirtualTour && (
         <div className="virtual-tour-section">
           <div className="virtual-tour-header">
-            <h3>🌐 360° Virtualna Šetnja - {venue.name}</h3>
-            <p className="gallery-subtitle">Istražite {venue.name} u 360° panoramskom prikazu</p>
+            <h3>🌐 {t.virtualTour360} - {venue.name}</h3>
+            <p className="gallery-subtitle">{t.explore360.replace('{venue}', venue.name)}</p>
           </div>
 
           {!showVirtualTour ? (
@@ -66,7 +70,7 @@ function Photo360Viewer({ venueId }) {
                 <div className="play-button">
                   <span>▶</span>
                 </div>
-                <span className="tour-label">Kliknite za virtualnu šetnju</span>
+                <span className="tour-label">{t.clickForVirtualTour}</span>
               </div>
             </div>
           ) : (
@@ -76,7 +80,7 @@ function Photo360Viewer({ venueId }) {
                   className="close-tour-btn"
                   onClick={() => setShowVirtualTour(false)}
                 >
-                  ✕ Zatvori virtualnu šetnju
+                  ✕ {t.closeVirtualTour}
                 </button>
               </div>
               <iframe
@@ -89,19 +93,19 @@ function Photo360Viewer({ venueId }) {
             </div>
           )}
           <p className="virtual-tour-hint">
-            Koristite miš za rotaciju pogleda. Kliknite na točke za kretanje.
+            {t.virtualTourHint}
           </p>
         </div>
       )}
 
       {/* 360 Photos from users */}
       <div className="card">
-        <h3>360° Prikazi Sjedala</h3>
+        <h3>{t.seatViews360}</h3>
 
         {photos.length === 0 && !venue?.virtual_tour_url ? (
-          <p className="no-content">Nema dostupnih 360° fotografija za ovaj venue.</p>
+          <p className="no-content">{t.no360PhotosAvailable}</p>
         ) : photos.length === 0 ? (
-          <p className="muted">Korisnici jos nisu uploadali 360° fotografije sjedala.</p>
+          <p className="muted">{t.noUserPhotos360}</p>
         ) : (
           <>
             {/* Selected photo viewer */}
@@ -115,9 +119,9 @@ function Photo360Viewer({ venueId }) {
                   />
                   <div className="photo-360-info">
                     <strong>
-                      Sekcija: {selectedPhoto.section || "N/A"} |
-                      Red: {selectedPhoto.row || "N/A"} |
-                      Sjedalo: {selectedPhoto.seat_number || "N/A"}
+                      {t.section}: {selectedPhoto.section || "N/A"} |
+                      {t.row}: {selectedPhoto.row || "N/A"} |
+                      {t.seat}: {selectedPhoto.seat_number || "N/A"}
                     </strong>
                   </div>
                 </div>
@@ -127,7 +131,7 @@ function Photo360Viewer({ venueId }) {
             {/* Photo selector */}
             {photos.length > 1 && (
               <div className="photo-360-selector">
-                <h4>Odaberite pogled:</h4>
+                <h4>{t.selectView}:</h4>
                 <div className="photo-360-list">
                   {photos.map((photo) => (
                     <button
@@ -144,9 +148,9 @@ function Photo360Viewer({ venueId }) {
                         />
                       </div>
                       <div className="photo-360-details">
-                        <div>Sek: {photo.section || "?"}</div>
-                        <div>Red: {photo.row || "?"}</div>
-                        <div>Sjed: {photo.seat_number || "?"}</div>
+                        <div>{t.secAbbr}: {photo.section || "?"}</div>
+                        <div>{t.rowAbbr}: {photo.row || "?"}</div>
+                        <div>{t.seatAbbr}: {photo.seat_number || "?"}</div>
                       </div>
                     </button>
                   ))}

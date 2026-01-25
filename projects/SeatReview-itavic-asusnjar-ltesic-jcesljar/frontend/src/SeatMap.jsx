@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import API_URL from "./config";
+import { useLanguage } from "./LanguageContext";
+import { translations } from "./translations";
 
 const API_BASE = `${API_URL}/api`;
 
 function SeatMap({ venueId, venueName, autoSelectSeat }) {
+  const { language } = useLanguage();
+  const t = translations[language];
   const { token } = useAuth();
   const [allReviews, setAllReviews] = useState([]);
   const [selectedSeat, setSelectedSeat] = useState(null);
@@ -191,7 +195,7 @@ function SeatMap({ venueId, venueName, autoSelectSeat }) {
   const findBestSeatInBudget = () => {
     const budgetNum = parseFloat(budget);
     if (isNaN(budgetNum) || budgetNum <= 0) {
-      alert("Unesite validan budžet!");
+      alert(t.enterValidBudget);
       return;
     }
 
@@ -199,7 +203,7 @@ function SeatMap({ venueId, venueName, autoSelectSeat }) {
     const affordableSeats = seatPositions.filter(s => s.price <= budgetNum);
 
     if (affordableSeats.length === 0) {
-      alert("Nema sjedala u vašem budžetu. Pokušajte s većim iznosom.");
+      alert(t.noSeatsInBudget);
       setBestSeat(null);
       return;
     }
@@ -231,7 +235,7 @@ function SeatMap({ venueId, venueName, autoSelectSeat }) {
 
   const addToFavorites = async (seat) => {
     if (!token) {
-      alert("Morate biti prijavljeni da biste dodali u favorite!");
+      alert(t.mustBeLoggedInToFavorite);
       return;
     }
     try {
@@ -249,7 +253,7 @@ function SeatMap({ venueId, venueName, autoSelectSeat }) {
         })
       });
       if (response.ok) {
-        alert(`Sjedalo ${seat.section} - Red ${seat.row}, Mjesto ${seat.seat_number} dodano u favorite!`);
+        alert(t.seatAddedToFavorites.replace('{section}', seat.section).replace('{row}', seat.row).replace('{seat}', seat.seat_number));
       }
     } catch (error) {
       console.error("Failed to add favorite:", error);
@@ -291,33 +295,33 @@ function SeatMap({ venueId, venueName, autoSelectSeat }) {
   };
 
   if (loading) {
-    return <div className="loading-small">Učitavanje karte sjedala...</div>;
+    return <div className="loading-small">{t.loadingSeatMap}</div>;
   }
 
   return (
     <div className="seatmap-container">
-      <h3 className="seatmap-title">Karta Sjedala - {venueName}</h3>
+      <h3 className="seatmap-title">{t.seatMap} - {venueName}</h3>
 
       {/* Budget Finder */}
       <div className="budget-finder-box">
-        <h4>💰 Pronađi najbolje sjedalo za tvoj budžet</h4>
+        <h4>💰 {t.findBestSeatForBudget}</h4>
         <div className="budget-input-row">
           <input
             type="number"
-            placeholder="Unesite budžet (€)"
+            placeholder={t.enterBudgetPlaceholder}
             value={budget}
             onChange={(e) => setBudget(e.target.value)}
             className="budget-input-field"
           />
           <button onClick={findBestSeatInBudget} className="btn-find-seat">
-            🔍 Pronađi
+            🔍 {t.find}
           </button>
         </div>
         {bestSeat && (
           <div className="best-seat-result">
-            <span className="best-label">⭐ Najbolje sjedalo:</span>
+            <span className="best-label">⭐ {t.bestSeat}:</span>
             <span className="best-info">
-              {bestSeat.section} - Red {bestSeat.row}, Sjedalo {bestSeat.seat_number}
+              {bestSeat.section} - {t.row} {bestSeat.row}, {t.seat} {bestSeat.seat_number}
             </span>
             <span className="best-price">{bestSeat.price}€</span>
           </div>
@@ -390,7 +394,7 @@ function SeatMap({ venueId, venueName, autoSelectSeat }) {
           <rect x="220" y="260" width="40" height="80" fill="none" stroke="white" strokeWidth="2"/>
           <rect x="540" y="260" width="40" height="80" fill="none" stroke="white" strokeWidth="2"/>
           <text x="400" y="305" textAnchor="middle" fill="white" fontWeight="bold" fontSize="14" opacity="0.7">
-            TEREN
+            {t.field}
           </text>
 
           {/* Seat dots */}
@@ -439,13 +443,13 @@ function SeatMap({ venueId, venueName, autoSelectSeat }) {
           ))}
         </svg>
 
-        <p className="stadium-hint">Kliknite na sjedalo (točkicu) za detalje • Žute točkice = preporučeno</p>
+        <p className="stadium-hint">{t.stadiumHint}</p>
       </div>
 
       {/* Hovered Seat Tooltip */}
       {hoveredSeat && !selectedSeat && (
         <div className="seat-hover-tooltip">
-          <strong>{hoveredSeat.section}</strong> - Red {hoveredSeat.row}, Sjedalo {hoveredSeat.seat_number}
+          <strong>{hoveredSeat.section}</strong> - {t.row} {hoveredSeat.row}, {t.seat} {hoveredSeat.seat_number}
           <span className="tooltip-price">{hoveredSeat.price}€</span>
         </div>
       )}
@@ -454,7 +458,7 @@ function SeatMap({ venueId, venueName, autoSelectSeat }) {
       {selectedSeat && (
         <div className="seat-details-card">
           <div className="seat-details-header" style={{ backgroundColor: sections[selectedSeat.section].color }}>
-            <h4>Detalji Sjedala</h4>
+            <h4>{t.seatDetails}</h4>
             <button className="close-details-btn" onClick={() => { setSelectedSeat(null); setSeatReviews([]); setBestSeat(null); }}>
               ✕
             </button>
@@ -462,45 +466,45 @@ function SeatMap({ venueId, venueName, autoSelectSeat }) {
           <div className="seat-details-body">
             <div className="seat-location-info">
               <div className="seat-location-item">
-                <span className="location-label">Tribina</span>
+                <span className="location-label">{t.tribune}</span>
                 <span className="location-value">{selectedSeat.section}</span>
               </div>
               <div className="seat-location-item">
-                <span className="location-label">Red</span>
+                <span className="location-label">{t.row}</span>
                 <span className="location-value">{selectedSeat.row}</span>
               </div>
               <div className="seat-location-item">
-                <span className="location-label">Sjedalo</span>
+                <span className="location-label">{t.seat}</span>
                 <span className="location-value">{selectedSeat.seat_number}</span>
               </div>
               <div className="seat-location-item highlight">
-                <span className="location-label">Cijena</span>
+                <span className="location-label">{t.price}</span>
                 <span className="location-value price">{selectedSeat.price}€</span>
               </div>
             </div>
 
             <button className="btn-add-favorite" onClick={() => addToFavorites(selectedSeat)}>
-              ⭐ Dodaj u favorite
+              ⭐ {t.addToFavorites}
             </button>
 
             {/* Reviews for this seat */}
             <div className="seat-reviews-section">
-              <h5>Recenzije za ovo sjedalo ({seatReviews.length})</h5>
+              <h5>{t.reviewsForThisSeat} ({seatReviews.length})</h5>
               {seatReviews.length === 0 ? (
-                <p className="no-reviews-msg">Nema recenzija za ovo sjedalo. Budite prvi!</p>
+                <p className="no-reviews-msg">{t.noReviewsForSeat}</p>
               ) : (
                 <div className="seat-reviews-list">
                   {seatReviews.map((review, idx) => (
                     <div key={idx} className="seat-review-item">
                       <div className="review-ratings-mini">
-                        <span>Udobnost: {review.rating_comfort || '-'}/5</span>
-                        <span>Vidljivost: {review.rating_visibility || '-'}/5</span>
-                        <span>Prostor: {review.rating_legroom || '-'}/5</span>
+                        <span>{t.comfort}: {review.rating_comfort || '-'}/5</span>
+                        <span>{t.visibility}: {review.rating_visibility || '-'}/5</span>
+                        <span>{t.legroom}: {review.rating_legroom || '-'}/5</span>
                       </div>
                       {review.text_review && (
                         <p className="review-text-mini">"{review.text_review}"</p>
                       )}
-                      <span className="review-author">- {review.user_email?.split('@')[0] || 'Anonimno'}</span>
+                      <span className="review-author">- {review.user_email?.split('@')[0] || t.anonymous}</span>
                     </div>
                   ))}
                 </div>
@@ -512,27 +516,27 @@ function SeatMap({ venueId, venueName, autoSelectSeat }) {
 
       {/* Legend */}
       <div className="seatmap-legend">
-        <h4>Tribine</h4>
+        <h4>{t.tribunes}</h4>
         <div className="legend-items">
           <div className="legend-item">
             <span className="legend-color" style={{ backgroundColor: "#3b82f6" }}></span>
-            <span>ZAPAD (Vrh)</span>
+            <span>{t.westTop}</span>
           </div>
           <div className="legend-item">
             <span className="legend-color" style={{ backgroundColor: "#22c55e" }}></span>
-            <span>ISTOK (Dno)</span>
+            <span>{t.eastBottom}</span>
           </div>
           <div className="legend-item">
             <span className="legend-color" style={{ backgroundColor: "#f59e0b" }}></span>
-            <span>SJEVER (Lijevo)</span>
+            <span>{t.northLeft}</span>
           </div>
           <div className="legend-item">
             <span className="legend-color" style={{ backgroundColor: "#ef4444" }}></span>
-            <span>JUG (Desno)</span>
+            <span>{t.southRight}</span>
           </div>
           <div className="legend-item">
             <span className="legend-color" style={{ backgroundColor: "#fbbf24" }}></span>
-            <span>Preporučeno (Budžet)</span>
+            <span>{t.recommendedBudget}</span>
           </div>
         </div>
       </div>

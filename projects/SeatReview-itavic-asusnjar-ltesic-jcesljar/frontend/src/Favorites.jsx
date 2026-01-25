@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import API_URL from "./config";
+import { useLanguage } from "./LanguageContext";
+import { translations } from "./translations";
 
 const API_BASE = `${API_URL}/api`;
 
 function Favorites({ onNavigateToSeat }) {
+  const { language } = useLanguage();
+  const t = translations[language];
   const { token } = useAuth();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,27 +72,27 @@ function Favorites({ onNavigateToSeat }) {
   if (!token) {
     return (
       <div className="card">
-        <p className="no-content">Morate biti prijavljeni da biste vidjeli favorite.</p>
+        <p className="no-content">{t.mustBeLoggedInFavorites}</p>
       </div>
     );
   }
 
   if (loading) {
-    return <div className="loading-small">Učitavanje favorita...</div>;
+    return <div className="loading-small">{t.loadingFavorites}</div>;
   }
 
   if (favorites.length === 0) {
     return (
       <div className="card">
-        <p className="no-content">Nemate spremljenih favorita.</p>
+        <p className="no-content">{t.noFavorites}</p>
       </div>
     );
   }
 
   return (
     <div className="favorites-container">
-      <h3>⭐ Vaša omiljena sjedala</h3>
-      <p className="favorites-hint">Kliknite na favorit da odete direktno na to sjedalo</p>
+      <h3>⭐ {t.yourFavoriteSeats}</h3>
+      <p className="favorites-hint">{t.clickFavoriteHint}</p>
       <div className="favorites-list">
         {favorites.map((fav) => (
           <div
@@ -103,15 +107,15 @@ function Favorites({ onNavigateToSeat }) {
                 <span className="seat-badge" style={{ backgroundColor: getSectionColor(fav.section) }}>
                   {fav.section}
                 </span>
-                Red {fav.row}, Sjedalo {fav.seat_number}
+                {t.row} {fav.row}, {t.seat} {fav.seat_number}
               </p>
               <span className="favorite-date">
-                Dodano: {new Date(fav.created_at).toLocaleDateString("hr-HR")}
+                {t.added}: {new Date(fav.created_at).toLocaleDateString(language === 'hr' ? "hr-HR" : "en-US")}
               </span>
             </div>
             <div className="favorite-actions">
               <button className="btn-go-to-seat">
-                Idi na sjedalo →
+                {t.goToSeat} →
               </button>
               <button
                 className="btn-remove-fav"
