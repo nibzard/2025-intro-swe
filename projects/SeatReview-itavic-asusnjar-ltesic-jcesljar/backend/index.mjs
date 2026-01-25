@@ -229,7 +229,7 @@ db.serialize(() => {
     }
   });
 
-  // Seed admin user
+  // Seed admin user and bot users with reviews
   db.get("SELECT COUNT(*) AS count FROM User", async (err, row) => {
     if (err) return console.error("Error checking users:", err);
     if (row.count === 0) {
@@ -237,7 +237,70 @@ db.serialize(() => {
       db.run(
         "INSERT INTO User (email, password_hash, is_verified, is_admin) VALUES (?, ?, 1, 1)",
         ["admin@seatreview.hr", hash],
-        () => console.log("Seeded admin user: admin@seatreview.hr / Admin123!")
+        async () => {
+          console.log("Seeded admin user: admin@seatreview.hr / Admin123!");
+
+          // Create bot users
+          const botUsers = [
+            { email: "marko.horvat@gmail.com", name: "Marko Horvat" },
+            { email: "ana.babic@gmail.com", name: "Ana Babić" },
+            { email: "ivan.kovacevic@gmail.com", name: "Ivan Kovačević" },
+            { email: "petra.novak@gmail.com", name: "Petra Novak" },
+            { email: "luka.matic@gmail.com", name: "Luka Matić" },
+            { email: "maja.juric@gmail.com", name: "Maja Jurić" },
+            { email: "tomislav.peric@gmail.com", name: "Tomislav Perić" },
+            { email: "kristina.knezevic@gmail.com", name: "Kristina Knežević" }
+          ];
+
+          const botHash = await bcrypt.hash("BotUser123!", 10);
+          const userIds = [];
+
+          for (const bot of botUsers) {
+            await new Promise((resolve, reject) => {
+              db.run(
+                "INSERT INTO User (email, password_hash, is_verified, is_admin) VALUES (?, ?, 1, 0)",
+                [bot.email, botHash],
+                function(err) {
+                  if (err) reject(err);
+                  else {
+                    userIds.push(this.lastID);
+                    resolve();
+                  }
+                }
+              );
+            });
+          }
+
+          console.log("Seeded bot users:", botUsers.length);
+
+          // Create sample reviews for Stadion Poljud (venue_id = 1)
+          const sampleReviews = [
+            { section: "ZAPAD", row: "5", seat: "12", comfort: 5, legroom: 4, visibility: 5, cleanliness: 4, price: 150, text: "Odličan pogled na cijeli teren! Sjedio sam na utakmici protiv Dinama i atmosfera je bila nevjerojatna. Preporučujem svima." },
+            { section: "ZAPAD", row: "10", seat: "8", comfort: 4, legroom: 4, visibility: 5, cleanliness: 5, price: 120, text: "Super pozicija, vidi se sve. Sjedalo je udobno, samo malo tijesno za duže noge." },
+            { section: "ISTOK", row: "3", seat: "22", comfort: 4, legroom: 3, visibility: 4, cleanliness: 4, price: 100, text: "Dobra vrijednost za novac. Pogled je ok, sunce zna smetati popodne." },
+            { section: "ISTOK", row: "8", seat: "15", comfort: 5, legroom: 5, visibility: 5, cleanliness: 5, price: 130, text: "Najbolje mjesto na kojem sam ikad gledao utakmicu! Savršen pogled na gol." },
+            { section: "SJEVER", row: "2", seat: "45", comfort: 3, legroom: 3, visibility: 4, cleanliness: 3, price: 50, text: "Torcida sektor - atmosfera 10/10! Sjedalo nije najudobnije ali tko sjedi na Sjeveru? 😄" },
+            { section: "SJEVER", row: "7", seat: "30", comfort: 3, legroom: 2, visibility: 3, cleanliness: 3, price: 40, text: "Za pravu navijačku atmosferu, ovo je mjesto. Ne očekujte luksuz." },
+            { section: "JUG", row: "1", seat: "10", comfort: 4, legroom: 4, visibility: 5, cleanliness: 4, price: 80, text: "Jako blizu terena, osjećaš se kao dio igre. Odlično za fotografiranje." },
+            { section: "JUG", row: "12", seat: "25", comfort: 4, legroom: 4, visibility: 4, cleanliness: 4, price: 70, text: "Solidno mjesto, dobra cijena. Pogled na Marjan je bonus!" },
+            { section: "ZAPAD", row: "15", seat: "20", comfort: 5, legroom: 5, visibility: 5, cleanliness: 5, price: 200, text: "VIP sektor, sve je na vrhunskoj razini. Usluga, pogled, udobnost - sve 5 zvjezdica." },
+            { section: "ISTOK", row: "20", seat: "5", comfort: 4, legroom: 4, visibility: 3, cleanliness: 4, price: 60, text: "Malo dalje od terena ali cijena je dobra. Za obitelj s djecom idealno." },
+            { section: "ZAPAD", row: "8", seat: "16", comfort: 5, legroom: 4, visibility: 5, cleanliness: 4, price: 140, text: "Gledao sam derbi, pogled fenomenalan. Definitivno ću opet kupiti kartu za ovu tribinu." },
+            { section: "SJEVER", row: "5", seat: "50", comfort: 3, legroom: 3, visibility: 4, cleanliness: 3, price: 45, text: "Prava navijačka tribina! Bakljade, pjesma, atmosfera - nezaboravno iskustvo." }
+          ];
+
+          for (let i = 0; i < sampleReviews.length; i++) {
+            const review = sampleReviews[i];
+            const userId = userIds[i % userIds.length];
+
+            db.run(`
+              INSERT INTO Review (venue_id, user_id, section, row, seat_number, price, rating_comfort, rating_legroom, rating_visibility, rating_cleanliness, text_review)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [1, userId, review.section, review.row, review.seat, review.price, review.comfort, review.legroom, review.visibility, review.cleanliness, review.text]);
+          }
+
+          console.log("Seeded sample reviews:", sampleReviews.length);
+        }
       );
     }
   });

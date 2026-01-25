@@ -1027,7 +1027,7 @@ h2, h3, h4 {
 
 .overall-rating-circle {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: center;
   width: 120px;
   height: 120px;
