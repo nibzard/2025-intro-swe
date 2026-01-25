@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
+import API_URL from "./config";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = `${API_URL}/api`;
 
 function Photo360Viewer({ venueId }) {
   const [venue, setVenue] = useState(null);
@@ -79,7 +80,7 @@ function Photo360Viewer({ venueId }) {
               <div className="photo-360-viewer">
                 <div className="photo-360-container">
                   <img
-                    src={`http://localhost:5000${selectedPhoto.file_path}`}
+                    src={`${API_URL}${selectedPhoto.file_path}`}
                     alt="360 view"
                     className="photo-360-image"
                   />
@@ -109,7 +110,7 @@ function Photo360Viewer({ venueId }) {
                     >
                       <div className="photo-360-thumb">
                         <img
-                          src={`http://localhost:5000${photo.file_path}`}
+                          src={`${API_URL}${photo.file_path}`}
                           alt="thumbnail"
                         />
                       </div>

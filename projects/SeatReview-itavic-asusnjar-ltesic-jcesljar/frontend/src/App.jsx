@@ -9,8 +9,9 @@ import Favorites from "./Favorites";
 import ViewHistory from "./ViewHistory";
 import Leaderboard from "./Leaderboard";
 import UserProfile from "./UserProfile";
+import API_URL from "./config";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = `${API_URL}/api`;
 
 function App() {
   const { user, token } = useAuth();
@@ -823,7 +824,7 @@ function VenueGallery({ venueId }) {
                   <div className="section-card-image">
                     {mainPhoto ? (
                       <img
-                        src={`http://localhost:5000${mainPhoto.file_path}`}
+                        src={`${API_URL}${mainPhoto.file_path}`}
                         alt={`View from ${sectionName}`}
                       />
                     ) : (
@@ -867,7 +868,7 @@ function VenueGallery({ venueId }) {
                 {sectionGroups[selectedSection].map((photo) => (
                   <div key={photo.id} className="section-photo-item">
                     <img
-                      src={`http://localhost:5000${photo.file_path}`}
+                      src={`${API_URL}${photo.file_path}`}
                       alt={`View from Section ${selectedSection}`}
                     />
                     <div className="photo-info">

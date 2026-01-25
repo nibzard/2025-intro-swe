@@ -17,7 +17,10 @@ const __dirname = path.dirname(__filename);
 
 // --- CONFIG ---
 const PORT = process.env.PORT || 5000;
-const DB_PATH = path.join(__dirname, "db", "seatreview.db");
+const isVercel = process.env.VERCEL === "1";
+const DB_PATH = isVercel
+  ? "/tmp/seatreview.db"
+  : path.join(__dirname, "db", "seatreview.db");
 const JWT_SECRET = process.env.JWT_SECRET || "seatreview-secret-key-2024";
 
 // --- OPENAI CLIENT (optional) ---
@@ -32,11 +35,11 @@ app.use(cors());
 app.use(express.json());
 
 // ensure dirs
-const uploadsDir = path.join(__dirname, "uploads");
+const uploadsDir = isVercel ? "/tmp/uploads" : path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
-if (!fs.existsSync(path.dirname(DB_PATH))) {
+if (!isVercel && !fs.existsSync(path.dirname(DB_PATH))) {
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 }
 
@@ -45,7 +48,12 @@ app.use("/uploads", express.static(uploadsDir));
 
 // --- MULTER (file upload) ---
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
+  destination: (req, file, cb) => {
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    cb(null, uploadsDir);
+  },
   filename: (req, file, cb) => {
     const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const ext = path.extname(file.originalname);
@@ -969,8 +977,13 @@ app.post("/api/admin/make-admin", async (req, res) => {
 // Health check
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
 
-// --- START SERVER ---
-app.listen(PORT, () => {
-  console.log(`Backend listening on http://localhost:${PORT}`);
-  console.log(`Admin login: admin@seatreview.hr / Admin123!`);
-});
+// --- START SERVER (only when not on Vercel) ---
+if (!isVercel) {
+  app.listen(PORT, () => {
+    console.log(`Backend listening on http://localhost:${PORT}`);
+    console.log(`Admin login: admin@seatreview.hr / Admin123!`);
+  });
+}
+
+// Export for Vercel
+export default app;

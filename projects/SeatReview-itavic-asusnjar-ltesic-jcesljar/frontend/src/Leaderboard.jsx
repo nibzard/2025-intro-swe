@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
+import API_URL from "./config";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = `${API_URL}/api`;
 
 function Leaderboard() {
   const [leaders, setLeaders] = useState([]);

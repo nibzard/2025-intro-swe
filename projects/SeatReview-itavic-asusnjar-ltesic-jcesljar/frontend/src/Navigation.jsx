@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useAuth } from "./AuthContext";
 import { useLanguage } from "./LanguageContext";
 import { translations } from "./translations";
+import API_URL from "./config";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = `${API_URL}/api`;
 
 function Navigation({ onAdminClick }) {
   const { user, login, logout } = useAuth();
