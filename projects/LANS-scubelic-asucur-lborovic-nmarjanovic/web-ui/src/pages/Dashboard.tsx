@@ -32,7 +32,7 @@ import type { WatcherConfig, Intent, BrandMention, Provider, ModelConfig } from 
 import { GEMINI_MODELS, GROQ_MODELS } from '../types.ts';
 import yaml from 'js-yaml';
 
-const StatsComparison = ({ results }: { results: any }) => {
+const StatsComparison = ({ results, theme }: { results: any, theme: string }) => {
   if (!results || !results.intents_data) return null;
 
   const stats = {
@@ -81,31 +81,35 @@ const StatsComparison = ({ results }: { results: any }) => {
     if (ranks.length === 0) return 'N/A';
     return (ranks.reduce((a, b) => a + b, 0) / ranks.length).toFixed(2);
   };
+  
+  const glassCardClass = theme === 'dark'
+    ? 'glass-card'
+    : 'bg-white/60 backdrop-blur-md border border-gray-200/50 shadow-sm';
 
   return (
-    <div className="glass-card p-6 mt-8">
-      <h3 className="text-xl font-bold text-navy-200 mb-4">Model Comparison</h3>
+    <div className={`${glassCardClass} p-6 mt-8`}>
+      <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-navy-200' : 'text-gray-800'} mb-4`}>Model Comparison</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <h4 className="font-bold text-lg text-primary-300 mb-3">Google Gemini</h4>
-          <div className="space-y-2">
-            <div className="flex justify-between"><span>Detected Mentions:</span> <span>{stats.google.totalMentions}</span></div>
-            <div className="flex justify-between"><span>My Brand Mentions:</span> <span>{stats.google.myBrandMentions}</span></div>
-            <div className="flex justify-between"><span>#1 Ranks for My Brand:</span> <span>{stats.google.myBrandRank1Mentions}</span></div>
-            <div className="flex justify-between"><span>Avg. My Brand Rank:</span> <span>{avgRank(stats.google.myBrandRanks)}</span></div>
-            <div className="flex justify-between"><span>Competitor Mentions:</span> <span>{stats.google.competitorMentions}</span></div>
-            <div className="flex justify-between"><span>Avg. Competitor Rank:</span> <span>{avgRank(stats.google.competitorRanks)}</span></div>
+          <h4 className={`font-bold text-lg ${theme === 'dark' ? 'text-primary-300' : 'text-primary-500'} mb-3`}>Google Gemini</h4>
+          <div className={`space-y-2 ${theme === 'dark' ? 'text-navy-300' : 'text-gray-600'}`}>
+            <div className="flex justify-between"><span>Detected Mentions:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stats.google.totalMentions}</span></div>
+            <div className="flex justify-between"><span>My Brand Mentions:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stats.google.myBrandMentions}</span></div>
+            <div className="flex justify-between"><span>#1 Ranks for My Brand:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stats.google.myBrandRank1Mentions}</span></div>
+            <div className="flex justify-between"><span>Avg. My Brand Rank:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{avgRank(stats.google.myBrandRanks)}</span></div>
+            <div className="flex justify-between"><span>Competitor Mentions:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stats.google.competitorMentions}</span></div>
+            <div className="flex justify-between"><span>Avg. Competitor Rank:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{avgRank(stats.google.competitorRanks)}</span></div>
           </div>
         </div>
         <div>
-          <h4 className="font-bold text-lg text-accent-300 mb-3">Groq</h4>
-          <div className="space-y-2">
-            <div className="flex justify-between"><span>Detected Mentions:</span> <span>{stats.groq.totalMentions}</span></div>
-            <div className="flex justify-between"><span>My Brand Mentions:</span> <span>{stats.groq.myBrandMentions}</span></div>
-            <div className="flex justify-between"><span>#1 Ranks for My Brand:</span> <span>{stats.groq.myBrandRank1Mentions}</span></div>
-            <div className="flex justify-between"><span>Avg. My Brand Rank:</span> <span>{avgRank(stats.groq.myBrandRanks)}</span></div>
-            <div className="flex justify-between"><span>Competitor Mentions:</span> <span>{stats.groq.competitorMentions}</span></div>
-            <div className="flex justify-between"><span>Avg. Competitor Rank:</span> <span>{avgRank(stats.groq.competitorRanks)}</span></div>
+          <h4 className={`font-bold text-lg ${theme === 'dark' ? 'text-accent-300' : 'text-accent-500'} mb-3`}>Groq</h4>
+          <div className={`space-y-2 ${theme === 'dark' ? 'text-navy-300' : 'text-gray-600'}`}>
+            <div className="flex justify-between"><span>Detected Mentions:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stats.groq.totalMentions}</span></div>
+            <div className="flex justify-between"><span>My Brand Mentions:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stats.groq.myBrandMentions}</span></div>
+            <div className="flex justify-between"><span>#1 Ranks for My Brand:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stats.groq.myBrandRank1Mentions}</span></div>
+            <div className="flex justify-between"><span>Avg. My Brand Rank:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{avgRank(stats.groq.myBrandRanks)}</span></div>
+            <div className="flex justify-between"><span>Competitor Mentions:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stats.groq.competitorMentions}</span></div>
+            <div className="flex justify-between"><span>Avg. Competitor Rank:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{avgRank(stats.groq.competitorRanks)}</span></div>
           </div>
         </div>
       </div>
@@ -113,7 +117,7 @@ const StatsComparison = ({ results }: { results: any }) => {
   );
 };
 
-const TokenUsageStats = ({ results, selectedProvider, selectedGoogleModel, selectedGroqModel }: { results: any, selectedProvider: string, selectedGoogleModel: string, selectedGroqModel: string }) => {
+const TokenUsageStats = ({ results, selectedProvider, selectedGoogleModel, selectedGroqModel, theme }: { results: any, selectedProvider: string, selectedGoogleModel: string, selectedGroqModel: string, theme: string }) => {
   if (!results || !results.intents_data) return null;
 
   const modelInfo = {
@@ -135,23 +139,27 @@ const TokenUsageStats = ({ results, selectedProvider, selectedGoogleModel, selec
     });
   });
 
+  const glassCardClass = theme === 'dark'
+    ? 'glass-card'
+    : 'bg-white/60 backdrop-blur-md border border-gray-200/50 shadow-sm';
+
   return (
-    <div className="glass-card p-6 mt-8">
-      <h3 className="text-xl font-bold text-navy-200 mb-4">Token Usage</h3>
+    <div className={`${glassCardClass} p-6 mt-8`}>
+      <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-navy-200' : 'text-gray-800'} mb-4`}>Token Usage</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {(selectedProvider === 'google' || selectedProvider === 'both') && (
           <div>
-            <h4 className="font-bold text-lg text-primary-300 mb-3">Google Gemini ({selectedGoogleModel})</h4>
-            <div className="space-y-2">
-              <div className="flex justify-between"><span>Tokens Used:</span> <span>{modelInfo.google.used}</span></div>
+            <h4 className={`font-bold text-lg ${theme === 'dark' ? 'text-primary-300' : 'text-primary-500'} mb-3`}>Google Gemini ({selectedGoogleModel})</h4>
+            <div className={`space-y-2 ${theme === 'dark' ? 'text-navy-300' : 'text-gray-600'}`}>
+              <div className="flex justify-between"><span>Tokens Used:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{modelInfo.google.used}</span></div>
             </div>
           </div>
         )}
         {(selectedProvider === 'groq' || selectedProvider === 'both') && (
           <div>
-            <h4 className="font-bold text-lg text-accent-300 mb-3">Groq ({selectedGroqModel})</h4>
-            <div className="space-y-2">
-              <div className="flex justify-between"><span>Tokens Used:</span> <span>{modelInfo.groq.used}</span></div>
+            <h4 className={`font-bold text-lg ${theme === 'dark' ? 'text-accent-300' : 'text-accent-500'} mb-3`}>Groq ({selectedGroqModel})</h4>
+            <div className={`space-y-2 ${theme === 'dark' ? 'text-navy-300' : 'text-gray-600'}`}>
+              <div className="flex justify-between"><span>Tokens Used:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{modelInfo.groq.used}</span></div>
             </div>
           </div>
         )}
@@ -165,13 +173,13 @@ const TokenUsageStats = ({ results, selectedProvider, selectedGoogleModel, selec
 const API_BASE_URL = import.meta.env.VITE_API_URL ||
   (import.meta.env.PROD ? '/api' : 'http://127.0.0.1:8000');
 
-const FormattedAnswer = ({ text, mentions = [] }: { text: string; mentions?: BrandMention[] }) => {
+const FormattedAnswer = ({ text, mentions = [], theme }: { text: string; mentions?: BrandMention[], theme: string }) => {
   if (!text) return null;
 
   const uniqueBrands = Array.from(new Set(mentions.map(m => m.brand)));
   const sortedBrands = uniqueBrands.sort((a, b) => b.length - a.length);
   const brandPattern = sortedBrands.length > 0
-    ? new RegExp(`(${sortedBrands.map(b => b.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi')
+    ? new RegExp(`(${sortedBrands.map(b => b.replace(/[.*+?^${}()|[\\]/g, '\\$&')).join('|')})`, 'gi')
     : null;
 
   const brandMap = new Map<string, boolean>();
@@ -185,7 +193,7 @@ const FormattedAnswer = ({ text, mentions = [] }: { text: string; mentions?: Bra
       if (brandMap.has(lower)) {
         const isMine = brandMap.get(lower);
         return (
-          <span key={i} className={isMine ? "text-emerald-300 font-medium" : "text-rose-300 font-medium"}>
+          <span key={i} className={isMine ? "text-emerald-400 font-medium" : "text-rose-400 font-medium"}>
             {part}
           </span>
         );
@@ -202,7 +210,7 @@ const FormattedAnswer = ({ text, mentions = [] }: { text: string; mentions?: Bra
       if (part.startsWith('**') && part.endsWith('**')) {
         const content = part.slice(2, -2);
         return (
-          <strong key={i} className="text-primary-300 font-bold">
+          <strong key={i} className={`${theme === 'dark' ? 'text-primary-300' : 'text-primary-600'} font-bold`}>
             {highlightText(content)}
           </strong>
         );
@@ -218,10 +226,10 @@ const FormattedAnswer = ({ text, mentions = [] }: { text: string; mentions?: Bra
       {sections.map((section, sIdx) => {
         if (section.startsWith('### ')) {
           return (
-            <h4 key={sIdx} className="text-lg font-bold text-navy-100 mt-6 mb-3 flex items-center gap-3">
-              <span className="h-px flex-1 bg-gradient-to-r from-primary-500/50 to-transparent"></span>
-              <span className="text-primary-200">{processText(section.slice(4))}</span>
-              <span className="h-px flex-1 bg-gradient-to-l from-primary-500/50 to-transparent"></span>
+            <h4 key={sIdx} className={`text-lg font-bold ${theme === 'dark' ? 'text-navy-100' : 'text-gray-900'} mt-6 mb-3 flex items-center gap-3`}>
+              <span className={`h-px flex-1 bg-gradient-to-r ${theme === 'dark' ? 'from-primary-500/50' : 'from-primary-300/50'} to-transparent`}></span>
+              <span className={`${theme === 'dark' ? 'text-primary-200' : 'text-primary-600'}`}>{processText(section.slice(4))}</span>
+              <span className={`h-px flex-1 bg-gradient-to-l ${theme === 'dark' ? 'from-primary-500/50' : 'from-primary-300/50'} to-transparent`}></span>
             </h4>
           );
         }
@@ -236,20 +244,20 @@ const FormattedAnswer = ({ text, mentions = [] }: { text: string; mentions?: Bra
                 const match = line.match(/^\s*([-*•]|\d+\.)\s*(.*)/);
                 if (match) {
                   return (
-                    <li key={lIdx} className="flex gap-3 text-sm text-navy-300">
-                      <span className="text-primary-400 font-bold min-w-[12px] flex justify-center">{match[1].length > 1 ? match[1] : '•'}</span>
+                    <li key={lIdx} className={`flex gap-3 text-sm ${theme === 'dark' ? 'text-navy-300' : 'text-gray-700'}`}>
+                      <span className={`${theme === 'dark' ? 'text-primary-400' : 'text-primary-500'} font-bold min-w-[12px] flex justify-center`}>{match[1].length > 1 ? match[1] : '•'}</span>
                       <span className="flex-1">{processText(match[2])}</span>
                     </li>
                   );
                 }
-                return <p key={lIdx} className="text-sm text-navy-300 ml-6">{processText(line)}</p>;
+                return <p key={lIdx} className={`text-sm ${theme === 'dark' ? 'text-navy-300' : 'text-gray-700'} ml-6`}>{processText(line)}</p>;
               })}
             </ul>
           );
         }
 
         return (
-          <p key={sIdx} className="text-sm text-navy-300 leading-relaxed whitespace-pre-wrap">
+          <p key={sIdx} className={`text-sm ${theme === 'dark' ? 'text-navy-300' : 'text-gray-700'} leading-relaxed whitespace-pre-wrap`}>
             {processText(section)}
           </p>
         );
@@ -258,7 +266,7 @@ const FormattedAnswer = ({ text, mentions = [] }: { text: string; mentions?: Bra
   );
 };
 
-export default function Dashboard() {
+export default function Dashboard({ theme }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -497,11 +505,11 @@ export default function Dashboard() {
         if (answer.mentions && answer.mentions.length > 0) {
           answer.mentions.forEach((mention: any) => {
             const row = [
-              `"${intent.intent_id}"`,
-              `"${intent.prompt.replace(/"/g, '""')}"`,
-              `"${answer.model}"`,
-              `"${answer.answer.replace(/"/g, '""')}"`,
-              `"${mention.brand}"`,
+              `"${intent.intent_id}"`, 
+              `"${intent.prompt.replace(/"/g, '""')}"`, 
+              `"${answer.model}"`, 
+              `"${answer.answer.replace(/"/g, '""')}"`, 
+              `"${mention.brand}"`, 
               mention.rank || '',
               mention.is_mine ? 'Yes' : 'No'
             ];
@@ -509,10 +517,10 @@ export default function Dashboard() {
           });
         } else {
           const row = [
-              `"${intent.intent_id}"`,
-              `"${intent.prompt.replace(/"/g, '""')}"`,
-              `"${answer.model}"`,
-              `"${answer.answer.replace(/"/g, '""')}"`,
+              `"${intent.intent_id}"`, 
+              `"${intent.prompt.replace(/"/g, '""')}"`, 
+              `"${answer.model}"`, 
+              `"${answer.answer.replace(/"/g, '""')}"`, 
               '',
               '',
               ''
@@ -573,19 +581,35 @@ export default function Dashboard() {
     myBrands.some((b) => b.trim()) &&
     intents.some((i) => i.id.trim() && i.prompt.trim());
 
+  const glassCardClass = theme === 'dark'
+    ? 'glass-card'
+    : 'bg-white/60 backdrop-blur-md border border-gray-200/50 shadow-sm';
+
+  const inputClass = theme === 'dark'
+    ? 'input-field'
+    : 'input-field bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-primary-500 focus:border-primary-500';
+
+  const btnGhostClass = theme === 'dark'
+    ? 'btn-ghost'
+    : 'btn-ghost text-gray-600 hover:bg-gray-100 hover:text-gray-900';
+
+  const btnSecondaryClass = theme === 'dark'
+    ? 'btn-secondary'
+    : 'btn-secondary bg-gray-100 text-gray-700 hover:bg-gray-200';
+
   return (
-    <div className="min-h-screen bg-navy-950">
+    <div className={`min-h-screen ${theme === 'dark' ? 'bg-navy-950 text-white' : 'bg-gray-50 text-gray-800'}`}>
       {/* Background gradient */}
-      <div className="fixed inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-accent-500/5 pointer-events-none" />
+      <div className={`fixed inset-0 ${theme === 'dark' ? 'bg-gradient-to-br from-primary-500/5 via-transparent to-accent-500/5' : 'bg-gray-100'} pointer-events-none`} />
 
       {/* Header */}
-      <header className="relative border-b border-navy-800/50 bg-navy-900/50 backdrop-blur-xl">
+      <header className={`relative border-b ${theme === 'dark' ? 'border-navy-800/50 bg-navy-900/50' : 'border-gray-200 bg-white/80'} backdrop-blur-xl`}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate('/')}
-                className="btn-ghost p-2"
+                className={`${btnGhostClass} p-2`}
                 title="Back to home"
               >
                 <ArrowLeft className="w-5 h-5" />
@@ -595,8 +619,8 @@ export default function Dashboard() {
                   <Search className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-white">LLM Answer Watcher</h1>
-                  <p className="text-sm text-navy-400">Monitor brand mentions in AI responses</p>
+                  <h1 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>LLM Answer Watcher</h1>
+                  <p className={`text-sm ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'}`}>Monitor brand mentions in AI responses</p>
                 </div>
               </div>
             </div>
@@ -604,14 +628,14 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setActiveTab('config')}
-                className={`btn-ghost ${activeTab === 'config' ? 'bg-navy-800 text-white' : ''}`}
+                className={`${btnGhostClass} ${activeTab === 'config' ? (theme === 'dark' ? 'bg-navy-800 text-white' : 'bg-gray-200 text-gray-900') : ''}`}
               >
                 <Settings className="w-4 h-4 mr-2" />
                 Configure
               </button>
               <button
                 onClick={() => setActiveTab('results')}
-                className={`btn-ghost ${activeTab === 'results' ? 'bg-navy-800 text-white' : ''}`}
+                className={`${btnGhostClass} ${activeTab === 'results' ? (theme === 'dark' ? 'bg-navy-800 text-white' : 'bg-gray-200 text-gray-900') : ''}`}
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 Results
@@ -628,7 +652,7 @@ export default function Dashboard() {
             {/* Left Column - Configuration */}
             <div className="lg:col-span-2 space-y-6">
               {/* API Key Section */}
-              <section className="glass-card p-6">
+              <section className={`${glassCardClass} p-6`}>
                 <div className="flex items-center gap-2 mb-4">
                   <Shield className="w-5 h-5 text-primary-400" />
                   <h2 className="section-title">API Configuration</h2>
@@ -639,10 +663,9 @@ export default function Dashboard() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                     <button
                       onClick={() => handleProviderChange('google')}
-                      className={`p-3 rounded-xl border transition-all ${
-                        selectedProvider === 'google'
+                      className={`p-3 rounded-xl border transition-all ${selectedProvider === 'google'
                           ? 'bg-primary-500/20 border-primary-500 text-primary-300'
-                          : 'bg-navy-800/30 border-navy-700/50 text-navy-400 hover:border-navy-600'
+                          : `${theme === 'dark' ? 'bg-navy-800/30 border-navy-700/50 text-navy-400 hover:border-navy-600' : 'bg-gray-100 border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-200'}`
                       }`}
                     >
                       <div className="flex items-center gap-2 justify-center">
@@ -653,10 +676,9 @@ export default function Dashboard() {
                     </button>
                     <button
                       onClick={() => handleProviderChange('groq')}
-                      className={`p-3 rounded-xl border transition-all ${
-                        selectedProvider === 'groq'
+                      className={`p-3 rounded-xl border transition-all ${selectedProvider === 'groq'
                           ? 'bg-primary-500/20 border-primary-500 text-primary-300'
-                          : 'bg-navy-800/30 border-navy-700/50 text-navy-400 hover:border-navy-600'
+                          : `${theme === 'dark' ? 'bg-navy-800/30 border-navy-700/50 text-navy-400 hover:border-navy-600' : 'bg-gray-100 border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-200'}`
                       }`}
                     >
                       <div className="flex items-center gap-2 justify-center">
@@ -667,10 +689,9 @@ export default function Dashboard() {
                     </button>
                     <button
                       onClick={() => handleProviderChange('both')}
-                      className={`p-3 rounded-xl border transition-all ${
-                        selectedProvider === 'both'
+                      className={`p-3 rounded-xl border transition-all ${selectedProvider === 'both'
                           ? 'bg-accent-500/20 border-accent-500 text-accent-300'
-                          : 'bg-navy-800/30 border-navy-700/50 text-navy-400 hover:border-navy-600'
+                          : `${theme === 'dark' ? 'bg-navy-800/30 border-navy-700/50 text-navy-400 hover:border-navy-600' : 'bg-gray-100 border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-200'}`
                       }`}
                     >
                       <div className="flex items-center gap-2 justify-center">
@@ -692,23 +713,23 @@ export default function Dashboard() {
                           setApiKeys({ ...apiKeys, [selectedProvider]: e.target.value })
                         }
                         placeholder={selectedProvider === 'google' ? 'AIzaSy...' : 'gsk_...'}
-                        className="input-field pr-12"
+                        className={`${inputClass} pr-12`}
                       />
                       <button
                         onClick={() => setShowApiKey(!showApiKey)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-navy-400 hover:text-navy-200"
+                        className={`absolute right-3 top-1/2 -translate-y-1/2 ${theme === 'dark' ? 'text-navy-400 hover:text-navy-200' : 'text-gray-400 hover:text-gray-600'}`}
                       >
                         {showApiKey ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
                     </div>
-                    <p className="text-xs text-navy-500 mt-1">
+                    <p className={`text-xs ${theme === 'dark' ? 'text-navy-500' : 'text-gray-500'} mt-1`}>
                       Get your key from{' '}
                       {selectedProvider === 'google' ? (
                         <a
                           href="https://aistudio.google.com/app/apikey"
                           target="_blank"
                           rel="noopener"
-                          className="text-primary-400 hover:text-primary-300"
+                          className="text-primary-500 hover:text-primary-600"
                         >
                           Google AI Studio
                         </a>
@@ -717,7 +738,7 @@ export default function Dashboard() {
                           href="https://console.groq.com/keys"
                           target="_blank"
                           rel="noopener"
-                          className="text-primary-400 hover:text-primary-300"
+                          className="text-primary-500 hover:text-primary-600"
                         >
                           Groq Console
                         </a>
@@ -733,7 +754,7 @@ export default function Dashboard() {
                         value={apiKeys.google}
                         onChange={(e) => setApiKeys({ ...apiKeys, google: e.target.value })}
                         placeholder="AIzaSy..."
-                        className="input-field"
+                        className={inputClass}
                       />
                     </div>
                     <div>
@@ -743,7 +764,7 @@ export default function Dashboard() {
                         value={apiKeys.groq}
                         onChange={(e) => setApiKeys({ ...apiKeys, groq: e.target.value })}
                         placeholder="gsk_..."
-                        className="input-field"
+                        className={inputClass}
                       />
                     </div>
                   </div>
@@ -756,7 +777,7 @@ export default function Dashboard() {
                       <select
                         value={selectedModel}
                         onChange={(e) => setSelectedModel(e.target.value)}
-                        className="input-field appearance-none cursor-pointer"
+                        className={`${inputClass} appearance-none cursor-pointer`}
                       >
                         {availableModels.map((model) => (
                           <option key={model.id} value={model.id}>
@@ -764,9 +785,9 @@ export default function Dashboard() {
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-navy-400 pointer-events-none" />
+                      <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 ${theme === 'dark' ? 'text-navy-400' : 'text-gray-400'} pointer-events-none`} />
                     </div>
-                    <p className="text-xs text-navy-500 mt-1">
+                    <p className={`text-xs ${theme === 'dark' ? 'text-navy-500' : 'text-gray-500'} mt-1`}>
                       {availableModels.find((m) => m.id === selectedModel)?.description}
                     </p>
                   </div>
@@ -777,7 +798,7 @@ export default function Dashboard() {
                       <select
                         value={selectedGoogleModel}
                         onChange={(e) => setSelectedGoogleModel(e.target.value)}
-                        className="input-field"
+                        className={inputClass}
                       >
                         {GEMINI_MODELS.map((model) => (
                           <option key={model.id} value={model.id}>{model.name}</option>
@@ -789,7 +810,7 @@ export default function Dashboard() {
                       <select
                         value={selectedGroqModel}
                         onChange={(e) => setSelectedGroqModel(e.target.value)}
-                        className="input-field"
+                        className={inputClass}
                       >
                         {GROQ_MODELS.map((model) => (
                           <option key={model.id} value={model.id}>{model.name}</option>
@@ -803,24 +824,20 @@ export default function Dashboard() {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setEnableWebSearch(!enableWebSearch)}
-                      className={`relative w-12 h-6 rounded-full transition-colors ${
-                        enableWebSearch ? 'bg-primary-500' : 'bg-navy-700'
-                      }`}
+                      className={`relative w-12 h-6 rounded-full transition-colors ${enableWebSearch ? 'bg-primary-500' : (theme === 'dark' ? 'bg-navy-700' : 'bg-gray-300')}`}
                     >
                       <div
-                        className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-transform ${
-                          enableWebSearch ? 'translate-x-6' : 'translate-x-0.5'
-                        }`}
+                        className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-transform ${enableWebSearch ? 'translate-x-6' : 'translate-x-0.5'}`}
                       />
                     </button>
-                    <span className="text-sm text-navy-300">Enable Google Search grounding</span>
+                    <span className={`text-sm ${theme === 'dark' ? 'text-navy-300' : 'text-gray-700'}`}>Enable Google Search grounding</span>
                   </div>
                 )}
               </div>
             </section>
 
               {/* Brands Section */}
-              <section className="glass-card p-6">
+              <section className={`${glassCardClass} p-6`}>
                 <div className="flex items-center gap-2 mb-4">
                   <Target className="w-5 h-5 text-accent-400" />
                   <h2 className="section-title">Brands to Track</h2>
@@ -840,7 +857,7 @@ export default function Dashboard() {
                             value={brand}
                             onChange={(e) => updateBrand('mine', index, e.target.value)}
                             placeholder="e.g., YourProduct"
-                            className="input-field flex-1"
+                            className={`${inputClass} flex-1`}
                           />
                           {myBrands.length > 1 && (
                             <button
@@ -852,7 +869,7 @@ export default function Dashboard() {
                           )}
                         </div>
                       ))}
-                      <button onClick={() => addBrand('mine')} className="btn-ghost text-sm w-full">
+                      <button onClick={() => addBrand('mine')} className={`${btnGhostClass} text-sm w-full`}>
                         <Plus className="w-4 h-4 mr-1" /> Add brand
                       </button>
                     </div>
@@ -871,7 +888,7 @@ export default function Dashboard() {
                             value={competitor}
                             onChange={(e) => updateBrand('competitors', index, e.target.value)}
                             placeholder="e.g., CompetitorA"
-                            className="input-field flex-1"
+                            className={`${inputClass} flex-1`}
                           />
                           {competitors.length > 1 && (
                             <button
@@ -885,7 +902,7 @@ export default function Dashboard() {
                       ))}
                       <button
                         onClick={() => addBrand('competitors')}
-                        className="btn-ghost text-sm w-full"
+                        className={`${btnGhostClass} text-sm w-full`}
                       >
                         <Plus className="w-4 h-4 mr-1" /> Add competitor
                       </button>
@@ -895,20 +912,20 @@ export default function Dashboard() {
               </section>
 
               {/* Intents Section */}
-              <section className="glass-card p-6">
+              <section className={`${glassCardClass} p-6`}>
                 <div className="flex items-center gap-2 mb-4">
                   <MessageSquare className="w-5 h-5 text-green-400" />
                   <h2 className="section-title">Search Queries (Intents)</h2>
                 </div>
 
-                <p className="text-sm text-navy-400 mb-4">
+                <p className={`text-sm ${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'} mb-4`}>
                   Define the questions you want to ask the AI. These should be buyer-intent queries
                   your customers might ask.
                 </p>
 
                 <div className="space-y-4">
                   {intents.map((intent, index) => (
-                    <div key={index} className="p-4 bg-navy-800/30 rounded-xl border border-navy-700/50">
+                    <div key={index} className={`p-4 ${theme === 'dark' ? 'bg-navy-800/30' : 'bg-gray-100/50'} rounded-xl border ${theme === 'dark' ? 'border-navy-700/50' : 'border-gray-200/50'}`}>
                       <div className="flex items-start gap-4">
                         <div className="flex-1 space-y-3">
                           <input
@@ -916,14 +933,14 @@ export default function Dashboard() {
                             value={intent.id}
                             onChange={(e) => updateIntent(index, 'id', e.target.value)}
                             placeholder="Intent ID (e.g., best-tools)"
-                            className="input-field text-sm"
+                            className={`${inputClass} text-sm`}
                           />
                           <textarea
                             value={intent.prompt}
                             onChange={(e) => updateIntent(index, 'prompt', e.target.value)}
                             placeholder="What are the best email marketing tools?"
                             rows={2}
-                            className="input-field resize-none"
+                            className={`${inputClass} resize-none`}
                           />
                         </div>
                         {intents.length > 1 && (
@@ -935,7 +952,7 @@ export default function Dashboard() {
                     </div>
                   ))}
 
-                  <button onClick={addIntent} className="btn-secondary w-full">
+                  <button onClick={addIntent} className={`${btnSecondaryClass} w-full`}>
                     <Plus className="w-4 h-4 mr-2" /> Add another query
                   </button>
                 </div>
@@ -945,7 +962,7 @@ export default function Dashboard() {
             {/* Right Column - Preview & Actions */}
             <div className="space-y-6">
               {/* Run Button */}
-              <div className="glass-card p-6 glow-primary">
+              <div className={`${glassCardClass} p-6 glow-primary`}>
                 <button
                   onClick={runSearch}
                   disabled={!isConfigValid || isRunning}
@@ -971,39 +988,39 @@ export default function Dashboard() {
                   </p>
                 )}
 
-                <div className="mt-4 pt-4 border-t border-navy-700/50">
+                <div className={`mt-4 pt-4 border-t ${theme === 'dark' ? 'border-navy-700/50' : 'border-gray-200/50'}`}>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-navy-400">Estimated cost</span>
-                    <span className="text-navy-200 font-medium">~$0.001</span>
+                    <span className={`${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'}`}>Estimated cost</span>
+                    <span className={`${theme === 'dark' ? 'text-navy-200' : 'text-gray-800'} font-medium`}>~$0.001</span>
                   </div>
                   <div className="flex items-center justify-between text-sm mt-1">
-                    <span className="text-navy-400">Estimated time</span>
-                    <span className="text-navy-200 font-medium">~5 seconds</span>
+                    <span className={`${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'}`}>Estimated time</span>
+                    <span className={`${theme === 'dark' ? 'text-navy-200' : 'text-gray-800'} font-medium`}>~5 seconds</span>
                   </div>
                 </div>
               </div>
 
               {/* YAML Preview */}
-              <div className="glass-card p-6">
+              <div className={`${glassCardClass} p-6`}>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <Code className="w-5 h-5 text-navy-400" />
-                    <h3 className="font-medium text-navy-200">Config Preview</h3>
+                    <Code className="w-5 h-5 text-gray-400" />
+                    <h3 className={`font-medium ${theme === 'dark' ? 'text-navy-200' : 'text-gray-800'}`}>Config Preview</h3>
                   </div>
                   <button
                     onClick={() => setShowYamlPreview(!showYamlPreview)}
-                    className="btn-ghost text-xs"
+                    className={`${btnGhostClass} text-xs`}
                   >
                     {showYamlPreview ? 'Hide' : 'Show'}
                   </button>
                 </div>
 
                 {showYamlPreview && (
-                  <div className="code-block max-h-80 overflow-auto text-xs mb-4">{yamlOutput}</div>
+                  <div className={`code-block max-h-80 overflow-auto text-xs mb-4 ${theme === 'light' ? 'bg-gray-100 text-gray-800' : ''}`}>{yamlOutput}</div>
                 )}
 
                 <div className="flex gap-2">
-                  <button onClick={copyToClipboard} className="btn-secondary flex-1 text-sm">
+                  <button onClick={copyToClipboard} className={`${btnSecondaryClass} flex-1 text-sm`}>
                     {copied ? (
                       <>
                         <Check className="w-4 h-4 mr-1" /> Copied!
@@ -1014,65 +1031,61 @@ export default function Dashboard() {
                       </>
                     )}
                   </button>
-                  <button onClick={downloadYaml} className="btn-secondary flex-1 text-sm">
+                  <button onClick={downloadYaml} className={`${btnSecondaryClass} flex-1 text-sm`}>
                     <Download className="w-4 h-4 mr-1" /> Download
                   </button>
                 </div>
               </div>
 
               {/* Quick Stats */}
-              <div className="glass-card p-6">
-                <h3 className="font-medium text-navy-200 mb-4">Configuration Summary</h3>
+              <div className={`${glassCardClass} p-6`}>
+                <h3 className={`font-medium ${theme === 'dark' ? 'text-navy-200' : 'text-gray-800'} mb-4`}>Configuration Summary</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-navy-400 flex items-center gap-2">
+                    <span className={`${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'} flex items-center gap-2`}>
                       <Brain className="w-4 h-4" /> Provider
                     </span>
-                    <span className="text-sm text-navy-200 capitalize">
-                      {selectedProvider === 'google'
-                        ? 'Google Gemini'
-                        : selectedProvider === 'groq'
-                          ? 'Groq'
-                          : 'Google Gemini & Groq'}
+                    <span className={`text-sm ${theme === 'dark' ? 'text-navy-200' : 'text-gray-800'} capitalize`}>
+                      {selectedProvider}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-navy-400 flex items-center gap-2">
+                    <span className={`${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'} flex items-center gap-2`}>
                       <Zap className="w-4 h-4" /> Model
                     </span>
-                    <span className="text-sm text-navy-200">
-                      {availableModels.find((m) => m.id === selectedModel)?.name}
+                    <span className={`text-sm ${theme === 'dark' ? 'text-navy-200' : 'text-gray-800'}`}>
+                      {selectedProvider === 'google' ? selectedGoogleModel : selectedGroqModel}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-navy-400 flex items-center gap-2">
+                    <span className={`${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'} flex items-center gap-2`}>
                       <Target className="w-4 h-4" /> Your Brands
                     </span>
-                    <span className="text-sm text-navy-200">
+                    <span className={`text-sm ${theme === 'dark' ? 'text-navy-200' : 'text-gray-800'}`}>
                       {myBrands.filter((b) => b.trim()).length}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-navy-400 flex items-center gap-2">
+                    <span className={`${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'} flex items-center gap-2`}>
                       <Users className="w-4 h-4" /> Competitors
                     </span>
-                    <span className="text-sm text-navy-200">
+                    <span className={`text-sm ${theme === 'dark' ? 'text-navy-200' : 'text-gray-800'}`}>
                       {competitors.filter((c) => c.trim()).length}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-navy-400 flex items-center gap-2">
+                    <span className={`${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'} flex items-center gap-2`}>
                       <MessageSquare className="w-4 h-4" /> Queries
                     </span>
-                    <span className="text-sm text-navy-200">
+                    <span className={`text-sm ${theme === 'dark' ? 'text-navy-200' : 'text-gray-800'}`}>
                       {intents.filter((i) => i.prompt.trim()).length}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-navy-400 flex items-center gap-2">
+                    <span className={`${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'} flex items-center gap-2`}>
                       <Search className="w-4 h-4" /> Web Search
                     </span>
-                    <span className="text-sm text-navy-200">
+                    <span className={`text-sm ${enableWebSearch ? 'text-green-400' : 'text-red-400'}`}>
                       {enableWebSearch ? 'Enabled' : 'Disabled'}
                     </span>
                   </div>
@@ -1081,68 +1094,62 @@ export default function Dashboard() {
             </div>
           </div>
         ) : (
-          <div className="glass-card p-8"> {/* Outer div for the Results Tab, acts as single root element */}
+          <div className={`${glassCardClass} p-8`}> {/* Outer div for the Results Tab, acts as single root element */}
             {results && results.intents_data && results.intents_data.length > 0 ? (
-              <> {/* React Fragment to return multiple elements */}
+              <>
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-                  <h2 className="text-2xl font-bold text-navy-200">
+                  <h2 className={`text-2xl font-bold ${theme === 'dark' ? 'text-navy-200' : 'text-gray-800'}`}>
                     Search Results for Run: <span className="text-primary-400">{runId}</span>
                   </h2>
-                  {results && results.intents_data && results.intents_data.length > 0 && (
-                    <div className="flex gap-2">
-                      <button onClick={downloadResultsCSV} className="btn-secondary text-sm px-3 py-2" title="Download CSV">
-                        <Download className="w-4 h-4 mr-2 inline" /> CSV
-                      </button>
-                      <button onClick={downloadResultsJSON} className="btn-secondary text-sm px-3 py-2" title="Download JSON">
-                        <Code className="w-4 h-4 mr-2 inline" /> JSON
-                      </button>
-                      <button onClick={downloadResultsText} className="btn-secondary text-sm px-3 py-2" title="Download Text">
-                        <FileText className="w-4 h-4 mr-2 inline" /> TXT
-                      </button>
-                    </div>
-                  )}
+                  <div className="flex gap-2">
+                    <button onClick={downloadResultsCSV} className={`${btnSecondaryClass} text-sm px-3 py-2`} title="Download CSV">
+                      <Download className="w-4 h-4 mr-2 inline" /> CSV
+                    </button>
+                    <button onClick={downloadResultsJSON} className={`${btnSecondaryClass} text-sm px-3 py-2`} title="Download JSON">
+                      <Code className="w-4 h-4 mr-2 inline" /> JSON
+                    </button>
+                    <button onClick={downloadResultsText} className={`${btnSecondaryClass} text-sm px-3 py-2`} title="Download Text">
+                      <FileText className="w-4 h-4 mr-2 inline" /> TXT
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-8">
                   {results.intents_data.map((intentResult: any) => (
-                    <div key={intentResult.intent_id} className="p-6 bg-navy-800/20 rounded-2xl border border-navy-700/40 hover:border-navy-600/60 transition-colors">
+                    <div key={intentResult.intent_id} className={`p-6 ${theme === 'dark' ? 'bg-navy-800/20' : 'bg-gray-100/50'} rounded-2xl border ${theme === 'dark' ? 'border-navy-700/40 hover:border-navy-600/60' : 'border-gray-200/40 hover:border-gray-300/60'} transition-colors`}>
                       <div className="flex items-start gap-4 mb-4">
                         <div className="w-8 h-8 rounded-lg bg-primary-500/20 flex items-center justify-center shrink-0">
                           <MessageSquare className="w-4 h-4 text-primary-400" />
                         </div>
-                        <h3 className="font-bold text-xl text-navy-100">{intentResult.prompt}</h3>
+                        <h3 className={`font-bold text-xl ${theme === 'dark' ? 'text-navy-100' : 'text-gray-900'}`}>{intentResult.prompt}</h3>
                       </div>
 
                       {selectedProvider === 'both' ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           {intentResult.answers.map((answer: any, index: number) => (
-                            <div key={index} className="bg-navy-900/40 rounded-xl p-5 border border-navy-800/50">
-                              <h4 className="font-bold text-lg text-primary-300 mb-3">{answer.model}</h4>
-                              <FormattedAnswer text={answer.answer} mentions={answer.mentions} />
+                            <div key={index} className={`${theme === 'dark' ? 'bg-navy-900/40' : 'bg-white/50'} rounded-xl p-5 border ${theme === 'dark' ? 'border-navy-800/50' : 'border-gray-200/50'}`}>
+                              <h4 className={`font-bold text-lg ${theme === 'dark' ? 'text-primary-300' : 'text-primary-600'} mb-3`}>{answer.model}</h4>
+                              <FormattedAnswer text={answer.answer} mentions={answer.mentions} theme={theme} />
                               <div className="mt-4">
                                 <div className="flex items-center gap-2 mb-3">
                                   <Target className="w-4 h-4 text-accent-400" />
-                                  <h4 className="font-semibold text-navy-400 text-sm uppercase tracking-wider">Detected Mentions</h4>
+                                  <h4 className={`font-semibold ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'} text-sm uppercase tracking-wider`}>Detected Mentions</h4>
                                 </div>
                                 <div className="flex flex-wrap gap-3">
                                   {answer.mentions && answer.mentions.length > 0 ? (
                                     answer.mentions.map((mention: any, mIndex: number) => (
-                                      <div key={mIndex} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
-                                        mention.is_mine
-                                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                                          : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-                                      }`}>
+                                      <div key={mIndex} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${mention.is_mine
+                                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                                          : 'bg-rose-500/10 border-rose-500/30 text-rose-400'}`}>
                                         <span className="font-medium">{mention.brand}</span>
                                         {mention.rank && (
-                                          <span className={`text-xs px-1.5 py-0.5 rounded ${
-                                            mention.is_mine ? 'bg-emerald-500/20' : 'bg-rose-500/20'
-                                          }`}>
+                                          <span className={`text-xs px-1.5 py-0.5 rounded ${mention.is_mine ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`}>
                                             #{mention.rank}
                                           </span>
                                         )}
                                       </div>
                                     ))
                                   ) : (
-                                    <span className="text-sm text-navy-500 italic text-center w-full py-2 bg-navy-900/20 rounded-lg border border-dashed border-navy-800">
+                                    <span className={`text-sm italic text-center w-full py-2 rounded-lg border border-dashed ${theme === 'dark' ? 'text-navy-500 bg-navy-900/20 border-navy-800' : 'text-gray-400 bg-gray-100/50 border-gray-200'}`}>
                                       No brand mentions detected
                                     </span>
                                   )}
@@ -1152,33 +1159,29 @@ export default function Dashboard() {
                           ))}
                         </div>
                       ) : (
-                        <div className="bg-navy-900/40 rounded-xl p-5 mb-6 border border-navy-800/50">
-                          <FormattedAnswer text={intentResult.answers[0].answer} mentions={intentResult.answers[0].mentions} />
+                        <div className={`${theme === 'dark' ? 'bg-navy-900/40' : 'bg-white/50'} rounded-xl p-5 mb-6 border ${theme === 'dark' ? 'border-navy-800/50' : 'border-gray-200/50'}`}>
+                          <FormattedAnswer text={intentResult.answers[0].answer} mentions={intentResult.answers[0].mentions} theme={theme} />
                           <div className="mt-4">
                             <div className="flex items-center gap-2 mb-3">
                               <Target className="w-4 h-4 text-accent-400" />
-                              <h4 className="font-semibold text-navy-400 text-sm uppercase tracking-wider">Detected Mentions</h4>
+                              <h4 className={`font-semibold ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'} text-sm uppercase tracking-wider`}>Detected Mentions</h4>
                             </div>
                             <div className="flex flex-wrap gap-3">
                               {intentResult.answers[0].mentions && intentResult.answers[0].mentions.length > 0 ? (
                                 intentResult.answers[0].mentions.map((mention: any, mIndex: number) => (
-                                  <div key={mIndex} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
-                                    mention.is_mine
-                                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                                      : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-                                  }`}>
+                                  <div key={mIndex} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${mention.is_mine
+                                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                                      : 'bg-rose-500/10 border-rose-500/30 text-rose-400'}`}>
                                     <span className="font-medium">{mention.brand}</span>
                                     {mention.rank && (
-                                      <span className={`text-xs px-1.5 py-0.5 rounded ${
-                                        mention.is_mine ? 'bg-emerald-500/20' : 'bg-rose-500/20'
-                                      }`}>
+                                      <span className={`text-xs px-1.5 py-0.5 rounded ${mention.is_mine ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`}>
                                         #{mention.rank}
                                       </span>
                                     )}
                                   </div>
                                 ))
                               ) : (
-                                <span className="text-sm text-navy-500 italic text-center w-full py-2 bg-navy-900/20 rounded-lg border border-dashed border-navy-800">
+                                <span className={`text-sm italic text-center w-full py-2 rounded-lg border border-dashed ${theme === 'dark' ? 'text-navy-500 bg-navy-900/20 border-navy-800' : 'text-gray-400 bg-gray-100/50 border-gray-200'}`}>
                                   No brand mentions detected
                                 </span>
                               )}
@@ -1189,33 +1192,16 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </div>
-                {selectedProvider === 'both' && <StatsComparison results={results} />}
-                <TokenUsageStats results={results} selectedProvider={selectedProvider} selectedGoogleModel={selectedGoogleModel} selectedGroqModel={selectedGroqModel} />
+                {selectedProvider === 'both' && <StatsComparison results={results} theme={theme} />}
+                <TokenUsageStats results={results} selectedProvider={selectedProvider} selectedGoogleModel={selectedGoogleModel} selectedGroqModel={selectedGroqModel} theme={theme} />
               </>
-            ) : results && results.intents_data && results.intents_data.length === 0 ? (
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-900/30 flex items-center justify-center">
-                  <AlertCircle className="w-8 h-8 text-amber-500" />
-                </div>
-                <h2 className="text-xl font-semibold text-navy-200 mb-2">No Answers Retrieved</h2>
-                <p className="text-navy-400 mb-4">
-                  The run completed but no answers were retrieved from the LLM.
-                </p>
-                <p className="text-sm text-amber-400 mb-6">
-                  This usually means the API key has exceeded its quota (429 error) or there was a connection issue.
-                  Please check your API key and try again.
-                </p>
-                <button onClick={() => setActiveTab('config')} className="btn-primary">
-                  <Settings className="w-4 h-4 mr-2" /> Go to Configuration
-                </button>
-              </div>
             ) : (
               <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-navy-800 flex items-center justify-center">
-                  <Sparkles className="w-8 h-8 text-navy-500" />
+                <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl ${theme === 'dark' ? 'bg-navy-800' : 'bg-gray-100'} flex items-center justify-center`}>
+                  <Sparkles className="w-8 h-8 text-gray-400" />
                 </div>
-                <h2 className="text-xl font-semibold text-navy-200 mb-2">No Results Yet</h2>
-                <p className="text-navy-400 mb-6">
+                <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-navy-200' : 'text-gray-800'} mb-2`}>No Results Yet</h2>
+                <p className={`${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'} mb-6`}>
                   Configure your search settings and run a search to see results here.
                 </p>
                 <button onClick={() => setActiveTab('config')} className="btn-primary">
@@ -1228,9 +1214,9 @@ export default function Dashboard() {
       </main>
 
       {/* Footer */}
-      <footer className="relative border-t border-navy-800/50 bg-navy-900/30 mt-12">
+      <footer className={`relative border-t ${theme === 'dark' ? 'border-navy-800/50 bg-navy-900/30' : 'border-gray-200 bg-gray-100'} mt-12`}>
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between text-sm text-navy-500">
+          <div className={`flex items-center justify-between text-sm ${theme === 'dark' ? 'text-navy-500' : 'text-gray-500'}`}>
             <span>LLM Answer Watcher v0.2.0</span>
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
