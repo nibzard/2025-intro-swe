@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../libs/supabaseClient";
 
 // Minimalna “AI” logika (rule-based). Kasnije ovo premjestite u backend.
 function mockAssistantReply(userText) {
