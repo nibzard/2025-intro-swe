@@ -1,40 +1,171 @@
-Seat Review – A System for Evaluating Seating Comfort in Public Venues
-1. Introduction
+# SeatReview - Stadium Seat Review Application
 
-Public venues such as sports stadiums, theaters, concert halls, and arenas serve as gathering places where large numbers of people come together to share emotions, cultural experiences, entertainment, and a sense of belonging. Although attention is often primarily directed toward the main event—be it a sports match, theatrical performance, or concert—the overall visitor experience depends heavily on the quality of the venue’s environment, including accessibility, visibility, acoustics, and, importantly, seating comfort.
+Aplikacija za pregled i ocjenjivanje sjedala na stadionima, dvoranama i kazalistima.
 
-As more venues undergo modernization and digitalization, awareness of seating quality is becoming increasingly important. Comfortable seating influences not only the physical well-being of visitors, but also their likelihood of returning, purchasing season tickets, or recommending the venue to others.
+## Funkcionalnosti
 
-The “Seat Review” project has been developed with the goal of enabling visitors to objectively evaluate the comfort of seats in various public venues. This creates a valuable database of user experiences. Based on these insights, venue managers can identify structural or maintenance-related issues and strategically improve the quality of their services.
+- **Pregled mjesta** - Stadioni, dvorane, kazalista
+- **Interaktivna mapa sjedala** - SVG vizualizacija s bojama po sekcijama (Zapad, Istok, Sjever, Jug)
+- **360° pregled** - Virtualni pogled s pozicije sjedala
+- **Sustav recenzija** - Ocjene za udobnost, vidljivost, prostor za noge, cistocu
+- **Korisnicki profili** - Registracija, prijava, pregled aktivnosti
+- **Validacija lozinke** - Provjera jacine lozinke pri registraciji
+- **Favoriti** - Spremanje omiljenih sjedala
+- **Admin panel** - Upravljanje korisnicima i sadrzajem
+- **Visejezicnost** - Hrvatski i engleski jezik
+- **Animirana pozadina** - Nogometno igraliste i kosarkaska dvorana s animacijama
+- **Statistike** - Prosjecne ocjene i AI sazetak recenzija
 
-2. Problem Description
+## Tehnologije
 
-Despite substantial investments in modern public venues, seating comfort is often overlooked or evaluated purely subjectively. Visitors frequently encounter a variety of issues, such as:
+### Frontend
+- React 18
+- Vite
+- CSS3 (animacije, glassmorphism efekti)
 
-Non-ergonomic seat design – insufficient back support, limited legroom, or uncomfortable seat angles.
+### Backend
+- Node.js
+- Express.js
+- SQLite (better-sqlite3)
+- JWT autentifikacija
+- bcrypt za hashiranje lozinki
 
-Damaged or unclean seats – caused by extensive use or inadequate maintenance.
+## Pokretanje aplikacije
 
-Poor visibility – resulting from suboptimal seat positioning, insufficient elevation, or obstructed views.
+### Preduvjeti
+- Node.js 18+ instaliran
+- npm
 
-Lack of a feedback system – visitors have no direct way to report their seating experience.
+### 1. Kloniranje repozitorija
 
-Inconsistent standards across sections – for example, premium and regular seating differing significantly in comfort without transparent justification.
+```bash
+git clone https://github.com/itavic371/2025-intro-swe.git
+cd 2025-intro-swe/projects/SeatReview-itavic-asusnjar-ltesic-jcesljar
+```
 
-Currently, there is no systematic method for collecting and analyzing data related to seating comfort in stadiums, theaters, or other venues. Existing reviews typically focus on atmosphere, acoustics, safety, or accessibility, while the physical comfort of seats remains underrepresented.
+### 2. Pokretanje Backenda
 
-This highlights the need for a platform that enables objective evaluation of seating comfort across various venue types — not only to improve the general visitor experience, but also to help facility managers make data-driven decisions.
+```bash
+cd backend
+npm install
+npm start
+```
 
-3. Hypothesis
+Backend ce se pokrenuti na `http://localhost:5000`
 
-The central hypothesis of the project is:
+**Admin pristup:**
+- Email: `admin@seatreview.hr`
+- Lozinka: `Admin123!`
 
-If visitors are provided with an easy-to-use system for evaluating seating comfort, their overall satisfaction will increase, and venue managers will be able to make targeted improvements to the design and functionality of their seating areas.
+### 3. Pokretanje Frontenda
 
-Additional sub-hypotheses:
+U novom terminalu:
 
-Systematic collection of seating-comfort data will allow meaningful comparisons between different types of venues based on real user experiences.
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-Analysis of reviews will reveal the most common issues (e.g., insufficient legroom, worn-out cushions, poor visibility).
+Frontend ce se pokrenuti na `http://localhost:5173`
 
-Positive seating experiences will enhance visitor loyalty and increase their likelihood of returning to the venue more frequently.
+## Brzo pokretanje (jedna naredba)
+
+Za Windows PowerShell:
+```powershell
+# U root folderu projekta
+cd backend; npm install; Start-Process npm -ArgumentList "start" -NoNewWindow; cd ../frontend; npm install; npm run dev
+```
+
+Za Linux/Mac:
+```bash
+# U root folderu projekta
+cd backend && npm install && npm start & cd ../frontend && npm install && npm run dev
+```
+
+## Struktura projekta
+
+```
+SeatReview-itavic-asusnjar-ltesic-jcesljar/
+├── frontend/                 # React aplikacija
+│   ├── src/
+│   │   ├── App.jsx          # Glavna komponenta s recenzijama i statistikama
+│   │   ├── AuthContext.jsx  # Autentifikacija context
+│   │   ├── Navigation.jsx   # Navigacija s login/register modalima
+│   │   ├── SeatMap.jsx      # Interaktivna SVG mapa sjedala
+│   │   ├── Favorites.jsx    # Favoriti korisnika
+│   │   ├── Leaderboard.jsx  # Ljestvica aktivnosti korisnika
+│   │   ├── UserProfile.jsx  # Profil korisnika
+│   │   ├── Photo360Viewer.jsx # 360 stupnjeva pregled
+│   │   ├── ViewHistory.jsx  # Povijest pregledanih sjedala
+│   │   ├── LanguageContext.jsx # Kontekst za jezik
+│   │   ├── translations.js  # Prijevodi HR/EN
+│   │   └── styles.css       # Svi stilovi i animacije
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.mjs
+│
+├── backend/                  # Express API server
+│   ├── index.mjs            # Glavni server s rutama
+│   ├── db/                  # SQLite baza podataka
+│   ├── uploads/             # Uploadane slike
+│   └── package.json
+│
+├── Specifications.md        # Detaljne specifikacije projekta
+├── Dijagram.md             # Arhitektura dijagrami
+└── README.md               # Upute za pokretanje
+```
+
+## API Endpoints
+
+### Autentifikacija
+- `POST /api/auth/register` - Registracija novog korisnika
+- `POST /api/auth/login` - Prijava korisnika
+
+### Venues (Mjesta)
+- `GET /api/venues` - Dohvati sva mjesta (filtriranje po kategoriji)
+- `GET /api/venues/:id` - Dohvati pojedino mjesto
+
+### Recenzije
+- `GET /api/venues/:id/reviews` - Recenzije za mjesto
+- `POST /api/venues/:id/reviews` - Dodaj novu recenziju (zahtijeva auth)
+- `POST /api/reviews/:id/vote` - Glasaj za recenziju (upvote/downvote)
+
+### Favoriti
+- `GET /api/favorites` - Dohvati favorite korisnika
+- `POST /api/favorites` - Dodaj favorit
+- `DELETE /api/favorites/:id` - Ukloni favorit
+
+### Statistike
+- `GET /api/venues/:id/stats` - Statistike mjesta (prosjeci ocjena)
+- `GET /api/venues/:id/insights` - AI sazetak recenzija
+- `GET /api/leaderboard` - Ljestvica najaktivnijih korisnika
+
+### Admin
+- `GET /api/admin/users` - Lista korisnika (samo admin)
+- `DELETE /api/admin/users/:id` - Obrisi korisnika
+
+## Screenshots
+
+### Pocetna stranica s animiranom pozadinom
+Animirano nogometno igraliste i kosarkaska dvorana u pozadini s efektima prijelaza.
+
+### Mapa sjedala
+Interaktivna SVG mapa s 4 sekcije (Zapad - plava, Istok - zelena, Sjever - narancasta, Jug - crvena).
+
+### Statistike
+Prosjecne ocjene prikazane u plavom krugu s progress barovima za svaku kategoriju.
+
+## Autori
+
+- Ivan Tavic (itavic)
+- Ana Susnjar (asusnjar)
+- Luka Tesic (ltesic)
+- Josip Cesljar (jcesljar)
+
+**Kolegij:** Uvod u programsko inzenjerstvo
+**Akademska godina:** 2024/2025
+
+## Licenca
+
+MIT License
