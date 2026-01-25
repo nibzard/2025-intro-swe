@@ -16,12 +16,7 @@ function Photo360Viewer({ venueId }) {
 
   const getTourUrl = () => {
     if (!venue || !venue.virtual_tour_url) return '';
-    let url = venue.virtual_tour_url;
-    if (url.includes('matterport.com')) {
-      const separator = url.includes('?') ? '&' : '?';
-      url += `${separator}play=1&qs=1&brand=0&mls=2&wh=0&guides=0&title=0`;
-    }
-    return url;
+    return venue.virtual_tour_url;
   };
 
   const fetchVenueAndPhotos = async () => {

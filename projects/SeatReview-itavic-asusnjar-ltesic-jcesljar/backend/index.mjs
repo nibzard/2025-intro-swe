@@ -220,7 +220,7 @@ db.serialize(() => {
         "INSERT INTO Venue (name, address, type, category, virtual_tour_url) VALUES (?, ?, ?, ?, ?)"
       );
       stmt.run("Stadion Poljud", "Mediteranskih igara 2, Split", "stadium", "stadium",
-        "https://my.matterport.com/show/?m=vLYoS66CWpk");
+        "https://hajduk.hr/sadrzaj/stadion/virtualna-setnja/");
       stmt.run("Arena Zagreb", "Vice Vukova 6, Zagreb", "arena", "arena", null);
       stmt.run("HNK Split", "Trg Gaje Bulata 1, Split", "theatre", "theatre", null);
       stmt.run("Spaladium Arena", "Zrinsko-Frankopanska 211, Split", "arena", "arena", null);
