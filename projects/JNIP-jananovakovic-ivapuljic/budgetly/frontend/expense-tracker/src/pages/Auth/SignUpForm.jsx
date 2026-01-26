@@ -43,7 +43,6 @@ const SignUpForm = () => {
         fullName,
         email,
         password,
-        profileImageUrl,
       });
 
       const { token, user } = response.data;
