@@ -37,7 +37,7 @@ All enrolled students sorted by activity level (most active first).
 | Tamara Višić | tvisic | 35 | 🔥 Very Active | ✓ | ✓ | Member (404-atezak-tvisic) |
 | Gianna Lukić | Gianna | 25 | 🔥 Very Active | — | ✓ | — |
 | Karolina Mihaljević | Karoll47 | 24 | 🔥 Very Active | ✓ | ✓ | Lead (povezivanje-timova-Rogulj-Mihaljevic) |
-| Emma Salopek | emmasalopek | 23 | 🔥 Very Active | ✓ | ✓ | Lead (None) |
+| Emma Salopek | emmasalopek | 23 | 🔥 Very Active | ✓ | ✓ | Lead (HERChat-esalopek-dbusic) |
 | David Siroglavić | davids2510 | 22 | 🔥 Very Active | — | — | Lead (rezerviraj.me-dsiroglavic-mbudimir) |
 | Karlo Ćurčija | notKarlo/KarloCurcija | 22 | 🔥 Very Active | — | ✓ | Lead (paradizot-kcurcija-ekevic-ltomic-jvitaljic) |
 | Stipe Barišić | stipzard | 16 | 🔥 Very Active | ✓ | — | Lead (1950-stipebarisic-lukacirkovic) |
@@ -51,7 +51,7 @@ All enrolled students sorted by activity level (most active first).
 | Jana Novaković | jananovakovic | 9 | ✅ Active | ✓ | — | Lead (JNIP-jananovakovic-ivapuljic) |
 | Marin Boban | ma31n | 9 | ✅ Active | — | ✓ | Member (BobanKuzmanic-nkuzmanic-mboban) |
 | Iva Puljić | ivapuljic | 8 | ✅ Active | ✓ | — | Member (JNIP-jananovakovic-ivapuljic) |
-| Danijela Bušić | busicdanijela | 6 | ✅ Active | — | ✓ | — |
+| Danijela Bušić | busicdanijela | 6 | ✅ Active | — | ✓ | — | Member (HERChat-esalopek-dbusic)
 | Barbara Jezidžić | barbjez | 4 | ⚠️ Low Activity | — | ✓ | Member (KMB-kgrubic-mbegonja-bjezidzic) |
 | Josip Ćužić | Zlicone/jcuzic | 4 | ⚠️ Low Activity | — | — | Lead (KSKS-jcuzic-aolujic-lpericic-mdogas) |
 | Luka Borović | lucinho17 | 3 | ⚠️ Low Activity | — | ✓ | Member (LANS-scubelic-asucur-lborovic-nmarjanovic) |
