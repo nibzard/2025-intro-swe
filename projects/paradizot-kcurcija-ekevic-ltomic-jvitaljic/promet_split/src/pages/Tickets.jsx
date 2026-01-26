@@ -1,18 +1,3 @@
-<<<<<<< HEAD
-import { useState } from 'react'; // Fixed import
-import TicketCard from '../components/TicketCard';
-
-const Tickets = () => {
-    const [activeTab, setActiveTab] = useState('active');
-
-    // Mock data
-    const tickets = [
-        { id: 1, type: '1 Sat', status: 'active' },
-        { id: 2, type: '24 Sata', status: 'not_activated' },
-        { id: 3, type: '1 Sat', status: 'expired' },
-        { id: 4, type: '1 Sat', status: 'expired' },
-    ];
-=======
 import { useState } from 'react';
 import TicketCard from '../components/TicketCard';
 import { useWallet } from '../context/WalletContext';
@@ -22,7 +7,6 @@ const Tickets = () => {
     const { tickets, activateTicket, deactivateTicket } = useWallet();
     const [activeTab, setActiveTab] = useState('active');
     const [expandedQrTicket, setExpandedQrTicket] = useState(null);
->>>>>>> 3127acfbe1bdcb764ef04404ec50ad73809e2c05
 
     const filteredTickets = tickets.filter(t => {
         if (activeTab === 'active') return t.status === 'active';
@@ -31,8 +15,6 @@ const Tickets = () => {
         return true;
     });
 
-<<<<<<< HEAD
-=======
     const handleActivate = (ticketId) => {
         // Check if there is already an active ticket
         const hasActive = tickets.some(t => t.status === 'active');
@@ -55,7 +37,6 @@ const Tickets = () => {
         }
     };
 
->>>>>>> 3127acfbe1bdcb764ef04404ec50ad73809e2c05
     return (
         <div style={{ padding: '1.5rem', paddingBottom: '2rem' }}>
             <header style={{ marginBottom: '2rem' }}>
@@ -98,18 +79,12 @@ const Tickets = () => {
                     filteredTickets.map(ticket => (
                         <TicketCard
                             key={ticket.id}
-<<<<<<< HEAD
-                            type={ticket.type}
-                            status={ticket.status}
-                            onActivate={() => alert('Aktivacija...')} // Mock activation
-=======
-                            type={ticket.name || ticket.type} // Fallback for various data shapes
+                            type={ticket.name || ticket.type}
                             status={ticket.status}
                             expires={ticket.expiresAt}
                             onActivate={() => handleActivate(ticket.id)}
                             onDeactivate={() => handleDeactivate(ticket.id)}
                             onQrClick={() => setExpandedQrTicket(ticket)}
->>>>>>> 3127acfbe1bdcb764ef04404ec50ad73809e2c05
                         />
                     ))
                 ) : (
@@ -118,8 +93,6 @@ const Tickets = () => {
                     </div>
                 )}
             </div>
-<<<<<<< HEAD
-=======
 
             {/* QR Zoom Modal */}
             {expandedQrTicket && (
@@ -188,7 +161,6 @@ const Tickets = () => {
                     </div>
                 </div>
             )}
->>>>>>> 3127acfbe1bdcb764ef04404ec50ad73809e2c05
         </div>
     );
 };
