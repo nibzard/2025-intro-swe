@@ -16,7 +16,10 @@
             <form id="auth-form">
                 <input type="email" id="auth-email" placeholder="E-mail adresa" required>
                 <input type="password" id="auth-password" placeholder="Lozinka" required>
-                <button type="submit" id="auth-btn">Uđi u aplikaciju</button>
+                <div id="auth-buttons" style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button type="button" id="login-btn">Prijava</button>
+                    <button type="button" id="register-btn" class="secondary-btn">Registracija</button>
+                </div>
                 <p style="text-align: center; margin-top: 15px; font-size: 0.85em;">
                     <a href="#" id="forgot-password-link" style="color: #7c3aed; text-decoration: none;">Zaboravili ste lozinku?</a>
                 </p>
