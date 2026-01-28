@@ -131,8 +131,14 @@ export default function LandingPage({ theme }) {
               >
                 Documentation
               </a>
-              <button onClick={() => navigate('/app')} className="btn-primary text-sm">
-                Get Started
+              <button
+                onClick={() => navigate('/login')}
+                className={`btn-ghost text-sm ${theme === 'dark' ? 'text-navy-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+              >
+                Login
+              </button>
+              <button onClick={() => navigate('/register')} className="btn-primary text-sm">
+                Sign Up
                 <ArrowRight className="w-4 h-4 ml-2 inline" />
               </button>
             </div>

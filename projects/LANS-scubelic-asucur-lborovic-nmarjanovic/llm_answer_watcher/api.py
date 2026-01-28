@@ -1,10 +1,12 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ValidationError
 import yaml
 import os
 import sqlite3
 import logging
+import traceback
 
 from llm_answer_watcher.storage.db import init_db_if_needed, get_run_summary
 from llm_answer_watcher.config.schema import (
@@ -18,12 +20,13 @@ from llm_answer_watcher.config.schema import (
 )
 from llm_answer_watcher.llm_runner.runner import run_all
 from llm_answer_watcher.system_prompts import get_provider_default
+from llm_answer_watcher.auth.router import router as auth_router
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="LLM Answer Watcher API", version="0.2.0")
 
-# CORS configuration
+# CORS configuration - must be added BEFORE routers
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
@@ -38,6 +41,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Global exception handler to ensure CORS headers on errors
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Handle all unhandled exceptions with proper CORS headers."""
+    logger.error(f"Unhandled exception: {exc}\n{traceback.format_exc()}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc)},
+    )
+
+
+# Include authentication router
+app.include_router(auth_router)
 
 
 class ConfigData(BaseModel):

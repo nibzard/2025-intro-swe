@@ -32,7 +32,7 @@ from ..utils.time import utc_timestamp
 logger = logging.getLogger(__name__)
 
 # Current schema version - increment when migrations are added
-CURRENT_SCHEMA_VERSION = 6
+CURRENT_SCHEMA_VERSION = 7
 
 
 def init_db_if_needed(db_path: str) -> None:
@@ -196,9 +196,11 @@ def apply_migrations(
                 _migrate_to_v5(conn)
             elif target_version == 6:
                 _migrate_to_v6(conn)
+            elif target_version == 7:
+                _migrate_to_v7(conn)
             # Future migrations go here:
-            # elif target_version == 6:
-            #     _migrate_to_v6(conn)
+            # elif target_version == 8:
+            #     _migrate_to_v8(conn)
             else:
                 raise ValueError(f"No migration defined for version {target_version}")
 
@@ -685,6 +687,114 @@ def _migrate_to_v6(conn: sqlite3.Connection) -> None:
     """)
     
     logger.debug("Created run_insights table (schema v6)")
+
+
+def _migrate_to_v7(conn: sqlite3.Connection) -> None:
+    """
+    Migrate database schema to version 7.
+
+    Adds user authentication and secure API key storage tables:
+    - users: User accounts with hashed passwords
+    - user_api_keys: Encrypted API keys per user per provider
+    - refresh_tokens: JWT refresh token tracking for secure auth
+
+    This enables multi-user support where each user can securely store
+    their own LLM provider API keys.
+
+    Args:
+        conn: Active SQLite database connection in transaction
+
+    Raises:
+        sqlite3.Error: If table creation or index creation fails
+
+    Note:
+        This migration is called automatically by apply_migrations().
+        Do NOT call directly - use apply_migrations() instead.
+
+        Security considerations:
+        - Passwords are stored as bcrypt hashes (not plaintext)
+        - API keys are encrypted with Fernet (AES-128-CBC + HMAC)
+        - Refresh tokens are stored as SHA256 hashes
+        - Email and username have UNIQUE constraints
+    """
+    # Create users table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            is_active INTEGER DEFAULT 1,
+            last_login_at TEXT
+        )
+    """)
+
+    # Create indexes for user lookups
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_users_username
+        ON users(username)
+    """)
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_users_email
+        ON users(email)
+    """)
+
+    logger.debug("Created users table and indexes (schema v7 part 1)")
+
+    # Create user_api_keys table for encrypted API key storage
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS user_api_keys (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            provider TEXT NOT NULL,
+            encrypted_key TEXT NOT NULL,
+            key_name TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            last_used_at TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            UNIQUE(user_id, provider, key_name)
+        )
+    """)
+
+    # Create indexes for API key lookups
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_user_api_keys_user
+        ON user_api_keys(user_id)
+    """)
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_user_api_keys_provider
+        ON user_api_keys(provider)
+    """)
+
+    logger.debug("Created user_api_keys table and indexes (schema v7 part 2)")
+
+    # Create refresh_tokens table for JWT refresh token management
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS refresh_tokens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            token_hash TEXT UNIQUE NOT NULL,
+            expires_at TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            revoked_at TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
+
+    # Create indexes for token lookups
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user
+        ON refresh_tokens(user_id)
+    """)
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires
+        ON refresh_tokens(expires_at)
+    """)
+
+    logger.debug("Created refresh_tokens table and indexes (schema v7 part 3)")
 
 
 # ============================================================================
@@ -1655,3 +1765,485 @@ def get_run_insight(conn: sqlite3.Connection, run_id: str) -> dict | None:
         "cost_usd": row[3],
         "timestamp_utc": row[4],
     }
+
+
+# ============================================================================
+# User Authentication CRUD Operations
+# ============================================================================
+
+
+def create_user(
+    conn: sqlite3.Connection,
+    username: str,
+    email: str,
+    password_hash: str,
+) -> int:
+    """
+    Create a new user in the database.
+
+    Args:
+        conn: Active SQLite database connection
+        username: Unique username (will be lowercased)
+        email: Unique email address
+        password_hash: Bcrypt hash of the password
+
+    Returns:
+        The new user's ID
+
+    Raises:
+        sqlite3.IntegrityError: If username or email already exists
+    """
+    timestamp = utc_timestamp()
+    cursor = conn.execute(
+        """
+        INSERT INTO users (username, email, password_hash, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (username.lower(), email.lower(), password_hash, timestamp, timestamp),
+    )
+    logger.debug(f"Created user: {username}")
+    return cursor.lastrowid
+
+
+def get_user_by_username(conn: sqlite3.Connection, username: str) -> dict | None:
+    """
+    Get a user by username.
+
+    Args:
+        conn: Active SQLite database connection
+        username: Username to look up
+
+    Returns:
+        User dict with id, username, email, password_hash, etc. or None if not found
+    """
+    cursor = conn.execute(
+        """
+        SELECT id, username, email, password_hash, created_at, updated_at,
+               is_active, last_login_at
+        FROM users
+        WHERE username = ?
+        """,
+        (username.lower(),),
+    )
+    row = cursor.fetchone()
+    if row is None:
+        return None
+    return {
+        "id": row[0],
+        "username": row[1],
+        "email": row[2],
+        "password_hash": row[3],
+        "created_at": row[4],
+        "updated_at": row[5],
+        "is_active": bool(row[6]),
+        "last_login_at": row[7],
+    }
+
+
+def get_user_by_email(conn: sqlite3.Connection, email: str) -> dict | None:
+    """
+    Get a user by email.
+
+    Args:
+        conn: Active SQLite database connection
+        email: Email to look up
+
+    Returns:
+        User dict with id, username, email, password_hash, etc. or None if not found
+    """
+    cursor = conn.execute(
+        """
+        SELECT id, username, email, password_hash, created_at, updated_at,
+               is_active, last_login_at
+        FROM users
+        WHERE email = ?
+        """,
+        (email.lower(),),
+    )
+    row = cursor.fetchone()
+    if row is None:
+        return None
+    return {
+        "id": row[0],
+        "username": row[1],
+        "email": row[2],
+        "password_hash": row[3],
+        "created_at": row[4],
+        "updated_at": row[5],
+        "is_active": bool(row[6]),
+        "last_login_at": row[7],
+    }
+
+
+def get_user_by_id(conn: sqlite3.Connection, user_id: int) -> dict | None:
+    """
+    Get a user by ID.
+
+    Args:
+        conn: Active SQLite database connection
+        user_id: User ID to look up
+
+    Returns:
+        User dict with id, username, email, etc. or None if not found
+    """
+    cursor = conn.execute(
+        """
+        SELECT id, username, email, password_hash, created_at, updated_at,
+               is_active, last_login_at
+        FROM users
+        WHERE id = ?
+        """,
+        (user_id,),
+    )
+    row = cursor.fetchone()
+    if row is None:
+        return None
+    return {
+        "id": row[0],
+        "username": row[1],
+        "email": row[2],
+        "password_hash": row[3],
+        "created_at": row[4],
+        "updated_at": row[5],
+        "is_active": bool(row[6]),
+        "last_login_at": row[7],
+    }
+
+
+def update_user_last_login(conn: sqlite3.Connection, user_id: int) -> None:
+    """
+    Update the last_login_at timestamp for a user.
+
+    Args:
+        conn: Active SQLite database connection
+        user_id: User ID to update
+    """
+    timestamp = utc_timestamp()
+    conn.execute(
+        "UPDATE users SET last_login_at = ? WHERE id = ?",
+        (timestamp, user_id),
+    )
+
+
+# ============================================================================
+# User API Key CRUD Operations
+# ============================================================================
+
+
+def create_user_api_key(
+    conn: sqlite3.Connection,
+    user_id: int,
+    provider: str,
+    encrypted_key: str,
+    key_name: str | None = None,
+) -> int:
+    """
+    Store an encrypted API key for a user.
+
+    Args:
+        conn: Active SQLite database connection
+        user_id: User ID who owns this key
+        provider: LLM provider name (e.g., "openai", "google")
+        encrypted_key: Fernet-encrypted API key
+        key_name: Optional friendly name for this key
+
+    Returns:
+        The new API key record ID
+
+    Raises:
+        sqlite3.IntegrityError: If user_id + provider + key_name combination exists
+    """
+    timestamp = utc_timestamp()
+    cursor = conn.execute(
+        """
+        INSERT INTO user_api_keys (user_id, provider, encrypted_key, key_name,
+                                   created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (user_id, provider.lower(), encrypted_key, key_name, timestamp, timestamp),
+    )
+    logger.debug(f"Created API key for user {user_id}, provider {provider}")
+    return cursor.lastrowid
+
+
+def get_user_api_keys(conn: sqlite3.Connection, user_id: int) -> list[dict]:
+    """
+    Get all API keys for a user (metadata only, not the actual keys).
+
+    Args:
+        conn: Active SQLite database connection
+        user_id: User ID to look up
+
+    Returns:
+        List of API key metadata dicts (id, provider, key_name, timestamps)
+    """
+    cursor = conn.execute(
+        """
+        SELECT id, provider, key_name, created_at, updated_at, last_used_at
+        FROM user_api_keys
+        WHERE user_id = ?
+        ORDER BY provider, key_name
+        """,
+        (user_id,),
+    )
+    return [
+        {
+            "id": row[0],
+            "provider": row[1],
+            "key_name": row[2],
+            "created_at": row[3],
+            "updated_at": row[4],
+            "last_used_at": row[5],
+        }
+        for row in cursor.fetchall()
+    ]
+
+
+def get_user_api_key_by_provider(
+    conn: sqlite3.Connection, user_id: int, provider: str, key_name: str | None = None
+) -> dict | None:
+    """
+    Get a specific API key by user and provider (includes encrypted key).
+
+    Args:
+        conn: Active SQLite database connection
+        user_id: User ID
+        provider: Provider name
+        key_name: Optional key name (defaults to None for default key)
+
+    Returns:
+        API key dict including encrypted_key, or None if not found
+    """
+    if key_name is None:
+        cursor = conn.execute(
+            """
+            SELECT id, provider, encrypted_key, key_name, created_at, updated_at, last_used_at
+            FROM user_api_keys
+            WHERE user_id = ? AND provider = ? AND key_name IS NULL
+            """,
+            (user_id, provider.lower()),
+        )
+    else:
+        cursor = conn.execute(
+            """
+            SELECT id, provider, encrypted_key, key_name, created_at, updated_at, last_used_at
+            FROM user_api_keys
+            WHERE user_id = ? AND provider = ? AND key_name = ?
+            """,
+            (user_id, provider.lower(), key_name),
+        )
+    row = cursor.fetchone()
+    if row is None:
+        return None
+    return {
+        "id": row[0],
+        "provider": row[1],
+        "encrypted_key": row[2],
+        "key_name": row[3],
+        "created_at": row[4],
+        "updated_at": row[5],
+        "last_used_at": row[6],
+    }
+
+
+def update_user_api_key(
+    conn: sqlite3.Connection,
+    key_id: int,
+    user_id: int,
+    encrypted_key: str | None = None,
+    key_name: str | None = None,
+) -> bool:
+    """
+    Update an API key.
+
+    Args:
+        conn: Active SQLite database connection
+        key_id: API key record ID
+        user_id: User ID (for ownership verification)
+        encrypted_key: New encrypted key (optional)
+        key_name: New key name (optional)
+
+    Returns:
+        True if updated, False if not found or not owned by user
+    """
+    timestamp = utc_timestamp()
+
+    # Build update query based on what's being updated
+    updates = ["updated_at = ?"]
+    params = [timestamp]
+
+    if encrypted_key is not None:
+        updates.append("encrypted_key = ?")
+        params.append(encrypted_key)
+    if key_name is not None:
+        updates.append("key_name = ?")
+        params.append(key_name)
+
+    params.extend([key_id, user_id])
+
+    cursor = conn.execute(
+        f"""
+        UPDATE user_api_keys
+        SET {", ".join(updates)}
+        WHERE id = ? AND user_id = ?
+        """,
+        params,
+    )
+    return cursor.rowcount > 0
+
+
+def delete_user_api_key(
+    conn: sqlite3.Connection, key_id: int, user_id: int
+) -> bool:
+    """
+    Delete an API key.
+
+    Args:
+        conn: Active SQLite database connection
+        key_id: API key record ID
+        user_id: User ID (for ownership verification)
+
+    Returns:
+        True if deleted, False if not found or not owned by user
+    """
+    cursor = conn.execute(
+        "DELETE FROM user_api_keys WHERE id = ? AND user_id = ?",
+        (key_id, user_id),
+    )
+    return cursor.rowcount > 0
+
+
+def update_api_key_last_used(conn: sqlite3.Connection, key_id: int) -> None:
+    """
+    Update the last_used_at timestamp for an API key.
+
+    Args:
+        conn: Active SQLite database connection
+        key_id: API key record ID
+    """
+    timestamp = utc_timestamp()
+    conn.execute(
+        "UPDATE user_api_keys SET last_used_at = ? WHERE id = ?",
+        (timestamp, key_id),
+    )
+
+
+# ============================================================================
+# Refresh Token CRUD Operations
+# ============================================================================
+
+
+def store_refresh_token(
+    conn: sqlite3.Connection,
+    user_id: int,
+    token_hash: str,
+    expires_at: str,
+) -> int:
+    """
+    Store a refresh token hash.
+
+    Args:
+        conn: Active SQLite database connection
+        user_id: User ID who owns this token
+        token_hash: SHA256 hash of the refresh token
+        expires_at: Expiration timestamp
+
+    Returns:
+        The new token record ID
+    """
+    timestamp = utc_timestamp()
+    cursor = conn.execute(
+        """
+        INSERT INTO refresh_tokens (user_id, token_hash, expires_at, created_at)
+        VALUES (?, ?, ?, ?)
+        """,
+        (user_id, token_hash, expires_at, timestamp),
+    )
+    return cursor.lastrowid
+
+
+def get_refresh_token(conn: sqlite3.Connection, token_hash: str) -> dict | None:
+    """
+    Get a refresh token by its hash.
+
+    Args:
+        conn: Active SQLite database connection
+        token_hash: SHA256 hash of the token
+
+    Returns:
+        Token dict with user_id, expires_at, etc. or None if not found
+    """
+    cursor = conn.execute(
+        """
+        SELECT id, user_id, expires_at, created_at, revoked_at
+        FROM refresh_tokens
+        WHERE token_hash = ?
+        """,
+        (token_hash,),
+    )
+    row = cursor.fetchone()
+    if row is None:
+        return None
+    return {
+        "id": row[0],
+        "user_id": row[1],
+        "expires_at": row[2],
+        "created_at": row[3],
+        "revoked_at": row[4],
+    }
+
+
+def revoke_refresh_token(conn: sqlite3.Connection, token_hash: str) -> bool:
+    """
+    Revoke a refresh token.
+
+    Args:
+        conn: Active SQLite database connection
+        token_hash: SHA256 hash of the token to revoke
+
+    Returns:
+        True if revoked, False if not found
+    """
+    timestamp = utc_timestamp()
+    cursor = conn.execute(
+        "UPDATE refresh_tokens SET revoked_at = ? WHERE token_hash = ? AND revoked_at IS NULL",
+        (timestamp, token_hash),
+    )
+    return cursor.rowcount > 0
+
+
+def revoke_all_user_refresh_tokens(conn: sqlite3.Connection, user_id: int) -> int:
+    """
+    Revoke all refresh tokens for a user (e.g., on password change).
+
+    Args:
+        conn: Active SQLite database connection
+        user_id: User ID
+
+    Returns:
+        Number of tokens revoked
+    """
+    timestamp = utc_timestamp()
+    cursor = conn.execute(
+        "UPDATE refresh_tokens SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL",
+        (timestamp, user_id),
+    )
+    return cursor.rowcount
+
+
+def cleanup_expired_refresh_tokens(conn: sqlite3.Connection) -> int:
+    """
+    Delete expired refresh tokens (housekeeping).
+
+    Args:
+        conn: Active SQLite database connection
+
+    Returns:
+        Number of tokens deleted
+    """
+    timestamp = utc_timestamp()
+    cursor = conn.execute(
+        "DELETE FROM refresh_tokens WHERE expires_at < ?",
+        (timestamp,),
+    )
+    return cursor.rowcount

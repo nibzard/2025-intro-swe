@@ -78,3 +78,43 @@ export const GROQ_MODELS = [
 ] as const;
 
 export type Provider = 'google' | 'groq';
+
+// Authentication types
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  created_at: string;
+  is_active: boolean;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  refresh_token: string | null;
+  token_type: string;
+}
+
+export interface StoredAPIKey {
+  id: number;
+  provider: string;
+  key_name: string | null;
+  created_at: string;
+  last_used_at: string | null;
+}
+
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+}
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface APIKeyCreateRequest {
+  provider: string;
+  api_key: string;
+  key_name?: string;
+}

@@ -3,7 +3,8 @@
 # For pip users - prefer using 'uv sync' if available
 
 # Core runtime dependencies
-pydantic>=2.0
+pydantic[email]>=2.0
+email-validator>=2.0.0
 pyyaml>=6.0
 httpx>=0.27.0
 tenacity>=8.0
@@ -13,6 +14,9 @@ typer>=0.12.0
 rich>=13.0
 fastapi>=0.110.0
 uvicorn>=0.29.0
+passlib[argon2]>=1.7.4
+python-jose>=3.3.0
+cryptography>=42.0.0
 
 # Development dependencies (optional)
 # Install with: pip install -r requirements.txt
