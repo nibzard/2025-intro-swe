@@ -27,10 +27,13 @@ import {
   Brain,
   FileText,
   ArrowLeft,
+  User,
+  LogOut,
 } from 'lucide-react';
 import type { WatcherConfig, Intent, BrandMention, Provider, ModelConfig } from '../types.ts';
 import { GEMINI_MODELS, GROQ_MODELS } from '../types.ts';
 import yaml from 'js-yaml';
+import { useAuth } from '../auth/AuthContext';
 
 const StatsComparison = ({ results, theme }: { results: any, theme: string }) => {
   if (!results || !results.intents_data) return null;
@@ -269,6 +272,13 @@ const FormattedAnswer = ({ text, mentions = [], theme }: { text: string; mention
 export default function Dashboard({ theme }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { user, logout } = useAuth();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
 
   // Set provider from query param
   useEffect(() => {
@@ -603,7 +613,7 @@ export default function Dashboard({ theme }) {
       <div className={`fixed inset-0 ${theme === 'dark' ? 'bg-gradient-to-br from-primary-500/5 via-transparent to-accent-500/5' : 'bg-gray-100'} pointer-events-none`} />
 
       {/* Header */}
-      <header className={`relative border-b ${theme === 'dark' ? 'border-navy-800/50 bg-navy-900/50' : 'border-gray-200 bg-white/80'} backdrop-blur-xl`}>
+      <header className={`relative z-40 border-b ${theme === 'dark' ? 'border-navy-800/50 bg-navy-900/50' : 'border-gray-200 bg-white/80'} backdrop-blur-xl`}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -640,6 +650,48 @@ export default function Dashboard({ theme }) {
                 <Sparkles className="w-4 h-4 mr-2" />
                 Results
               </button>
+
+              <div className={`h-6 w-px mx-2 ${theme === 'dark' ? 'bg-navy-700' : 'bg-gray-300'}`}></div>
+
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className={`${btnGhostClass} p-2 ${showProfileMenu ? (theme === 'dark' ? 'bg-navy-800 text-white' : 'bg-gray-200 text-gray-900') : ''}`}
+                >
+                  <User className="w-5 h-5" />
+                </button>
+
+                {showProfileMenu && (
+                  <div className={`absolute right-0 mt-2 w-56 rounded-xl border p-2 shadow-lg z-100 ${
+                    theme === 'dark'
+                      ? 'bg-navy-900 border-navy-700 text-navy-100'
+                      : 'bg-white border-gray-200 text-gray-900'
+                  }`}>
+                    <div className="px-3 py-2 mb-2 border-b border-gray-200/10">
+                      <p className="font-medium truncate">{user?.username}</p>
+                      <p className={`text-xs truncate ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'}`}>{user?.email}</p>
+                    </div>
+
+                    <a
+                      href="#"
+                      className={`block w-full text-left px-3 py-2 rounded-lg text-sm mb-1 ${
+                        theme === 'dark' ? 'hover:bg-navy-800' : 'hover:bg-gray-100'
+                      }`}
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      My Keys <span className="text-xs opacity-50 ml-1">(Coming soon)</span>
+                    </a>
+
+                    <button
+                      onClick={handleLogout}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 text-rose-500 hover:bg-rose-500/10`}
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -975,7 +1027,7 @@ export default function Dashboard({ theme }) {
                     </>
                   ) : (
                     <>
-                      <Play className="w-5 h-5" />
+                      <Play className="w-5 h-5 z-10" />
                       Run Search
                     </>
                   )}
