@@ -29,6 +29,7 @@ import {
   ArrowLeft,
   User,
   LogOut,
+  Key,
 } from 'lucide-react';
 import type { WatcherConfig, Intent, BrandMention, Provider, ModelConfig } from '../types.ts';
 import { GEMINI_MODELS, GROQ_MODELS } from '../types.ts';
@@ -272,12 +273,53 @@ const FormattedAnswer = ({ text, mentions = [], theme }: { text: string; mention
 export default function Dashboard({ theme }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, logout } = useAuth();
+  const { user, token, logout } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const handleLogout = async () => {
     navigate('/', { replace: true });
     await logout();
+  };
+
+  const [savedKeys, setSavedKeys] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchSavedKeys = async () => {
+      if (!token) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/api-keys`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          setSavedKeys(await response.json());
+        }
+      } catch (err) {
+        console.error('Failed to fetch saved keys', err);
+      }
+    };
+    fetchSavedKeys();
+  }, [token]);
+
+  const loadSavedKey = async (provider: string, keyName: string | null) => {
+    if (!token) return;
+    try {
+      const providerLower = provider.toLowerCase();
+      let url = `${API_BASE_URL}/auth/api-keys/${providerLower}/key`;
+      if (keyName) {
+        url += `?key_name=${encodeURIComponent(keyName)}`;
+      }
+      
+      const response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setApiKeys(prev => ({ ...prev, [provider]: data.api_key }));
+      }
+    } catch (err) {
+      console.error('Failed to load API key', err);
+    }
   };
 
   // Set provider from query param
@@ -324,6 +366,7 @@ export default function Dashboard({ theme }) {
   const [runId, setRunId] = useState<string | null>(null);
   const [results, setResults] = useState<any | null>(null);
   const [showApiKey, setShowApiKey] = useState(false);
+  const [showKeyDropdown, setShowKeyDropdown] = useState<{[key: string]: boolean}>({});
 
 
   // Generate YAML config
@@ -774,6 +817,42 @@ export default function Dashboard({ theme }) {
                         {showApiKey ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
                     </div>
+                    
+                    {savedKeys.filter(k => k.provider === selectedProvider).length > 0 && (
+                      <div className="mt-2 relative">
+                        <button
+                          onClick={() => setShowKeyDropdown(prev => ({ ...prev, [selectedProvider]: !prev[selectedProvider] }))}
+                          className={`text-xs flex items-center gap-1 ${theme === 'dark' ? 'text-primary-400' : 'text-primary-600'} hover:underline`}
+                        >
+                          <Key className="w-3 h-3" /> Use saved key <ChevronDown className="w-3 h-3" />
+                        </button>
+                        
+                        {showKeyDropdown[selectedProvider] && (
+                          <div className={`absolute left-0 top-full mt-1 w-full rounded-lg border shadow-lg z-20 ${
+                            theme === 'dark' ? 'bg-navy-800 border-navy-700' : 'bg-white border-gray-200'
+                          }`}>
+                            {savedKeys.filter(k => k.provider === selectedProvider).map(key => (
+                              <button
+                                key={key.id}
+                                onClick={() => {
+                                  loadSavedKey(selectedProvider, key.key_name);
+                                  setShowKeyDropdown(prev => ({ ...prev, [selectedProvider]: false }));
+                                }}
+                                className={`w-full text-left px-3 py-2 text-sm first:rounded-t-lg last:rounded-b-lg ${
+                                  theme === 'dark' ? 'hover:bg-navy-700 text-navy-100' : 'hover:bg-gray-50 text-gray-900'
+                                }`}
+                              >
+                                {key.key_name || 'Default Key'}
+                                <span className={`ml-2 text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'}`}>
+                                  {new Date(key.created_at).toLocaleDateString()}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     <p className={`text-xs ${theme === 'dark' ? 'text-navy-500' : 'text-gray-500'} mt-1`}>
                       Get your key from{' '}
                       {selectedProvider === 'google' ? (
@@ -808,6 +887,40 @@ export default function Dashboard({ theme }) {
                         placeholder="AIzaSy..."
                         className={inputClass}
                       />
+                      {savedKeys.filter(k => k.provider === 'google').length > 0 && (
+                        <div className="mt-2 relative">
+                          <button
+                            onClick={() => setShowKeyDropdown(prev => ({ ...prev, google: !prev.google }))}
+                            className={`text-xs flex items-center gap-1 ${theme === 'dark' ? 'text-primary-400' : 'text-primary-600'} hover:underline`}
+                          >
+                            <Key className="w-3 h-3" /> Use saved key <ChevronDown className="w-3 h-3" />
+                          </button>
+                          
+                          {showKeyDropdown.google && (
+                            <div className={`absolute left-0 top-full mt-1 w-full rounded-lg border shadow-lg z-20 ${
+                              theme === 'dark' ? 'bg-navy-800 border-navy-700' : 'bg-white border-gray-200'
+                            }`}>
+                              {savedKeys.filter(k => k.provider === 'google').map(key => (
+                                <button
+                                  key={key.id}
+                                  onClick={() => {
+                                    loadSavedKey('google', key.key_name);
+                                    setShowKeyDropdown(prev => ({ ...prev, google: false }));
+                                  }}
+                                  className={`w-full text-left px-3 py-2 text-sm first:rounded-t-lg last:rounded-b-lg ${
+                                    theme === 'dark' ? 'hover:bg-navy-700 text-navy-100' : 'hover:bg-gray-50 text-gray-900'
+                                  }`}
+                                >
+                                  {key.key_name || 'Default Key'}
+                                  <span className={`ml-2 text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'}`}>
+                                    {new Date(key.created_at).toLocaleDateString()}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label className="label">Groq API Key</label>
@@ -818,6 +931,40 @@ export default function Dashboard({ theme }) {
                         placeholder="gsk_..."
                         className={inputClass}
                       />
+                      {savedKeys.filter(k => k.provider === 'groq').length > 0 && (
+                        <div className="mt-2 relative">
+                          <button
+                            onClick={() => setShowKeyDropdown(prev => ({ ...prev, groq: !prev.groq }))}
+                            className={`text-xs flex items-center gap-1 ${theme === 'dark' ? 'text-primary-400' : 'text-primary-600'} hover:underline`}
+                          >
+                            <Key className="w-3 h-3" /> Use saved key <ChevronDown className="w-3 h-3" />
+                          </button>
+                          
+                          {showKeyDropdown.groq && (
+                            <div className={`absolute left-0 top-full mt-1 w-full rounded-lg border shadow-lg z-20 ${
+                              theme === 'dark' ? 'bg-navy-800 border-navy-700' : 'bg-white border-gray-200'
+                            }`}>
+                              {savedKeys.filter(k => k.provider === 'groq').map(key => (
+                                <button
+                                  key={key.id}
+                                  onClick={() => {
+                                    loadSavedKey('groq', key.key_name);
+                                    setShowKeyDropdown(prev => ({ ...prev, groq: false }));
+                                  }}
+                                  className={`w-full text-left px-3 py-2 text-sm first:rounded-t-lg last:rounded-b-lg ${
+                                    theme === 'dark' ? 'hover:bg-navy-700 text-navy-100' : 'hover:bg-gray-50 text-gray-900'
+                                  }`}
+                                >
+                                  {key.key_name || 'Default Key'}
+                                  <span className={`ml-2 text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'}`}>
+                                    {new Date(key.created_at).toLocaleDateString()}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
