@@ -175,11 +175,11 @@ export default function LandingPage({ theme }) {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-fade-in-up animation-delay-400" style={{ opacity: 0, animationFillMode: 'forwards' }}>
-            <button onClick={() => navigate('/app')} className="btn-primary text-lg px-8 py-4 animate-pulse-glow hover-lift">
+            <button onClick={() => navigate('/login')} className="btn-primary text-lg px-8 py-4 animate-pulse-glow hover-lift">
               <Zap className="w-5 h-5 mr-2 inline" />
               Start Monitoring Free
             </button>
-            <button onClick={() => navigate('/app?provider=both')} className="btn-secondary text-lg px-8 py-4 hover-lift">
+            <button onClick={() => navigate('/login')} className="btn-secondary text-lg px-8 py-4 hover-lift">
               <Users className="w-5 h-5 mr-2 inline" />
               Try Both
             </button>
@@ -337,7 +337,7 @@ export default function LandingPage({ theme }) {
                   )
                 )}
               </ul>
-              <button onClick={() => navigate('/app')} className="btn-secondary w-full">
+              <button onClick={() => navigate('/login')} className="btn-secondary w-full">
                 Get Started
               </button>
             </div>
@@ -435,7 +435,7 @@ export default function LandingPage({ theme }) {
           <p className={`text-xl ${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'} mb-8`}>
             In a world where AI answers questions, the brands that get mentioned win.
           </p>
-          <button onClick={() => navigate('/app')} className="btn-primary text-lg px-10 py-5 animate-pulse-glow hover-lift">
+          <button onClick={() => navigate('/login')} className="btn-primary text-lg px-10 py-5 animate-pulse-glow hover-lift">
             <Zap className="w-5 h-5 mr-2 inline animate-pulse" />
             Get Started Free
             <ArrowRight className="w-5 h-5 ml-2 inline" />
