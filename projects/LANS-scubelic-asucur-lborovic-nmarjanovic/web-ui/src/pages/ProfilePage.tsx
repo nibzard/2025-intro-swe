@@ -159,8 +159,8 @@ export default function ProfilePage({ theme }: ProfilePageProps) {
   };
 
   const handleLogout = async () => {
+    navigate('/', { replace: true });
     await logout();
-    navigate('/');
   };
 
   const formatDate = (dateStr: string | null) => {

@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import {
   Search,
   Settings,
@@ -276,8 +276,8 @@ export default function Dashboard({ theme }) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const handleLogout = async () => {
+    navigate('/', { replace: true });
     await logout();
-    navigate('/');
   };
 
   // Set provider from query param
@@ -672,15 +672,15 @@ export default function Dashboard({ theme }) {
                       <p className={`text-xs truncate ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'}`}>{user?.email}</p>
                     </div>
 
-                    <a
-                      href="#"
+                    <Link
+                      to="/profile"
                       className={`block w-full text-left px-3 py-2 rounded-lg text-sm mb-1 ${
                         theme === 'dark' ? 'hover:bg-navy-800' : 'hover:bg-gray-100'
                       }`}
-                      onClick={(e) => e.preventDefault()}
+                      onClick={() => setShowProfileMenu(false)}
                     >
-                      My Keys <span className="text-xs opacity-50 ml-1">(Coming soon)</span>
-                    </a>
+                      My Keys
+                    </Link>
 
                     <button
                       onClick={handleLogout}
