@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "BE/api/server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "FE/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "FE/build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "BE/api/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "FE/build/$1",
+      "status": 200
+    }
+  ],
+  "env": {
+    "DB_HOST": "@db_host",
+    "DB_USER": "@db_user",
+    "DB_PASSWORD": "@db_password",
+    "DB_NAME": "herchat",
+    "JWT_SECRET": "@jwt_secret",
+    "NODE_ENV": "production",
+    "FRONTEND_URL": "@frontend_url"
+  }
+}

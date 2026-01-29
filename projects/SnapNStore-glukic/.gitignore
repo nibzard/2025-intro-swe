@@ -1,0 +1,22 @@
+# Environment variables
+.env
+
+# Google Cloud credentials
+steam-potential-*.json
+
+# Dependencies
+node_modules/
+
+# Local data and uploads
+uploads/
+exports/
+data/database.json
+data/receipts.csv
+local.db
+
+# Tesseract data
+*.traineddata
+
+# OS files
+.DS_Store
+Thumbs.db

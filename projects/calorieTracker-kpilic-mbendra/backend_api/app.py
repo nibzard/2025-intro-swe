@@ -1,82 +1,107 @@
+import os
+import json
+import base64
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import os
+from supabase import create_client, Client
+from openai import OpenAI
+from dotenv import load_dotenv
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
+
+load_dotenv()
 
 app = Flask(__name__)
-CORS(app) 
+# Dozvoljavamo sve izvore kako bismo izbjegli CORS greške koje vidiš na slici
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# -------------------- KONFIGURACIJA --------------------
-# Kreiranje foldera za slike (iako je isključen, neka ostane)
-UPLOAD_FOLDER = 'uploads'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+supabase: Client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 
-# --- FUNKCIJA: DOHVAT PODATAKA (SIMULACIJA ZA PRETRAŽIVANJE) ---
-def _get_simulated_data(query_term):
-    # Simulirani podaci (SVE VRIJEDNOSTI SU ZA 100g)
-    db = {
-        "piletina": {"name": "Pileća prsa", "calories": 165, "protein": 31.0, "fat": 3.6, "carbs": 0.0},
-        "riza": {"name": "Kuhana riža", "calories": 130, "protein": 2.7, "fat": 0.3, "carbs": 28.2},
-        "jabuka": {"name": "Jabuka", "calories": 52, "protein": 0.3, "fat": 0.2, "carbs": 13.8},
-        "losos": {"name": "Filet lososa", "calories": 208, "protein": 20.4, "fat": 13.4, "carbs": 0.0}
-    }
-    
-    normalized_query = query_term.lower()
-    for key, value in db.items():
-        if normalized_query in key or key in normalized_query:
-            return value
-    return None
+# --- AUTENTIKACIJA (Provjereno radi) ---
 
-# --- RUTE API-ja (FOKUS NA RUČNI UNOS) ---
+@app.route('/api/register', methods=['POST'])
+def register():
+    try:
+        data = request.json
+        email = data.get('email')
+        password = generate_password_hash(data.get('password'))
+        res = supabase.table('users').select("email").eq("email", email).execute()
+        if res.data: return jsonify({"success": False, "message": "Korisnik već postoji!"})
+        supabase.table('users').insert({"email": email, "password": password, "daily_kcal": 2000}).execute()
+        return jsonify({"success": True, "message": "Registracija uspješna!"})
+    except Exception as e: return jsonify({"success": False, "message": str(e)})
 
-# ---------------------- 1. RUTA: Analiza Slike (ISKLJUČENA) ----------------------
+@app.route('/api/login', methods=['POST'])
+def login():
+    try:
+        data = request.json
+        res = supabase.table('users').select("*").eq("email", data.get('email')).execute()
+        user = res.data[0] if res.data else None
+        if user and check_password_hash(user['password'], data.get('password')):
+            return jsonify({"success": True, "email": user['email'], "daily_kcal": user.get('daily_kcal', 2000)})
+        return jsonify({"success": False, "message": "Pogrešni podaci!"})
+    except Exception as e: return jsonify({"success": False, "message": str(e)})
+
+# --- RAD S OBROCIMA (Popravljeno za sliku i ručni unos) ---
+
 @app.route('/api/analyze_meal', methods=['POST'])
 def analyze_meal():
-    return jsonify({'success': False, 'error': 'Analiza slike je isključena.'}), 400
+    try:
+        file = request.files['image']
+        img_b64 = base64.b64encode(file.read()).decode('utf-8')
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": [
+                {"type": "text", "text": "Analiziraj sliku. Vrati JSON: {\"name\": \"naziv na HR\", \"calories\": int, \"protein\": int, \"fat\": int, \"carbs\": int}"},
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}}
+            ]}],
+            response_format={"type": "json_object"}
+        )
+        # Osiguravamo da su podaci čisti
+        ai_data = json.loads(response.choices[0].message.content)
+        return jsonify({"success": True, **ai_data})
+    except Exception as e: return jsonify({"success": False, "message": str(e)})
 
-# ---------------------- 2. RUTA: Barkod (ISKLJUČENA) ----------------------
-@app.route('/api/lookup_barcode', methods=['POST'])
-def lookup_barcode():
-    return jsonify({'success': False, 'error': 'Barkod funkcionalnost je isključena.'}), 400
-
-# ---------------------- 3. RUTA: Ručni unos / Pretraživanje Naziva (OSTAJE AKTIVNO) ----------------------
 @app.route('/api/lookup_meal', methods=['POST'])
 def lookup_meal():
-    if not request.json: 
-        return jsonify({'success': False, 'error': 'Nema poslanih podataka.'}), 400
-
-    data = request.json
-    meal_name = data.get('meal_name', '')
-    
     try:
-        grams = float(data.get('grams', 100)) 
-    except (ValueError, TypeError):
-        grams = 100.0 
-    
-    if not meal_name:
-        return jsonify({'success': False, 'error': 'Naziv obroka je obavezan.'}), 400
+        data = request.json
+        prompt = f"Nutritivne vrijednosti za: {data['grams']}g {data['meal_name']}. Vrati isključivo JSON: {{\"name\": str, \"calories\": int, \"protein\": int, \"fat\": int, \"carbs\": int}}"
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"}
+        )
+        return jsonify({"success": True, **json.loads(response.choices[0].message.content)})
+    except Exception as e: return jsonify({"success": False, "message": str(e)})
 
-    meal_data = _get_simulated_data(meal_name) 
-    
-    if meal_data:
-        # PRERAČUNAVANJE GRAMAŽE
-        if grams > 0:
-            factor = grams / 100.0
-        else:
-            factor = 0.0 
-        
-        # Skaliranje svih vrijednosti
-        meal_data['name'] = f"{meal_data['name']} ({grams:.0f}g)"
-        meal_data['calories'] = round(meal_data['calories'] * factor, 0)
-        meal_data['protein'] = round(meal_data['protein'] * factor, 1)
-        meal_data['fat'] = round(meal_data['fat'] * factor, 1)
-        meal_data['carbs'] = round(meal_data['carbs'] * factor, 1)
-        
-        return jsonify({'success': True, **meal_data})
-    else:
-        return jsonify({'success': False, 'error': f'Kalorije za "{meal_name}" nisu pronađene (Pokušajte ručni unos broja)'}), 404
+@app.route('/api/add_meal', methods=['POST'])
+def add_meal():
+    try:
+        d = request.json
+        # Forsiramo pretvorbu u int da izbjegnemo "0 kcal" greške
+        supabase.table('meals').insert({
+            "user_email": d['user_email'],
+            "name": d['meal']['name'],
+            "calories": int(d['meal'].get('calories', 0)),
+            "protein": int(d['meal'].get('protein', 0)),
+            "fat": int(d['meal'].get('fat', 0)),
+            "carbs": int(d['meal'].get('carbs', 0)),
+            "category": d['meal']['category'],
+            "date": d['date']
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e: return jsonify({"success": False, "message": str(e)})
 
+@app.route('/api/get_meals', methods=['GET'])
+def get_meals():
+    try:
+        email = request.args.get('email')
+        date = request.args.get('date')
+        res = supabase.table('meals').select("*").eq("user_email", email).eq("date", date).execute()
+        return jsonify(res.data)
+    except: return jsonify([])
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(port=5000, debug=True)

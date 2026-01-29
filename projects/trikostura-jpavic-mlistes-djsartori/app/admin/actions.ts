@@ -1,6 +1,7 @@
 'use server';
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -25,20 +26,20 @@ async function checkAdminAccess() {
     redirect('/forum');
   }
 
-  return { supabase, userId: user.id };
+  // Return admin client for elevated privileges
+  return { adminClient: createAdminClient(), userId: user.id };
 }
 
 // User Management Actions
 export async function updateUserRole(userId: string, newRole: 'student' | 'admin') {
-  const { userId: adminId } = await checkAdminAccess();
-  const supabase: any = await createServerSupabaseClient();
+  const { adminClient, userId: adminId } = await checkAdminAccess();
 
   // Prevent admin from removing their own admin role
   if (userId === adminId && newRole !== 'admin') {
     return { success: false, error: 'Ne mozete ukloniti vlastitu admin ulogu' };
   }
 
-  const { error } = await supabase
+  const { error } = await (adminClient as any)
     .from('profiles')
     .update({ role: newRole })
     .eq('id', userId);
@@ -52,8 +53,7 @@ export async function updateUserRole(userId: string, newRole: 'student' | 'admin
 }
 
 export async function banUser(userId: string, reason?: string) {
-  const { userId: adminId } = await checkAdminAccess();
-  const supabase: any = await createServerSupabaseClient();
+  const { adminClient, userId: adminId } = await checkAdminAccess();
 
   // Prevent admin from banning themselves
   if (userId === adminId) {
@@ -61,7 +61,7 @@ export async function banUser(userId: string, reason?: string) {
   }
 
   // Check if target user is also admin
-  const { data: targetProfile } = await supabase
+  const { data: targetProfile } = await (adminClient as any)
     .from('profiles')
     .select('role')
     .eq('id', userId)
@@ -71,7 +71,7 @@ export async function banUser(userId: string, reason?: string) {
     return { success: false, error: 'Ne mozete banirati drugog admina' };
   }
 
-  const { error } = await supabase
+  const { error } = await (adminClient as any)
     .from('profiles')
     .update({
       is_banned: true,
@@ -85,15 +85,28 @@ export async function banUser(userId: string, reason?: string) {
     return { success: false, error: error.message };
   }
 
+  // Create notification for the user
+  const { error: notificationError } = await (adminClient as any)
+    .from('notifications')
+    .insert({
+      user_id: userId,
+      actor_id: adminId,
+      type: 'ban',
+      content: `Vaš račun je baniran: ${reason || 'Bez razloga'}`,
+    });
+
+  if (notificationError) {
+    console.error('Failed to create ban notification:', notificationError);
+  }
+
   revalidatePath('/admin/users');
   return { success: true };
 }
 
 export async function unbanUser(userId: string) {
-  await checkAdminAccess();
-  const supabase: any = await createServerSupabaseClient();
+  const { adminClient } = await checkAdminAccess();
 
-  const { error } = await supabase
+  const { error } = await (adminClient as any)
     .from('profiles')
     .update({
       is_banned: false,
@@ -112,11 +125,10 @@ export async function unbanUser(userId: string) {
 }
 
 export async function deleteUser(userId: string) {
-  await checkAdminAccess();
-  const supabase: any = await createServerSupabaseClient();
+  const { adminClient } = await checkAdminAccess();
 
   // Delete user profile (cascade will handle related data)
-  const { error } = await supabase
+  const { error } = await (adminClient as any)
     .from('profiles')
     .delete()
     .eq('id', userId);
@@ -130,8 +142,7 @@ export async function deleteUser(userId: string) {
 }
 
 export async function warnUser(userId: string, reason: string) {
-  const { userId: adminId } = await checkAdminAccess();
-  const supabase: any = await createServerSupabaseClient();
+  const { adminClient, userId: adminId } = await checkAdminAccess();
 
   // Prevent admin from warning themselves
   if (userId === adminId) {
@@ -139,7 +150,7 @@ export async function warnUser(userId: string, reason: string) {
   }
 
   // Check if target user is also admin
-  const { data: targetProfile } = await supabase
+  const { data: targetProfile } = await (adminClient as any)
     .from('profiles')
     .select('role, warning_count')
     .eq('id', userId)
@@ -150,7 +161,7 @@ export async function warnUser(userId: string, reason: string) {
   }
 
   // Update profile warning count
-  const { error: profileError } = await supabase
+  const { error: profileError } = await (adminClient as any)
     .from('profiles')
     .update({
       warning_count: (targetProfile?.warning_count || 0) + 1,
@@ -163,7 +174,7 @@ export async function warnUser(userId: string, reason: string) {
   }
 
   // Create warning record
-  const { error: warningError } = await supabase
+  const { error: warningError } = await (adminClient as any)
     .from('user_warnings')
     .insert({
       user_id: userId,
@@ -176,13 +187,27 @@ export async function warnUser(userId: string, reason: string) {
     return { success: false, error: warningError.message };
   }
 
+  // Create notification for the user
+  const { error: notificationError } = await (adminClient as any)
+    .from('notifications')
+    .insert({
+      user_id: userId,
+      actor_id: adminId,
+      type: 'warning',
+      content: `Primili ste upozorenje: ${reason}`,
+    });
+
+  if (notificationError) {
+    console.error('Failed to create warning notification:', notificationError);
+    // Don't fail the warning if notification creation fails
+  }
+
   revalidatePath('/admin/users');
   return { success: true };
 }
 
 export async function timeoutUser(userId: string, reason: string, durationHours: number) {
-  const { userId: adminId } = await checkAdminAccess();
-  const supabase: any = await createServerSupabaseClient();
+  const { adminClient, userId: adminId } = await checkAdminAccess();
 
   // Prevent admin from timing out themselves
   if (userId === adminId) {
@@ -190,7 +215,7 @@ export async function timeoutUser(userId: string, reason: string, durationHours:
   }
 
   // Check if target user is also admin
-  const { data: targetProfile } = await supabase
+  const { data: targetProfile } = await (adminClient as any)
     .from('profiles')
     .select('role, warning_count')
     .eq('id', userId)
@@ -205,7 +230,7 @@ export async function timeoutUser(userId: string, reason: string, durationHours:
   timeoutUntil.setHours(timeoutUntil.getHours() + durationHours);
 
   // Update profile with timeout
-  const { error: profileError } = await supabase
+  const { error: profileError } = await (adminClient as any)
     .from('profiles')
     .update({
       timeout_until: timeoutUntil.toISOString(),
@@ -220,7 +245,7 @@ export async function timeoutUser(userId: string, reason: string, durationHours:
   }
 
   // Create warning record
-  const { error: warningError } = await supabase
+  const { error: warningError } = await (adminClient as any)
     .from('user_warnings')
     .insert({
       user_id: userId,
@@ -234,15 +259,28 @@ export async function timeoutUser(userId: string, reason: string, durationHours:
     return { success: false, error: warningError.message };
   }
 
+  // Create notification for the user
+  const { error: notificationError } = await (adminClient as any)
+    .from('notifications')
+    .insert({
+      user_id: userId,
+      actor_id: adminId,
+      type: 'timeout',
+      content: `Stavljen ste u timeout na ${durationHours} sati: ${reason}`,
+    });
+
+  if (notificationError) {
+    console.error('Failed to create timeout notification:', notificationError);
+  }
+
   revalidatePath('/admin/users');
   return { success: true };
 }
 
 export async function removeTimeout(userId: string) {
-  await checkAdminAccess();
-  const supabase: any = await createServerSupabaseClient();
+  const { adminClient } = await checkAdminAccess();
 
-  const { error } = await supabase
+  const { error } = await (adminClient as any)
     .from('profiles')
     .update({
       timeout_until: null,
@@ -260,10 +298,9 @@ export async function removeTimeout(userId: string) {
 
 // Topic Management Actions
 export async function pinTopic(topicId: string, pinned: boolean) {
-  await checkAdminAccess();
-  const supabase: any = await createServerSupabaseClient();
+  const { adminClient } = await checkAdminAccess();
 
-  const { error } = await supabase
+  const { error } = await (adminClient as any)
     .from('topics')
     .update({ is_pinned: pinned })
     .eq('id', topicId);
@@ -278,10 +315,9 @@ export async function pinTopic(topicId: string, pinned: boolean) {
 }
 
 export async function lockTopic(topicId: string, locked: boolean) {
-  await checkAdminAccess();
-  const supabase: any = await createServerSupabaseClient();
+  const { adminClient } = await checkAdminAccess();
 
-  const { error } = await supabase
+  const { error } = await (adminClient as any)
     .from('topics')
     .update({ is_locked: locked })
     .eq('id', topicId);
@@ -296,10 +332,9 @@ export async function lockTopic(topicId: string, locked: boolean) {
 }
 
 export async function deleteTopic(topicId: string) {
-  await checkAdminAccess();
-  const supabase: any = await createServerSupabaseClient();
+  const { adminClient } = await checkAdminAccess();
 
-  const { error } = await supabase
+  const { error } = await (adminClient as any)
     .from('topics')
     .delete()
     .eq('id', topicId);
@@ -315,10 +350,9 @@ export async function deleteTopic(topicId: string) {
 
 // Reply Management Actions
 export async function deleteReply(replyId: string) {
-  await checkAdminAccess();
-  const supabase: any = await createServerSupabaseClient();
+  const { adminClient } = await checkAdminAccess();
 
-  const { error } = await supabase
+  const { error } = await (adminClient as any)
     .from('replies')
     .delete()
     .eq('id', replyId);
@@ -339,18 +373,17 @@ export async function createCategory(data: {
   icon: string;
   color: string;
 }) {
-  await checkAdminAccess();
-  const supabase: any = await createServerSupabaseClient();
+  const { adminClient } = await checkAdminAccess();
 
   // Get max order_index
-  const { data: maxOrder } = await supabase
+  const { data: maxOrder } = await (adminClient as any)
     .from('categories')
     .select('order_index')
     .order('order_index', { ascending: false })
     .limit(1)
     .single();
 
-  const { error } = await supabase.from('categories').insert({
+  const { error } = await (adminClient as any).from('categories').insert({
     ...data,
     order_index: (maxOrder?.order_index || 0) + 1,
   });
@@ -374,10 +407,9 @@ export async function updateCategory(
     color: string;
   }
 ) {
-  await checkAdminAccess();
-  const supabase: any = await createServerSupabaseClient();
+  const { adminClient } = await checkAdminAccess();
 
-  const { error } = await supabase
+  const { error } = await (adminClient as any)
     .from('categories')
     .update(data)
     .eq('id', categoryId);
@@ -392,10 +424,9 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(categoryId: string) {
-  await checkAdminAccess();
-  const supabase: any = await createServerSupabaseClient();
+  const { adminClient } = await checkAdminAccess();
 
-  const { error } = await supabase
+  const { error } = await (adminClient as any)
     .from('categories')
     .delete()
     .eq('id', categoryId);

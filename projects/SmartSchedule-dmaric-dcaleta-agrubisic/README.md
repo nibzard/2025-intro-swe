@@ -1,60 +1,41 @@
-
 # SmartSchedule
 
 ## Predstavljanje problema
+SmartSchedule je aplikacija osmišljena kako bi korisnicima svih uzrasta omogućila jednostavno, brzo i inteligentno planiranje rasporeda. Zahvaljujući integraciji AI sustava, aplikacija automatski kreira rasporede koji u potpunosti odgovaraju korisnikovim željama i uvjetima.
 
-SmartSchedule je aplikacija osmišljena kako bi korisnicima svih uzrasta omogućila jednostavno, brzo i inteligentno planiranje rasporeda. Zahvaljujući integraciji AI alata, aplikacija automatski kreira rasporede koji u potpunosti odgovaraju korisnikovim željama i uvjetima.
+Aplikacija rješava česte probleme poput:
+- preklapanja obveza
+- teškoće usklađivanja radnih smjena
+- izazova planiranja druženja i grupnih aktivnosti
+- nedostatka vremena za ručno planiranje
 
 ---
 
 ## Princip rada
+Po pokretanju aplikacije korisniku se prikazuje početni izbornik s opcijom:  
+ **Izrada rasporeda za poslovne svrhe**
 
-Po pokretanju aplikacije korisniku se prikazuje početni izbornik s dvije osnovne opcije:
--Izrada rasporeda za poslovne svrhe
--Izrada rasporeda za društvene svrhe
-Nakon odabira željene kategorije, korisnik ispunjava jednostavnu formu koja uključuje:
--Kratki opis rasporeda
--Specifične uvjete (npr. vrijeme za pauzu u poslovnim rasporedima ili zauzete dane u društvenim rasporedima)
-Nakon što korisnik pošalje formu, SmartSchedule uz pomoć ugrađenog AI sustava analizira unesene podatke i automatski generira optimalan raspored koji zadovoljava sve zadane kriterije. Dobiveni raspored moguće je dodatno prilagoditi prema osobnim preferencijama.
+### Poslovni raspored
+- Poslodavac unosi podatke za izradu (datum, ime i sl.)  
+- Pritiskom na **+** dodaju se radnici i njihovi posebni uvjeti  
+- Nakon finalnog unosa, AI generira raspored  
+- Poslodavac može urediti raspored prije spremanja  
+- Nakon spremanja generira se **šifra** koju poslodavac daje radnicima za pristup rasporedu
+
+### AI analiza
+Nakon unosa, SmartSchedule AI:
+- uspoređuje sve uvjete  
+- traži optimalne kombinacije  
+- generira raspored uz minimalna preklapanja  
+- ispod rasporeda prikazuje izvještaj o tome koji uvjeti su ispunjeni, a koji nisu te kako su kompromisi postignuti
 
 ---
 
 ## Cilj projekta
-
-Glavni cilj projekta SmartSchedule je razviti intuitivno i pametno rješenje koje korisnicima omogućuje učinkovitu organizaciju vremena.
-Aplikacija nastoji pojednostaviti proces planiranja, smanjiti stres povezan s organizacijom te povećati produktivnost i ravnotežu između poslovnog i privatnog života.
-Kombinacijom jednostavnog korisničkog sučelja i naprednih AI funkcionalnosti, SmartSchedule predstavlja moderan pristup planiranju vremena prilagođen potrebama suvremenog korisnika.
-
----
-
-## Mermaid diagram
-
----
-
-flowchart TD
-
-A[Pokretanje aplikacije] --> B[Prikaz početnog izbornika]
-B --> C{Odabir vrste rasporeda?}
-
-%% POSLOVNI DIO
-C --> D[Poslovne svrhe]
-D --> E[Unos opisa rasporeda]
-E --> F[Unos broja zaposlenika]
-F --> G[Unos radnog vremena i zadataka]
-G --> X[Slanje forme]
-
-%% DRUŠTVENI DIO
-C --> H[Društvene svrhe]
-H --> I[Unos događaja ili aktivnosti]
-I --> J[Unos zauzetih dana]
-J --> K[Unos broja sudionika]
-K --> X[Slanje forme]
-
-%% ZAJEDNIČKI DIO
-X --> L[AI analizira unesene podatke]
-L --> M[Generiranje rasporeda i mogućnost uređivanja]
-M --> N[Kraj procesa]
-
----
-
-
+Cilj SmartSchedule aplikacije je pružiti modernu, inteligentnu i jednostavnu metodu organizacije vremena.  
+Aplikacija:
+- smanjuje stres oko planiranja  
+- povećava produktivnost  
+- omogućava ravnotežu poslovnog i privatnog života  
+- pruža jasno i lako razumljivo sučelje  
+- omogućuje AI optimizaciju vremenskih obaveza

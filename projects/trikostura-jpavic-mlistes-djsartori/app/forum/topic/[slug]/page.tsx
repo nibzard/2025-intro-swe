@@ -10,7 +10,52 @@ import { EditableTopic } from '@/components/forum/editable-topic';
 import { AdvancedAttachmentList } from '@/components/forum/advanced-attachment-list';
 import { BookmarkButton } from '@/components/forum/bookmark-button';
 import { TopicActions } from '@/components/forum/topic-actions';
-import { MessageSquare, ArrowLeft, CheckCircle } from 'lucide-react';
+import { recordTopicView } from '../actions';
+import { Breadcrumb } from '@/components/forum/breadcrumb';
+import { MessageSquare, CheckCircle } from 'lucide-react';
+import { ReactionPicker } from '@/components/forum/reaction-picker';
+import { PollWidget } from '@/components/forum/poll-widget';
+import { PollCreator } from '@/components/forum/poll-creator';
+import { TypingIndicator } from '@/components/forum/typing-indicator';
+import { getPollDetails } from '@/app/forum/polls/actions';
+
+// Revalidate every 2 minutes for better cache performance
+export const revalidate = 120;
+
+// Generate metadata for SEO
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const supabase = await createServerSupabaseClient();
+
+  const { data: topic } = await supabase
+    .from('topics')
+    .select('title, content')
+    .eq('slug', slug)
+    .single();
+
+  if (!topic) {
+    return {
+      title: 'Tema nije pronađena',
+    };
+  }
+
+  const topicData = topic as any;
+  const description = topicData.content?.substring(0, 160) || 'Pogledajte ovu temu na Skripta forumu';
+
+  return {
+    title: `${topicData.title} | Skripta Forum`,
+    description,
+    openGraph: {
+      title: topicData.title,
+      description,
+      type: 'article',
+    },
+  };
+}
 
 export default async function TopicPage({
   params,
@@ -24,212 +69,213 @@ export default async function TopicPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Get topic with tags - simplified query without complex relationships
+  // Get topic with all related data in ONE query (without tags for now)
   const { data: topic, error: topicError }: { data: any; error: any } = await supabase
     .from('topics')
-    .select('*')
+    .select(`
+      *,
+      author:profiles!topics_author_id_fkey(username, avatar_url, reputation),
+      category:categories!topics_category_id_fkey(name, slug, color, icon)
+    `)
     .eq('slug', slug)
-    .single();
+    .maybeSingle();
 
-  if (topicError) {
-    console.error('Topic fetch error:', topicError);
-    notFound();
-  }
-
+  // Only return 404 if topic doesn't exist, not on query errors
   if (!topic) {
     console.error('Topic not found for slug:', slug);
+    if (topicError) {
+      console.error('Topic fetch error:', topicError);
+    }
     notFound();
   }
 
-  // Get author separately
-  const { data: author } = await supabase
-    .from('profiles')
-    .select('username, avatar_url, reputation')
-    .eq('id', topic.author_id)
-    .single() as any;
+  // PARALLEL QUERIES: Fetch replies, tags, categories, reactions, and poll all at once
+  const results = await Promise.all([
+    supabase
+      .from('replies')
+      .select(`
+        *,
+        author:profiles!replies_author_id_fkey(id, username, avatar_url, reputation)
+      `)
+      .eq('topic_id', topic.id)
+      .order('is_solution', { ascending: false })
+      .order('created_at', { ascending: true }),
+    supabase
+      .from('topic_tags')
+      .select('tags(id, name, slug, color)')
+      .eq('topic_id', topic.id),
+    supabase
+      .from('categories')
+      .select('*')
+      .order('order_index', { ascending: true }),
+    // Reactions query - with error handling for when table doesn't exist
+    (supabase as any)
+      .from('reactions')
+      .select('id, emoji, user_id, created_at')
+      .eq('topic_id', topic.id)
+      .then((res: any) => res)
+      .catch((err: any) => ({ data: null, error: err })),
+    // Placeholder for reply reactions - will fetch after we have replies
+    Promise.resolve({ data: null }),
+    // Poll query - with error handling for when table doesn't exist
+    (supabase as any)
+      .from('polls')
+      .select('id, topic_id, question, allow_multiple_choices, expires_at, created_at')
+      .eq('topic_id', topic.id)
+      .maybeSingle()
+      .then((res: any) => res)
+      .catch((err: any) => ({ data: null, error: err }))
+  ]);
 
-  // Get category separately
-  const { data: category } = await supabase
-    .from('categories')
-    .select('name, slug, color, icon')
-    .eq('id', topic.category_id)
-    .single() as any;
+  // Extract data from results
+  const replies = results[0].data;
+  const topicTags = results[1].data;
+  const categories = results[2].data;
+  const topicReactions = results[3].data;
+  let replyReactionsData: any = results[4].data;
+  const pollData = results[5].data;
 
-  // Get topic tags separately
-  const { data: tagData } = await supabase
-    .from('topic_tags')
-    .select('tags(id, name, slug, color)')
-    .eq('topic_id', topic.id);
-
-  // Restructure topic data to match expected format
-  const enrichedTopic = {
-    ...topic,
-    author,
-    category,
-    topic_tags: tagData || [],
-  };
-
-  // Increment view count
-  try {
-    await (supabase as any).rpc('increment', {
-      table_name: 'topics',
-      row_id: topic.id,
-      column_name: 'view_count',
-    });
-  } catch {
-    // Fallback if function doesn't exist
-    await (supabase as any)
-      .from('topics')
-      .update({ view_count: topic.view_count + 1 })
-      .eq('id', topic.id);
-  }
-
-  // Get topic attachments
-  const { data: topicAttachments } = await supabase
-    .from('attachments')
-    .select('*')
-    .eq('topic_id', topic.id);
-
-  // Get replies without complex relationships
-  const { data: replies }: { data: any } = await supabase
-    .from('replies')
-    .select('*')
-    .eq('topic_id', topic.id)
-    .order('is_solution', { ascending: false })
-    .order('created_at', { ascending: true });
-
-  // Get reply authors separately if needed
-  const replyAuthorIds = replies?.map((r: any) => r.author_id).filter(Boolean) || [];
-  let replyAuthors: any = {};
-  if (replyAuthorIds.length > 0) {
-    const { data: authors } = await supabase
-      .from('profiles')
-      .select('id, username, avatar_url, reputation')
-      .in('id', [...new Set(replyAuthorIds)]);
-    
-    if (authors) {
-      authors.forEach((a: any) => {
-        replyAuthors[a.id] = a;
-      });
+  // Now fetch reply reactions if we have replies
+  if (replies && replies.length > 0) {
+    try {
+      const { data } = await (supabase as any)
+        .from('reactions')
+        .select('id, emoji, user_id, created_at, reply_id')
+        .not('reply_id', 'is', null)
+        .in('reply_id', replies.map((r: any) => r.id));
+      replyReactionsData = data;
+    } catch (err) {
+      console.error('Failed to fetch reply reactions:', err);
+      replyReactionsData = null;
     }
   }
 
-  // Enrich replies with author data
-  const enrichedReplies = (replies || []).map((reply: any) => ({
-    ...reply,
-    author: replyAuthors[reply.author_id],
-  }));
+  // Attach tags to topic
+  topic.topic_tags = topicTags || [];
 
-  // Use enriched replies for rest of code
-  const repliesList = enrichedReplies;
-
-  // Get reply attachments
-  const { data: replyAttachments } = await supabase
+  // Get ALL attachments (topic + replies) in one query - only if there are replies
+  const { data: allAttachments } = await supabase
     .from('attachments')
     .select('*')
-    .in('reply_id', replies?.map((r: any) => r.id) || []);
+    .or(`topic_id.eq.${topic.id}${replies && replies.length > 0 ? `,reply_id.in.(${replies.map((r: any) => r.id).join(',')})` : ''}`);
 
-  // Map attachments to replies
-  const repliesWithAttachments = repliesList?.map((reply: any) => ({
+  const topicAttachments = allAttachments?.filter((a: any) => a.topic_id === topic.id) || [];
+  const replyAttachments = allAttachments?.filter((a: any) => a.reply_id) || [];
+
+  // Record unique view (only counts once per user/session)
+  // Non-blocking: page should load even if view tracking fails
+  recordTopicView(topic.id).catch(err => console.error('View tracking failed:', err));
+
+  // Map attachments and reactions to replies
+  const repliesWithAttachments = (replies || []).map((reply: any) => ({
     ...reply,
     attachments: replyAttachments?.filter((att: any) => att.reply_id === reply.id) || [],
+    reactions: replyReactionsData?.filter((r: any) => r.reply_id === reply.id) || [],
   }));
 
-  // Get user votes for replies if user is logged in
+  // Get poll details if poll exists
+  let pollDetails = null;
+  if (pollData) {
+    try {
+      const details = await getPollDetails((pollData as any).id);
+      if (!details.error) {
+        pollDetails = details;
+      }
+    } catch (err) {
+      console.error('Failed to fetch poll details:', err);
+      pollDetails = null;
+    }
+  }
+
+  // Get user-specific data in parallel (votes, bookmarks, profile)
   let userVotes: any = {};
   let isBookmarked = false;
-
-  if (user) {
-    if (repliesList) {
-      const { data: votes } = await supabase
-        .from('votes')
-        .select('reply_id, vote_type')
-        .eq('user_id', user.id)
-        .in(
-          'reply_id',
-          repliesList.map((r: any) => r.id)
-        );
-
-      votes?.forEach((vote: any) => {
-        userVotes[vote.reply_id] = vote.vote_type;
-      });
-    }
-
-    // Check bookmark status
-    const { data: bookmark } = await (supabase as any)
-      .from('bookmarks')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('topic_id', topic.id)
-      .single();
-
-    isBookmarked = !!bookmark;
-  }
-
-  // Get user profile for permissions
   let userProfile: any = null;
-  if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    userProfile = profile;
-  }
 
-  // Get all categories for move function
-  const { data: categories } = await (supabase as any)
-    .from('categories')
-    .select('*')
-    .order('order_index', { ascending: true });
+  if (user) {
+    const [
+      { data: profile },
+      { data: votes },
+      { data: bookmark }
+    ] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single(),
+      replies && replies.length > 0
+        ? supabase
+            .from('votes')
+            .select('reply_id, vote_type')
+            .eq('user_id', user.id)
+            .in('reply_id', replies.map((r: any) => r.id))
+        : Promise.resolve({ data: null }),
+      supabase
+        .from('bookmarks')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('topic_id', topic.id)
+        .maybeSingle()
+    ]);
+
+    userProfile = profile;
+    isBookmarked = !!bookmark;
+
+    votes?.forEach((vote: any) => {
+      userVotes[vote.reply_id] = vote.vote_type;
+    });
+  }
 
   const isAuthor = user?.id === topic.author_id;
   const isAdmin = userProfile?.role === 'admin';
 
   // Check if topic has a solution
-  const hasSolution = repliesList?.some((r: any) => r.is_solution);
+  const hasSolution = replies?.some((r: any) => r.is_solution);
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <Link href={`/forum/category/${category?.slug}`}>
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Natrag na {category?.name}
-          </Button>
-        </Link>
+      {/* Breadcrumb Navigation */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <Breadcrumb
+          items={[
+            { label: 'Forum', href: '/forum' },
+            { label: topic.category?.name || 'Category', href: `/forum/category/${topic.category?.slug}` },
+            { label: topic.title },
+          ]}
+        />
 
         {user && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <BookmarkButton
-              topicId={enrichedTopic.id}
+              topicId={topic.id}
               initialBookmarked={isBookmarked}
               showText
             />
-            <TopicActions topicId={enrichedTopic.id} isAuthor={isAuthor} />
+            <TopicActions topicId={topic.id} isAuthor={isAuthor} />
           </div>
         )}
       </div>
 
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
+      <Card className="border-2 border-gray-200 dark:border-gray-700 shadow-md hover:shadow-lg transition-all duration-300">
+        <CardContent className="p-6 sm:p-8">
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2 flex-wrap">
               <span
-                className="px-3 py-1 text-sm font-semibold rounded-full"
+                className="px-4 py-1.5 text-sm font-bold rounded-full shadow-sm ring-1 ring-black/5 dark:ring-white/10 transition-transform hover:scale-105"
                 style={{
-                  backgroundColor: category?.color + '20',
-                  color: category?.color,
+                  backgroundColor: topic.category?.color + '25',
+                  color: topic.category?.color,
                 }}
               >
-                {category?.icon} {category?.name}
+                <span className="text-base mr-1.5">{topic.category?.icon}</span>
+                {topic.category?.name}
               </span>
-              {enrichedTopic.topic_tags?.map((topicTag: any) => (
+              {topic.topic_tags?.map((topicTag: any) => (
                 <span
                   key={topicTag.tags.id}
-                  className="px-2 py-0.5 text-xs font-medium rounded"
+                  className="px-3 py-1 text-xs font-semibold rounded-full shadow-sm ring-1 ring-black/5 dark:ring-white/10 transition-transform hover:scale-105"
                   style={{
-                    backgroundColor: topicTag.tags.color ? topicTag.tags.color + '15' : '#e5e7eb',
+                    backgroundColor: topicTag.tags.color ? topicTag.tags.color + '20' : '#e5e7eb',
                     color: topicTag.tags.color || '#6b7280',
                   }}
                 >
@@ -237,51 +283,63 @@ export default async function TopicPage({
                 </span>
               ))}
               {hasSolution && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded">
-                  <CheckCircle className="w-3 h-3" />
-                  Rijeseno
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 text-green-700 dark:text-green-300 rounded-full shadow-sm ring-1 ring-green-500/20 transition-transform hover:scale-105">
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  Riješeno
                 </span>
               )}
-              {enrichedTopic.is_pinned && (
-                <span className="text-yellow-500">📌 Prikvaceno</span>
+              {topic.is_pinned && (
+                <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold bg-gradient-to-r from-yellow-100 to-amber-100 dark:from-yellow-900 dark:to-amber-900 text-yellow-700 dark:text-yellow-300 rounded-full shadow-sm ring-1 ring-yellow-500/20">
+                  📌 Prikvačeno
+                </span>
               )}
-              {enrichedTopic.is_locked && (
-                <span className="text-gray-500">🔒 Zakljucano</span>
+              {topic.is_locked && (
+                <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full shadow-sm ring-1 ring-gray-500/20">
+                  🔒 Zaključano
+                </span>
               )}
             </div>
 
             <TopicControlMenu
-              topic={enrichedTopic}
+              topic={topic}
               isAuthor={isAuthor}
               isAdmin={isAdmin}
               categories={categories || []}
             />
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-bold mb-4">{enrichedTopic.title}</h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent leading-tight break-words">{topic.title}</h1>
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-gray-500 mb-6">
-            <div className="flex items-center gap-3">
-              <Link href={`/forum/user/${author?.username}`}>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/30 rounded-xl border border-gray-200 dark:border-gray-700 mb-6">
+            <div className="flex items-center gap-4">
+              <Link href={`/forum/user/${topic.author?.username}`} className="flex-shrink-0 transition-transform hover:scale-110">
                 <Avatar
-                  src={author?.avatar_url}
-                  alt={author?.username || 'User'}
-                  username={author?.username}
+                  src={topic.author?.avatar_url}
+                  alt={topic.author?.username || 'User'}
+                  username={topic.author?.username}
                   size="md"
                 />
               </Link>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-                <span>
-                  Autor:{' '}
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Autor:</span>
                   <Link
-                    href={`/forum/user/${author?.username}`}
-                    className="font-semibold hover:underline"
+                    href={`/forum/user/${topic.author?.username}`}
+                    className="font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                   >
-                    {author?.username}
+                    {topic.author?.username}
                   </Link>
-                </span>
-                <span className="text-xs sm:text-sm">
-                  {new Date(enrichedTopic.created_at).toLocaleDateString('hr-HR', {
+                  {topic.author?.reputation > 0 && (
+                    <span className="px-2 py-0.5 text-xs font-bold bg-gradient-to-r from-yellow-100 to-amber-100 dark:from-yellow-900 dark:to-amber-900 text-yellow-700 dark:text-yellow-300 rounded-full shadow-sm ring-1 ring-yellow-500/20">
+                      ⭐ {topic.author.reputation}
+                    </span>
+                  )}
+                </div>
+                <span className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {new Date(topic.created_at).toLocaleDateString('hr-HR', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
@@ -291,37 +349,79 @@ export default async function TopicPage({
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1">
-                <MessageSquare className="w-4 h-4" />
-                {enrichedTopic.reply_count} odgovora
-              </span>
-              <span>{enrichedTopic.view_count} pregleda</span>
+            <div className="flex items-center gap-4 sm:gap-6">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <MessageSquare className="w-4 h-4 text-blue-500" />
+                <span className="font-semibold text-gray-900 dark:text-white">{topic.reply_count}</span>
+                <span className="text-xs text-gray-600 dark:text-gray-400">odgovora</span>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <span className="font-semibold text-gray-900 dark:text-white">{topic.view_count}</span>
+                <span className="text-xs text-gray-600 dark:text-gray-400">pregleda</span>
+              </div>
             </div>
           </div>
 
           <EditableTopic
-            topicId={enrichedTopic.id}
-            title={enrichedTopic.title}
-            content={enrichedTopic.content}
+            topicId={topic.id}
+            title={topic.title}
+            content={topic.content}
             isAuthor={isAuthor}
             isAdmin={isAdmin}
-            isLocked={enrichedTopic.is_locked}
-            editedAt={enrichedTopic.edited_at}
-            createdAt={enrichedTopic.created_at}
+            isLocked={topic.is_locked}
+            editedAt={topic.edited_at}
+            createdAt={topic.created_at}
           />
           <AdvancedAttachmentList attachments={topicAttachments || []} />
+          
+          {/* Topic Reactions */}
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <ReactionPicker
+              topicId={topic.id}
+              reactions={topicReactions || []}
+              currentUserId={user?.id}
+            />
+          </div>
         </CardContent>
       </Card>
 
+      {/* Poll Creator - Only for topic author if no poll exists */}
+      {isAuthor && !pollDetails && !topic.is_locked && (
+        <PollCreator topicId={topic.id} />
+      )}
+
+      {/* Poll Widget */}
+      {pollDetails && (
+        <PollWidget
+          poll={(pollDetails as any).poll}
+          options={(pollDetails as any).options}
+          totalVotes={(pollDetails as any).totalVotes}
+          userVotes={(pollDetails as any).userVotes}
+          currentUserId={user?.id}
+        />
+      )}
+
+      {/* Typing Indicator */}
+      {user && !topic.is_locked && (
+        <TypingIndicator
+          topicId={topic.id}
+          currentUserId={user.id}
+          currentUsername={userProfile?.username}
+        />
+      )}
+
       <TopicContent
-        topic={enrichedTopic}
+        topic={topic}
         replies={repliesWithAttachments || []}
         userVotes={userVotes}
         currentUserId={user?.id}
       />
 
-      {enrichedTopic.is_locked && (
+      {topic.is_locked && (
         <Card>
           <CardContent className="p-6 text-center text-gray-500">
             <p>Ova tema je zakljucana i ne mozete dodati nove odgovore.</p>
@@ -329,7 +429,7 @@ export default async function TopicPage({
         </Card>
       )}
 
-      {!user && !enrichedTopic.is_locked && (
+      {!user && !topic.is_locked && (
         <Card>
           <CardContent className="p-6 text-center">
             <p className="text-gray-600 dark:text-gray-400 mb-4">

@@ -9,13 +9,19 @@ import { Card, CardContent } from '@/components/ui/card';
 import { EnhancedMarkdownEditor } from '@/components/forum/new/enhanced-markdown-editor';
 import { EnhancedFileUpload } from '@/components/forum/new/enhanced-file-upload';
 import { AutoSaveIndicator, SaveStatus } from '@/components/forum/new/auto-save-indicator';
-import { ArrowLeft, Send, Save, AlertCircle, Sparkles } from 'lucide-react';
+import { ArrowLeft, Send, Save, AlertCircle, Sparkles, Eye, Edit3, Lightbulb, Zap, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { uploadAttachment, saveAttachmentMetadata } from '@/lib/attachments';
 import { generateSlug } from '@/lib/utils';
 import { processMentions } from '@/app/forum/actions';
+import { detectSpam, detectDuplicate, detectRapidPosting } from '@/lib/spam-detection';
+import { checkAndAwardAchievements } from '@/app/forum/achievements/actions';
+import { moderateContent } from '@/lib/content-moderation';
+import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { useButtonAnimation } from '@/hooks/use-button-animation';
+import { MarkdownRenderer } from '@/components/forum/markdown-renderer';
 
 const MAX_TITLE_LENGTH = 200;
 const MAX_CONTENT_LENGTH = 10000;
@@ -33,7 +39,11 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
   const [lastSaved, setLastSaved] = useState<Date | null>(initialDraft?.updated_at ? new Date(initialDraft.updated_at) : null);
   const [draftId, setDraftId] = useState<string | null>(initialDraft?.id || null);
   const [error, setError] = useState('');
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [showTips, setShowTips] = useState(true);
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const { triggerAnimation: triggerSubmitAnimation, animationClasses: submitAnimation } = useButtonAnimation();
+  const { triggerAnimation: triggerSaveAnimation, animationClasses: saveAnimation } = useButtonAnimation();
 
   // Auto-save draft
   const saveDraft = useCallback(async () => {
@@ -78,11 +88,12 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
 
       setSaveStatus('saved');
       setLastSaved(new Date());
+      triggerSaveAnimation();
     } catch (err) {
       console.error('Error saving draft:', err);
       setSaveStatus('error');
     }
-  }, [title, content, categoryId, selectedTags, draftId]);
+  }, [title, content, categoryId, selectedTags, draftId, triggerSaveAnimation]);
 
   // Auto-save on changes
   useEffect(() => {
@@ -116,6 +127,33 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [title, content, saveStatus]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+S or Cmd+S to save draft
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        saveDraft();
+        toast.success('Nacrt spremljen!');
+      }
+      // Ctrl+Enter or Cmd+Enter to submit
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (title.trim() && content.trim() && categoryId && !isSubmitting) {
+          const form = document.querySelector('form');
+          if (form) {
+            form.requestSubmit();
+          }
+        } else {
+          toast.error('Molimo ispunite sva obavezna polja');
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [title, content, categoryId, isSubmitting, saveDraft]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,15 +190,90 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
         throw new Error('Morate biti prijavljeni');
       }
 
+      // Spam detection - check title and content
+      const titleSpamCheck = detectSpam(title.trim());
+      if (titleSpamCheck.isSpam) {
+        toast.error(`Naslov je označen kao spam: ${titleSpamCheck.reason}`, { id: loadingToast });
+        setIsSubmitting(false);
+        return;
+      }
+
+      const contentSpamCheck = detectSpam(content.trim());
+      if (contentSpamCheck.isSpam) {
+        toast.error(`Sadržaj je označen kao spam: ${contentSpamCheck.reason}`, { id: loadingToast });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Fetch recent topics by this user for duplicate/rate limit checks
+      const { data: recentTopics } = await (supabase as any)
+        .from('topics')
+        .select('title, content, created_at')
+        .eq('author_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (recentTopics && recentTopics.length > 0) {
+        // Check for duplicate content
+        const duplicateCheck = detectDuplicate({
+          content: title.trim() + ' ' + content.trim(),
+          userId: user.id,
+          recentPosts: recentTopics.map((t: any) => ({
+            content: t.title + ' ' + t.content,
+            created_at: t.created_at,
+          })),
+          timeWindowMinutes: 10,
+        });
+
+        if (duplicateCheck.isSpam) {
+          toast.error(`${duplicateCheck.reason}. Molimo pričekajte prije ponovnog objavljivanja.`, { id: loadingToast });
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Check for rapid posting
+        const rateCheck = detectRapidPosting({
+          userId: user.id,
+          recentPosts: recentTopics,
+          maxPostsPerMinute: 2, // Stricter for topics
+        });
+
+        if (rateCheck.isSpam) {
+          toast.error(`${rateCheck.reason}. Molimo usporite.`, { id: loadingToast });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // Content moderation - check for inappropriate content
+      const moderationResult = await moderateContent({
+        content: content.trim(),
+        title: title.trim(),
+        userId: user.id,
+        contentType: 'topic',
+      });
+
+      if (!moderationResult.approved) {
+        toast.error(moderationResult.reason || 'Sadržaj sadrži neprimjeren jezik', { id: loadingToast });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Use moderated content (censored if needed)
+      const finalTitle = moderationResult.title || title.trim();
+      const finalContent = moderationResult.content || content.trim();
+
       // Create topic
       const { data: topic, error: topicError } = await (supabase as any)
         .from('topics')
         .insert({
-          title: title.trim(),
-          slug: generateSlug(title.trim()),
-          content: content.trim(),
+          title: finalTitle,
+          slug: generateSlug(finalTitle),
+          content: finalContent,
           category_id: categoryId,
           author_id: user.id,
+          auto_flagged: moderationResult.severity ? true : false,
+          moderation_status: moderationResult.severity && moderationResult.severity !== 'low' ? 'flagged' : 'approved',
         })
         .select()
         .single();
@@ -210,11 +323,29 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
       // Process mentions and create notifications
       await processMentions(content.trim(), user.id, topic.id);
 
+      // Check and award achievements
+      const newAchievements = await checkAndAwardAchievements(user.id);
+
+      // Show achievement notifications
+      if (newAchievements && newAchievements.length > 0) {
+        const { ACHIEVEMENTS } = await import('@/lib/achievements-definitions');
+        newAchievements.forEach(achievementId => {
+          const achievement = ACHIEVEMENTS[achievementId];
+          if (achievement) {
+            toast.success(`🏆 Novo postignuće: ${achievement.name}!`, {
+              description: achievement.description,
+              duration: 5000,
+            });
+          }
+        });
+      }
+
       // Delete draft if exists
       if (draftId) {
         await (supabase as any).from('topic_drafts').delete().eq('id', draftId);
       }
 
+      triggerSubmitAnimation();
       toast.success('Tema uspješno objavljena!', { id: loadingToast });
       router.push(`/forum/topic/${topic.slug}`);
     } catch (err: any) {
@@ -227,10 +358,80 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
 
   const selectedCategory = categories.find((c: any) => c.id === categoryId);
 
+  // Get template suggestion based on category
+  const getTemplateSuggestion = () => {
+    if (!selectedCategory) return null;
+
+    const templates: Record<string, string> = {
+      'Pitanja': `## Problem
+Opiši što pokušavaš postići ili koji problem imaš...
+
+## Što sam probao
+Napiši što si već pokušao i što nije uspjelo...
+
+## Očekivani rezultat
+Opiši što očekuješ da se dogodi...
+
+## Dodatne informacije
+- Verzija sustava/biblioteke:
+- Poruke o greškama (ako ih ima): `,
+
+      'Diskusija': `## Tema rasprave
+Uvodna rečenica koja objašnjava o čemu želiš razgovarati...
+
+## Moje mišljenje
+Predstavi svoje stajalište ili razmišljanja...
+
+## Pitanja za zajednicu
+1. Što misliš o...?
+2. Je li ...?`,
+
+      'Tutorijali': `## Uvod
+Kratko opiši što će ljudi naučiti...
+
+## Preduvjeti
+Što je potrebno znati prije početka...
+
+## Koraci
+1. Prvi korak...
+2. Drugi korak...
+
+## Zaključak
+Sažmi što smo naučili...`,
+
+      'Resursi': `## Opis resursa
+O čemu se radi i zašto je koristan...
+
+## Link
+[Naziv resursa](URL)
+
+## Za koga je namijenjen
+Tko bi imao koristi od ovog resursa...`,
+    };
+
+    return templates[selectedCategory.name] || null;
+  };
+
+  const applyTemplate = () => {
+    const template = getTemplateSuggestion();
+    if (template) {
+      setContent(template);
+      toast.success('Predložak primijenjen!');
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto py-4 sm:py-8 px-3 sm:px-4">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb
+        items={[
+          { label: 'Forum', href: '/forum' },
+          { label: 'Nova tema' },
+        ]}
+      />
+
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-6 mt-6">
         <Link
           href="/forum"
           className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 mb-4"
@@ -263,6 +464,50 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Tips Panel */}
+        {showTips && (
+          <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Lightbulb className="w-5 h-5 text-blue-500" />
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                      Savjeti za dobru temu
+                    </h3>
+                  </div>
+                  <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-500 mt-0.5">•</span>
+                      <span><strong>Budi konkretan:</strong> Jasno opiši problem ili temu o kojoj želiš razgovarati</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-500 mt-0.5">•</span>
+                      <span><strong>Dodaj kontekst:</strong> Objasni što si već pokušao i što očekuješ</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-500 mt-0.5">•</span>
+                      <span><strong>Formatiraj sadržaj:</strong> Koristi naslove, liste i isticanje za bolju čitljivost</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-500 mt-0.5">•</span>
+                      <span><strong>Prečaci tipkovnice:</strong> Ctrl+S za spremanje, Ctrl+Enter za objavu</span>
+                    </li>
+                  </ul>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowTips(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  aria-label="Zatvori savjete"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Title */}
         <Card>
           <CardContent className="p-4 sm:p-6">
@@ -352,16 +597,71 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
         {/* Content */}
         <Card>
           <CardContent className="p-4 sm:p-6">
-            <Label className="text-base font-semibold mb-3 block">
-              Sadržaj <span className="text-red-500">*</span>
-            </Label>
-            <EnhancedMarkdownEditor
-              value={content}
-              onChange={setContent}
-              placeholder="Opiši detaljno svoje pitanje ili temu..."
-              maxLength={MAX_CONTENT_LENGTH}
-              onSave={saveDraft}
-            />
+            <div className="flex items-center justify-between mb-3">
+              <Label className="text-base font-semibold">
+                Sadržaj <span className="text-red-500">*</span>
+              </Label>
+              <div className="flex items-center gap-2">
+                {selectedCategory && getTemplateSuggestion() && !content && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={applyTemplate}
+                    className="text-xs"
+                  >
+                    <Zap className="w-3 h-3 mr-1" />
+                    Koristi predložak
+                  </Button>
+                )}
+                <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setIsPreviewMode(false)}
+                    className={`px-3 py-1 text-sm flex items-center gap-1 transition-colors ${
+                      !isPreviewMode
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    <Edit3 className="w-3 h-3" />
+                    Uredi
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsPreviewMode(true)}
+                    className={`px-3 py-1 text-sm flex items-center gap-1 transition-colors ${
+                      isPreviewMode
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    <Eye className="w-3 h-3" />
+                    Pregled
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {isPreviewMode ? (
+              <div className="min-h-[300px] max-h-[500px] overflow-y-auto p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800">
+                {content ? (
+                  <MarkdownRenderer content={content} />
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-12">
+                    Nema sadržaja za prikaz. Pređi na način uređivanja da napišeš sadržaj.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <EnhancedMarkdownEditor
+                value={content}
+                onChange={setContent}
+                placeholder="Opiši detaljno svoje pitanje ili temu..."
+                maxLength={MAX_CONTENT_LENGTH}
+                onSave={saveDraft}
+              />
+            )}
           </CardContent>
         </Card>
 
@@ -378,7 +678,7 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
           <Button
             type="submit"
             disabled={isSubmitting || !title.trim() || !content.trim() || !categoryId}
-            className="flex-1 sm:flex-none h-11 sm:px-8"
+            className={`flex-1 sm:flex-none h-11 sm:px-8 ${submitAnimation}`}
           >
             {isSubmitting ? (
               <>
@@ -393,7 +693,7 @@ export function CreateTopicPage({ categories, tags, initialDraft }: any) {
             )}
           </Button>
 
-          <Button type="button" variant="outline" onClick={saveDraft} disabled={saveStatus === 'saving'} className="flex-1 sm:flex-none h-11">
+          <Button type="button" variant="outline" onClick={saveDraft} disabled={saveStatus === 'saving'} className={`flex-1 sm:flex-none h-11 ${saveAnimation}`}>
             <Save className="w-4 h-4 mr-2" />
             Spremi nacrt
           </Button>

@@ -5,6 +5,7 @@ import { MessageSquare, TrendingUp, Flame, CheckCircle, Clock, Filter } from 'lu
 import { formatDistanceToNow } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import type { Category, Topic, Profile } from '@/types/database';
+import { TopicListClient } from '@/components/forum/topic-list-client';
 
 interface TopicWithAuthor extends Topic {
   author: Profile | null;
@@ -35,10 +36,19 @@ interface TopicWithCategoryAndAuthor extends Topic {
   author: Pick<Profile, 'username' | 'avatar_url'> | null;
 }
 
-// Revalidate every 60 seconds
-export const revalidate = 60;
+// Revalidate every 5 minutes for better cache performance
+export const revalidate = 300;
+
+// Use edge runtime for faster response on Vercel
+export const runtime = 'nodejs';
 
 const TOPICS_PER_PAGE = 15;
+
+// Metadata for SEO
+export const metadata = {
+  title: 'Forum | Skripta - Hrvatska Studentska Zajednica',
+  description: 'Pridruži se diskusijama, postavi pitanja i razmijeni znanje s hrvatskim studentima. Najbolja studentska zajednica u Hrvatskoj.',
+};
 
 export default async function ForumPage({
   searchParams,
@@ -52,40 +62,89 @@ export default async function ForumPage({
 
   const supabase = await createServerSupabaseClient();
 
-  // Get categories
-  const { data: categories } = await supabase
-    .from('categories')
-    .select('*')
-    .order('order_index', { ascending: true });
+  // Run all queries in parallel for better performance
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-  // Get all topics with minimal data for counting (single query)
-  const { data: allTopics } = await supabase
-    .from('topics')
-    .select('id, category_id, created_at');
+  const [
+    { data: categories },
+    { data: trendingTopics },
+    { data: recentTopics, count: totalTopics }
+  ] = await Promise.all([
+    // Get categories
+    supabase
+      .from('categories')
+      .select('id, name, slug, description, icon, color, order_index')
+      .order('order_index', { ascending: true }),
 
-  // Get recent topics per category for "latest topic" display (single query)
-  const { data: recentTopicsByCategory } = await supabase
+    // Get trending topics (most views + replies in last 7 days) with all data
+    supabase
+      .from('topics')
+      .select(`
+        id,
+        title,
+        slug,
+        view_count,
+        reply_count,
+        created_at,
+        author:profiles!topics_author_id_fkey(username, avatar_url),
+        category:categories(name, slug, color)
+      `)
+      .gte('created_at', sevenDaysAgo.toISOString())
+      .order('view_count', { ascending: false })
+      .limit(5),
+
+    // Get recent topics with all data in ONE query
+    supabase
+      .from('topics')
+      .select(`
+        id,
+        title,
+        slug,
+        created_at,
+        is_pinned,
+        is_locked,
+        has_solution,
+        view_count,
+        reply_count,
+        category_id,
+        author:profiles!topics_author_id_fkey(username, avatar_url),
+        category:categories(name, slug, color, icon)
+      `, { count: 'exact' })
+      .order('is_pinned', { ascending: false })
+      .order('created_at', { ascending: false })
+      .range(offset, offset + TOPICS_PER_PAGE - 1)
+  ]);
+
+  // Get category stats in one lightweight query (count only)
+  const { data: categoryTopicCounts } = await supabase
     .from('topics')
-    .select('id, title, slug, created_at, category_id, author:profiles!topics_author_id_fkey(username)')
-    .order('created_at', { ascending: false })
-    .limit(100); // Get enough to ensure we have latest for each category
+    .select('category_id')
+    .order('created_at', { ascending: false });
 
   // Build maps for efficient lookup
   const topicCountByCategory = new Map<string, number>();
-  const latestTopicByCategory = new Map<string, LatestTopicData>();
+  const latestTopicByCategory = new Map<string, any>();
 
   // Count topics per category
-  allTopics?.forEach((topic: TopicMinimal) => {
+  categoryTopicCounts?.forEach((topic: { category_id: string }) => {
     topicCountByCategory.set(
       topic.category_id,
       (topicCountByCategory.get(topic.category_id) || 0) + 1
     );
   });
 
-  // Find latest topic per category
-  (recentTopicsByCategory as unknown as LatestTopicData[])?.forEach((topic) => {
+  // Find latest topic per category from recentTopics
+  recentTopics?.forEach((topic: any) => {
     if (!latestTopicByCategory.has(topic.category_id)) {
-      latestTopicByCategory.set(topic.category_id, topic);
+      latestTopicByCategory.set(topic.category_id, {
+        id: topic.id,
+        title: topic.title,
+        slug: topic.slug,
+        created_at: topic.created_at,
+        category_id: topic.category_id,
+        author: topic.author
+      });
     }
   });
 
@@ -96,76 +155,9 @@ export default async function ForumPage({
     latest_topic: latestTopicByCategory.get(category.id) || null,
   }));
 
-  // Get trending topics (most views + replies in last 7 days)
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-  const { data: trendingTopicsData } = await supabase
-    .from('topics')
-    .select('*')
-    .gte('created_at', sevenDaysAgo.toISOString())
-    .order('view_count', { ascending: false })
-    .limit(5);
-
-  // Manually fetch related data for trending topics
-  let trendingTopics: TopicWithCategoryAndAuthor[] = [];
-  if (trendingTopicsData && trendingTopicsData.length > 0) {
-    const authorIds = [...new Set((trendingTopicsData as Topic[]).map(t => t.author_id))];
-    const categoryIds = [...new Set((trendingTopicsData as Topic[]).map(t => t.category_id))];
-
-    const [authorsRes, categoriesRes] = await Promise.all([
-      supabase.from('profiles').select('id, username, avatar_url').in('id', authorIds),
-      supabase.from('categories').select('id, name, slug, color').in('id', categoryIds),
-    ]);
-
-    const authorsMap = new Map((authorsRes.data as any[] || []).map(a => [a.id, a]));
-    const categoriesMap = new Map((categoriesRes.data as any[] || []).map(c => [c.id, c]));
-
-    trendingTopics = (trendingTopicsData as Topic[]).map(topic => ({
-      ...topic,
-      author: authorsMap.get(topic.author_id) || null,
-      category: categoriesMap.get(topic.category_id) || null,
-    }));
-  }
-
-  // Build query for recent topics with filters and pagination
-  let recentTopicsQuery = supabase
-    .from('topics')
-    .select('*', { count: 'exact' });
-
-  // Apply filter
-  if (currentFilter === 'solved') {
-    recentTopicsQuery = recentTopicsQuery.eq('has_solution', true);
-  } else if (currentFilter === 'unsolved') {
-    recentTopicsQuery = recentTopicsQuery.or('has_solution.is.null,has_solution.eq.false');
-  }
-
-  // Apply ordering and pagination
-  const { data: topicsData, count: totalTopics } = await recentTopicsQuery
-    .order('is_pinned', { ascending: false })
-    .order('created_at', { ascending: false })
-    .range(offset, offset + TOPICS_PER_PAGE - 1);
-
-  // Manually fetch related data
-  let recentTopics: TopicWithCategoryAndAuthor[] = [];
-  if (topicsData && topicsData.length > 0) {
-    const authorIds = [...new Set((topicsData as Topic[]).map(t => t.author_id))];
-    const categoryIds = [...new Set((topicsData as Topic[]).map(t => t.category_id))];
-
-    const [authorsRes, categoriesRes] = await Promise.all([
-      supabase.from('profiles').select('id, username, avatar_url').in('id', authorIds),
-      supabase.from('categories').select('id, name, slug, color').in('id', categoryIds),
-    ]);
-
-    const authorsMap = new Map((authorsRes.data as any[] || []).map(a => [a.id, a]));
-    const categoriesMap = new Map((categoriesRes.data as any[] || []).map(c => [c.id, c]));
-
-    recentTopics = (topicsData as Topic[]).map(topic => ({
-      ...topic,
-      author: authorsMap.get(topic.author_id) || null,
-      category: categoriesMap.get(topic.category_id) || null,
-    }));
-  }
+  // Calculate solved and unsolved counts for client-side filtering
+  const solvedCount = recentTopics?.filter((t: any) => t.has_solution === true).length || 0;
+  const unsolvedCount = recentTopics?.filter((t: any) => !t.has_solution).length || 0;
 
   const totalPages = Math.ceil((totalTopics || 0) / TOPICS_PER_PAGE);
 
@@ -263,159 +255,19 @@ export default async function ForumPage({
         </div>
       )}
 
-      {/* Recent Topics Section with Filters */}
+      {/* Recent Topics Section with Client-Side Filtering */}
       <div className="mt-8 sm:mt-12">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Sve Teme</h2>
-            <span className="text-sm text-gray-500">({totalTopics || 0})</span>
-          </div>
-
-          {/* Filters */}
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-gray-400" />
-            <div className="flex gap-1">
-              <Link href="/forum?filter=all" scroll={false}>
-                <Button
-                  variant={currentFilter === 'all' ? 'default' : 'outline'}
-                  size="sm"
-                  className="text-xs"
-                >
-                  Sve
-                </Button>
-              </Link>
-              <Link href="/forum?filter=unsolved" scroll={false}>
-                <Button
-                  variant={currentFilter === 'unsolved' ? 'default' : 'outline'}
-                  size="sm"
-                  className="text-xs"
-                >
-                  Neriješeno
-                </Button>
-              </Link>
-              <Link href="/forum?filter=solved" scroll={false}>
-                <Button
-                  variant={currentFilter === 'solved' ? 'default' : 'outline'}
-                  size="sm"
-                  className="text-xs"
-                >
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  Riješeno
-                </Button>
-              </Link>
-            </div>
-          </div>
+        <div className="flex items-center gap-2 mb-6">
+          <Clock className="w-5 h-5 text-primary" />
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Sve Teme</h2>
         </div>
 
-        <div className="space-y-2 sm:space-y-3">
-          {(recentTopics as unknown as TopicWithCategoryAndAuthor[])?.map((topic) => (
-            <Card key={topic.id} className="hover-lift cursor-pointer border-gray-200 dark:border-gray-700">
-              <CardContent className="p-3 sm:p-4">
-                <div className="space-y-2">
-                  <div className="flex items-start gap-2 flex-wrap">
-                    <span
-                      className="px-2 py-0.5 sm:py-1 text-xs font-semibold rounded flex-shrink-0"
-                      style={{
-                        backgroundColor: topic.category?.color ? topic.category.color + '20' : undefined,
-                        color: topic.category?.color || undefined,
-                      }}
-                    >
-                      {topic.category?.name}
-                    </span>
-                    {topic.is_pinned && (
-                      <span className="text-sm">📌</span>
-                    )}
-                    {(topic as any).has_solution && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                        <CheckCircle className="w-3 h-3" />
-                        Riješeno
-                      </span>
-                    )}
-                  </div>
-                  <Link
-                    href={`/forum/topic/${topic.slug}`}
-                    className="text-base sm:text-lg font-bold hover:text-primary transition-colors block line-clamp-2 text-gray-900 dark:text-white"
-                  >
-                    {topic.title}
-                  </Link>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm text-gray-500">
-                    <span className="truncate max-w-[120px] sm:max-w-none">
-                      {topic.author?.username}
-                    </span>
-                    <span className="flex items-center gap-1 flex-shrink-0">
-                      <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
-                      {topic.reply_count}
-                    </span>
-                    <span className="hidden xs:inline flex-shrink-0">
-                      {new Date(topic.created_at).toLocaleDateString('hr-HR')}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-
-          {(!recentTopics || recentTopics.length === 0) && (
-            <Card className="border-gray-200 dark:border-gray-700">
-              <CardContent className="p-8 text-center">
-                <p className="text-gray-500">Nema tema za prikaz</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-6">
-            <Link
-              href={`/forum?page=${currentPage - 1}${currentFilter !== 'all' ? `&filter=${currentFilter}` : ''}`}
-              className={currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
-            >
-              <Button variant="outline" size="sm" disabled={currentPage <= 1}>
-                Prethodna
-              </Button>
-            </Link>
-
-            <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNum = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = currentPage - 2 + i;
-                }
-                return (
-                  <Link
-                    key={pageNum}
-                    href={`/forum?page=${pageNum}${currentFilter !== 'all' ? `&filter=${currentFilter}` : ''}`}
-                  >
-                    <Button
-                      variant={currentPage === pageNum ? 'default' : 'outline'}
-                      size="sm"
-                      className="w-8 h-8 p-0"
-                    >
-                      {pageNum}
-                    </Button>
-                  </Link>
-                );
-              })}
-            </div>
-
-            <Link
-              href={`/forum?page=${currentPage + 1}${currentFilter !== 'all' ? `&filter=${currentFilter}` : ''}`}
-              className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''}
-            >
-              <Button variant="outline" size="sm" disabled={currentPage >= totalPages}>
-                Sljedeća
-              </Button>
-            </Link>
-          </div>
-        )}
+        <TopicListClient
+          topics={(recentTopics || []) as any}
+          totalCount={recentTopics?.length || 0}
+          solvedCount={solvedCount}
+          unsolvedCount={unsolvedCount}
+        />
       </div>
     </div>
   );

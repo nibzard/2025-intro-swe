@@ -4,6 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BookmarkButton } from '@/components/forum/bookmark-button';
+import { Breadcrumb } from '@/components/forum/breadcrumb';
 import { Bookmark, MessageSquare, CheckCircle } from 'lucide-react';
 
 export const metadata = {
@@ -28,7 +29,6 @@ export default async function BookmarksPage() {
     .order('created_at', { ascending: false });
 
   if (bookmarkError) {
-    console.error('Bookmarks query error:', bookmarkError);
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
@@ -44,8 +44,8 @@ export default async function BookmarksPage() {
         </div>
         <Card>
           <CardContent className="p-6">
-            <p className="text-red-600 font-mono text-sm">
-              {bookmarkError.message || 'Nepoznata greška'}
+            <p className="text-red-600 text-sm">
+              Došlo je do greške prilikom učitavanja vaših oznaka. Molimo pokušajte ponovno kasnije.
             </p>
           </CardContent>
         </Card>
@@ -53,10 +53,11 @@ export default async function BookmarksPage() {
     );
   }
 
-  // If no bookmarks, return early
-  if (!bookmarkData || bookmarkData.length === 0) {
-    const bookmarks = [];
-  } else {
+  // Initialize bookmarks array
+  let bookmarks: any[] = [];
+
+  // If we have bookmark data, fetch the related topics
+  if (bookmarkData && bookmarkData.length > 0) {
     // Get topic IDs
     const topicIds = bookmarkData.map((b: any) => b.topic_id);
 
@@ -77,17 +78,25 @@ export default async function BookmarksPage() {
       .in('id', topicIds);
 
     // Combine bookmarks with topics
-    var bookmarks = bookmarkData.map((bookmark: any) => ({
+    bookmarks = bookmarkData.map((bookmark: any) => ({
       ...bookmark,
       topics: topicsData?.find((topic: any) => topic.id === bookmark.topic_id)
     })).filter((bookmark: any) => bookmark.topics); // Only keep bookmarks with valid topics
   }
 
   // Count valid bookmarks
-  const validBookmarksCount = bookmarks?.length || 0;
+  const validBookmarksCount = bookmarks.length;
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb
+        items={[
+          { label: 'Forum', href: '/forum' },
+          { label: 'Moje oznake' },
+        ]}
+      />
+
       <div className="flex items-center gap-3">
         <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex items-center justify-center">
           <Bookmark className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />

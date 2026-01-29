@@ -1,0 +1,59 @@
+{
+  "_comment": "Local pricing overrides for LLM Answer Watcher",
+  "_description": "This file allows you to override pricing for models and define custom tool pricing not available in llm-prices.com",
+  "_updated": "2025-11-04",
+  "tools": {
+    "web_search": {
+      "_description": "OpenAI web search tool (non-preview, all models)",
+      "cost_per_1k": 10.0,
+      "_note": "Content tokens billed at model input rates (included in token usage)"
+    },
+    "web_search_gpt4o_mini": {
+      "_description": "OpenAI web search for gpt-4o-mini and gpt-4.1-mini",
+      "cost_per_1k": 10.0,
+      "fixed_tokens": 8000,
+      "_note": "Fixed 8,000 token block per call, billed at model input rate"
+    },
+    "web_search_preview_reasoning": {
+      "_description": "OpenAI web search preview for reasoning models (o1, o3 families)",
+      "cost_per_1k": 10.0,
+      "_note": "Content tokens billed at model input rates"
+    },
+    "web_search_preview_non_reasoning": {
+      "_description": "OpenAI web search preview for non-reasoning models",
+      "cost_per_1k": 25.0,
+      "free_content_tokens": true,
+      "_note": "Content tokens are FREE for this version"
+    },
+    "code_interpreter": {
+      "_description": "OpenAI code interpreter tool",
+      "cost_per_use": 0.03,
+      "_note": "$0.03 per session"
+    },
+    "file_search_storage": {
+      "_description": "OpenAI file search vector storage",
+      "cost_per_gb_per_day": 0.10,
+      "_note": "$0.10 per GB per day (first GB free)"
+    },
+    "file_search_tool": {
+      "_description": "OpenAI file search tool call (Responses API only)",
+      "cost_per_1k": 2.50,
+      "_note": "Responses API only"
+    }
+  },
+  "openai": {
+    "_comment": "Example model override - uncomment to use",
+    "_example_gpt-4o-mini": {
+      "input": 0.15,
+      "output": 0.60,
+      "input_cached": 0.075,
+      "_note": "Prices in $ per 1M tokens"
+    }
+  },
+  "anthropic": {
+    "_comment": "Example Anthropic overrides"
+  },
+  "mistral": {
+    "_comment": "Example Mistral overrides"
+  }
+}

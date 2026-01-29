@@ -1,0 +1,118 @@
+# SaaS Brand Monitoring Template
+# Daily monitoring for SaaS product mentions across LLM responses
+# Cost: ~$0.08 per run | Run daily for trend tracking
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/saas-monitoring.db"  # Dedicated database
+  max_concurrent_requests: 10
+
+  models:
+    # Primary: OpenAI with web search (current data)
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+      tools:
+        - type: "web_search"
+      tool_choice: "auto"
+
+    # Secondary: Anthropic for quality comparison
+    - provider: "anthropic"
+      model_name: "claude-3-5-haiku-20241022"
+      env_api_key: "ANTHROPIC_API_KEY"
+
+  budget:
+    enabled: true
+    max_per_run_usd: 0.50
+    warn_threshold_usd: 0.20
+
+extraction_settings:
+  extraction_model:
+    provider: "openai"
+    model_name: "gpt-4o-mini"
+    env_api_key: "OPENAI_API_KEY"
+  method: "function_calling"
+  fallback_to_regex: true
+  enable_sentiment_analysis: true
+  enable_intent_classification: true
+
+# CUSTOMIZE: Replace with your actual brands
+brands:
+  mine:
+    - "YourSaaSProduct"
+    - "YourCompany"
+    - "YourProduct.io"  # Include variations
+  competitors:
+    - "LeadingCompetitor"
+    - "SecondPlace"
+    - "EmergingThreat"
+    - "EstablishedPlayer"
+    - "NicheAlternative"
+
+# CUSTOMIZE: Replace with your category-specific queries
+intents:
+  # Generic category queries
+  - id: "best-tools-2025"
+    prompt: "What are the best [YOUR_CATEGORY] tools in 2025?"
+
+  - id: "top-platforms"
+    prompt: "What are the top [YOUR_CATEGORY] platforms?"
+
+  # Comparison queries
+  - id: "comparison"
+    prompt: "Compare the leading [YOUR_CATEGORY] solutions"
+
+  - id: "vs-competitor"
+    prompt: "YourProduct vs LeadingCompetitor comparison"
+
+  # Alternative/switching queries
+  - id: "alternatives-leader"
+    prompt: "What are the best alternatives to LeadingCompetitor?"
+
+  - id: "switching-from"
+    prompt: "I'm switching from LeadingCompetitor, what should I use?"
+
+  # Use case specific
+  - id: "for-startups"
+    prompt: "Best [YOUR_CATEGORY] for startups?"
+
+  - id: "for-enterprises"
+    prompt: "Best [YOUR_CATEGORY] for enterprise teams?"
+
+  # Feature/pricing queries
+  - id: "pricing"
+    prompt: "How much does [YOUR_CATEGORY] software cost?"
+
+  - id: "features"
+    prompt: "What features should I look for in [YOUR_CATEGORY] tools?"
+
+# Daily monitoring operations
+global_operations:
+  - id: "daily-summary"
+    description: "Generate daily monitoring summary"
+    prompt: |
+      Summarize how {brand:mine} performed in this response:
+
+      - Did we appear? {brand:appeared}
+      - Our rank: {rank:mine}
+      - Sentiment: Positive/Negative/Neutral
+      - Competitors ranked higher: {competitors:mentioned}
+
+      One sentence summary for daily report.
+    model: "gpt-4o-mini"
+
+# How to use this template:
+#
+# 1. Replace placeholder brands with your actual product/competitors
+# 2. Customize intents for your category (replace [YOUR_CATEGORY])
+# 3. Set up cron job for daily monitoring:
+#    0 9 * * * llm-answer-watcher run --config saas-brand-monitoring.yaml
+# 4. Track trends over time in SQLite database
+# 5. Export weekly reports: python code-examples/export_to_csv.py
+#
+# Metrics to track:
+# - Share of voice (your mentions / total mentions)
+# - Average rank position over time
+# - Sentiment trends
+# - Competitor positioning changes
+# - Intent classification distribution

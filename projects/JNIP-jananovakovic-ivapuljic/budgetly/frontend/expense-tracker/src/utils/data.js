@@ -1,0 +1,41 @@
+import {
+  LuLayoutDashboard,
+  LuHandCoins,
+  LuWalletMinimal,
+  LuLogOut,
+  LuBot,
+} from "react-icons/lu";
+
+
+export const SIDE_MENU_DATA = [
+  {
+    id: "01",
+    label: "Dashboard",
+    icon: LuLayoutDashboard,
+    path: "/dashboard",
+  },
+  {
+    id: "02",
+    label: "Prihod",
+    icon: LuWalletMinimal,
+    path: "/income",
+  },
+  {
+    id: "03",
+    label: "Rashod",
+    icon: LuHandCoins,
+    path: "/expense",
+  },
+  {
+    id: "04",
+    label: "AI Savjetnik",
+    icon: LuBot,
+    path: "/ai-advisor",
+  },
+  {
+    id: "06",
+    label: "Logout",
+    icon: LuLogOut,
+    path: "logout",
+  },
+];

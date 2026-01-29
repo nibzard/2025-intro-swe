@@ -1,0 +1,48 @@
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    # OpenAI with web search enabled (Responses API)
+    # NOTE: OpenAI uses 'type: "web_search"' format (typed tool specification)
+    # This differs from Google's format: 'google_search: {}' (dictionary with tool name as key)
+    # Each provider has different API requirements - config does direct passthrough
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+      system_prompt: "openai/gpt-4-default"
+      # Enable web search tool for real-time information
+      tools:
+        - type: "web_search"  # OpenAI API format
+      tool_choice: "auto"  # Let the model decide when to use web search
+
+    # OpenAI without web search for comparison
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+      system_prompt: "openai/gpt-4-default"
+      # No tools - uses model's training data only
+
+  use_llm_rank_extraction: false
+
+brands:
+  mine:
+    - "Warmly"
+    - "Warmly.io"
+
+  competitors:
+    - "Instantly"
+    - "Lemwarm"
+    - "HubSpot"
+    - "Apollo.io"
+    - "Woodpecker"
+
+intents:
+  - id: "best-email-warmup-tools"
+    prompt: "What are the best email warmup tools?"
+
+  - id: "email-warmup-comparison"
+    prompt: "Compare the top email warmup tools for improving deliverability"
+
+  - id: "sales-engagement-platforms"
+    prompt: "What are the best sales engagement platforms?"

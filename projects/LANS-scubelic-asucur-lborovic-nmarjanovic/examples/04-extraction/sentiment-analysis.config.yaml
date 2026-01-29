@@ -1,0 +1,66 @@
+# Sentiment Analysis Example
+# Track positive/negative/neutral sentiment for each brand mention
+# Cost: ~$0.006 per run (sentiment extracted with function calling)
+
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  models:
+    - provider: "openai"
+      model_name: "gpt-4o-mini"
+      env_api_key: "OPENAI_API_KEY"
+
+# Extraction settings with sentiment analysis enabled
+extraction_settings:
+  extraction_model:
+    provider: "openai"
+    model_name: "gpt-4o-mini"
+    env_api_key: "OPENAI_API_KEY"
+    system_prompt: "openai/extraction-default"
+
+  method: "function_calling"
+  fallback_to_regex: true
+  min_confidence: 0.7
+
+  # FOCUS: Enable sentiment analysis
+  # For each brand mention, extracts:
+  # - sentiment: positive, negative, neutral
+  # - mention_context: Surrounding text for context
+  enable_sentiment_analysis: true
+
+  # Intent classification also enabled (optional)
+  enable_intent_classification: false
+
+brands:
+  mine: ["YourBrand", "YourProduct"]
+  competitors: ["CompetitorA", "CompetitorB", "CompetitorC"]
+
+intents:
+  - id: "user-reviews"
+    prompt: "What do users say about project management tools?"
+
+  - id: "best-tools"
+    prompt: "What are the best project management platforms?"
+
+  - id: "problems"
+    prompt: "What are common problems with project management software?"
+
+# Sentiment analysis output:
+# Stored in SQLite table: mentions
+# Fields:
+# - sentiment: positive/negative/neutral
+# - mention_context: Text snippet around mention
+#
+# Example queries:
+# - "YourBrand is the best tool" → positive
+# - "YourBrand has poor support" → negative
+# - "YourBrand is an option" → neutral
+#
+# Use cases:
+# - Track sentiment trends over time
+# - Identify negative brand associations
+# - Compare sentiment vs competitors
+# - Alert on negative sentiment spikes
+#
+# Requires function calling extraction (not available with regex-only)

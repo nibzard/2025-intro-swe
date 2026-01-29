@@ -1,0 +1,63 @@
+run_settings:
+  output_dir: "./output"
+  sqlite_db_path: "./output/watcher.db"
+
+  # Maximum concurrent API requests (default: 10)
+  # Conservative limit respects provider rate limits while enabling parallelism
+  # Based on research: Gemini ~3 per key
+  # Increase for higher quotas, decrease if hitting rate limits
+  max_concurrent_requests: 10
+
+  models:
+    # Google Gemini with Google Search grounding
+    - provider: "google"
+      model_name: "models/gemini-2.5-flash"
+      env_api_key: "GEMINI_API_KEY"
+      system_prompt: "google/gemini-grounding"
+      tools:
+        - google_search: {}  # Google API format for Search grounding
+
+  use_llm_rank_extraction: false
+
+# Extraction settings (optional - enables function calling for better accuracy)
+# If not specified, defaults to regex-based extraction (backward compatible)
+extraction_settings:
+  extraction_model:
+    provider: "google"
+    model_name: "models/gemini-2.5-flash"  # Fast + cheap model optimized for extraction
+    env_api_key: "GEMINI_API_KEY"
+    system_prompt: "google/default"
+
+  # Extraction method: function_calling (recommended), regex, or hybrid
+  method: "function_calling"
+
+  # Fall back to regex if function calling fails
+  fallback_to_regex: true
+
+  # Minimum confidence threshold (0.0-1.0) for accepting function results
+  min_confidence: 0.7
+
+  # Extract sentiment and context for each brand mention (default: true)
+  enable_sentiment_analysis: true
+
+  # Classify user query intent before extraction (default: true)
+  enable_intent_classification: true
+
+brands:
+  mine:
+    - "Lemwarm"
+    - "Lemlist"
+
+  competitors:
+    - "Instantly"
+    - "Apollo.io"
+    - "Woodpecker"
+    - "Mailwarm"
+    - "Warmup Inbox"
+
+intents:
+  - id: "best-email-warmup-tools"
+    prompt: "What are the best email warmup tools?"
+
+  - id: "email-warmup-comparison"
+    prompt: "Compare the top email warmup tools for improving deliverability"
