@@ -36,7 +36,7 @@
 * **Description:** RESTful API za pretragu i preporuke klasične hip hop glazbe (1980-2000)
 
 
-### 7. SnapNStore - Digital Receipt Manager
+### 6. SnapNStore - Digital Receipt Manager
 * **Team:** SnapNStore - SnapNStore
 * **Folder:** `SnapNStore/`
 * **Status:** In Progress
@@ -82,12 +82,7 @@
 * **Status:** In Progress
 * **Description:** Aplikacija za brojanje kalorija pomoću slike ili ručnog unosa hrane
 
-### 7. TuneBuddy
-* **Team:** KMB - Karmen Grubić & Matea Begonja & Barbara Jezidžić
-* **Folder:** `KMB-kgrubic-mbegonja-bjezidzic/`
-* **Status:** In Progress
-* **Description:** Connect through music
-### 8. MateSfera
+### 7. MateSfera
 * **Team:** 404 - Andrea Težak & Tamara Višić
 * **Folder:** `404-atezak-tvisic/`
 * **Status:** In Progress
@@ -140,12 +135,17 @@
 * **Status:** In Progress
 * **Description:** Online forum za studente svih sveučilišta u Hrvatskoj s mogućnošću stvaranja tema i diskusija
 
-### 6. BookSeeker
+### 8. BookSeeker
 * **Team:** Carla Bajić - Carla Bajić
 * **Folder:** `BookSeeker-carla3791/`
 * **Status:** In Progress
 * **Description:** BookSeeker is a personal digital library and an intelligent book search engine. Users can search for books based on remembering the plot, characters, or details, while the app organizes and keeps track of all selected books in a private library.  
 
+### 9. TuneBuddy
+* **Team:** KMB - Karmen Grubić & Matea Begonja & Barbara Jezidžić
+* **Folder:** `KMB-kgrubic-mbegonja-bjezidzic/`
+* **Status:** In Progress
+* **Description:** Connect through music
 ---
 
 ## Statistics
