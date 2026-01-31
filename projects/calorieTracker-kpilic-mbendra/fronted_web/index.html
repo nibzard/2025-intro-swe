@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-
+    
     <div id="auth-overlay" class="modal-overlay">
         <div class="modal-content auth-box">
             <h2>Dobrodošli</h2>
@@ -82,54 +82,81 @@
                         <option>Užina</option>
                     </select>
                     <button id="analyze-btn" class="secondary-btn">Skeniraj AI-jem</button>
+                    <div id="loading-spinner" style="display: none; color: #22c55e; margin-top: 10px;">
+                    <i class="fas fa-spinner fa-spin"></i> Analiziram sliku...
+                    </div>
                 </div>
                 <div class="date-picker">
                     <input type="date" id="date-picker" onchange="loadUserMeals()">
                 </div>
                 <button onclick="obrisiSveZaDanas()" style="background-color: #ff4444; color: white;">
-    🗑️ Isprazni cijeli dan
-</button>
+                        🗑️ Isprazni cijeli dan
+                </button>
                 
                 <button id="back-to-profile-btn" style="background:none; color:#888; border:none; cursor:pointer;">← Promijeni cilj</button>
             </div>
 
             <div class="diary-view">
                 <div class="stats-bar card">
-                    <div class="stat">
-                        <span class="label">Pojedeno</span>
-                        <span id="kcal-val" class="value">0</span>
-                    </div>
-                    <div class="stat">
-                        <span class="label">Preostalo</span>
-                        <span id="remain-val" class="value">0</span>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="macrosChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="meal-logs">
-                    <div class="log-section">
-                        <h5>🌅 Doručak</h5>
-                        <ul id="log-Doručak"></ul>
-                    </div>
-                    <div class="log-section">
-                        <h5>☀️ Ručak</h5>
-                        <ul id="log-Ručak"></ul>
-                    </div>
-                    <div class="log-section">
-                        <h5>🌙 Večera</h5>
-                        <ul id="log-Večera"></ul>
-                    </div>
-                    <div class="log-section">
-                        <h5>🌅 Užina</h5>
-                        <ul id="log-Užina"></ul>
-                    </div>
+                    <div class="calorie-progress-container">
+            <div class="calorie-circle">
+                <div class="inner-circle">
+                    <span id="calories-left-number">0</span>
+                    <small>kcal preostalo</small>
                 </div>
             </div>
-
+        </div>
+<div class="macros-stats-container" style="margin-top: 30px; border-top: 1px solid #334155; pt: 20px;">
+    <h4 style="text-align: center; color: #94a3b8; margin-bottom: 15px;">Balans Nutrijenata</h4>
+    
+    <div id="macros-circle" class="macros-circle">
+        <div class="inner-circle-macros">
+            <div style="text-align: center;">
+                <span id="total-macros-weight" style="font-size: 1.5rem; font-weight: 800; color: #fff;">0</span>
+                <small style="display: block; color: #64748b;">KCAL UNESENO</small>
+            </div>
         </div>
     </div>
+
+    <div class="macros-legend">
+        <div class="leg-item">
+            <span class="dot p-color"></span> 
+            <span>P: <strong id="p-val-leg">0</strong>g</span>
+        </div>
+        <div class="leg-item">
+            <span class="dot c-color"></span> 
+            <span>U: <strong id="c-val-leg">0</strong>g</span>
+        </div>
+        <div class="leg-item">
+            <span class="dot f-color"></span> 
+            <span>M: <strong id="f-val-leg">0</strong>g</span>
+        </div>
+    </div>
+</div>
+                    
+<div class="meal-logs">
+    <div class="log-section">
+        <h5>🌅 Doručak</h5>
+        <ul id="log-Doručak"></ul>
+    </div>
+    <div class="log-section">
+        <h5>☀️ Ručak</h5>
+        <ul id="log-Ručak"></ul>
+    </div>
+    <div class="log-section">
+        <h5>🌙 Večera</h5>
+            <ul id="log-Večera"></ul>
+    </div>
+    <div class="log-section">
+        <h5>🌅 Užina</h5>
+        <ul id="log-Užina"></ul>
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+<div id="toast" class="toast">Obrok uspješno obrisan!</div>
 
     <script src="script.js"></script>
 </body>
