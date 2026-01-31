@@ -3,7 +3,7 @@ import { useWallet } from '../context/WalletContext';
 import { CreditCard, Wallet as WalletIcon, X, Check } from 'lucide-react';
 
 const Wallet = () => {
-    const { balance, addToBalance, subtractFromBalance, buyTicket } = useWallet();
+    const { balance, addToBalance, buyTicket } = useWallet();
     const [showTopUp, setShowTopUp] = useState(false);
     const [selectedAmount, setSelectedAmount] = useState(10);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('google');
