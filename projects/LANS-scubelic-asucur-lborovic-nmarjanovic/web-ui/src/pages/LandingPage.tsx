@@ -21,7 +21,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 
-export default function LandingPage() {
+export default function LandingPage({ theme }) {
   const navigate = useNavigate();
 
   const features = [
@@ -93,17 +93,23 @@ export default function LandingPage() {
     { step: '4', title: 'Analyze', description: 'Track trends and export reports for your team' },
   ];
 
+  const glassCardClass = theme === 'dark'
+    ? 'glass-card'
+    : 'bg-white/60 backdrop-blur-md border border-gray-200/50 shadow-sm';
+
   return (
-    <div className="min-h-screen bg-navy-950">
+    <div className={`min-h-screen ${theme === 'dark' ? 'bg-navy-950 text-white' : 'bg-gray-50 text-gray-800'}`}>
       {/* Background effects */}
-      <div className="fixed inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-accent-500/5 pointer-events-none" />
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-radial from-primary-500/10 to-transparent blur-3xl" />
-        <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-radial from-accent-500/10 to-transparent blur-3xl" />
-      </div>
+      <div className={`fixed inset-0 ${theme === 'dark' ? 'bg-gradient-to-br from-primary-500/5 via-transparent to-accent-500/5' : 'bg-gray-100'} pointer-events-none`} />
+      {theme === 'dark' && (
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-radial from-primary-500/10 to-transparent blur-3xl" />
+          <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-radial from-accent-500/10 to-transparent blur-3xl" />
+        </div>
+      )}
 
       {/* Navigation */}
-      <nav className="relative border-b border-navy-800/50 bg-navy-900/50 backdrop-blur-xl">
+      <nav className={`relative border-b ${theme === 'dark' ? 'border-navy-800/50 bg-navy-900/50' : 'border-gray-200/50 bg-white/50'} backdrop-blur-xl`}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -111,8 +117,8 @@ export default function LandingPage() {
                 <Search className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">LLM Answer Watcher</h1>
-                <p className="text-xs text-navy-400">Brand Intelligence for the AI Era</p>
+                <h1 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>LLM Answer Watcher</h1>
+                <p className={`text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'}`}>Brand Intelligence for the AI Era</p>
               </div>
             </div>
 
@@ -121,7 +127,7 @@ export default function LandingPage() {
                 href="https://github.com/nibzard/llm-answer-watcher"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn-ghost text-sm"
+                className={`btn-ghost text-sm ${theme === 'dark' ? 'text-navy-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
               >
                 Documentation
               </a>
@@ -138,13 +144,13 @@ export default function LandingPage() {
       <section className="relative pt-20 pb-32 px-6">
         <div className="max-w-5xl mx-auto text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-500/10 border border-primary-500/20 mb-8 animate-fade-in-down">
+          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${theme === 'dark' ? 'bg-primary-500/10 border-primary-500/20' : 'bg-primary-100/50 border-primary-200/50'} mb-8 animate-fade-in-down`}>
             <Sparkles className="w-4 h-4 text-primary-400 animate-pulse" />
-            <span className="text-sm text-primary-300">Now with Google Gemini & Groq</span>
+            <span className={`text-sm ${theme === 'dark' ? 'text-primary-300' : 'text-primary-600'}`}>Now with Google Gemini & Groq</span>
           </div>
 
           {/* Headline */}
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight animate-fade-in-up">
+          <h1 className={`text-5xl md:text-7xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-6 leading-tight animate-fade-in-up`}>
             Know What AI Says
             <br />
             <span className="animated-gradient-text">
@@ -153,10 +159,10 @@ export default function LandingPage() {
           </h1>
 
           {/* Subheadline */}
-          <p className="text-xl md:text-2xl text-navy-400 mb-8 max-w-3xl mx-auto leading-relaxed animate-fade-in-up animation-delay-200" style={{ opacity: 0, animationFillMode: 'forwards' }}>
+          <p className={`text-xl md:text-2xl ${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'} mb-8 max-w-3xl mx-auto leading-relaxed animate-fade-in-up animation-delay-200`} style={{ opacity: 0, animationFillMode: 'forwards' }}>
             The first brand monitoring platform built for the age of AI search.
             <br />
-            <span className="text-navy-300">
+            <span className={`${theme === 'dark' ? 'text-navy-300' : 'text-gray-700'}`}>
       Track how Gemini and Groq recommend you vs. competitors.
             </span>
           </p>
@@ -192,11 +198,11 @@ export default function LandingPage() {
             ].map((stat, i) => (
               <div
                 key={i}
-                className={`glass-card p-4 hover-lift card-hover-glow animate-scale-in animation-delay-${(i + 5) * 100}`}
+                className={`${glassCardClass} p-4 hover-lift card-hover-glow animate-scale-in animation-delay-${(i + 5) * 100}`}
                 style={{ opacity: 0, animationFillMode: 'forwards' }}
               >
-                <div className="text-2xl font-bold text-white">{stat.value}</div>
-                <div className="text-sm text-navy-400">{stat.label}</div>
+                <div className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stat.value}</div>
+                <div className={`text-sm ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'}`}>{stat.label}</div>
               </div>
             ))}
           </div>
@@ -204,16 +210,16 @@ export default function LandingPage() {
       </section>
 
       {/* Problem Section */}
-      <section className="relative py-20 px-6 border-t border-navy-800/50">
+      <section className={`relative py-20 px-6 border-t ${theme === 'dark' ? 'border-navy-800/50' : 'border-gray-200/50'}`}>
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+          <h2 className={`text-3xl md:text-4xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-6`}>
             When customers ask AI for recommendations,
             <br />
             <span className="text-primary-400">is your brand in the answer?</span>
           </h2>
-          <p className="text-lg text-navy-400 leading-relaxed">
+          <p className={`text-lg ${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'} leading-relaxed`}>
             Search is changing. Millions of purchase decisions now start with{' '}
-            <span className="text-navy-200">"Hey ChatGPT, what's the best..."</span> instead of a Google search.
+            <span className={`${theme === 'dark' ? 'text-navy-200' : 'text-gray-700'}`}>"Hey ChatGPT, what's the best..."</span> instead of a Google search.
             If your brand isn't appearing in AI-generated recommendations, you're invisible to a growing segment of
             your market.
           </p>
@@ -225,24 +231,24 @@ export default function LandingPage() {
       </section>
 
       {/* Features Grid */}
-      <section className="relative py-20 px-6 border-t border-navy-800/50">
+      <section className={`relative py-20 px-6 border-t ${theme === 'dark' ? 'border-navy-800/50' : 'border-gray-200/50'}`}>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Key Features</h2>
-            <p className="text-lg text-navy-400">Everything you need to monitor your AI visibility</p>
+            <h2 className={`text-3xl md:text-4xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-4`}>Key Features</h2>
+            <p className={`text-lg ${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'}`}>Everything you need to monitor your AI visibility</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, i) => (
               <div
                 key={i}
-                className="glass-card p-6 hover-lift card-hover-glow group"
+                className={`${glassCardClass} p-6 hover-lift card-hover-glow group`}
               >
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500/20 to-accent-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <div className={`w-12 h-12 rounded-xl ${theme === 'dark' ? 'bg-gradient-to-br from-primary-500/20 to-accent-500/20' : 'bg-gradient-to-br from-primary-100 to-accent-100'} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                   <feature.icon className="w-6 h-6 text-primary-400 group-hover-spin" />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2 text-gradient-hover">{feature.title}</h3>
-                <p className="text-navy-400 text-sm leading-relaxed">{feature.description}</p>
+                <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-2 text-gradient-hover`}>{feature.title}</h3>
+                <p className={`${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'} text-sm leading-relaxed`}>{feature.description}</p>
               </div>
             ))}
           </div>
@@ -250,11 +256,11 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works */}
-      <section className="relative py-20 px-6 border-t border-navy-800/50 bg-navy-900/30">
+      <section className={`relative py-20 px-6 border-t ${theme === 'dark' ? 'border-navy-800/50 bg-navy-900/30' : 'border-gray-200/50 bg-gray-100/50'}`}>
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">How It Works</h2>
-            <p className="text-lg text-navy-400">Get started in minutes, not days</p>
+            <h2 className={`text-3xl md:text-4xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-4`}>How It Works</h2>
+            <p className={`text-lg ${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'}`}>Get started in minutes, not days</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -263,10 +269,10 @@ export default function LandingPage() {
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-white animate-float group-hover:animate-none group-hover:scale-110 transition-transform" style={{ animationDelay: `${i * 200}ms` }}>
                   {step.step}
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">{step.title}</h3>
-                <p className="text-sm text-navy-400">{step.description}</p>
+                <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-2`}>{step.title}</h3>
+                <p className={`text-sm ${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'}`}>{step.description}</p>
                 {i < steps.length - 1 && (
-                  <ArrowRight className="hidden md:block absolute top-8 -right-4 w-6 h-6 text-navy-600 animate-pulse" />
+                  <ArrowRight className={`hidden md:block absolute top-8 -right-4 w-6 h-6 ${theme === 'dark' ? 'text-navy-600' : 'text-gray-300'} animate-pulse`} />
                 )}
               </div>
             ))}
@@ -275,22 +281,22 @@ export default function LandingPage() {
       </section>
 
       {/* Use Cases */}
-      <section className="relative py-20 px-6 border-t border-navy-800/50">
+      <section className={`relative py-20 px-6 border-t ${theme === 'dark' ? 'border-navy-800/50' : 'border-gray-200/50'}`}>
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Built for Teams Who Take AI Seriously</h2>
-            <p className="text-lg text-navy-400">From marketing to product to intelligence</p>
+            <h2 className={`text-3xl md:text-4xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-4`}>Built for Teams Who Take AI Seriously</h2>
+            <p className={`text-lg ${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'}`}>From marketing to product to intelligence</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {useCases.map((useCase, i) => (
-              <div key={i} className="glass-card p-6 flex items-start gap-4 hover-lift card-hover-glow group">
-                <div className="w-12 h-12 rounded-xl bg-accent-500/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+              <div key={i} className={`${glassCardClass} p-6 flex items-start gap-4 hover-lift card-hover-glow group`}>
+                <div className={`w-12 h-12 rounded-xl ${theme === 'dark' ? 'bg-accent-500/20' : 'bg-accent-100'} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
                   <useCase.icon className="w-6 h-6 text-accent-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-1 text-gradient-hover">{useCase.role}</h3>
-                  <p className="text-navy-400 text-sm">{useCase.description}</p>
+                  <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-1 text-gradient-hover`}>{useCase.role}</h3>
+                  <p className={`${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'} text-sm`}>{useCase.description}</p>
                 </div>
               </div>
             ))}
@@ -299,26 +305,26 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section className="relative py-20 px-6 border-t border-navy-800/50 bg-navy-900/30">
+      <section className={`relative py-20 px-6 border-t ${theme === 'dark' ? 'border-navy-800/50 bg-navy-900/30' : 'border-gray-200/50 bg-gray-100/50'}`}>
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Pricing That Scales With You</h2>
-            <p className="text-lg text-navy-400">Start free, upgrade when you need more</p>
+            <h2 className={`text-3xl md:text-4xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-4`}>Pricing That Scales With You</h2>
+            <p className={`text-lg ${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'}`}>Start free, upgrade when you need more</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Open Source */}
-            <div className="glass-card p-8 hover-lift card-hover-glow">
-              <h3 className="text-xl font-bold text-white mb-2">Open Source</h3>
-              <div className="text-3xl font-bold text-white mb-1">
+            <div className={`${glassCardClass} p-8 hover-lift card-hover-glow`}>
+              <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-2`}>Open Source</h3>
+              <div className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-1`}>
                 Free
-                <span className="text-sm font-normal text-navy-400 ml-2">forever</span>
+                <span className={`text-sm font-normal ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'} ml-2`}>forever</span>
               </div>
-              <p className="text-navy-400 text-sm mb-6">Self-hosted, full control</p>
+              <p className={`text-sm mb-6 ${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'}`}>Self-hosted, full control</p>
               <ul className="space-y-3 mb-8">
                 {['Unlimited queries', 'All LLM providers', 'Local SQLite storage', 'CLI & JSON output', 'Community support'].map(
                   (item, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-navy-300">
+                    <li key={i} className={`flex items-center gap-2 text-sm ${theme === 'dark' ? 'text-navy-300' : 'text-gray-700'}`}>
                       <CheckCircle className="w-4 h-4 text-primary-400 shrink-0" />
                       {item}
                     </li>
@@ -331,16 +337,16 @@ export default function LandingPage() {
             </div>
 
             {/* Pro */}
-            <div className="glass-card p-8 border-primary-500/50 animate-pulse-glow relative hover-lift">
+            <div className={`${glassCardClass} p-8 border-primary-500/50 animate-pulse-glow relative hover-lift`}>
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary-500 rounded-full text-xs font-medium text-white animate-pulse">
                 Popular
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Pro</h3>
-              <div className="text-3xl font-bold text-white mb-1">
+              <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-2`}>Pro</h3>
+              <div className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-1`}>
                 $49
-                <span className="text-sm font-normal text-navy-400 ml-2">/month</span>
+                <span className={`text-sm font-normal ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'} ml-2`}>/month</span>
               </div>
-              <p className="text-navy-400 text-sm mb-6">Managed infrastructure</p>
+              <p className={`text-sm mb-6 ${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'}`}>Managed infrastructure</p>
               <ul className="space-y-3 mb-8">
                 {[
                   'Everything in Free',
@@ -349,7 +355,7 @@ export default function LandingPage() {
                   'Email alerts',
                   'Priority support',
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-navy-300">
+                  <li key={i} className={`flex items-center gap-2 text-sm ${theme === 'dark' ? 'text-navy-300' : 'text-gray-700'}`}>
                     <CheckCircle className="w-4 h-4 text-primary-400 shrink-0" />
                     {item}
                   </li>
@@ -359,10 +365,10 @@ export default function LandingPage() {
             </div>
 
             {/* Enterprise */}
-            <div className="glass-card p-8 hover-lift card-hover-glow">
-              <h3 className="text-xl font-bold text-white mb-2">Enterprise</h3>
-              <div className="text-3xl font-bold text-white mb-1">Custom</div>
-              <p className="text-navy-400 text-sm mb-6">Tailored for your needs</p>
+            <div className={`${glassCardClass} p-8 hover-lift card-hover-glow`}>
+              <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-2`}>Enterprise</h3>
+              <div className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-1`}>Custom</div>
+              <p className={`text-sm mb-6 ${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'}`}>Tailored for your needs</p>
               <ul className="space-y-3 mb-8">
                 {[
                   'Everything in Pro',
@@ -371,7 +377,7 @@ export default function LandingPage() {
                   'Dedicated success manager',
                   'SLA guarantees',
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-navy-300">
+                  <li key={i} className={`flex items-center gap-2 text-sm ${theme === 'dark' ? 'text-navy-300' : 'text-gray-700'}`}>
                     <CheckCircle className="w-4 h-4 text-accent-400 shrink-0" />
                     {item}
                   </li>
@@ -384,18 +390,18 @@ export default function LandingPage() {
       </section>
 
       {/* CLI Demo */}
-      <section className="relative py-20 px-6 border-t border-navy-800/50">
+      <section className={`relative py-20 px-6 border-t ${theme === 'dark' ? 'border-navy-800/50' : 'border-gray-200/50'}`}>
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Get Started in Minutes</h2>
-            <p className="text-lg text-navy-400">One command to install, one command to run</p>
+            <h2 className={`text-3xl md:text-4xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-4`}>Get Started in Minutes</h2>
+            <p className={`text-lg ${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'}`}>One command to install, one command to run</p>
           </div>
 
-          <div className="glass-card p-6 font-mono text-sm hover-lift">
+          <div className={`${glassCardClass} p-6 font-mono text-sm hover-lift`}>
             <div className="flex items-center gap-2 mb-4 text-navy-400">
-              <div className="w-3 h-3 rounded-full bg-primary-500 animate-pulse"></div>
-              <div className="w-3 h-3 rounded-full bg-accent-500"></div>
-              <div className="w-3 h-3 rounded-full bg-accent-800"></div>
+              <div className="w-3 h-3 rounded-full bg-red-500"></div>
+              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
               <span className="ml-2">Terminal</span>
             </div>
             <div className="space-y-2 text-navy-300">
@@ -413,14 +419,14 @@ export default function LandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="relative py-24 px-6 border-t border-navy-800/50 bg-gradient-to-b from-navy-900/50 to-navy-950">
+      <section className={`relative py-24 px-6 border-t ${theme === 'dark' ? 'border-navy-800/50 bg-gradient-to-b from-navy-900/50 to-navy-950' : 'border-gray-200/50 bg-gradient-to-b from-gray-100/50 to-white'}`}>
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          <h2 className={`text-4xl md:text-5xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-6`}>
             Stop guessing.
             <br />
             <span className="animated-gradient-text">Start monitoring.</span>
           </h2>
-          <p className="text-xl text-navy-400 mb-8">
+          <p className={`text-xl ${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'} mb-8`}>
             In a world where AI answers questions, the brands that get mentioned win.
           </p>
           <button onClick={() => navigate('/app')} className="btn-primary text-lg px-10 py-5 animate-pulse-glow hover-lift">
@@ -428,22 +434,22 @@ export default function LandingPage() {
             Get Started Free
             <ArrowRight className="w-5 h-5 ml-2 inline" />
           </button>
-          <p className="text-sm text-navy-500 mt-4">No credit card required. BYOK - Bring your own API keys.</p>
+          <p className={`text-sm ${theme === 'dark' ? 'text-navy-500' : 'text-gray-400'} mt-4`}>No credit card required. BYOK - Bring your own API keys.</p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="relative border-t border-navy-800/50 bg-navy-900/30">
+      <footer className={`relative border-t ${theme === 'dark' ? 'border-navy-800/50 bg-navy-900/30' : 'border-gray-200/50 bg-gray-100/50'}`}>
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
                 <Search className="w-4 h-4 text-white" />
               </div>
-              <span className="text-navy-400">LLM Answer Watcher v0.2.0</span>
+              <span className={`${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'}`}>LLM Answer Watcher v0.2.0</span>
             </div>
 
-            <div className="flex items-center gap-6 text-sm text-navy-500">
+            <div className={`flex items-center gap-6 text-sm ${theme === 'dark' ? 'text-navy-500' : 'text-gray-400'}`}>
               <span className="flex items-center gap-1">
                 <DollarSign className="w-4 h-4" /> BYOK
               </span>
@@ -460,18 +466,18 @@ export default function LandingPage() {
                 href="https://github.com/nibzard/llm-answer-watcher"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-navy-400 hover:text-navy-200 transition-colors"
+                className={`${theme === 'dark' ? 'text-navy-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors`}
               >
                 GitHub
               </a>
-              <a href="#" className="text-navy-400 hover:text-navy-200 transition-colors">
+              <a href="#" className={`${theme === 'dark' ? 'text-navy-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors`}>
                 Documentation
               </a>
             </div>
           </div>
 
-          <div className="mt-8 pt-8 border-t border-navy-800/50 text-center">
-            <p className="text-navy-500 text-sm italic">
+          <div className={`mt-8 pt-8 border-t ${theme === 'dark' ? 'border-navy-800/50' : 'border-gray-200/50'} text-center`}>
+            <p className={`text-sm italic ${theme === 'dark' ? 'text-navy-500' : 'text-gray-400'}`}>
               "In a world where AI answers questions, the brands that get mentioned win. LLM Answer Watcher is the
               analytics layer the AI age demands."
             </p>
