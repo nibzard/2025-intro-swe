@@ -1,41 +1,49 @@
-# 🍽️ Calorie Tracker
+# CalorieTracker - AI-Powered Nutrition Tracker
 
-## 📖 Uvod
-U današnje vrijeme mnogi ljudi žele pratiti unos kalorija i makronutrijenata, ali ručno bilježenje često oduzima vrijeme.  
-Naš **Calorie Tracker** omogućuje korisniku da jednostavno **uslika svoj obrok**, a aplikacija automatski **prepozna hranu** i izračuna **kalorije i makronutrijente**.
+Aplikacija za personalizirano praćenje prehrane koja koristi Flask backend, Supabase za bazu podataka i autentifikaciju, te OpenAI za pametnu analizu obroka.
 
-## ❓ Problem
-Praćenje prehrane zahtijeva mnogo truda, vremena i točnih informacija o namirnicama.  
-Većina postojećih aplikacija zahtijeva ručni unos hrane, što korisnike često demotivira.
+## Preduvjeti
 
-## 💡 Hipoteza
-Ako korisniku omogućimo da **snimi fotografiju obroka**, te aplikacija automatski prepozna i izračuna nutritivne vrijednosti, tada će:
-- praćenje prehrane postati jednostavnije i brže,
-- korisnici biti skloniji redovitom korištenju aplikacije,
-- točnost unosa biti veća nego kod ručnog unosa.
+* **Python** (v3.9+)
+* **pip** (Python package manager)
+* **Supabase račun** (URL i Anon Key)
+* **OpenAI API ključ** (za analizu unosa hrane)
 
-## 🧠 Metodologija
-Projekt koristi **strojno učenje** i **računalni vid** (computer vision) za detekciju hrane.  
-Nakon prepoznavanja, koristi se baza podataka (npr. [USDA FoodData Central](https://fdc.nal.usda.gov/)) za dohvat nutritivnih vrijednosti.
+## Tehnologije
 
-## 🖼️ Dijagram rada sustava
-<img width="1414" height="2000" alt="POČETAK" src="https://github.com/user-attachments/assets/423ab520-a339-468f-99f6-37917c3a658b" />
+### Backend
+* **Flask**: Web framework za API rute.
+* **Supabase**: Relacijska baza podataka i User Management.
+* **OpenAI SDK**: Za automatsku procjenu kalorija iz prirodnog jezika.
+* **Werkzeug**: Sigurnosno hashiranje lozinki.
 
+### Frontend
+* **HTML5 / CSS3 / JavaScript** (Vanilla JS).
+* **Chart.js**: Vizualni prikaz dnevnog i tjednog napretka (grafovi).
+* **Fetch API**: Komunikacija s Flask backendom.
 
+## Pokretanje projekta
 
-⚙️**Tehnologije:**
---Python
---Flask/FastAPI
---React/HTML/CSS
---GitHub
+### 1. Backend postavljanje
 
-📊**Rezultati:**
-Model točno prepoznaje osnovne vrste hrane te procjenjuje kalorije s prihvatljivom pogreškom
+Pozicioniraj se u backend direktorij:
+cd backend_api
 
-🧾 **Zaključak:**
-Ovaj projekt pokazuje kako kombinacija računalnog vida i nutricionističkih podataka može pomoći ljudima da jednostavno i točno prate svoj dnevni unos kalorija
+Instaliraj potrebne biblioteke: 
+pip install -r requirements.txt
 
-👩‍💻 **Autori:**
-Katarina Pilić
-Marino Bendra
+Kreiraj .env datoteku u backend_api folderu i dodaj svoje ključeve:
+supabase_url="TVOJ_SUPABASE_URL"
+supabase_key="TVOJ_SUPABASE_ANON_KEY"
+api_key_os="TVOJ_OPENAI_API_KEY"
+
+Pokreni server:
+python app.py
+
+### 2. Frontend postavljanje
+
+Pozicioniraj se u frontend direktorij
+
+Otvori fronted_web/index.html pomoću Live Server ekstenzije u VS Code-u.
+
 
