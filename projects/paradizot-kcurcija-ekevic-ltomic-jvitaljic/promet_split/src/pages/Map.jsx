@@ -1,7 +1,7 @@
-import TrackingApp from '../components/mapa/apk za pracenje/TrackingApp.jsx';
+import BusMap from '../components/mapa/goggle_maps_mock/BusMap.jsx';
 
 const MapPage = () => {
-    return <TrackingApp />;
+    return <BusMap />;
 };
 
 export default MapPage;
