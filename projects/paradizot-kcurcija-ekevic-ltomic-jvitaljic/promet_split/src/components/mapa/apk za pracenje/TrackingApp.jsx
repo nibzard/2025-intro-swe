@@ -5,7 +5,11 @@ import L from 'leaflet';
 import { Bus, ChevronLeft } from 'lucide-react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-const API_BASE = 'http://localhost:5000/api';
+// Support both local development and Codespaces
+const API_BASE = 
+  typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? 'http://localhost:5000/api'
+    : `http://${window.location.hostname}:5000/api`;
 
 // Custom Bus Icon
 const busIconMarkup = renderToStaticMarkup(
