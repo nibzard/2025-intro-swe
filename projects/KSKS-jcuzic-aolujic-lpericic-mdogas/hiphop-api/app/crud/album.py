@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from app.models.album import Album
 from app.schemas.album import AlbumCreate, AlbumUpdate
 from typing import Optional
@@ -10,7 +11,8 @@ def get_albums(db: Session, skip: int = 0, limit: int = 20,
                genre: Optional[str] = None,
                artist: Optional[str] = None,
                year: Optional[int] = None,
-               region: Optional[str] = None):
+               region: Optional[str] = None,
+               random_order: bool = False):
     query = db.query(Album)
 
     if genre:
@@ -21,6 +23,9 @@ def get_albums(db: Session, skip: int = 0, limit: int = 20,
         query = query.filter(Album.year == year)
     if region:
         query = query.filter(Album.region == region)
+
+    if random_order:
+        query = query.order_by(func.random())
 
     return query.offset(skip).limit(limit).all()
 
