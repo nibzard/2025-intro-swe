@@ -6,10 +6,29 @@ import { Bus, ChevronLeft } from 'lucide-react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 // Support both local development and Codespaces
-const API_BASE = 
-  typeof window !== 'undefined' && window.location.hostname === 'localhost'
-    ? 'http://localhost:5000/api'
-    : `http://${window.location.hostname}:5000/api`;
+const getApiBase = () => {
+  if (typeof window === 'undefined') return 'http://localhost:5000/api';
+  
+  const { hostname, protocol } = window.location;
+  
+  // Local development
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:5000/api';
+  }
+  
+  // GitHub Codespaces - use the same protocol (https) and replace port in URL
+  // Codespaces URLs look like: https://username-repository-port.preview.app.github.dev
+  if (hostname.includes('github.dev') || hostname.includes('githubpreview.dev')) {
+    // Replace the main app port with server port (5000) in the hostname
+    const serverHostname = hostname.replace(/-\d+\./, '-5000.');
+    return `${protocol}//${serverHostname}/api`;
+  }
+  
+  // Fallback for other environments
+  return `${protocol}//${hostname}:5000/api`;
+};
+
+const API_BASE = getApiBase();
 
 // Custom Bus Icon
 const busIconMarkup = renderToStaticMarkup(
