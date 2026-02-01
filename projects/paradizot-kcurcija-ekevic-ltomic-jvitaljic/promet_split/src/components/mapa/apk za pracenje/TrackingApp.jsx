@@ -1,34 +1,35 @@
-import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { Bus, ChevronLeft } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { MapContainer, Marker, Polyline, Popup, TileLayer } from 'react-leaflet';
 
 // Support both local development and Codespaces
 const getApiBase = () => {
-  if (typeof window === 'undefined') return 'http://localhost:5000/api';
-  
-  const { hostname, protocol } = window.location;
-  
-  // Local development
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:5000/api';
-  }
-  
-  // GitHub Codespaces - use the same protocol (https) and replace port in URL
-  // Codespaces URLs look like: https://username-repository-port.preview.app.github.dev
-  if (hostname.includes('github.dev') || hostname.includes('githubpreview.dev')) {
-    // Replace the main app port with server port (5000) in the hostname
-    const serverHostname = hostname.replace(/-\d+\./, '-5000.');
-    return `${protocol}//${serverHostname}/api`;
-  }
-  
-  // Fallback for other environments
-  return `${protocol}//${hostname}:5000/api`;
+    if (typeof window === 'undefined') return 'http://localhost:5000/api';
+
+    const { hostname, protocol } = window.location;
+
+    // Local development
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://localhost:5000/api';
+    }
+
+    // GitHub Codespaces - use the same protocol (https) and replace port in URL
+    // Codespaces URLs look like: https://username-repository-port.preview.app.github.dev
+    if (hostname.includes('github.dev') || hostname.includes('githubpreview.dev')) {
+        // Replace the main app port with server port (5000) in the hostname
+        const serverHostname = hostname.replace(/-\d+\./, '-5000.');
+        return `${protocol}//${serverHostname}/api`;
+    }
+
+    // Fallback for other environments
+    return `${protocol}//${hostname}:5000/api`;
 };
 
 const API_BASE = getApiBase();
+console.log('TrackingApp - API_BASE initialized:', API_BASE);
 
 // Custom Bus Icon
 const busIconMarkup = renderToStaticMarkup(
@@ -48,6 +49,10 @@ const TrackingApp = () => {
     const [step, setStep] = useState('lines'); // lines, buses, tracking
     const [lines, setLines] = useState([]);
     const [selectedLine, setSelectedLine] = useState(null);
+    const [error, setError] = useState(null);
+
+    // Debug logging
+    console.log('TrackingApp - Current state:', { step, selectedLine, linesCount: lines.length });
     const [buses, setBuses] = useState([]);
     const [selectedBus, setSelectedBus] = useState(null);
     const [busDetails, setBusDetails] = useState(null);
@@ -60,11 +65,16 @@ const TrackingApp = () => {
     useEffect(() => {
         const fetchLines = async () => {
             try {
+                console.log('Fetching lines from:', `${API_BASE}/lines`);
                 const res = await fetch(`${API_BASE}/lines`);
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                 const data = await res.json();
+                console.log('Lines fetched:', data);
                 setLines(data.lines);
+                setError(null);
             } catch (err) {
                 console.error('Error fetching lines:', err);
+                setError(`Failed to fetch lines: ${err.message}`);
             }
         };
 
@@ -79,8 +89,10 @@ const TrackingApp = () => {
 
         const fetchBuses = async () => {
             try {
+                console.log('Fetching buses from:', `${API_BASE}/buses?line=${selectedLine}`);
                 const res = await fetch(`${API_BASE}/buses?line=${selectedLine}`);
                 const data = await res.json();
+                console.log('Buses fetched:', data);
                 setBuses(data.buses);
             } catch (err) {
                 console.error('Error fetching buses:', err);
@@ -142,7 +154,45 @@ const TrackingApp = () => {
     if (step === 'lines') {
         return (
             <div style={{ padding: '2rem', height: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column' }}>
+                {/* Debug Panel */}
+                <div style={{
+                    background: 'rgba(59, 130, 246, 0.1)',
+                    border: '1px solid #3b82f6',
+                    color: '#93c5fd',
+                    padding: '0.75rem',
+                    borderRadius: '0.375rem',
+                    marginBottom: '1rem',
+                    fontSize: '0.75rem',
+                    fontFamily: 'monospace'
+                }}>
+                    <div><strong>🔍 Debug Info:</strong></div>
+                    <div>API_BASE: {API_BASE}</div>
+                    <div>Lines count: {lines.length}</div>
+                    <div>Step: {step}</div>
+                    {error && <div style={{ color: '#fca5a5' }}>Error: {error}</div>}
+                </div>
+
+                {error && (
+                    <div style={{
+                        background: 'rgba(239, 68, 68, 0.2)',
+                        border: '1px solid #ef4444',
+                        color: '#fca5a5',
+                        padding: '1rem',
+                        borderRadius: '0.5rem',
+                        marginBottom: '1rem',
+                        fontSize: '0.9rem'
+                    }}>
+                        ⚠️ {error}
+                        <br />
+                        <small>API Base: {API_BASE}</small>
+                    </div>
+                )}
                 <h2 style={{ color: 'white', marginBottom: '1.5rem' }}>Odaberi liniju</h2>
+                {lines.length === 0 && !error && (
+                    <div style={{ color: 'var(--color-text-muted)', textAlign: 'center', marginTop: '2rem' }}>
+                        Učitavanje linija...
+                    </div>
+                )}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '1rem' }}>
                     {lines.map(line => (
                         <button
@@ -285,8 +335,8 @@ const TrackingApp = () => {
 
                         {/* Bus position */}
                         {busDetails && (
-                            <Marker 
-                                position={[busDetails.lat, busDetails.lng]} 
+                            <Marker
+                                position={[busDetails.lat, busDetails.lng]}
                                 icon={customBusIcon}
                                 eventHandlers={{
                                     add: (e) => {

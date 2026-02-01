@@ -1,5 +1,5 @@
-import express from 'express';
 import cors from 'cors';
+import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -8,7 +8,29 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(cors());
+
+// Configure CORS for both local and Codespaces environments
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps, curl, or Postman)
+        if (!origin) return callback(null, true);
+
+        // Allow localhost
+        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            return callback(null, true);
+        }
+
+        // Allow GitHub Codespaces domains
+        if (origin.includes('github.dev') || origin.includes('githubpreview.dev') || origin.includes('app.github.dev')) {
+            return callback(null, true);
+        }
+
+        callback(null, true); // Allow all for development
+    },
+    credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Load routes data
@@ -231,7 +253,7 @@ app.get('/api/bus/:busId/stations', (req, res) => {
             };
         });
 
-        res.json({ 
+        res.json({
             bus: bus,
             stations: stationsWithEta,
             route: fullRoutePath
