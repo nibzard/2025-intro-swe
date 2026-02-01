@@ -13,7 +13,6 @@
             <p class="subtitle">Organiziraj svoje obveze i ispite - BB Team</p>
         </header>
 
-        <!-- Mjesečni pregled -->
         <section class="monthly-overview">
             <h2>📅 Mjesečni pregled</h2>
             <p id="current-month"></p>
@@ -37,9 +36,7 @@
             </div>
         </section>
 
-        <!-- Glavni sadržaj -->
         <div class="main-content">
-            <!-- Dodaj obvezu -->
             <section class="add-task-section">
                 <h3>➕ Nova obveza</h3>
                 <form id="task-form">
@@ -64,7 +61,6 @@
                 </form>
             </section>
 
-            <!-- Moje obveze -->
             <section class="tasks-section">
                 <h3>📋 Moje obveze</h3>
                 <div class="filter-buttons">
@@ -77,19 +73,33 @@
                     <button class="filter-btn" data-filter="completed">Završene</button>
                 </div>
                 <div class="tasks-list" id="tasks-list">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📝</div>
-                        <p>Nemaš još nijednu obvezu.<br>Dodaj prvu da počneš organizirati svoje obveze!</p>
                     </div>
-                </div>
             </section>
         </div>
     </div>
+
+    <div class="chat-widget">
+        <button id="chat-toggle-btn" class="chat-toggle-btn">
+            🤖
+        </button>
+        <div class="chat-window" id="chat-window">
+            <div class="chat-header">
+                <h3>AI Asistent</h3>
+                <button id="close-chat">✕</button>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="message bot-message">
+                    Bok! Ja sam tvoj AI asistent. Pitaj me bilo što o tvojim obvezama! 👋
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Pitaj nešto..." autocomplete="off">
+                <button id="send-msg-btn">➤</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script>
-
-
-
     <script type="module" src="script.js"></script>
 </body>
 </html>
