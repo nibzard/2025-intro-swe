@@ -1,7 +1,7 @@
-import FleetTracker from '../components/mapa/FleetTracker.jsx';
+import TrackingApp from '../components/mapa/apk za pracenje/TrackingApp.jsx';
 
 const MapPage = () => {
-    return <FleetTracker />;
+    return <TrackingApp />;
 };
 
 export default MapPage;
