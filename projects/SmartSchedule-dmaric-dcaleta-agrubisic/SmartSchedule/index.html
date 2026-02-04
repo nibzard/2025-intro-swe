@@ -10,34 +10,60 @@
 <body>
   <div class="container auth-container">
     <h1>SmartSchedule</h1>
-    <form id="loginForm">
-      <input type="text" id="username" placeholder="Korisničko ime" required>
-      <input type="password" id="password" placeholder="Lozinka" required>
-      <button type="submit">Prijava</button>
-    </form>
-    <div class="switch-auth">
-      <span>Nemaš račun?</span>
-      <button id="showRegister">Registriraj se</button>
-    </div>
-    <form id="registerForm" style="display:none;">
-      <input type="text" id="regUsername" placeholder="Korisničko ime" required>
-      <input type="password" id="regPassword" placeholder="Lozinka" required>
-      <select id="regRole">
-        <option value="worker">Radnik</option>
-        <option value="boss">Poslodavac</option>
-      </select>
-      <div id="companyFieldsContainer" style="display:none;">
-        <input type="text" id="regCompanyName" placeholder="Naziv tvrtke" required>
-        <input type="text" id="regCompanyOIB" placeholder="OIB tvrtke" required>
+      <div id="alreadyLoggedInBox" style="display:none;text-align:center;">
+        <p>Već ste prijavljeni.</p>
+        <button id="logoutBtnIndex">Odjava</button>
       </div>
-      <button type="submit">Registracija</button>
-    </form>
-    <div class="switch-auth" style="display:none;">
-      <span>Imaš račun?</span>
-      <button id="showLogin">Prijava</button>
-    </div>
+      <form id="loginForm">
+        <input type="text" id="username" placeholder="Korisničko ime" required>
+        <input type="password" id="password" placeholder="Lozinka" required>
+        <button type="submit">Prijava</button>
+      </form>
+      <div class="switch-auth">
+        <span>Nemaš račun?</span>
+        <button id="showRegister">Registriraj se</button>
+      </div>
+      <form id="registerForm" style="display:none;">
+        <input type="text" id="regUsername" placeholder="Korisničko ime" required>
+        <input type="password" id="regPassword" placeholder="Lozinka" required>
+        <select id="regRole">
+          <option value="worker">Radnik</option>
+          <option value="boss">Poslodavac</option>
+        </select>
+        <div id="companyFieldsContainer" style="display:none;">
+          <input type="text" id="regCompanyName" placeholder="Naziv tvrtke" required>
+          <input type="text" id="regCompanyOIB" placeholder="OIB tvrtke" required>
+        </div>
+        <button type="submit">Registracija</button>
+      </form>
+      <div class="switch-auth" style="display:none;">
+        <span>Imaš račun?</span>
+        <button id="showLogin">Prijava</button>
+      </div>
   </div>
   <script src="js/auth.js"></script>
   <script src="js/navigation.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const session = sessionStorage.getItem('sessionUser');
+      const alreadyBox = document.getElementById('alreadyLoggedInBox');
+      const loginForm = document.getElementById('loginForm');
+      const registerForm = document.getElementById('registerForm');
+      const switchAuths = document.querySelectorAll('.switch-auth');
+      if (session) {
+        // Sakrij login/register, prikaži info i odjavu
+        if (alreadyBox) alreadyBox.style.display = 'block';
+        if (loginForm) loginForm.style.display = 'none';
+        if (registerForm) registerForm.style.display = 'none';
+        switchAuths.forEach(e => e.style.display = 'none');
+        // Odjava
+        const logoutBtn = document.getElementById('logoutBtnIndex');
+        if (logoutBtn) logoutBtn.onclick = function() {
+          sessionStorage.removeItem('sessionUser');
+          window.location.reload();
+        };
+      }
+    });
+  </script>
 </body>
 </html>

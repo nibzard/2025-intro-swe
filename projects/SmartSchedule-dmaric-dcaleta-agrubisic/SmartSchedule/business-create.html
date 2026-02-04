@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
       + '<label>Radno vrijeme:</label>'
       + '<input type="text" id="modalWorkHours" placeholder="07:00-21:00" required autocomplete="off">'
       + '<label>Tjedni limit sati po radniku:</label>'
-      + '<input type="number" id="modalWeeklyLimit" value="40" min="1" max="60" required autocomplete="off">'
+      + '<input type="number" id="modalWeeklyLimit" value="48" min="1" max="60" required autocomplete="off">'
       + '<button type="submit">Spremi podatke</button>'
       + '<button type="button" id="closeCompanyModal" style="background:#444;margin-top:8px;">Odustani</button>'
       + '</form></div>';
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('modalCompanyOIB').value = companyData.companyOIB || session.companyOIB || '';
       document.getElementById('modalWorkDays').value = companyData.workDays || '6';
       document.getElementById('modalWorkHours').value = companyData.workHours || '';
-      document.getElementById('modalWeeklyLimit').value = companyData.weeklyLimit || '40';
+      document.getElementById('modalWeeklyLimit').value = companyData.weeklyLimit || '48';
       companyModal.style.display = 'flex';
     };
     document.getElementById('closeCompanyModal').onclick = function() {
@@ -104,9 +104,15 @@ document.addEventListener('DOMContentLoaded', function() {
   const toFinalBtn = document.getElementById('toFinalBtn');
   let workers = JSON.parse(localStorage.getItem('workers') || '[]');
   function renderWorkers() {
-    let html = '<h3>Radnici</h3>';
+    // Dodaj šefa u listu radnika ako je boss prijavljen
+    const session = JSON.parse(sessionStorage.getItem('sessionUser') || '{}');
+    let allWorkers = [...workers];
+    if (session.role === 'boss' && !allWorkers.find(w => w.username === session.username && w.id === session.id)) {
+      allWorkers.push({ username: session.username, id: session.id });
+    }
+    let html = '<h3>Radnici (uključuje šefa)</h3>';
     html += '<form id="addWorkerForm" style="display:flex;gap:8px;align-items:center;"><input type="text" id="workerName" placeholder="Ime radnika" required> <input type="text" id="workerId" placeholder="ID radnika" required style="width:120px;"> <button type="submit">Dodaj</button></form>';
-    if (workers.length === 0) {
+    if (allWorkers.length === 0) {
       html += '<p style="color:#e74c3c;margin-top:12px;">Dodajte barem jednog radnika za nastavak!</p>';
       toFinalBtn.disabled = true;
       toFinalBtn.style.opacity = '0.5';
@@ -114,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
       toFinalBtn.disabled = false;
       toFinalBtn.style.opacity = '1';
     }
-    html += '<ul>' + workers.map(w => `<li>${w.username}#${w.id || ''}</li>`).join('') + '</ul>';
+    html += '<ul>' + allWorkers.map(w => `<li>${w.username}#${w.id || ''}${session.role === 'boss' && w.username === session.username ? ' <span style="color:#3a7afe;">(šef)</span>' : ''}</li>`).join('') + '</ul>';
     workersDiv.innerHTML = html;
     document.getElementById('addWorkerForm').onsubmit = function(e) {
       e.preventDefault();
@@ -181,14 +187,23 @@ document.addEventListener('DOMContentLoaded', function() {
     localStorage.removeItem('schedule');
     // Pripremi praznu strukturu za novi raspored
     let allSchedules = JSON.parse(localStorage.getItem('allSchedules') || '{}');
-    // Spremi naziv rasporeda i radnike uz kod
+    // Spremi naziv rasporeda, radnike i podatke o tvrtki uz kod
     const scheduleName = document.getElementById('scheduleName').value.trim();
-    allSchedules[code] = { name: scheduleName, workers: workers };
+    let businessData = JSON.parse(localStorage.getItem('companyData') || '{}');
+    // Parsiraj radno vrijeme (npr. '07:00-21:00') u startHour i endHour
+    if (businessData.workHours) {
+      const match = businessData.workHours.match(/(\d{1,2}):\d{2}\s*-\s*(\d{1,2}):\d{2}/);
+      if (match) {
+        businessData.startHour = parseInt(match[1], 10);
+        businessData.endHour = parseInt(match[2], 10);
+      }
+    }
+    allSchedules[code] = { name: scheduleName, workers: workers, business: businessData };
     localStorage.setItem('allSchedules', JSON.stringify(allSchedules));
     // Očisti radnike za fresh start
     localStorage.removeItem('workers');
     // Spremljeni podaci tvrtke se koriste za raspored
-    localStorage.setItem('business', localStorage.getItem('companyData'));
+    localStorage.setItem('business', JSON.stringify(businessData));
     window.location.href = 'business-final.html';
   };
 });

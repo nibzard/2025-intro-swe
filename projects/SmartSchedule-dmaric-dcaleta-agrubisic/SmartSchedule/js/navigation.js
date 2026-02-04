@@ -10,6 +10,11 @@ window.addEventListener('DOMContentLoaded', function() {
   }
   if (session) {
     const user = JSON.parse(session);
+    // Ako je na index.html (login/registracija) i prijavljen je, preusmjeri na dashboard
+    if (path.indexOf('index.html') !== -1) {
+      window.location.href = 'dashboard.html';
+      return;
+    }
     // Poslodavac može svugdje, radnik ne može na business stranice
     if (user.role === 'worker') {
       if (path.indexOf('business') !== -1) {
