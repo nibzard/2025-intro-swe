@@ -34,7 +34,7 @@ export default function LoginPage() {
         onSubmit={handleLogin}
         className="flex flex-col gap-4 w-80 bg-white p-6 rounded-xl shadow-md"
       >
-        <h1 className="text-2xl font-bold text-center">Login</h1>
+        <h1 className="text-2xl font-bold text-center text-[#8F7355]">Login</h1>
 
         <input
           type="email"

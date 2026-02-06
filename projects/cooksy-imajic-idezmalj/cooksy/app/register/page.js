@@ -32,7 +32,7 @@ export default function RegisterPage() {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <form onSubmit={handleRegister} className="flex flex-col gap-4 w-80 bg-white p-6 rounded-xl shadow-md">
-        <h1 className="text-2xl font-bold text-center">Register</h1>
+        <h1 className="text-2xl font-bold text-center text-[#8F7355]">Register</h1>
 
         <input
           type="email"
