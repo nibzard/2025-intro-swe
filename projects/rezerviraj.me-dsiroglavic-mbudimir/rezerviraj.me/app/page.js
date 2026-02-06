@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import RestaurantCard from "@/app/components/RestaurantCard";
@@ -45,7 +45,7 @@ export default function Home() {
             Otkrijte najbolje restorane i rezervirajte svoje mjesto na vrijeme!
           </p>
           <button className="bg-white text-[#0F766E] font-semibold px-6 py-3 rounded hover:bg-gray-100 w-40">
-            Prijava
+            <Link href="/login">Prijava</Link>
           </button>
         </div>
 
