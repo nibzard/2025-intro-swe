@@ -16,7 +16,7 @@ export default function Profile() {
       try {
         const userData = JSON.parse(localStorage.getItem("user") || "{}");
         setUser(userData);
-        
+
         // Fetch full profile from API
         const profile = await apiClient.getCurrentUser();
         setUser(profile);
@@ -65,11 +65,15 @@ export default function Profile() {
 
   return (
     <div className="login-page-wrapper">
-      <div className="login-modal" style={{ maxWidth: "500px" }}>
+      <div className="profile-modal" style={{ maxWidth: "500px" }}>
         <h2 className="login-subtitle">My Profile</h2>
 
-        {error && <div style={{ color: "red", marginBottom: "1rem" }}>{error}</div>}
-        {success && <div style={{ color: "green", marginBottom: "1rem" }}>{success}</div>}
+        {error && (
+          <div style={{ color: "red", marginBottom: "1rem" }}>{error}</div>
+        )}
+        {success && (
+          <div style={{ color: "green", marginBottom: "1rem" }}>{success}</div>
+        )}
 
         <div className="input-wrapper">
           <label className="label-text">Username</label>
@@ -100,7 +104,7 @@ export default function Profile() {
             onChange={(e) => setBio(e.target.value)}
             className="login-input"
             placeholder="Tell us about yourself"
-            style={{ minHeight: "100px", resize: "vertical" }}
+            style={{ height: "20px", resize: "none" }}
           />
         </div>
 
@@ -108,8 +112,8 @@ export default function Profile() {
           <button onClick={handleSaveProfile} className="login-login">
             Save Profile
           </button>
-          <button 
-            onClick={() => history.push("/home")} 
+          <button
+            onClick={() => history.push("/home")}
             className="login-login"
             style={{ background: "#999", marginTop: "0.5rem" }}
           >
@@ -119,13 +123,19 @@ export default function Profile() {
 
         <div className="login-footer">
           <p className="login-p">
-            <button 
+            <button
               onClick={() => {
                 localStorage.removeItem("token");
                 localStorage.removeItem("user");
                 history.push("/");
               }}
-              style={{ background: "none", border: "none", color: "#ec407a", cursor: "pointer", textDecoration: "underline" }}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#ec407a",
+                cursor: "pointer",
+                textDecoration: "underline",
+              }}
             >
               Logout
             </button>
