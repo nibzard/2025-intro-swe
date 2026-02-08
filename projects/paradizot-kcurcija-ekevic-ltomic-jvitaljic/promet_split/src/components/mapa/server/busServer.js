@@ -167,16 +167,15 @@ const getActiveBuses = () => {
     const currentMinutes = hours * 60 + minutes + seconds / 60;
 
     const activeBuses = [];
-    let busId = 0;
 
-    timetable.forEach(departureTime => {
+    timetable.forEach((departureTime, index) => {
         const elapsedMinutes = currentMinutes - departureTime;
 
         if (elapsedMinutes >= 0 && elapsedMinutes < JOURNEY_DURATION) {
             const position = getPositionAlongRoute(elapsedMinutes, fullRoutePath);
             if (position && position.length === 2) {
                 activeBuses.push({
-                    id: busId++,
+                    id: index,
                     lat: position[0],
                     lng: position[1],
                     line: BUS_LINE,

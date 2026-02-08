@@ -19,6 +19,26 @@ let DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
+// Support both local development and Codespaces
+const getApiBase = () => {
+    if (typeof window === 'undefined') return 'http://localhost:5000/api';
+
+    const { hostname, protocol } = window.location;
+
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://localhost:5000/api';
+    }
+
+    if (hostname.includes('github.dev') || hostname.includes('githubpreview.dev')) {
+        const serverHostname = hostname.replace(/-\d+\./, '-5000.');
+        return `${protocol}//${serverHostname}/api`;
+    }
+
+    return `${protocol}//${hostname}:5000/api`;
+};
+
+const API_BASE = getApiBase();
+
 // Custom Bus Icon
 const busIconMarkup = renderToStaticMarkup(
     <div style={{ color: '#facc15', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
@@ -72,134 +92,17 @@ const stations = [
     [43.507040500628484, 16.483334933103244]
 ];
 
-// Timetable: departure times for buses (in minutes from midnight) - buses every hour at :20 and :50
-const timetable = [
-    320, 350,   // 05:20, 05:50
-    380, 410,   // 06:20, 06:50
-    440, 470,   // 07:20, 07:50
-    500, 530,   // 08:20, 08:50
-    560, 590,   // 09:20, 09:50
-    620, 650,   // 10:20, 10:50
-    680, 710,   // 11:20, 11:50
-    740, 770,   // 12:20, 12:50
-    800, 830,   // 13:20, 13:50
-    860, 890,   // 14:20, 14:50
-    920, 950,   // 15:20, 15:50
-    980, 1010,  // 16:20, 16:50
-    1040, 1070, // 17:20, 17:50
-    1100, 1130, // 18:20, 18:50
-    1160, 1190, // 19:20, 19:50
-    1220, 1250, // 20:20, 20:50
-    1280, 1310, // 21:20, 21:50
-    1340, 1370, // 22:20, 22:50
-    1400, 1430, // 23:20, 23:50
-    20, 50,     // 00:20, 00:50
-    80          // 01:20
-];
-
-// Journey duration in minutes
-const JOURNEY_DURATION = 95;
-
-// Ensure fullPath is properly loaded from routes.json
-
-
-// Fetch highly detailed route from OSRM (like Google Maps)
-
-
-// Calculate distance between two lat/lng points in km
-const haversineDistance = ([lat1, lng1], [lat2, lng2]) => {
-    const R = 6371; // Earth radius in km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-};
-
-// Function to calculate position along the route
-const getPositionAlongRoute = (elapsedMinutes, routeData) => {
-    if (!routeData || routeData.length === 0) {
-        return null;
-    }
-
-    // Simple linear interpolation based on elapsed time
-    // Bus travels entire route in JOURNEY_DURATION minutes
-    const progressRatio = Math.max(0, Math.min(1, elapsedMinutes / JOURNEY_DURATION));
-
-    // Find position in the waypoints array based on progress
-    const targetIndex = progressRatio * (routeData.length - 1);
-    const currentIndex = Math.floor(targetIndex);
-    const nextIndex = Math.ceil(targetIndex);
-
-    // If we're at the start or have exact match
-    if (currentIndex === nextIndex || currentIndex >= routeData.length - 1) {
-        return routeData[Math.min(currentIndex, routeData.length - 1)];
-    }
-
-    // Linear interpolation between two waypoints
-    const [lat1, lng1] = routeData[currentIndex];
-    const [lat2, lng2] = routeData[nextIndex];
-    const localProgress = targetIndex - currentIndex;
-
-    const lat = lat1 + (lat2 - lat1) * localProgress;
-    const lng = lng1 + (lng2 - lng1) * localProgress;
-
-    return [lat, lng];
-};
-
-// Calculate distance-based station arrival times
-const calculateStationArrivalTimes = (fullPath) => {
-    if (!fullPath || fullPath.length === 0) {
-        return stations.map((_, idx) => idx * (JOURNEY_DURATION / (stations.length - 1)));
-    }
-
-    // Map each station to its closest waypoint and calculate cumulative time
-    const stationTimes = [];
-
-    const totalRouteDistance = calculatePathDistance(fullPath);
-
-    for (let i = 0; i < stations.length; i++) {
-        // Find closest waypoint to this station
-        let closestIndex = 0;
-        let closestDistance = Infinity;
-
-        for (let j = 0; j < fullPath.length; j++) {
-            const dist = haversineDistance(stations[i], fullPath[j]);
-            if (dist < closestDistance) {
-                closestDistance = dist;
-                closestIndex = j;
-            }
-        }
-
-        // Calculate distance up to this waypoint
-        const distanceToStation = calculatePathDistance(fullPath.slice(0, closestIndex + 1));
-        const timeMinutes = (distanceToStation / totalRouteDistance) * JOURNEY_DURATION;
-        stationTimes.push(Math.max(0, timeMinutes));
-    }
-
-    return stationTimes;
-};
-
-// Calculate total path distance in km
-const calculatePathDistance = (path) => {
-    let total = 0;
-    for (let i = 0; i < path.length - 1; i++) {
-        total += haversineDistance(path[i], path[i + 1]);
-    }
-    return total;
-};
 
 const BusMap = () => {
     const splitPosition = [43.508133, 16.440193];
     const [currentTime, setCurrentTime] = useState(new Date());
     const [buses, setBuses] = useState([]);
+    const [stationEtas, setStationEtas] = useState([]);
+    const [error, setError] = useState(null);
 
     const [showMap, setShowMap] = useState(false);
     const [fullRoutePath, setFullRoutePath] = useState([]);
     const [selectedStation, setSelectedStation] = useState(null);
-    const [stationArrivalTimes, setStationArrivalTimes] = useState([]);
 
     // Load route data on mount - loads from routes.json file (instant!)
     useEffect(() => {
@@ -208,74 +111,45 @@ const BusMap = () => {
         console.log(`📍 Total waypoints: ${pathData.length}\n`);
 
         setFullRoutePath(pathData);
-        const times = calculateStationArrivalTimes(pathData);
-        setStationArrivalTimes(times);
     }, []);
 
-    // Update buses every second
+    // Update buses every second from server simulator
     useEffect(() => {
-        const updateBuses = () => {
-            // Use fullRoutePath directly - same as the blue line
-            // Only fall back to stations if we have no route data
-            const pathToUse = fullRoutePath.length > 0 ? fullRoutePath : stations;
+        const fetchBuses = async () => {
+            try {
+                const res = await fetch(`${API_BASE}/buses`);
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                const data = await res.json();
+                const activeBuses = data.buses || [];
 
-            // Log on first render only
-            if (!window.busPathLogged) {
-                window.busPathLogged = true;
-                console.log('\n📍 BUS PATH INFO:');
-                console.log(`Total waypoints in path: ${pathToUse.length}`);
-                console.log(`Using: ${fullRoutePath.length > 0 ? 'OSRM roads' : 'Station fallback'}`);
-                console.log(`Blue line waypoints: ${fullRoutePath.length}`);
-                console.log(`Bus using waypoints: ${pathToUse.length}`);
-                if (pathToUse.length > 0) {
-                    console.log(`First point: [${pathToUse[0][0].toFixed(4)}, ${pathToUse[0][1].toFixed(4)}]`);
-                    console.log(`Last point: [${pathToUse[pathToUse.length - 1][0].toFixed(4)}, ${pathToUse[pathToUse.length - 1][1].toFixed(4)}]\n`);
-                }
-            }
+                setBuses(activeBuses);
+                setCurrentTime(new Date());
+                setError(null);
 
-            const now = new Date();
-            setCurrentTime(now);
-
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const seconds = now.getSeconds();
-            const currentMinutes = hours * 60 + minutes + seconds / 60;
-
-            const activeBuses = [];
-            let busId = 0;
-
-            // Check each departure time
-            timetable.forEach(departureTime => {
-                const elapsedMinutes = currentMinutes - departureTime;
-
-                // Bus is active if it's between 0 and JOURNEY_DURATION minutes into its journey
-                if (elapsedMinutes >= 0 && elapsedMinutes < JOURNEY_DURATION) {
-                    // Use exact same path that draws the blue line
-                    const position = getPositionAlongRoute(elapsedMinutes, pathToUse);
-                    if (position && position.length === 2) {
-                        activeBuses.push({
-                            id: busId++,
-                            lat: position[0],
-                            lng: position[1],
-                            line: '8',
-                            elapsedMinutes: elapsedMinutes,
-                            // Debug: store which waypoint index we're at
-                            waypointIndex: Math.floor((elapsedMinutes / 95) * (pathToUse.length - 1))
-                        });
+                if (activeBuses.length > 0) {
+                    const primaryBusId = activeBuses[0].id;
+                    const detailRes = await fetch(`${API_BASE}/bus/${primaryBusId}/stations`);
+                    if (detailRes.ok) {
+                        const detailData = await detailRes.json();
+                        if (detailData.route && detailData.route.length > 0) {
+                            setFullRoutePath(detailData.route);
+                        }
+                        setStationEtas(detailData.stations || []);
                     }
+                } else {
+                    setStationEtas([]);
                 }
-            });
-
-            setBuses(activeBuses);
+            } catch (err) {
+                console.error('Error fetching buses:', err);
+                setError('Ne mogu dohvatiti podatke o autobusima.');
+            }
         };
 
-        // Update immediately
-        updateBuses();
+        fetchBuses();
 
-        // Then update every 50ms for very smooth tracking
-        const interval = setInterval(updateBuses, 50);
+        const interval = setInterval(fetchBuses, 1000);
         return () => clearInterval(interval);
-    }, [fullRoutePath]);
+    }, []);
 
     return (
         <div style={{ height: 'calc(100vh - 80px)', width: '100%', position: 'relative' }}>
@@ -352,54 +226,41 @@ const BusMap = () => {
                                             <strong style={{ fontSize: '15px', display: 'block', marginBottom: '8px' }}>📍 Stanica {idx + 1}</strong>
                                             <hr style={{ margin: '8px 0', border: 'none', borderTop: '1px solid #ddd' }} />
                                             {(() => {
-                                                const currentMin = currentTime.getHours() * 60 + currentTime.getMinutes() + currentTime.getSeconds() / 60;
-                                                const stationArrivalTime = stationArrivalTimes[idx] || 0;
-                                                const arrivingBuses = timetable
-                                                    .map(dep => ({ departure: dep, arrival: dep + stationArrivalTime }))
-                                                    .filter(b => b.arrival > currentMin)
-                                                    .slice(0, 5);
+                                                const etaData = stationEtas[idx];
 
-                                                if (arrivingBuses.length === 0) {
-                                                    return <span style={{ color: '#666', fontSize: '12px' }}>Nema autobusa u naredne 2h</span>;
+                                                if (!etaData) {
+                                                    return <span style={{ color: '#666', fontSize: '12px' }}>Nema dostupnih podataka</span>;
+                                                }
+
+                                                const minsTillArrival = etaData.minutesUntil;
+                                                let color = '#ef4444';
+                                                let label = `Za ${minsTillArrival} min`;
+
+                                                if (minsTillArrival <= 0) {
+                                                    color = '#22c55e';
+                                                    label = 'Stižu sada!';
+                                                } else if (minsTillArrival <= 2) {
+                                                    color = '#f97316';
+                                                    label = `Za ${minsTillArrival} min (Uskoro!)`;
+                                                } else if (minsTillArrival <= 5) {
+                                                    color = '#eab308';
+                                                    label = `Za ${minsTillArrival} min`;
                                                 }
 
                                                 return (
                                                     <>
                                                         <div style={{ marginBottom: '10px', fontWeight: 'bold', fontSize: '13px' }}>🚌 Dolazak autobusa:</div>
-                                                        {arrivingBuses.map((bus, i) => {
-                                                            const minsTillArrival = Math.round(bus.arrival - currentMin);
-                                                            const hours = Math.floor(bus.arrival / 60) % 24;
-                                                            const mins_only = Math.round(bus.arrival % 60);
-                                                            const timeStr = `${hours.toString().padStart(2, '0')}:${mins_only.toString().padStart(2, '0')}`;
-
-                                                            let color = '#ef4444';
-                                                            let label = `Za ${minsTillArrival} min`;
-
-                                                            if (minsTillArrival <= 0) {
-                                                                color = '#22c55e';
-                                                                label = 'Stižu sada!';
-                                                            } else if (minsTillArrival <= 2) {
-                                                                color = '#f97316';
-                                                                label = `Za ${minsTillArrival} min (Uskoro!)`;
-                                                            } else if (minsTillArrival <= 5) {
-                                                                color = '#eab308';
-                                                                label = `Za ${minsTillArrival} min`;
-                                                            }
-
-                                                            return (
-                                                                <div key={i} style={{
-                                                                    padding: '8px 10px',
-                                                                    marginBottom: '5px',
-                                                                    backgroundColor: `${color}15`,
-                                                                    border: `1px solid ${color}40`,
-                                                                    borderLeft: `4px solid ${color}`,
-                                                                    borderRadius: '3px',
-                                                                    fontSize: '12px'
-                                                                }}>
-                                                                    <strong style={{ color: color, fontSize: '12px' }}>{timeStr}</strong> - {label}
-                                                                </div>
-                                                            );
-                                                        })}
+                                                        <div style={{
+                                                            padding: '8px 10px',
+                                                            marginBottom: '5px',
+                                                            backgroundColor: `${color}15`,
+                                                            border: `1px solid ${color}40`,
+                                                            borderLeft: `4px solid ${color}`,
+                                                            borderRadius: '3px',
+                                                            fontSize: '12px'
+                                                        }}>
+                                                            <strong style={{ color: color, fontSize: '12px' }}>{label}</strong>
+                                                        </div>
                                                     </>
                                                 );
                                             })()}
@@ -443,6 +304,9 @@ const BusMap = () => {
                         <span style={{ fontSize: '0.75rem', marginLeft: 'auto', opacity: 0.7 }}>
                             {currentTime.toLocaleTimeString()}
                         </span>
+                        {error && (
+                            <span style={{ fontSize: '0.75rem', marginLeft: '1rem', color: '#fca5a5' }}>{error}</span>
+                        )}
                         <button
                             onClick={() => setShowMap(false)}
                             style={{
