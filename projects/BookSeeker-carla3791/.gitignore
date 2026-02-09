@@ -1,0 +1,21 @@
+# Ovisnosti
+node_modules/
+
+# Lokalna konfiguracija (API ključevi – ne dijeliti!)
+.env
+server/.env
+
+# Build izlaz
+client/dist/
+dist/
+
+# Logovi i privremene datoteke
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
