@@ -39,7 +39,19 @@ export default function FavoritesPage() {
     return () => { active = false };
   }, [user]);
 
-  if (!user) return <p className="p-6">You must be logged in to see your favorites.</p>;
+  if (!user) return (
+    <div className="flex flex-col items-center justify-center h-screen text-center p-6">
+      <p className="text-2xl md:text-3xl font-semibold mb-4 text-[#8F7355]">
+        You must be logged in to see your favorites.
+      </p>
+      <a
+        href="/login"
+        className="bg-[#D7C0A9] text-black px-6 py-3 rounded-lg shadow hover:bg-[#C4B192] transition"
+      >
+        Sign In
+      </a>
+    </div>
+  );
   if (loading) return <Loading />
 
   return (

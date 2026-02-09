@@ -36,7 +36,7 @@ export default function FilterBar({ onFilterChange }) {
           value={mealType}
           onChange={(e) => setMealType(e.target.value)}
         >
-          <option value="default" disabled>Meal Type</option>
+          <option value="">Meals</option>
           {mealTypeOptions.map(type => (
             <option key={type} value={type}>{type}</option>
           ))}
@@ -47,7 +47,7 @@ export default function FilterBar({ onFilterChange }) {
           value={minCalories}
           onChange={(e) => setMinCalories(e.target.value)}
         >
-          <option value="default" disabled>Calories</option>
+          <option value="">Calories</option>
           <option value="400">400+</option>
           <option value="300">300+</option>
           <option value="200">200+</option>
@@ -59,7 +59,7 @@ export default function FilterBar({ onFilterChange }) {
           value={selectedIngredient}
           onChange={(e) => setSelectedIngredient(e.target.value)}
         >
-          <option value="default" disabled>Ingredient</option>
+          <option value="">Ingredients</option>
           {allIngredients.map(ing => (
             <option key={ing} value={ing}>{ing}</option>
           ))}
@@ -67,7 +67,7 @@ export default function FilterBar({ onFilterChange }) {
 
         <input
           type="text"
-          placeholder="Search ingredients..."
+          placeholder="Search..."
           value={ingredientsSearch}
           onChange={(e) => setIngredientsSearch(e.target.value)}
           className="p-3 bg-white rounded border border-[#4e664be8] text-[#253d24e8] text-sm w-60 ml-auto"

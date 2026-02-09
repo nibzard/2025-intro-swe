@@ -1,16 +1,18 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Roboto } from "next/font/google";
 import "./globals.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
-const geistSans = Geist({
+const geistSans = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  weight: ["400", "700"]
 });
 
-const geistMono = Geist_Mono({
+const geistMono = Roboto({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  weight: ["400", "700"]
 });
 
 export const metadata = {
