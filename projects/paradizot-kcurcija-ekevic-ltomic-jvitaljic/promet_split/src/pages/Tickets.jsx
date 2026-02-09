@@ -79,7 +79,7 @@ const Tickets = () => {
                     filteredTickets.map(ticket => (
                         <TicketCard
                             key={ticket.id}
-                            type={ticket.name || ticket.type} // Fallback for various data shapes
+                            type={ticket.name || ticket.type}
                             status={ticket.status}
                             expires={ticket.expiresAt}
                             onActivate={() => handleActivate(ticket.id)}
