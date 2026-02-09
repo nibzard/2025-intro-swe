@@ -1,4 +1,9 @@
-# 🎤 Old School Hip Hop Recommendations API
+# 🎤 Classic Albums Archive
+
+**🌐 Live Website:** [https://2025-intro-swe-neon.vercel.app/](https://2025-intro-swe-neon.vercel.app/)
+**📚 API Documentation:** [https://2025-intro-swe-production.up.railway.app/docs](https://2025-intro-swe-production.up.railway.app/docs)
+
+---
 
 ## 📋 Sadržaj
 - [Uvod](#uvod)
