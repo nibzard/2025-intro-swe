@@ -1,18 +1,23 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../libs/supabaseClient";
+import { useToast } from "../libs/toast";
 
 export default function Register() {
   const nav = useNavigate();
+  const toast = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   async function signUp(e) {
     e.preventDefault();
     const { error } = await supabase.auth.signUp({ email, password });
-    if (error) return alert(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
 
-    alert("Registracija OK. Provjeri email ako je uključena potvrda, pa se ulogiraj.");
+    toast.success("Registration successful! Check your email to confirm, then log in.");
     nav("/login");
   }
 
