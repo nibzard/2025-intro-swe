@@ -63,3 +63,175 @@ button:hover { background: #6d28d9; }
     border-bottom: 1px solid rgba(124, 58, 237, 0.3);
     padding-bottom: 5px;
 }
+
+/* Dizajn kruga napretka */
+.calorie-progress-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.calorie-circle {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: conic-gradient(#22c55e 0%, #334155 0%); /* Ovo ćemo mijenjati kroz JS */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+}
+
+.inner-circle {
+    width: 155px;
+    height: 155px;
+    background: #1e293b; /* Boja tvoje kartice */
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#calories-left-number {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #22c55e;
+    line-height: 1;
+}
+
+.inner-circle small {
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    margin-top: 5px;
+}
+#macrosChart {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 15px;
+    border-radius: 15px;
+    margin-top: 15px;
+}
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 15px;
+    font-size: 0.85rem;
+    color: #94a3b8; /* Svjetlo siva boja teksta */
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.dot.green { background-color: #22c55e; box-shadow: 0 0 5px #22c55e; }
+.dot.gray { background-color: #334155; }
+.dot.orange { background-color: #f59e0b; box-shadow: 0 0 5px #f59e0b; }
+
+.macros-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    /* Početni gradient - sve sivo dok nema hrane */
+    background: conic-gradient(#334155 0% 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px auto;
+}
+
+.inner-circle-macros {
+    width: 120px;
+    height: 120px;
+    background: #121212; /* Boja tvoje pozadine */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Boje za legendu */
+.p-color { background-color: #3b82f6; } /* Plava za proteine */
+.c-color { background-color: #f59e0b; } /* Narančasta za ugljikohidrate */
+.f-color { background-color: #ef4444; } /* Crvena za masti */
+
+.macros-legend {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    font-size: 0.8rem;
+    margin-top: 10px;
+}
+/* Krug za Makrose (Proteini, Ugljikohidrati, Masti) */
+.macros-circle {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: conic-gradient(#334155 0% 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    transition: background 0.5s ease;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.inner-circle-macros {
+    width: 130px;
+    height: 130px;
+    background: #1e293b; /* Uskladi s bojom svoje kartice */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.macros-legend {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.leg-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.05);
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.p-color { background-color: #3b82f6; box-shadow: 0 0 8px #3b82f6; } /* Proteini - Plava */
+.c-color { background-color: #f59e0b; box-shadow: 0 0 8px #f59e0b; } /* Ugljikohidrati - Žuta/Narančasta */
+.f-color { background-color: #ef4444; box-shadow: 0 0 8px #ef4444; } /* Masti - Crvena */
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #333;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    display: none; /* Skrivena je dok je ne pozovemo */
+    z-index: 1000;
+    animation: fadeIn 0.5s, fadeOut 0.5s 2.5s;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(20px); } }
