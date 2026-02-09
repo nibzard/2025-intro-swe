@@ -17,7 +17,7 @@ Web aplikacija za izradu i optimizaciju radnih rasporeda uz pomoć AI.
 3. Slijedite upute na ekranu
 
 ## Pravila rasporeda
-- Tjedni limit: 40 sati po radniku
+- Tjedni limit: 48 sati po radniku
 - Smjene: Jutarnja (7h), Popodnevna (7h), Međusmjena (4h), Slobodno (0h)
 - Objekt uvijek mora imati radnika
 - AI generira optimalan raspored

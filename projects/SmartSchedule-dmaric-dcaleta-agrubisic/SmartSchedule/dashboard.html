@@ -38,6 +38,7 @@
       html += '<a href="business-create.html"><button>Kreiraj/uredi poslovni raspored</button></a>';
       html += '<a href="business-final.html"><button>Pregled i AI upravljanje</button></a>';
       html += '<button id="openCompanyModal">Uredi podatke tvrtke</button>';
+      html += '<button id="openRequestModal">Daj zahtjev za radne dane</button>';
       // Prikaz svih spremljenih rasporeda
       let allSchedules = JSON.parse(localStorage.getItem('allSchedules') || '{}');
       let scheduleList = Object.entries(allSchedules).map(([code, info]) => {
@@ -97,7 +98,7 @@
         + '<label>Radno vrijeme:</label>'
         + '<input type="text" id="modalWorkHours" placeholder="07:00-21:00" required autocomplete="off">'
         + '<label>Tjedni limit sati po radniku:</label>'
-        + '<input type="number" id="modalWeeklyLimit" value="40" min="1" max="60" required autocomplete="off">'
+        + '<input type="number" id="modalWeeklyLimit" value="48" min="1" max="60" required autocomplete="off">'
         + '<button type="submit">Spremi podatke</button>'
         + '<button type="button" id="closeCompanyModal" style="background:#444;margin-top:8px;">Odustani</button>'
         + '</form></div>';
@@ -108,7 +109,7 @@
         document.getElementById('modalCompanyName').value = companyData.companyName || '';
         document.getElementById('modalWorkDays').value = companyData.workDays || '6';
         document.getElementById('modalWorkHours').value = companyData.workHours || '';
-        document.getElementById('modalWeeklyLimit').value = companyData.weeklyLimit || '40';
+        document.getElementById('modalWeeklyLimit').value = companyData.weeklyLimit || '48';
         companyModal.style.display = 'flex';
       };
       document.getElementById('closeCompanyModal').onclick = function() {
@@ -128,8 +129,8 @@
       };
     }
 
-    // Modal za zahtjev
-    if (user.role === 'worker') {
+    // Modal za zahtjev (sada i za worker i za boss)
+    if (user.role === 'worker' || user.role === 'boss') {
       let modal = document.createElement('div');
       modal.id = 'requestModal';
       modal.style.display = 'none';
@@ -141,16 +142,20 @@
       modal.style.background = 'rgba(0,0,0,0.7)';
       modal.style.justifyContent = 'center';
       modal.style.alignItems = 'center';
-      modal.innerHTML = '<div style="background:#181c24;padding:36px 28px;border-radius:16px;max-width:440px;margin:100px auto;display:flex;flex-direction:column;gap:18px;box-shadow:0 6px 32px #000b;border:2px solid #232837;">'
+      modal.innerHTML = '<div style="background:#181c24;padding:36px 28px;border-radius:16px;max-width:540px;margin:100px auto;display:flex;flex-direction:column;gap:18px;box-shadow:0 6px 32px #000b;border:2px solid #232837;">'
         + '<h3>Zahtjev za radne dane</h3>'
-        + '<form id="requestForm">'
-        + '<label for="requestCode">Kod rasporeda:</label>'
-        + '<input type="text" id="requestCode" maxlength="12" style="width:160px;text-transform:uppercase;margin-bottom:8px;">'
-        + '<label>Upiši dane i vrijeme kada možeš raditi:</label>'
-        + '<textarea id="requestText" rows="5" style="width:100%;resize:vertical;"></textarea>'
-        + '<button type="submit">Pošalji zahtjev</button>'
-        + '<button type="button" id="closeRequestModal" style="background:#444;margin-top:8px;">Odustani</button>'
-        + '</form></div>';
+        // Uklonjeno prikazivanje tablice svih zahtjeva radnika
+        + '<div id="requestFormWrapper" style="background:#181c24;padding:24px 18px 18px 18px;border-radius:14px;box-shadow:0 2px 12px #0005;min-width:260px;max-width:340px;margin:18px auto 0 auto;">'
+        +   '<form id="requestForm">'
+        +     '<label for="requestCode">Kod rasporeda:</label>'
+        +     '<input type="text" id="requestCode" maxlength="12" style="width:160px;text-transform:uppercase;margin-bottom:8px;">'
+        +     '<div id="companyInfoBox" style="margin-bottom:12px;color:#3a7afe;font-weight:bold;"></div>'
+        +     '<table id="requestDaysTable" style="width:100%;margin-bottom:12px;"></table>'
+        +     '<div id="satCounterBox"></div>'
+        +     '<button type="submit">Pošalji zahtjev</button>'
+        +     '<button type="button" id="closeRequestModal" style="background:#444;margin-top:8px;">Odustani</button>'
+        +   '</form>'
+        + '</div>'
       document.body.appendChild(modal);
       document.getElementById('openRequestModal').onclick = function() {
         modal.style.display = 'flex';
@@ -158,17 +163,228 @@
       document.getElementById('closeRequestModal').onclick = function() {
         modal.style.display = 'none';
       };
+      // Dinamički generiraj dane i smjene kad se upiše kod
+      document.getElementById('requestCode').oninput = function() {
+                // Uklonjeno automatsko generiranje i prikaz tablice svih zahtjeva radnika
+        const code = document.getElementById('requestCode').value.trim().toUpperCase();
+        let allSchedules = JSON.parse(localStorage.getItem('allSchedules') || '{}');
+        let scheduleInfo = allSchedules[code];
+        let companyBox = document.getElementById('companyInfoBox');
+        let table = document.getElementById('requestDaysTable');
+        if (!scheduleInfo || !scheduleInfo.business) {
+          companyBox.innerHTML = '<span style="color:#f55;">Ne postoji raspored ili tvrtka za taj kod.</span>';
+          table.innerHTML = '';
+          return;
+        }
+        const business = scheduleInfo.business;
+        let radniDani = business.workDays == 7
+          ? ["Ponedjeljak","Utorak","Srijeda","Četvrtak","Petak","Subota","Nedjelja"]
+          : ["Ponedjeljak","Utorak","Srijeda","Četvrtak","Petak","Subota"];
+        let start = parseInt(business.startHour || '7');
+        let end = parseInt(business.endHour || '21');
+        let ukupno = end - start;
+        let jutroStart = start;
+        let jutroEnd = start + Math.floor(ukupno/2);
+        let popodneStart = jutroEnd;
+        let popodneEnd = end;
+        let medjuStart = start + Math.floor(ukupno/2) - 2;
+        let medjuEnd = medjuStart + 5;
+        function fmt(h){ return (h<10?"0":"")+h+":00"; }
+        // Definiraj trajanje smjena
+        const trajanja = {
+          'Jutro': jutroEnd - jutroStart,
+          'Popodne': popodneEnd - popodneStart,
+          'Međusmjena': medjuEnd - medjuStart
+        };
+        // Prikaz poruke ako je korisnik zadnji koji predaje zahtjev
+        let allRequests = JSON.parse(localStorage.getItem('workerRequests') || '{}');
+        let users = Object.keys(allRequests[code] || {});
+        let session = JSON.parse(sessionStorage.getItem('sessionUser'));
+        let myKey = session.username + '#' + (session.id || '');
+        let alreadySubmitted = !!allRequests[code]?.[myKey];
+        let brojRadnika = business.workers ? business.workers.length : 0;
+        // Prikaz poruke i ograničenja SAMO ako je broj zahtjeva = broj radnika - 1 i trenutni korisnik još NIJE predao zahtjev
+        let isLast = (users.length === brojRadnika - 1) && !alreadySubmitted;
+        let isBoss = session.role === 'boss';
+        companyBox.innerHTML = `Tvrtka: <span style='color:#fff;'>${business.name || '(bez naziva)'}</span><br>Radni dani: <span style='color:#fff;'>${radniDani.join(', ')}</span><br>Radno vrijeme: <span style='color:#fff;'>${fmt(start)} - ${fmt(end)}</span>`;
+        // Prikaz poruke ispod inputa za kod
+        let zadnjiMsg = (!isBoss && isLast) ? `<div id='zadnjiMsg' style='color:#e74c3c;font-weight:bold;margin-bottom:8px;'>Vi ste zadnji koji daje zahtjev!</div>` : '';
+        let codeInput = document.getElementById('requestCode');
+        if (codeInput && !document.getElementById('zadnjiMsg')) {
+          codeInput.insertAdjacentHTML('afterend', zadnjiMsg);
+        } else if (codeInput && document.getElementById('zadnjiMsg')) {
+          document.getElementById('zadnjiMsg').outerHTML = zadnjiMsg;
+        }
+        // Dodaj box za brojač sati
+        if (!document.getElementById('satCounterBox')) {
+          let satDiv = document.createElement('div');
+          satDiv.id = 'satCounterBox';
+          satDiv.style = 'margin-bottom:12px;font-weight:bold;';
+          table.parentElement.insertAdjacentElement('beforebegin', satDiv);
+        }
+        let tHtml = '<tr style="background:#232837;color:#fff;"><th style="padding:8px 12px;border:1px solid #232837;">Dan</th><th style="padding:8px 12px;border:1px solid #232837;">Smjena</th></tr>';
+        radniDani.forEach(dan => {
+          tHtml += `<tr><td style='padding:8px 12px;border:1px solid #232837;background:#181c24;'>${dan}</td><td style='padding:8px 12px;border:1px solid #232837;background:#181c24;'><select name='${dan}' style='width:100%;padding:6px;border-radius:6px;'><option value='-'>-</option><option value='Slobodan'>Slobodan</option><option value='Jutro'>Jutro (${fmt(jutroStart)}-${fmt(jutroEnd)})</option><option value='Popodne'>Popodne (${fmt(popodneStart)}-${fmt(popodneEnd)})</option><option value='Međusmjena'>Međusmjena (${fmt(medjuStart)}-${fmt(medjuEnd)})</option></select></td></tr>`;
+        });
+        table.innerHTML = tHtml;
+        // Ako je zadnji radnik, onemogući '-' opciju za sve dane (osim šefu)
+        if (!isBoss && isLast) {
+          setTimeout(() => {
+            radniDani.forEach(dan => {
+              const select = table.querySelector(`[name='${dan}']`);
+              if (select) {
+                // Onemogući '-' opciju
+                const dashOpt = select.querySelector("option[value='-']");
+                if (dashOpt) dashOpt.disabled = true;
+                // Pronađi sve odabrane vrijednosti za taj dan
+                let allRequests = JSON.parse(localStorage.getItem('workerRequests') || '{}');
+                let taken = [];
+                Object.values(allRequests[code] || {}).forEach(req => {
+                  const v = req[dan];
+                  if (v && v !== "-") taken.push(v);
+                });
+                let hasJutro = taken.includes("Jutro");
+                let hasPopodne = taken.includes("Popodne");
+                // Ako je netko uzeo Jutro, zadnji mora Popodne
+                if (hasJutro && !hasPopodne) {
+                  let optJ = select.querySelector("option[value='Jutro']");
+                  let optP = select.querySelector("option[value='Popodne']");
+                  if (optJ) optJ.disabled = true;
+                  if (optP) optP.disabled = false;
+                  select.value = "Popodne";
+                }
+                // Ako je netko uzeo Popodne, zadnji mora Jutro
+                else if (hasPopodne && !hasJutro) {
+                  let optJ = select.querySelector("option[value='Jutro']");
+                  let optP = select.querySelector("option[value='Popodne']");
+                  if (optP) optP.disabled = true;
+                  if (optJ) optJ.disabled = false;
+                  select.value = "Jutro";
+                }
+                // Ako nitko nije uzeo ništa, može birati
+                else {
+                  ["Jutro","Popodne"].forEach(s => {
+                    let opt = select.querySelector(`option[value='${s}']`);
+                    if (opt) opt.disabled = false;
+                  });
+                }
+                // Onemogući 'Slobodan' i 'Međusmjena' uvijek
+                let slobodanOpt = select.querySelector("option[value='Slobodan']");
+                if (slobodanOpt) slobodanOpt.disabled = true;
+                let medjuOpt = select.querySelector("option[value='Međusmjena']");
+                if (medjuOpt) medjuOpt.disabled = true;
+              }
+            });
+          }, 10);
+        }
+        // Funkcija za izračun sati
+        function updateSatCounter() {
+          let ukupnoSati = 0;
+          radniDani.forEach(dan => {
+            const select = table.querySelector(`[name='${dan}']`);
+            const val = select ? select.value : '';
+            ukupnoSati += trajanja[val] || 0;
+          });
+          const limit = parseInt(business.weeklyLimit || '48');
+          let satDiv = document.getElementById('satCounterBox');
+          if (ukupnoSati > limit) {
+            satDiv.innerHTML = `<span style='color:#e74c3c;'>Prelazite tjedni limit! Trenutno imate <b>${ukupnoSati}</b> sati ovaj tjedan (limit: ${limit}).</span>`;
+          } else {
+            satDiv.innerHTML = `Trenutno imate <b>${ukupnoSati}</b> sati ovaj tjedan (limit: ${limit}).`;
+          }
+          return ukupnoSati;
+        }
+        // Dodaj event listenere na selectove
+        setTimeout(() => {
+          radniDani.forEach(dan => {
+            const select = table.querySelector(`[name='${dan}']`);
+            if (select) {
+              select.onchange = function() {
+                let session = JSON.parse(sessionStorage.getItem('sessionUser'));
+                let allRequests = JSON.parse(localStorage.getItem('workerRequests') || '{}');
+                const code = document.getElementById('requestCode').value.trim().toUpperCase();
+                let users = Object.keys(allRequests[code] || {});
+                let myKey = session.username + '#' + session.id;
+                // Dinamički onemogući opcije za svaki dan
+                let used = {};
+                users.forEach(u => {
+                  if (allRequests[code][u] && allRequests[code][u][dan]) used[allRequests[code][u][dan]] = true;
+                });
+                // Onemogući 'Slobodan' ako je netko već izabrao 'Slobodan' ili 'Međusmjenu'
+                let slobodanOpt = select.querySelector("option[value='Slobodan']");
+                if (slobodanOpt) slobodanOpt.disabled = !!(used['Slobodan'] || used['Međusmjena']);
+                // Onemogući 'Međusmjena' ako je netko već izabrao 'Međusmjenu' ili 'Slobodan'
+                let medjuOpt = select.querySelector("option[value='Međusmjena']");
+                if (medjuOpt) medjuOpt.disabled = !!(used['Međusmjena'] || used['Slobodan']);
+                // Onemogući već odabrane smjene Jutro/Popodne
+                let jutroOpt = select.querySelector("option[value='Jutro']");
+                if (jutroOpt) jutroOpt.disabled = !!used['Jutro'];
+                let popodneOpt = select.querySelector("option[value='Popodne']");
+                if (popodneOpt) popodneOpt.disabled = !!used['Popodne'];
+                // Limit sati
+                let ukupnoSati = 0;
+                radniDani.forEach(d => {
+                  const s = table.querySelector(`[name='${d}']`);
+                  const v = s ? s.value : '';
+                  ukupnoSati += trajanja[v] || 0;
+                });
+                const limit = parseInt(business.weeklyLimit || '48');
+                if (ukupnoSati > limit) {
+                  // Prelazi limit, resetiraj odabrani dan na '-'
+                  const odabranaVrijednost = select.value;
+                  const satiPrije = ukupnoSati - (trajanja[odabranaVrijednost] || 0);
+                  select.value = '-';
+                  updateSatCounter();
+                  let satDiv = document.getElementById('satCounterBox');
+                  satDiv.innerHTML = `<span style='color:#e74c3c;'>Odabirom ove smjene prelazite tjedni limit! Trenutno imate <b>${satiPrije}</b> sati, a s ovom smjenom bi imali <b>${ukupnoSati}</b> (limit: ${limit}). Dan je vraćen na '-'.</span>`;
+                  return;
+                } else {
+                  updateSatCounter();
+                }
+              };
+              // Pozovi odmah da se disable postavi na početku
+              select.onchange();
+            }
+          });
+          updateSatCounter();
+        }, 100);
+      };
       document.getElementById('requestForm').onsubmit = function(e) {
         e.preventDefault();
         const code = document.getElementById('requestCode').value.trim().toUpperCase();
-        if (!code) { alert('Unesite kod rasporeda!'); return; }
+        let allSchedules = JSON.parse(localStorage.getItem('allSchedules') || '{}');
+        let scheduleInfo = allSchedules[code];
+        if (!scheduleInfo || !scheduleInfo.business) { alert('Ne postoji raspored ili tvrtka za taj kod!'); return; }
+        const business = scheduleInfo.business;
+        let radniDani = business.workDays == 7
+          ? ["Ponedjeljak","Utorak","Srijeda","Četvrtak","Petak","Subota","Nedjelja"]
+          : ["Ponedjeljak","Utorak","Srijeda","Četvrtak","Petak","Subota"];
+        let form = document.getElementById('requestForm');
+        const zahtjevi = {};
+        // Provjeri da su sve smjene popunjene za zadnju osobu (osim šefice)
+        let session = JSON.parse(sessionStorage.getItem('sessionUser'));
         let allRequests = JSON.parse(localStorage.getItem('workerRequests') || '{}');
+        let users = Object.keys(allRequests[code] || {});
+        let isLast = users.length === (business.workers ? business.workers.length - 1 : 0);
+        let isBoss = session.role === 'boss';
+        let prazni = [];
+        radniDani.forEach(dan => {
+          const select = form.querySelector(`[name='${dan}']`);
+          zahtjevi[dan] = select ? select.value : '';
+          if (!isBoss && isLast && (!select || select.value === '-' || select.value === '')) prazni.push(dan);
+        });
+        if (!isBoss && isLast && prazni.length > 0) {
+          alert('Morate popuniti sve dane! Sljedeći dani nisu popunjeni: ' + prazni.join(', '));
+          return;
+        }
         if (!allRequests[code]) allRequests[code] = {};
-        // Spremi zahtjev pod username#id
         const workerKey = user.username + '#' + (user.id || '');
-        allRequests[code][workerKey] = document.getElementById('requestText').value.trim();
+        // Dodaj brojZahtjeva kao redni broj zahtjeva za ovaj raspored
+        const brojZahtjeva = Object.keys(allRequests[code]).length + 1;
+        allRequests[code][workerKey] = { brojZahtjeva, ...zahtjevi };
         localStorage.setItem('workerRequests', JSON.stringify(allRequests));
         alert('Zahtjev spremljen!');
+        if (window.renderWorkerRequestsTable) setTimeout(window.renderWorkerRequestsTable, 200);
         modal.style.display = 'none';
       };
     }
