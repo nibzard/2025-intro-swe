@@ -2,7 +2,8 @@
 
 **Projekt:** TeamConnect – Povezivanje timova za sport  
 **Tim:** Đana Rogulj & Karolina Mihaljević  
-**Status:** U izradi  
+**Status:** Gotvo
+**Link na aplikaciju**  https://teamconnect-frontendte.onrender.com/
 
 ## 🎯 Pregled projekta
 
@@ -29,7 +30,7 @@ Aplikacija pomaže svima koji:
 - HTML, CSS, JavaScript  
 - Node.js (backend)  
 - Express.js (API)  
-- MongoDB ili JSON datoteke (pohrana korisnika i timova)  
+- Supabase (pohrana korisnika i timova)  
 - Git & GitHub (verzioniranje koda)  
 - Visual Studio Code  
 
