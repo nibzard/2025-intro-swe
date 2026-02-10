@@ -10,6 +10,8 @@ import {
 import { useHistory } from "react-router-dom/cjs/react-router-dom";
 import { apiClient } from "../api/client";
 import LogoIcon from "../assets/logo.png";
+import SaveIcon from "../assets/save.svg";
+import SaveFilledIcon from "../assets/saveFilled.svg";
 
 export default function HERChat() {
   const history = useHistory();
@@ -18,6 +20,8 @@ export default function HERChat() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editingContent, setEditingContent] = useState("");
 
   // Fetch current user and posts on mount
   useEffect(() => {
@@ -29,7 +33,21 @@ export default function HERChat() {
 
         // Fetch posts
         const postsData = await apiClient.getPosts();
-        setPosts(postsData || []);
+        const postsList = postsData || [];
+
+        // Fetch saved posts for current user and merge saved flag
+        let savedIds = [];
+        try {
+          const saved = await apiClient.getSaves();
+          savedIds = (saved || []).map((s) => s.id);
+        } catch (e) {
+          // ignore if not logged in or no saves
+          savedIds = [];
+        }
+
+        setPosts(
+          postsList.map((p) => ({ ...p, saved: savedIds.includes(p.id) })),
+        );
         setLoading(false);
       } catch (err) {
         console.error("Error loading data:", err);
@@ -43,10 +61,10 @@ export default function HERChat() {
 
   const handleLike = async (postId) => {
     try {
-      const post = posts.find(p => p.id === postId);
-      
+      const post = posts.find((p) => p.id === postId);
+
       // Check if already liked
-      const isLiked = posts.find(p => p.id === postId)?.liked;
+      const isLiked = posts.find((p) => p.id === postId)?.liked;
 
       if (isLiked) {
         await apiClient.removeFavorite(postId);
@@ -65,7 +83,7 @@ export default function HERChat() {
             };
           }
           return p;
-        })
+        }),
       );
     } catch (err) {
       console.error("Error liking post:", err);
@@ -77,7 +95,7 @@ export default function HERChat() {
 
     try {
       const response = await apiClient.createPost(newPost);
-      
+
       // Add new post to beginning of list
       const newPostObj = {
         id: response.post.id,
@@ -105,6 +123,25 @@ export default function HERChat() {
     alert("Share feature coming soon!");
   };
 
+  const handleSaveToggle = async (postId) => {
+    try {
+      const post = posts.find((p) => p.id === postId);
+      if (!post) return;
+
+      if (post.saved) {
+        await apiClient.removeSave(postId);
+      } else {
+        await apiClient.addSave(postId);
+      }
+
+      setPosts(
+        posts.map((p) => (p.id === postId ? { ...p, saved: !p.saved } : p)),
+      );
+    } catch (err) {
+      console.error("Error toggling save:", err);
+    }
+  };
+
   const handleComment = (postId) => {
     const comment = prompt("Add a comment:");
     if (comment) {
@@ -115,7 +152,7 @@ export default function HERChat() {
   const handleCommentSubmit = async (postId, content) => {
     try {
       await apiClient.createComment(postId, content);
-      
+
       // Update local state
       setPosts(
         posts.map((p) => {
@@ -126,11 +163,72 @@ export default function HERChat() {
             };
           }
           return p;
-        })
+        }),
       );
     } catch (err) {
       console.error("Error commenting:", err);
     }
+  };
+
+  const handleEditClick = (post) => {
+    setEditingPostId(post.id);
+    setEditingContent(post.content);
+  };
+
+  const handleEditSave = async (postId) => {
+    if (!editingContent.trim()) {
+      setError("Post content cannot be empty");
+      return;
+    }
+
+    try {
+      await apiClient.editPost(postId, editingContent);
+
+      // Update local state
+      setPosts(
+        posts.map((p) => {
+          if (p.id === postId) {
+            return { ...p, content: editingContent };
+          }
+          return p;
+        }),
+      );
+
+      setEditingPostId(null);
+      setEditingContent("");
+      setError("");
+    } catch (err) {
+      console.error("Error editing post:", err);
+      setError(err.message || "Failed to edit post");
+    }
+  };
+
+  const handleEditCancel = () => {
+    setEditingPostId(null);
+    setEditingContent("");
+  };
+
+  const formatPostTime = (iso) => {
+    if (!iso) return "Just now";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "Just now";
+    const now = new Date();
+    const diffSec = Math.floor((now - d) / 1000);
+    if (diffSec < 60) return "Just now";
+    if (
+      d.getFullYear() === now.getFullYear() &&
+      d.getMonth() === now.getMonth() &&
+      d.getDate() === now.getDate()
+    ) {
+      return "Today";
+    }
+    const pad = (n) => n.toString().padStart(2, "0");
+    const hh = pad(d.getHours());
+    const mm = pad(d.getMinutes());
+    const dd = pad(d.getDate());
+    const mo = pad(d.getMonth() + 1);
+    const yyyy = d.getFullYear();
+    return `${hh}:${mm} ${dd}/${mo}/${yyyy}`;
   };
 
   if (loading) {
@@ -164,14 +262,20 @@ export default function HERChat() {
             <h1 style={styles.logoText}>HERChat</h1>
           </div>
           <div style={styles.headerButtons}>
-            <button style={styles.btnLogout} onClick={() => {
-              localStorage.removeItem("token");
-              localStorage.removeItem("user");
-              history.push("/");
-            }}>
+            <button
+              style={styles.btnLogout}
+              onClick={() => {
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                history.push("/");
+              }}
+            >
               Log out
             </button>
-            <button style={styles.btnProfile} onClick={() => history.push("/profile")}>
+            <button
+              style={styles.btnProfile}
+              onClick={() => history.push("/profile")}
+            >
               Profile
             </button>
           </div>
@@ -211,13 +315,22 @@ export default function HERChat() {
                 <h2 style={styles.titleText}>Trending</h2>
               </div>
               <div style={styles.trendingTags}>
-                <div style={styles.tag} onClick={() => alert("Hashtag filter coming soon!")}>
+                <div
+                  style={styles.tag}
+                  onClick={() => alert("Hashtag filter coming soon!")}
+                >
                   #WomenInBusiness
                 </div>
-                <div style={styles.tag} onClick={() => alert("Hashtag filter coming soon!")}>
+                <div
+                  style={styles.tag}
+                  onClick={() => alert("Hashtag filter coming soon!")}
+                >
                   #SelfCare
                 </div>
-                <div style={styles.tag} onClick={() => alert("Hashtag filter coming soon!")}>
+                <div
+                  style={styles.tag}
+                  onClick={() => alert("Hashtag filter coming soon!")}
+                >
                   #WellnessJourney
                 </div>
               </div>
@@ -240,7 +353,13 @@ export default function HERChat() {
           <div style={styles.mainContent}>
             {/* Error Message */}
             {error && (
-              <div style={{ ...styles.createPostCard, backgroundColor: "#ffebee", borderColor: "#ef5350" }}>
+              <div
+                style={{
+                  ...styles.createPostCard,
+                  backgroundColor: "#ffebee",
+                  borderColor: "#ef5350",
+                }}
+              >
                 <p style={{ color: "#c62828" }}>{error}</p>
               </div>
             )}
@@ -272,16 +391,90 @@ export default function HERChat() {
                 <div key={post.id} style={styles.postCard}>
                   <div style={styles.postHeader}>
                     <div style={styles.postAvatar}>
-                      {(post.username || post.author || "U").substring(0, 2).toUpperCase()}
+                      {(post.username || post.author || "U")
+                        .substring(0, 2)
+                        .toUpperCase()}
                     </div>
                     <div style={styles.postInfo}>
                       <h3 style={styles.postAuthor}>
                         {post.username || post.author}
                       </h3>
-                      <p style={styles.postTime}>{post.time || "Just now"}</p>
+                      <p style={styles.postTime}>
+                        {formatPostTime(post.created_at)}
+                      </p>
                     </div>
+                    {/* Edit button for post owner */}
+                    {currentUser?.id === post.user_id && !editingPostId && (
+                      <button
+                        onClick={() => handleEditClick(post)}
+                        style={{ ...styles.actionBtn, marginLeft: "auto" }}
+                      >
+                        ✏️ Edit
+                      </button>
+                    )}
+                    {post.user_id !== currentUser?.id && (
+                      <button
+                        style={{
+                          ...styles.actionBtn,
+                          ...(post.saved && styles.actionBtnSaved),
+                        }}
+                        onClick={() => handleSaveToggle(post.id)}
+                      >
+                        <span style={styles.actionBtnText}>
+                          {post.saved ? (
+                            <img
+                              src={SaveFilledIcon}
+                              alt="Save"
+                              style={{ width: "25px", height: "25px" }}
+                            />
+                          ) : (
+                            <img
+                              src={SaveIcon}
+                              alt="Save"
+                              style={{ width: "25px", height: "25px" }}
+                            />
+                          )}
+                        </span>
+                      </button>
+                    )}
                   </div>
-                  <p style={styles.postContent}>{post.content}</p>
+
+                  {/* Edit mode or view mode */}
+                  {editingPostId === post.id ? (
+                    <div style={{ marginTop: "1rem" }}>
+                      <textarea
+                        value={editingContent}
+                        onChange={(e) => setEditingContent(e.target.value)}
+                        style={styles.textarea}
+                      />
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "0.5rem",
+                          marginTop: "0.5rem",
+                        }}
+                      >
+                        <button
+                          onClick={() => handleEditSave(post.id)}
+                          style={{ ...styles.btnPost, flex: 1 }}
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={handleEditCancel}
+                          style={{
+                            ...styles.btnPost,
+                            background: "#999",
+                            flex: 1,
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p style={styles.postContent}>{post.content}</p>
+                  )}
 
                   {/* Action Buttons */}
                   <div style={styles.postActionsBar}>
@@ -298,19 +491,20 @@ export default function HERChat() {
                         stroke={post.liked ? "#ec407a" : "currentColor"}
                         strokeWidth={2}
                       />
-                      <span style={styles.actionBtnText}>{post.likes || 0}</span>
+                      <span style={styles.actionBtnText}>
+                        {post.likes || 0}
+                      </span>
                     </button>
-                    <button 
+                    <button
                       style={styles.actionBtn}
                       onClick={() => handleComment(post.id)}
                     >
                       <MessageCircle size={20} />
-                      <span style={styles.actionBtnText}>{post.comments || 0}</span>
+                      <span style={styles.actionBtnText}>
+                        {post.comments || 0}
+                      </span>
                     </button>
-                    <button 
-                      style={styles.actionBtn}
-                      onClick={handleShare}
-                    >
+                    <button style={styles.actionBtn} onClick={handleShare}>
                       <Share2 size={20} />
                       <span style={styles.actionBtnText}>Share</span>
                     </button>
@@ -553,6 +747,12 @@ const styles = {
     color: "#555",
     lineHeight: "1.6",
     marginTop: "0.5rem",
+    width: "100%",
+    overflow: "hidden",
+    whiteSpace: "normal",
+    wordWrap: "break-word",
+    overflowWrap: "break-word",
+    wordBreak: "break-all",
   },
   postActionsBar: {
     display: "flex",
@@ -575,6 +775,9 @@ const styles = {
   },
   actionBtnLiked: {
     color: "#ec407a",
+  },
+  actionBtnSaved: {
+    color: "#1f6feb",
   },
   actionBtnText: {
     fontSize: "0.9rem",

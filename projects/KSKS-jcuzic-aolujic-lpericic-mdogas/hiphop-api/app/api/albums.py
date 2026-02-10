@@ -21,11 +21,12 @@ def get_albums(
     artist: Optional[str] = None,
     year: Optional[int] = None,
     region: Optional[str] = None,
+    random: bool = False,
     db: Session = Depends(get_db)
 ):
     albums = crud_album.get_albums(
         db, skip=skip, limit=limit, genre=genre,
-        artist=artist, year=year, region=region
+        artist=artist, year=year, region=region, random_order=random
     )
     return albums
 

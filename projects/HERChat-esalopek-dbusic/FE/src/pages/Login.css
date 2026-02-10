@@ -19,6 +19,18 @@
   gap: 30px;
 }
 
+.profile-modal {
+  background-color: #fff;
+  border-radius: 10px;
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 30px;
+}
+
 .login-subtitle {
   font-size: 30px;
   padding: 0 20px;
@@ -31,7 +43,8 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: 50%;
+  margin-bottom: 15px;
+  width: 100%;
 }
 
 .login-p {
@@ -44,7 +57,7 @@
 .login-login {
   width: 100%;
   height: 30px;
-  background-color: pink;
+  background-color: #ffc0cb;
   color: rgb(255, 255, 255);
   font-weight: 750;
   border: none;
@@ -98,7 +111,7 @@
   font-size: 14px;
 }
 .btn-container {
-  width: 50%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;

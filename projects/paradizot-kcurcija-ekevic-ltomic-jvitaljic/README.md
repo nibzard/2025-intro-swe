@@ -1,9 +1,84 @@
-# 🚍 Promet Split – Studentski projekt mobilne aplikacije za javni prijevoz
+# Promet Split – Web aplikacija
 
-Ovaj projekt predstavlja **prototip mobilne aplikacije Promet Split**, koja simulira funkcionalnosti stvarne aplikacije za gradski prijevoz u Splitu.  
-Cilj projekta je popravak i razvoj mobilne aplikacije koja omogućuje korisnicima pregled voznog reda, planiranje putovanja te kupnju i aktivaciju autobusnih karata putem digitalnog sustava.
+Ova aplikacija je web‑temeljeni projekt za prikaz i analizu javnog autobusnog prijevoza u Splitu, s fokusom na rute, stanice i prostornu vizualizaciju podataka na karti.
+
+Aplikacija je izgrađena koristeći **React** i **Vite**, uz snažnu integraciju s **Leaflet** mapama.
 
 ---
+
+## ✨ Značajke
+
+* 🗺️ Interaktivna karta temeljena na Leafletu
+* 🚌 Prikaz autobusnih linija i ruta
+* 🧭 Planiranje ruta (Leaflet Routing Machine)
+* 🔎 Pretraživanje lokacija (GeoSearch)
+* 📱 Responzivan dizajn, prilagođen desktopu i mobilnim uređajima
+
+---
+
+## 🛠️ Tehnologije
+
+* **React 19**
+* **Vite**
+* **React Router**
+* **Leaflet / React‑Leaflet**
+* **Leaflet MarkerCluster**
+* **Leaflet Routing Machine**
+* **Heatmap.js**
+
+---
+
+## ▶️ Pokretanje projekta lokalno
+
+### Preduvjeti
+
+* Node.js (preporučeno: LTS verzija)
+* npm ili yarn
+
+### Instalacija
+
+```bash
+npm install
+```
+
+### Razvojni server
+
+```bash
+npm run dev
+```
+
+Aplikacija će biti dostupna na `http://localhost:5173`.
+
+### Build za produkciju
+
+```bash
+npm run build
+```
+
+### Pregled builda
+
+```bash
+npm run preview
+```
+
+---
+
+
+## 🌍 Deploy
+
+Projekt je kompatibilan s platformama poput **Vercel**, **Netlify** ili klasičnim statičkim hostingom.
+
+Moguće mu je pristupiti putem linka: https://prometsplit.vercel.app/
+
+---
+
+## 📌 Napomena
+
+Ovo je **neovisni projekt** i nije službena aplikacija Promet Splita.
+
+---
+
+## 👤 Autor
 
 | Ime i prezime | Mail |
 | --------------- | -------------------------------- |
@@ -14,42 +89,3 @@ Cilj projekta je popravak i razvoj mobilne aplikacije koja omogućuje korisnicim
 
 ---
 
-## 🎯 Cilj projekta
-
-- Napraviti prototip mobilne aplikacije koja **olakšava korištenje javnog prijevoza**.  
-- Omogućiti **digitalnu kupnju i validaciju karata** putem QR koda.  
-- Implementirati **real-time prikaz autobusa** pomoću GPS podataka.  
-- Omogućiti **intuitivno korisničko sučelje** i jednostavnu navigaciju.  
-
----
-
-## 🧩 Funkcionalnosti
-
-- 🔍 Pregled voznog reda i stajališta  
-- 🗺️ Planiranje putovanja (od polazne do krajnje stanice)  
-- 💳 Kupnja i aktivacija karata (jednokratnih i pretplatnih)  
-- 📱 Validacija karata putem QR koda u autobusu  
-- 🚌 Prikaz autobusa i stanica u stvarnom vremenu  
-- 🧾 Pregled povijesti kupljenih karata  
-- ☎️ Kontakt s podrškom  
-
----
-
-## 🧭 Dijagram toka aplikacije
-
-```mermaid
-flowchart TD
-    A[Otvaranje aplikacije] --> B{Je li korisnik ulogiran?}
-    B -- Ne --> C[Pregled vremena polazaka i stanica]
-    B -- Da --> D[Pristup dodatnim opcijama profila]
-    C --> E[Planiranje putovanja]
-    D --> E
-    E --> F{Kupovina karte/pokaza}
-    F -- Dnevna karta --> G[Dodavanje novca u e-Novčanik]
-    F -- Mjesečna/Godišnja karta --> H[Kupnja pokaza]
-    G --> I[Aktivacija karte -> skeniranje QR koda]
-    H --> I
-    I --> J[Skeniranje karte prilikom ulaska u autobus]
-    J --> K[Vožnja]
-    K --> L[Pregled stanica u realnom vremenu]
-    L --> M[Pomoć i korisnička podrška]

@@ -1,12 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import { supabase } from "@/app/lib/supabaseClient";
 
 export default function ReservationModal({ restaurant, onClose }) {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [seats, setSeats] = useState(1);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+    });
+  }, []);
 
   const getMinDate = () => {
     const tomorrow = new Date();
@@ -17,7 +25,10 @@ export default function ReservationModal({ restaurant, onClose }) {
   const getAvailableHours = () => {
     if (!date) return [];
 
-    const dayOfWeek = new Date(date).toLocaleDateString("en-US", { weekday: "short" });
+    const dayOfWeek = new Date(date).toLocaleDateString("en-US", {
+      weekday: "short",
+    });
+
     const hoursRange = restaurant.opening_hours[dayOfWeek];
     if (!hoursRange) return [];
 
@@ -26,7 +37,6 @@ export default function ReservationModal({ restaurant, onClose }) {
     const [closeH, closeM] = close.split(":").map(Number);
 
     const hours = [];
-
     let currentH = openH;
     let currentM = openM;
 
@@ -34,6 +44,7 @@ export default function ReservationModal({ restaurant, onClose }) {
       const hh = currentH.toString().padStart(2, "0");
       const mm = currentM.toString().padStart(2, "0");
       hours.push(`${hh}:${mm}`);
+
       currentM++;
       if (currentM >= 60) {
         currentM = 0;
@@ -49,19 +60,27 @@ export default function ReservationModal({ restaurant, onClose }) {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    const reservation = {
-      restaurantName: restaurant.name,
-      restaurantImage: restaurant.image,
-      date,
-      time,
-      seats,
-    };
+    if (!user) {
+      alert("Moraš biti prijavljen da bi napravio rezervaciju.");
+      return;
+    }
 
-    await fetch("/api/reservations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(reservation),
-    });
+    const { error } = await supabase.from("reservations").insert([
+      {
+        user_id: user.id,
+        restaurant_name: restaurant.name,
+        restaurant_image: restaurant.image,
+        date,
+        time,
+        seats: Number(seats),
+      },
+    ]);
+
+    if (error) {
+      console.error(error);
+      alert("Greška kod spremanja rezervacije.");
+      return;
+    }
 
     onClose();
   }
@@ -84,7 +103,15 @@ export default function ReservationModal({ restaurant, onClose }) {
           className="w-full h-40 object-cover rounded-md"
         />
 
-        <h2 className="text-2xl font-bold text-[#0F766E] mt-4">{restaurant.name}</h2>
+        <h2 className="text-2xl font-bold text-[#0F766E] mt-4">
+          {restaurant.name}
+        </h2>
+
+        {!user && (
+          <p className="text-sm text-red-600 mt-2">
+            Moraš biti prijavljen za rezervaciju.
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <div>
@@ -98,6 +125,7 @@ export default function ReservationModal({ restaurant, onClose }) {
               className="w-full border rounded-md p-2"
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium">Vrijeme</label>
             <select
@@ -109,17 +137,24 @@ export default function ReservationModal({ restaurant, onClose }) {
             >
               <option value="">Odaberi vrijeme</option>
               {availableHours.map((h) => (
-                <option key={h} value={h}>{h}</option>
+                <option key={h} value={h}>
+                  {h}
+                </option>
               ))}
             </select>
+
             {availableHours.length > 0 && (
               <p className="text-xs text-gray-500">
-                Radno vrijeme: {availableHours[0]} - {availableHours[availableHours.length - 1]}
+                Radno vrijeme: {availableHours[0]} –{" "}
+                {availableHours[availableHours.length - 1]}
               </p>
             )}
           </div>
+
           <div>
-            <label className="block text-sm font-medium">Broj sjedećih mjesta</label>
+            <label className="block text-sm font-medium">
+              Broj sjedećih mjesta
+            </label>
             <input
               type="number"
               min="1"
@@ -132,9 +167,10 @@ export default function ReservationModal({ restaurant, onClose }) {
 
           <button
             type="submit"
-            className="w-full bg-[#0F766E] text-white py-2 rounded-md hover:bg-[#115e59]"
+            disabled={!user}
+            className="w-full bg-[#0F766E] text-white py-2 rounded-md hover:bg-[#115e59] disabled:opacity-50"
           >
-            Rezerviraj
+            {user ? "Rezerviraj" : "Prijavi se za rezervaciju"}
           </button>
         </form>
       </div>

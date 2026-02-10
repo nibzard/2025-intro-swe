@@ -22,4 +22,8 @@ export const API_PATHS = {
     DELETE_EXPENSE: (expenseId) =>  `/api/v1/expense/${expenseId}`,
     DOWNLOAD_EXPENSE: `/api/v1/expense/downloadexcel`,
   },
+  AI_ADVISOR: {
+    CHAT: "/api/v1/ai-advisor/chat",
+    INSIGHTS: "/api/v1/ai-advisor/insights",
+  },
 };

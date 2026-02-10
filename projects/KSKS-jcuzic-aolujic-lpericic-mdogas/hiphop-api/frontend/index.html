@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Classic Albums Archive 🎵</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
 </head>
 <body>
     <!-- Navigation -->
@@ -17,14 +16,7 @@
             <div class="nav-menu" id="navMenu">
                 <a href="#home" class="nav-link active">Home</a>
                 <a href="#albums" class="nav-link">Albums</a>
-                <a href="#artists" class="nav-link">Artists</a>
-                <a href="#producers" class="nav-link">Producers</a>
                 <a href="#recommendations" class="nav-link">Recommendations</a>
-<<<<<<< HEAD
-=======
-                <button id="themeToggle" class="btn btn-outline">🌙</button>
-                <button id="profileBtn" class="profile-btn" onclick="showMyProfile()" style="display:none;">👤 Profile</button>
->>>>>>> 17e960b (Frontend za cijeli projekt)
                 <button id="loginBtn" class="btn btn-primary">Login</button>
                 <button id="logoutBtn" class="btn btn-secondary" style="display:none;">Logout</button>
             </div>
@@ -108,46 +100,6 @@
         </div>
     </section>
 
-    <!-- ============ ARTISTS SECTION ============ -->
-    <section id="artists" class="albums-section" style="background: rgba(0,0,0,0.3); padding: 4rem 0;">
-        <div class="container">
-            <h2 class="section-title">Featured Artists 👤</h2>
-            <p style="text-align: center; color: #aaa; margin-bottom: 2rem;">Legendary artists across all genres</p>
-            
-            <!-- Artist Filters -->
-            <div class="filters" style="margin-bottom: 2rem;">
-                <div class="container">
-                    <div class="filter-group">
-                        <label>Region:</label>
-                        <select id="artistRegionFilter" onchange="filterArtists()">
-                            <option value="">All Regions</option>
-                            <option value="east_coast">East Coast</option>
-                            <option value="west_coast">West Coast</option>
-                            <option value="south">South</option>
-                            <option value="uk">UK</option>
-                            <option value="detroit">Detroit</option>
-                        </select>
-                    </div>
-                    <button onclick="resetArtistFilters()" class="btn btn-secondary">Reset</button>
-                </div>
-            </div>
-            
-            <div id="artistsLoadingSpinner" class="spinner">Loading...</div>
-            <div id="artistsGrid" class="albums-grid"></div>
-        </div>
-    </section>
-
-    <!-- ============ PRODUCERS SECTION ============ -->
-    <section id="producers" class="albums-section">
-        <div class="container">
-            <h2 class="section-title">Master Producers 🎛️</h2>
-            <p style="text-align: center; color: #aaa; margin-bottom: 2rem;">The minds behind legendary sounds</p>
-            
-            <div id="producersLoadingSpinner" class="spinner">Loading...</div>
-            <div id="producersGrid" class="albums-grid"></div>
-        </div>
-    </section>
-
     <!-- Recommendations Section -->
     <section id="recommendations" class="recommendations-section">
         <div class="container">
@@ -194,22 +146,6 @@
         </div>
     </div>
 
-    <!-- Artist Modal -->
-    <div id="artistModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeArtistModal()">&times;</span>
-            <div id="artistDetails"></div>
-        </div>
-    </div>
-
-    <!-- Producer Modal -->
-    <div id="producerModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeProducerModal()">&times;</span>
-            <div id="producerDetails"></div>
-        </div>
-    </div>
-
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
@@ -218,14 +154,6 @@
         </div>
     </footer>
 
-    <script src="app.js"></script>
-
-    <!-- User Profile Modal -->
-    <div id="userProfileModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeUserProfileModal()">&times;</span>
-            <div id="userProfileDetails"></div>
-        </div>
-    </div>
+    <script src="app.js?v=6"></script>
 </body>
 </html>

@@ -566,610 +566,210 @@ form input:focus {
     margin-top: 1rem;
 }
 
-/* Responsive */
+/* Responsive - Tablets and smaller */
 @media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+
     .hero-title {
         font-size: 2.5rem;
     }
 
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+
     .albums-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
         gap: 1rem;
     }
 
     .nav-menu {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .navbar .container {
         flex-direction: column;
         gap: 1rem;
     }
 
     .filters .container {
         flex-direction: column;
+        gap: 1rem;
     }
 
     .genre-tabs {
         flex-wrap: wrap;
         justify-content: center;
+        gap: 0.5rem;
     }
 
     .genre-tab {
         flex: 0 1 auto;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
     }
-<<<<<<< HEAD
-=======
-}
-
-/* Wikipedia sections */
-.wiki-section {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background: rgba(255,255,255,0.03);
-    border-radius: 10px;
-    border-left: 4px solid var(--primary);
-}
-
-.wiki-header {
-    color: var(--primary);
-    margin-bottom: 1rem;
-    font-size: 1.3rem;
-}
-
-.wiki-content {
-    line-height: 1.8;
-    color: var(--text-primary);
-}
-
-body.light-mode .wiki-section {
-    background: rgba(0,0,0,0.05);
-}
-
-
-/* Dark/Light Mode Toggle */
-
-/* Light Mode Variables */
-body.light-mode {
-    --primary: #0066cc;
-    --secondary: #6610f2;
-    --dark: #ffffff;
-    --light: #1a1a1d;
-    --accent: #ff9500;
-    --gradient-1: #5a67d8;
-    --gradient-2: #6b46c1;
-    --success: #00c853;
-    --bg-primary: #f5f7fa;
-    --bg-secondary: #ffffff;
-    --text-primary: #1a1a1d;
-    --text-secondary: #666;
-    --border-color: #e0e0e0;
-    --card-bg: #ffffff;
-    --card-hover: #f8f9fa;
-}
-
-/* Dark Mode Variables (default) */
-body {
-    --bg-primary: linear-gradient(135deg, #0a0e27 0%, #1a1d3a 50%, #2d1b4e 100%);
-    --bg-secondary: rgba(0, 0, 0, 0.9);
-    --text-primary: #f5f5f5;
-    --text-secondary: #ccc;
-    --border-color: rgba(255, 255, 255, 0.2);
-    --card-bg: rgba(255, 255, 255, 0.05);
-    --card-hover: rgba(255, 255, 255, 0.1);
-}
-
-/* Light Mode Body */
-body.light-mode {
-    background: var(--bg-primary);
-    color: var(--text-primary);
-}
-
-/* Light Mode Navbar */
-body.light-mode .navbar {
-    background: rgba(255, 255, 255, 0.95);
-    border-bottom-color: var(--primary);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-body.light-mode .nav-brand h1 {
-    color: var(--primary);
-}
-
-body.light-mode .nav-link {
-    color: var(--text-primary);
-}
-
-body.light-mode .nav-link:hover,
-body.light-mode .nav-link.active {
-    color: var(--primary);
-}
-
-/* Light Mode Hero */
-body.light-mode .hero {
-    background: linear-gradient(135deg, rgba(0, 102, 204, 0.1) 0%, rgba(102, 16, 242, 0.1) 100%);
-}
-
-body.light-mode .hero-title {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--gradient-1) 50%, var(--secondary) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-body.light-mode .hero-subtitle {
-    color: var(--text-secondary);
-}
-
-/* Light Mode Cards */
-body.light-mode .album-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-body.light-mode .album-card:hover {
-    background: var(--card-hover);
-    box-shadow: 0 8px 24px rgba(0, 102, 204, 0.2);
-}
-
-body.light-mode .album-title,
-body.light-mode .album-info h3 {
-    color: var(--text-primary);
-}
-
-body.light-mode .album-artist {
-    color: var(--primary);
-}
-
-body.light-mode .album-meta {
-    color: var(--text-secondary);
-}
-
-/* Light Mode Buttons */
-body.light-mode .btn-primary {
-    background: var(--primary);
-    color: white;
-}
-
-body.light-mode .btn-primary:hover {
-    background: linear-gradient(135deg, #0066cc, #5a67d8);
-    box-shadow: 0 5px 15px rgba(0, 102, 204, 0.3);
-}
-
-body.light-mode .btn-secondary {
-    background: var(--secondary);
-}
-
-body.light-mode .btn-outline {
-    color: var(--primary);
-    border-color: var(--primary);
-}
-
-body.light-mode .btn-outline:hover {
-    background: var(--primary);
-    color: white;
-}
-
-/* Light Mode Genre Tabs */
-body.light-mode .genre-tab {
-    background: white;
-    color: var(--text-primary);
-    border-color: var(--border-color);
-}
-
-body.light-mode .genre-tab:hover {
-    background: rgba(0, 102, 204, 0.1);
-    border-color: var(--primary);
-}
-
-body.light-mode .genre-tab.active {
-    background: linear-gradient(135deg, var(--primary), var(--gradient-1));
-    color: white;
-}
-
-/* Light Mode Filters */
-body.light-mode .filters {
-    background: white;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-body.light-mode .filter-group select,
-body.light-mode .filter-group input {
-    background: white;
-    color: var(--text-primary);
-    border-color: var(--border-color);
-}
-
-body.light-mode .filter-group select option {
-    background: white;
-    color: var(--text-primary);
-}
-
-body.light-mode .filter-group label {
-    color: var(--text-primary);
-}
-
-/* Light Mode Modal */
-body.light-mode .modal {
-    background: rgba(0, 0, 0, 0.7);
-}
-
-body.light-mode .modal-content {
-    background: white;
-    border-color: var(--primary);
-    color: var(--text-primary);
-}
-
-body.light-mode .close {
-    color: var(--primary);
-}
-
-body.light-mode .detail-label {
-    color: var(--primary);
-}
-
-/* Light Mode Forms */
-body.light-mode form input {
-    background: white;
-    color: var(--text-primary);
-    border-color: var(--border-color);
-}
-
-body.light-mode form input:focus {
-    border-color: var(--primary);
-}
-
-/* Light Mode Footer */
-body.light-mode .footer {
-    background: white;
-    border-top-color: var(--primary);
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-}
-
-/* Light Mode Section Titles */
-body.light-mode .section-title {
-    color: var(--primary);
-}
-
-/* Light Mode Badges */
-body.light-mode .genre-badge {
-    border-width: 1px;
-}
-
-/* Light Mode Wikipedia Sections */
-body.light-mode .wiki-section {
-    background: rgba(0, 102, 204, 0.05);
-    border-left-color: var(--primary);
-}
-
-body.light-mode .wiki-header {
-    color: var(--primary);
-}
-
-body.light-mode .wiki-content {
-    color: var(--text-primary);
-}
-
-/* Light Mode Error/Spinner */
-body.light-mode .spinner {
-    color: var(--primary);
-}
-
-body.light-mode .error-message {
-    color: #d32f2f;
-    background: rgba(211, 47, 47, 0.1);
-}
-
-/* Theme Toggle Button */
-#themeToggle {
-    font-size: 1.5rem;
-    padding: 0.5rem 1rem;
-    border: 2px solid var(--primary);
-    background: transparent;
-    cursor: pointer;
-    border-radius: 50px;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#themeToggle:hover {
-    background: var(--primary);
-    transform: rotate(180deg);
-}
-
-body.light-mode #themeToggle {
-    border-color: var(--primary);
-}
-
-/* Smooth Transition for Theme Switch */
-body,
-.navbar,
-.hero,
-.album-card,
-.modal-content,
-.filters,
-.footer,
-.genre-tab,
-.btn {
-    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
-
-/* Light Mode Star Rating */
-body.light-mode .star {
-    color: #ccc;
-}
-
-body.light-mode .star:hover {
-    color: var(--accent);
-}
-
-/* Light Mode Albums Section */
-body.light-mode .albums-section {
-    background: transparent;
-}
-
-/* Light Mode Form Footer */
-body.light-mode .form-footer a,
-body.light-mode .form-hint {
-    color: var(--text-secondary);
-}
-
-body.light-mode .form-footer a {
-    color: var(--primary);
-}
-
-/* ============================================
-   COMMENTS SYSTEM
-   ============================================ */
-
-.comments-section {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 10px;
-    border-left: 4px solid var(--accent);
-}
-
-.comments-header {
-    color: var(--accent);
-    font-size: 1.3rem;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.comment-input-area {
-    margin-bottom: 1.5rem;
-}
-
-.comment-textarea {
-    width: 100%;
-    padding: 1rem;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-primary);
-    font-family: inherit;
-    font-size: 1rem;
-    resize: vertical;
-    min-height: 100px;
-    margin-bottom: 0.5rem;
-}
-
-.comment-textarea:focus {
-    outline: none;
-    border-color: var(--primary);
-}
-
-.comment-card {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s;
-}
-
-.comment-card:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: var(--primary);
-}
-
-.comment-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.75rem;
-}
-
-.comment-username {
-    color: var(--primary);
-    font-weight: 600;
-    font-size: 1rem;
-}
-
-.comment-username:hover {
-    text-decoration: underline;
-}
-
-.comment-date {
-    color: #888;
-    font-size: 0.85rem;
-}
-
-.comment-content {
-    color: var(--text-primary);
-    line-height: 1.6;
-    margin: 0;
-}
-
-.comment-actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
-}
-
-.btn-small {
-    padding: 0.4rem 1rem;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: all 0.3s;
-    font-weight: 600;
-}
-
-.btn-danger {
-    background: rgba(255, 107, 107, 0.2);
-    color: #ff6b6b;
-    border: 1px solid #ff6b6b;
-}
-
-.btn-danger:hover {
-    background: #ff6b6b;
-    color: white;
-}
-
-/* ============================================
-   USER PROFILE
-   ============================================ */
-
-.profile-header {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.profile-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--gradient-1));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    font-weight: bold;
-    color: white;
-}
-
-.profile-info h2 {
-    color: var(--primary);
-    margin-bottom: 0.25rem;
-}
-
-.profile-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 1rem;
-    margin: 2rem 0;
-}
-
-.stat-card {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 1.5rem;
-    border-radius: 10px;
-    text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s;
-}
-
-.stat-card:hover {
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateY(-2px);
-    border-color: var(--primary);
-}
-
-.stat-value {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: var(--accent);
-    margin-bottom: 0.5rem;
-}
-
-.stat-label {
-    font-size: 0.9rem;
-    color: #888;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.user-ratings-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.user-rating-item {
-    display: flex;
-    gap: 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.user-rating-item:hover {
-    background: rgba(255, 255, 255, 0.08);
-    transform: translateX(5px);
-    border-color: var(--primary);
-}
-
-/* Light Mode Comments & Profile */
-body.light-mode .comments-section {
-    background: rgba(0, 0, 0, 0.03);
-    border-left-color: var(--accent);
-}
-
-body.light-mode .comment-card {
-    background: white;
-    border-color: var(--border-color);
-}
-
-body.light-mode .comment-card:hover {
-    background: var(--card-hover);
-}
-
-body.light-mode .comment-textarea {
-    background: white;
-    border-color: var(--border-color);
-    color: var(--text-primary);
-}
-
-body.light-mode .stat-card {
-    background: white;
-    border-color: var(--border-color);
-}
-
-body.light-mode .user-rating-item {
-    background: white;
-    border-color: var(--border-color);
-}
-
-body.light-mode .user-rating-item:hover {
-    background: var(--card-hover);
-}
-
-/* Profile Button in Navbar */
-.profile-btn {
-    background: transparent;
-    border: 2px solid var(--primary);
-    color: var(--primary);
-    padding: 0.6rem 1.2rem;
-    border-radius: 50px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s;
-}
 
-.profile-btn:hover {
-    background: var(--primary);
-    color: white;
->>>>>>> 17e960b (Frontend za cijeli projekt)
+    .modal-content {
+        width: 95%;
+        padding: 1.5rem;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .album-detail-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .album-cover-large {
+        margin: 0 auto 1rem;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .btn-large {
+        width: 100%;
+    }
+}
+
+/* Mobile phones */
+@media (max-width: 480px) {
+    body {
+        font-size: 14px;
+    }
+
+    .container {
+        padding: 0 10px;
+    }
+
+    .hero {
+        padding: 3rem 0;
+    }
+
+    .hero-title {
+        font-size: 1.8rem;
+    }
+
+    .hero-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .nav-brand h1 {
+        font-size: 1.2rem;
+    }
+
+    .albums-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .album-card {
+        padding: 0.75rem;
+    }
+
+    .album-title {
+        font-size: 0.9rem;
+    }
+
+    .album-artist {
+        font-size: 0.8rem;
+    }
+
+    .genre-tab {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    .btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .modal-content {
+        width: 98%;
+        padding: 1rem;
+        margin: 10px;
+    }
+
+    .close {
+        font-size: 2rem;
+        top: 5px;
+        right: 10px;
+    }
+
+    .album-cover-large {
+        width: 200px;
+        height: 200px;
+    }
+
+    .album-detail-title {
+        font-size: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    textarea {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    /* Make star rating more touch-friendly */
+    .stars {
+        gap: 0.3rem;
+    }
+
+    .star {
+        font-size: 2rem;
+        padding: 0.5rem;
+    }
+
+    /* Adjust recommendation cards for mobile */
+    .recommendation-card {
+        min-width: 150px;
+    }
+
+    /* Better spacing for mobile */
+    section {
+        padding: 2rem 0;
+    }
+
+    .footer {
+        padding: 1.5rem 0;
+        font-size: 0.85rem;
+    }
+}
+
+/* Small phones */
+@media (max-width: 360px) {
+    .hero-title {
+        font-size: 1.5rem;
+    }
+
+    .albums-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .album-card {
+        max-width: 100%;
+    }
+
+    .genre-tabs {
+        gap: 0.3rem;
+    }
+
+    .genre-tab {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.8rem;
+    }
 }
