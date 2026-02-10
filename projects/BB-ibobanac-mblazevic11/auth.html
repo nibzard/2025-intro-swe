@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prijava - Student Planner</title>
+    <link rel="stylesheet" href="auth-style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="auth-header">
+                <h1>📚 Student Planner</h1>
+                <p>BB Team</p>
+            </div>
+
+            <!-- Prijava forma -->
+            <div id="login-form" class="auth-form active">
+                <h2>Prijava</h2>
+                <form id="login">
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" placeholder="tvoj@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Lozinka</label>
+                        <input type="password" id="login-password" placeholder="Upiši lozinku" required>
+                    </div>
+                    <button type="submit" class="auth-btn">Prijavi se</button>
+                    <div class="error-message" id="login-error"></div>
+                </form>
+                <p class="switch-form">
+                    Nemaš račun? <a href="#" id="show-register">Registriraj se</a>
+                </p>
+            </div>
+
+            <!-- Registracija forma -->
+            <div id="register-form" class="auth-form">
+                <h2>Registracija</h2>
+                <form id="register">
+                    <div class="form-group">
+                        <label for="register-name">Ime i prezime</label>
+                        <input type="text" id="register-name" placeholder="Ivan Horvat" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" placeholder="tvoj@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Lozinka</label>
+                        <input type="password" id="register-password" placeholder="Minimalno 6 znakova" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-confirm">Potvrdi lozinku</label>
+                        <input type="password" id="register-confirm" placeholder="Ponovi lozinku" required>
+                    </div>
+                    <button type="submit" class="auth-btn">Registriraj se</button>
+                    <div class="error-message" id="register-error"></div>
+                </form>
+                <p class="switch-form">
+                    Već imaš račun? <a href="#" id="show-login">Prijavi se</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="auth.js"></script>
+</body>
+</html>
