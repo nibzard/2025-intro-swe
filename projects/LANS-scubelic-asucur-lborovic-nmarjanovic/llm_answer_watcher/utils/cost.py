@@ -29,6 +29,15 @@ import logging
 # All prices are USD per token (calculated as price_per_million / 1,000,000)
 PRICING = {
     "google": {
+        # Gemini 2.5 models (estimated using 1.5 Flash pricing)
+        "gemini-2.5-flash": {
+            "input": 0.075 / 1_000_000,
+            "output": 0.30 / 1_000_000,
+        },
+        "models/gemini-2.5-flash": {
+            "input": 0.075 / 1_000_000,
+            "output": 0.30 / 1_000_000,
+        },
         # Gemini 2.0 models
         "gemini-2.0-flash-exp": {
             "input": 0.0,  # Free during experimental preview

@@ -32,7 +32,7 @@ from ..utils.time import utc_timestamp
 logger = logging.getLogger(__name__)
 
 # Current schema version - increment when migrations are added
-CURRENT_SCHEMA_VERSION = 7
+CURRENT_SCHEMA_VERSION = 10
 
 
 def init_db_if_needed(db_path: str) -> None:
@@ -198,9 +198,15 @@ def apply_migrations(
                 _migrate_to_v6(conn)
             elif target_version == 7:
                 _migrate_to_v7(conn)
+            elif target_version == 8:
+                _migrate_to_v8(conn)
+            elif target_version == 9:
+                _migrate_to_v9(conn)
+            elif target_version == 10:
+                _migrate_to_v10(conn)
             # Future migrations go here:
-            # elif target_version == 8:
-            #     _migrate_to_v8(conn)
+            # elif target_version == 11:
+            #     _migrate_to_v10(conn)
             else:
                 raise ValueError(f"No migration defined for version {target_version}")
 
@@ -797,6 +803,107 @@ def _migrate_to_v7(conn: sqlite3.Connection) -> None:
     logger.debug("Created refresh_tokens table and indexes (schema v7 part 3)")
 
 
+def _migrate_to_v8(conn: sqlite3.Connection) -> None:
+    """
+    Migrate database schema to version 8.
+
+    Adds user-specific configuration tables:
+    - user_brands: User's owned brands and competitors
+    - user_intents: User's saved search queries/intents
+
+    This allows each user to have their own personalized dashboard configuration
+    persisted in the database.
+
+    Args:
+        conn: Active SQLite database connection in transaction
+    """
+    # Create user_brands table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS user_brands (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            brand_name TEXT NOT NULL,
+            is_mine INTEGER NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            UNIQUE(user_id, brand_name)
+        )
+    """)
+
+    # Create indexes for brand lookups
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_user_brands_user
+        ON user_brands(user_id)
+    """)
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_user_brands_mine
+        ON user_brands(is_mine)
+    """)
+
+    # Create user_intents table
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS user_intents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            intent_alias TEXT NOT NULL,
+            prompt TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            UNIQUE(user_id, intent_alias)
+        )
+    """)
+
+    # Create indexes for intent lookups
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_user_intents_user
+        ON user_intents(user_id)
+    """)
+
+    logger.debug("Created user_brands and user_intents tables (schema v8)")
+
+
+def _migrate_to_v9(conn: sqlite3.Connection) -> None:
+    """
+    Migrate database schema to version 9.
+
+    Adds user isolation to runs:
+    - Adds user_id column to runs table (nullable for backward compatibility)
+    - Creates index on user_id
+
+    Args:
+        conn: Active SQLite database connection in transaction
+    """
+    # Add user_id column to runs table
+    conn.execute("ALTER TABLE runs ADD COLUMN user_id INTEGER REFERENCES users(id) ON DELETE CASCADE")
+
+    # Create index for user filtering
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_runs_user ON runs(user_id)")
+
+    logger.debug("Added user_id to runs table (schema v9)")
+
+
+def _migrate_to_v10(conn: sqlite3.Connection) -> None:
+    """
+    Migrate database schema to version 10.
+
+    Adds user_settings table to store user preferences.
+
+    Args:
+        conn: Active SQLite database connection in transaction
+    """
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS user_settings (
+            user_id INTEGER PRIMARY KEY,
+            settings_json TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
+    logger.debug("Created user_settings table (schema v10)")
+
+
 # ============================================================================
 # Database Operations (CRUD)
 # ============================================================================
@@ -808,6 +915,7 @@ def insert_run(
     timestamp_utc: str,
     total_intents: int,
     total_models: int,
+    user_id: int | None = None,
 ) -> None:
     """
     Insert a new run record into the runs table.
@@ -825,6 +933,7 @@ def insert_run(
         timestamp_utc: ISO 8601 timestamp with 'Z' suffix (e.g., "2025-11-02T08:00:00Z")
         total_intents: Number of buyer-intent queries in this run
         total_models: Number of LLM models being queried per intent
+        user_id: Optional user ID for multi-user isolation
 
     Raises:
         sqlite3.Error: If database operation fails
@@ -836,7 +945,8 @@ def insert_run(
         ...         run_id="2025-11-02T08-00-00Z",
         ...         timestamp_utc="2025-11-02T08:00:00Z",
         ...         total_intents=3,
-        ...         total_models=2
+        ...         total_models=2,
+        ...         user_id=1
         ...     )
         ...     conn.commit()
 
@@ -864,13 +974,14 @@ def insert_run(
             timestamp_utc,
             total_intents,
             total_models,
-            total_cost_usd
-        ) VALUES (?, ?, ?, ?, 0.0)
+            total_cost_usd,
+            user_id
+        ) VALUES (?, ?, ?, ?, 0.0, ?)
         """,
-        (run_id, timestamp_utc, total_intents, total_models),
+        (run_id, timestamp_utc, total_intents, total_models, user_id),
     )
     logger.debug(
-        f"Inserted run {run_id} with {total_intents} intents, {total_models} models"
+        f"Inserted run {run_id} with {total_intents} intents, {total_models} models (user_id={user_id})"
     )
 
 
@@ -1925,6 +2036,43 @@ def update_user_last_login(conn: sqlite3.Connection, user_id: int) -> None:
     )
 
 
+def update_user(
+    conn: sqlite3.Connection,
+    user_id: int,
+    username: str | None = None,
+    email: str | None = None,
+) -> bool:
+    """
+    Update a user profile.
+
+    Args:
+        conn: Active SQLite database connection
+        user_id: User ID
+        username: New username (optional)
+        email: New email (optional)
+
+    Returns:
+        True if updated, False if user not found
+    """
+    updates = ["updated_at = ?"]
+    params = [utc_timestamp()]
+
+    if username is not None:
+        updates.append("username = ?")
+        params.append(username.lower())
+    if email is not None:
+        updates.append("email = ?")
+        params.append(email.lower())
+
+    params.append(user_id)
+
+    cursor = conn.execute(
+        f"UPDATE users SET {', '.join(updates)} WHERE id = ?",
+        params
+    )
+    return cursor.rowcount > 0
+
+
 # ============================================================================
 # User API Key CRUD Operations
 # ============================================================================
@@ -2032,6 +2180,40 @@ def get_user_api_key_by_provider(
             """,
             (user_id, provider.lower(), key_name),
         )
+    row = cursor.fetchone()
+    if row is None:
+        return None
+    return {
+        "id": row[0],
+        "provider": row[1],
+        "encrypted_key": row[2],
+        "key_name": row[3],
+        "created_at": row[4],
+        "updated_at": row[5],
+        "last_used_at": row[6],
+    }
+
+
+def get_user_api_key_by_id(conn: sqlite3.Connection, key_id: int, user_id: int) -> dict | None:
+    """
+    Get a specific API key by ID and user (includes encrypted key).
+
+    Args:
+        conn: Active SQLite database connection
+        key_id: API key ID
+        user_id: User ID (for ownership verification)
+
+    Returns:
+        API key dict including encrypted_key, or None if not found
+    """
+    cursor = conn.execute(
+        """
+        SELECT id, provider, encrypted_key, key_name, created_at, updated_at, last_used_at
+        FROM user_api_keys
+        WHERE id = ? AND user_id = ?
+        """,
+        (key_id, user_id),
+    )
     row = cursor.fetchone()
     if row is None:
         return None
@@ -2247,3 +2429,334 @@ def cleanup_expired_refresh_tokens(conn: sqlite3.Connection) -> int:
         (timestamp,),
     )
     return cursor.rowcount
+
+
+# ============================================================================
+# User Brands CRUD Operations
+# ============================================================================
+
+
+def create_user_brand(
+    conn: sqlite3.Connection,
+    user_id: int,
+    brand_name: str,
+    is_mine: bool,
+) -> int:
+    """
+    Create a new user brand.
+
+    Args:
+        conn: Active SQLite database connection
+        user_id: User ID who owns this brand
+        brand_name: Name of the brand
+        is_mine: True if it's the user's brand, False if competitor
+
+    Returns:
+        The new brand record ID
+
+    Raises:
+        sqlite3.IntegrityError: If brand already exists for user
+    """
+    timestamp = utc_timestamp()
+    is_mine_int = 1 if is_mine else 0
+    
+    cursor = conn.execute(
+        """
+        INSERT INTO user_brands (user_id, brand_name, is_mine, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (user_id, brand_name, is_mine_int, timestamp, timestamp),
+    )
+    return cursor.lastrowid
+
+
+def get_user_brands(conn: sqlite3.Connection, user_id: int) -> list[dict]:
+    """
+    Get all brands for a user.
+
+    Args:
+        conn: Active SQLite database connection
+        user_id: User ID to look up
+
+    Returns:
+        List of brand dicts
+    """
+    cursor = conn.execute(
+        """
+        SELECT id, brand_name, is_mine, created_at, updated_at
+        FROM user_brands
+        WHERE user_id = ?
+        ORDER BY is_mine DESC, brand_name ASC
+        """,
+        (user_id,),
+    )
+    return [
+        {
+            "id": row[0],
+            "brand_name": row[1],
+            "is_mine": bool(row[2]),
+            "created_at": row[3],
+            "updated_at": row[4],
+        }
+        for row in cursor.fetchall()
+    ]
+
+
+def delete_user_brand(
+    conn: sqlite3.Connection, brand_id: int, user_id: int
+) -> bool:
+    """
+    Delete a user brand.
+
+    Args:
+        conn: Active SQLite database connection
+        brand_id: Brand record ID
+        user_id: User ID (for ownership verification)
+
+    Returns:
+        True if deleted, False if not found or not owned by user
+    """
+    cursor = conn.execute(
+        "DELETE FROM user_brands WHERE id = ? AND user_id = ?",
+        (brand_id, user_id),
+    )
+    return cursor.rowcount > 0
+
+
+# ============================================================================
+# User Intents CRUD Operations
+# ============================================================================
+
+
+def create_user_intent(
+    conn: sqlite3.Connection,
+    user_id: int,
+    intent_alias: str,
+    prompt: str,
+) -> int:
+    """
+    Create a new user intent.
+
+    Args:
+        conn: Active SQLite database connection
+        user_id: User ID who owns this intent
+        intent_alias: Alias/ID for the intent (e.g., "email-warmup")
+        prompt: The actual prompt text
+
+    Returns:
+        The new intent record ID
+
+    Raises:
+        sqlite3.IntegrityError: If intent alias already exists for user
+    """
+    timestamp = utc_timestamp()
+    
+    cursor = conn.execute(
+        """
+        INSERT INTO user_intents (user_id, intent_alias, prompt, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (user_id, intent_alias, prompt, timestamp, timestamp),
+    )
+    return cursor.lastrowid
+
+
+def get_user_intents(conn: sqlite3.Connection, user_id: int) -> list[dict]:
+    """
+    Get all intents for a user.
+
+    Args:
+        conn: Active SQLite database connection
+        user_id: User ID to look up
+
+    Returns:
+        List of intent dicts
+    """
+    cursor = conn.execute(
+        """
+        SELECT id, intent_alias, prompt, created_at, updated_at
+        FROM user_intents
+        WHERE user_id = ?
+        ORDER BY intent_alias ASC
+        """,
+        (user_id,),
+    )
+    return [
+        {
+            "id": row[0],
+            "intent_alias": row[1],
+            "prompt": row[2],
+            "created_at": row[3],
+            "updated_at": row[4],
+        }
+        for row in cursor.fetchall()
+    ]
+
+
+def delete_user_intent(
+    conn: sqlite3.Connection, intent_id: int, user_id: int
+) -> bool:
+    """
+    Delete a user intent.
+
+    Args:
+        conn: Active SQLite database connection
+        intent_id: Intent record ID
+        user_id: User ID (for ownership verification)
+
+    Returns:
+        True if deleted, False if not found or not owned by user
+    """
+    cursor = conn.execute(
+        "DELETE FROM user_intents WHERE id = ? AND user_id = ?",
+        (intent_id, user_id),
+    )
+    return cursor.rowcount > 0
+
+def get_all_runs(conn: sqlite3.Connection, user_id: int | None = None) -> list[dict]:
+    """
+    Retrieve a list of all historical runs with token usage.
+
+    Args:
+        conn: Active SQLite database connection
+        user_id: Optional user ID to filter runs (if provided, only returns runs for this user)
+
+    Returns:
+        List of run summary dicts, ordered by timestamp descending.
+    """
+    # SQLite JSON extract syntax: json_extract(column, '$.key')
+    
+    query = """
+        SELECT 
+            r.run_id, 
+            r.timestamp_utc, 
+            r.total_intents, 
+            r.total_models, 
+            r.total_cost_usd,
+            (
+                SELECT SUM(
+                    COALESCE(json_extract(usage_meta_json, '$.prompt_tokens'), 0)
+                ) 
+                FROM answers_raw 
+                WHERE run_id = r.run_id
+            ) as input_tokens,
+            (
+                SELECT SUM(
+                    COALESCE(json_extract(usage_meta_json, '$.completion_tokens'), 0)
+                ) 
+                FROM answers_raw 
+                WHERE run_id = r.run_id
+            ) as output_tokens,
+            (
+                SELECT GROUP_CONCAT(DISTINCT brand_name)
+                FROM mentions
+                WHERE run_id = r.run_id AND is_mine = 1
+            ) as my_brands,
+            (
+                SELECT GROUP_CONCAT(DISTINCT brand_name)
+                FROM mentions
+                WHERE run_id = r.run_id AND is_mine = 0
+            ) as competitor_brands
+        FROM runs r
+    """
+    
+    params = []
+    if user_id is not None:
+        query += " WHERE r.user_id = ?"
+        params.append(user_id)
+        
+    query += " ORDER BY r.timestamp_utc DESC"
+    
+    cursor = conn.execute(query, tuple(params))
+    
+    runs = []
+    for row in cursor.fetchall():
+        runs.append({
+            "run_id": row[0],
+            "timestamp_utc": row[1],
+            "total_intents": row[2],
+            "total_models": row[3],
+            "total_cost_usd": row[4],
+            "input_tokens": row[5] or 0,
+            "output_tokens": row[6] or 0,
+            "my_brands": row[7] or "",
+            "competitor_brands": row[8] or "",
+        })
+    return runs
+
+
+def delete_all_runs_for_user(conn: sqlite3.Connection, user_id: int) -> int:
+    """
+    Delete all runs for a specific user.
+
+    Args:
+        conn: Active SQLite database connection
+        user_id: User ID
+
+    Returns:
+        Number of runs deleted
+    """
+    # Get run_ids first
+    cursor = conn.execute("SELECT run_id FROM runs WHERE user_id = ?", (user_id,))
+    run_ids = [row[0] for row in cursor.fetchall()]
+    
+    if not run_ids:
+        return 0
+
+    # Delete runs (cascading should handle the rest if PRAGMA foreign_keys = ON)
+    cursor = conn.execute("DELETE FROM runs WHERE user_id = ?", (user_id,))
+    return cursor.rowcount
+
+
+# ============================================================================
+# User Settings CRUD Operations
+# ============================================================================
+
+
+def upsert_user_settings(conn: sqlite3.Connection, user_id: int, settings_json: str) -> None:
+    """
+    Create or update user settings.
+
+    Args:
+        conn: Active SQLite database connection
+        user_id: User ID
+        settings_json: JSON string of settings
+    """
+    timestamp = utc_timestamp()
+    conn.execute(
+        """
+        INSERT INTO user_settings (user_id, settings_json, updated_at)
+        VALUES (?, ?, ?)
+        ON CONFLICT(user_id) DO UPDATE SET
+            settings_json = excluded.settings_json,
+            updated_at = excluded.updated_at
+        """,
+        (user_id, settings_json, timestamp),
+    )
+
+
+def get_user_settings(conn: sqlite3.Connection, user_id: int) -> dict | None:
+    """
+    Get user settings.
+
+    Args:
+        conn: Active SQLite database connection
+        user_id: User ID
+
+    Returns:
+        Dict of settings or None
+    """
+    cursor = conn.execute(
+        "SELECT settings_json FROM user_settings WHERE user_id = ?",
+        (user_id,),
+    )
+    row = cursor.fetchone()
+    if row is None:
+        return None
+    
+    import json
+    try:
+        return json.loads(row[0])
+    except json.JSONDecodeError:
+        return {}
+

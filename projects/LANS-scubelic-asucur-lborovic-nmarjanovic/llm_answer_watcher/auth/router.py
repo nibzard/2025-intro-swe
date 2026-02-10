@@ -17,6 +17,7 @@ from llm_answer_watcher.auth.schemas import (
     UserCreate,
     UserLogin,
     UserResponse,
+    UserUpdate,
 )
 from llm_answer_watcher.auth.security import (
     create_access_token,
@@ -30,16 +31,19 @@ from llm_answer_watcher.storage.db import (
     create_user_api_key,
     delete_user_api_key,
     get_refresh_token,
+    get_user_api_key_by_id,
     get_user_api_key_by_provider,
     get_user_api_keys,
     get_user_by_email,
     get_user_by_username,
+    get_user_by_id,
     init_db_if_needed,
     revoke_all_user_refresh_tokens,
     revoke_refresh_token,
     store_refresh_token,
     update_user_api_key,
     update_user_last_login,
+    update_user,
 )
 from llm_answer_watcher.utils.time import utc_timestamp
 
@@ -322,6 +326,67 @@ async def get_me(current_user: dict = Depends(get_current_user)):
     )
 
 
+@router.put("/me", response_model=UserResponse)
+async def update_me(
+    user_update: UserUpdate,
+    current_user: dict = Depends(get_current_user),
+    db_path: str = Depends(get_db_path),
+):
+    """
+    Update current user profile.
+
+    Args:
+        user_update: New profile data
+        current_user: Current authenticated user
+
+    Returns:
+        Updated user profile
+    """
+    init_db_if_needed(db_path)
+
+    with sqlite3.connect(db_path) as conn:
+        # Check if username exists if being updated
+        if user_update.username and user_update.username != current_user["username"]:
+            existing = get_user_by_username(conn, user_update.username)
+            if existing:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Username already taken",
+                )
+
+        # Check if email exists if being updated
+        if user_update.email and user_update.email != current_user["email"]:
+            existing = get_user_by_email(conn, user_update.email)
+            if existing:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Email already taken",
+                )
+
+        updated = update_user(
+            conn,
+            current_user["id"],
+            username=user_update.username,
+            email=user_update.email,
+        )
+        
+        if not updated:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # Fetch updated user
+        user = get_user_by_id(conn, current_user["id"])
+
+    logger.info(f"User profile updated: {user['username']}")
+
+    return UserResponse(
+        id=user["id"],
+        username=user["username"],
+        email=user["email"],
+        created_at=user["created_at"],
+        is_active=user["is_active"],
+    )
+
+
 # ============================================================================
 # API Key Management Endpoints
 # ============================================================================
@@ -414,6 +479,44 @@ async def list_api_keys(
         )
         for key in keys
     ]
+
+
+@router.get("/api-keys/{key_id}")
+async def get_api_key_details(
+    key_id: int,
+    current_user: dict = Depends(get_current_user),
+    db_path: str = Depends(get_db_path),
+):
+    """
+    Get details of a specific API key, including the decrypted key.
+    """
+    init_db_if_needed(db_path)
+
+    with sqlite3.connect(db_path) as conn:
+        key_record = get_user_api_key_by_id(conn, key_id, current_user["id"])
+
+    if key_record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="API key not found",
+        )
+
+    # Decrypt
+    try:
+        api_key = decrypt_api_key(key_record["encrypted_key"])
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to decrypt API key",
+        )
+
+    return {
+        "id": key_record["id"],
+        "provider": key_record["provider"],
+        "key_name": key_record["key_name"],
+        "api_key": api_key,
+        "created_at": key_record["created_at"]
+    }
 
 
 @router.put("/api-keys/{key_id}", response_model=APIKeyResponse)

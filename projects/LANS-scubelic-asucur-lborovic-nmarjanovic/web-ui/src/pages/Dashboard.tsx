@@ -27,14 +27,104 @@ import {
   Brain,
   FileText,
   ArrowLeft,
+  ArrowRight,
   User,
   LogOut,
+  Layout,
   Key,
+  Building2,
+  Info,
+  FileSpreadsheet,
+  Trash2,
+  Menu,
+  TrendingUp,
 } from 'lucide-react';
-import type { WatcherConfig, Intent, BrandMention, Provider, ModelConfig } from '../types.ts';
+import type { WatcherConfig, Intent, BrandMention, Provider, ModelConfig, UserBrand, UserIntent } from '../types.ts';
 import { GEMINI_MODELS, GROQ_MODELS } from '../types.ts';
 import yaml from 'js-yaml';
 import { useAuth } from '../auth/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { Skeleton } from '../components/ui/Skeleton';
+import { StatsBar } from '../components/ui/StatsBar';
+import { TagInput } from '../components/ui/TagInput';
+import { CollapsibleSection } from '../components/ui/CollapsibleSection';
+import { ConfirmationModal } from '../components/ui/ConfirmationModal';
+import { PromptOptimizer } from '../components/PromptOptimizer';
+
+const INTENT_TEMPLATES = [
+  { id: 'pricing-compare', label: 'Pricing Comparison', prompt: 'Compare the pricing models of [MyBrand] vs [Competitor]. Which offers better value for small businesses?' },
+  { id: 'feature-analysis', label: 'Feature Analysis', prompt: 'What are the key feature differences between [MyBrand] and [Competitor]? Highlight unique selling points.' },
+  { id: 'sentiment-check', label: 'Brand Sentiment', prompt: 'What is the general user sentiment towards [MyBrand] in 2024? Mention common praises and complaints.' },
+  { id: 'alternatives', label: 'Best Alternatives', prompt: 'What are the top 3 alternatives to [Competitor] and why should I consider [MyBrand]?' },
+  { id: 'security-review', label: 'Security Review', prompt: 'How does [MyBrand] compare to [Competitor] in terms of security and compliance certifications?' },
+];
+
+const BrandRecommendation = ({ results, theme }: { results: any, theme: string }) => {
+  if (!results || !results.intents_data) return null;
+
+  let totalMentions = 0;
+  let myMentions = 0;
+  let myRanks: number[] = [];
+
+  results.intents_data.forEach((intent: any) => {
+    intent.answers.forEach((answer: any) => {
+      totalMentions += answer.mentions.length;
+      answer.mentions.forEach((mention: any) => {
+        if (mention.is_mine) {
+          myMentions++;
+          if (mention.rank) myRanks.push(mention.rank);
+        }
+      });
+    });
+  });
+
+  const sov = totalMentions > 0 ? (myMentions / totalMentions) * 100 : 0;
+  const avgRank = myRanks.length > 0 ? myRanks.reduce((a, b) => a + b, 0) / myRanks.length : 0;
+
+  let title = "";
+  let message = "";
+  let colorClass = "";
+  let icon = null;
+
+  if (myMentions === 0) {
+    title = "Invisible to AI";
+    message = "Your brand was not mentioned in any responses. You are effectively invisible to these models for these queries. Immediate action required: Update your website content to explicitly answer these questions, and consider PR or social proof to increase brand corpus frequency.";
+    colorClass = theme === 'dark' ? "text-red-400 bg-red-500/10 border-red-500/20" : "text-red-700 bg-red-50 border-red-200";
+    icon = <AlertCircle className="w-6 h-6" />;
+  } else if (sov < 20) {
+    title = "Low Visibility";
+    message = `You have only ${sov.toFixed(1)}% Share of Voice. Competitors are dominating the conversation. Focus on differentiating your value proposition and getting mentioned in comparison articles and reviews that LLMs cite.`;
+    colorClass = theme === 'dark' ? "text-orange-400 bg-orange-500/10 border-orange-500/20" : "text-orange-700 bg-orange-50 border-orange-200";
+    icon = <AlertCircle className="w-6 h-6" />;
+  } else if (sov < 50) {
+    title = "Growing Presence";
+    message = `You have a healthy ${sov.toFixed(1)}% Share of Voice. To become the market leader, focus on "best of" lists and specific feature comparisons where you can win.`;
+    colorClass = theme === 'dark' ? "text-yellow-400 bg-yellow-500/10 border-yellow-500/20" : "text-yellow-700 bg-yellow-50 border-yellow-200";
+    icon = <TrendingUp className="w-6 h-6" />;
+  } else {
+    title = "Market Leader";
+    message = `Excellent! You command ${sov.toFixed(1)}% of mentions. Your strategy should shift to defense: monitor for new entrants and sentiment shifts.`;
+    colorClass = theme === 'dark' ? "text-green-400 bg-green-500/10 border-green-500/20" : "text-green-700 bg-green-50 border-green-200";
+    icon = <CheckCircle2 className="w-6 h-6" />;
+  }
+
+  // Rank adjustments
+  if (myMentions > 0 && avgRank > 3) {
+     message += ` However, your average rank is low (${avgRank.toFixed(1)}). Work on technical SEO and specific attribute association to climb the lists.`;
+  }
+
+  return (
+    <div className={`p-6 rounded-2xl border ${colorClass} h-full`}>
+      <div className="flex items-center gap-3 mb-3">
+        {icon}
+        <h3 className="text-lg font-bold">{title}</h3>
+      </div>
+      <p className={`text-sm ${theme === 'dark' ? 'text-navy-100' : 'text-gray-800'} leading-relaxed`}>
+        {message}
+      </p>
+    </div>
+  );
+};
 
 const StatsComparison = ({ results, theme }: { results: any, theme: string }) => {
   if (!results || !results.intents_data) return null;
@@ -82,38 +172,131 @@ const StatsComparison = ({ results, theme }: { results: any, theme: string }) =>
   });
 
   const avgRank = (ranks: number[]) => {
-    if (ranks.length === 0) return 'N/A';
-    return (ranks.reduce((a, b) => a + b, 0) / ranks.length).toFixed(2);
+    if (ranks.length === 0) return 0;
+    return parseFloat((ranks.reduce((a, b) => a + b, 0) / ranks.length).toFixed(2));
   };
   
   const glassCardClass = theme === 'dark'
     ? 'glass-card'
-    : 'bg-white/60 backdrop-blur-md border border-gray-200/50 shadow-sm';
+    : 'glass-card-light';
 
   return (
     <div className={`${glassCardClass} p-6 mt-8`}>
-      <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-navy-200' : 'text-gray-800'} mb-4`}>Model Comparison</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="flex items-center gap-2 mb-4">
+        <Sparkles className="w-5 h-5 text-primary-400" />
+        <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-navy-200' : 'text-black'}`}>Model Comparison</h3>
+      </div>
+      
+      <p className={`text-sm ${theme === 'dark' ? 'text-navy-400' : 'text-slate-500'} mb-6`}>
+        Compare how different AI models perceive your brand against competitors across all search queries.
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Google Gemini Column */}
         <div>
-          <h4 className={`font-bold text-lg ${theme === 'dark' ? 'text-primary-300' : 'text-primary-500'} mb-3`}>Google Gemini</h4>
-          <div className={`space-y-2 ${theme === 'dark' ? 'text-navy-300' : 'text-gray-600'}`}>
-            <div className="flex justify-between"><span>Detected Mentions:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stats.google.totalMentions}</span></div>
-            <div className="flex justify-between"><span>My Brand Mentions:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stats.google.myBrandMentions}</span></div>
-            <div className="flex justify-between"><span>#1 Ranks for My Brand:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stats.google.myBrandRank1Mentions}</span></div>
-            <div className="flex justify-between"><span>Avg. My Brand Rank:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{avgRank(stats.google.myBrandRanks)}</span></div>
-            <div className="flex justify-between"><span>Competitor Mentions:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stats.google.competitorMentions}</span></div>
-            <div className="flex justify-between"><span>Avg. Competitor Rank:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{avgRank(stats.google.competitorRanks)}</span></div>
+          <h4 className={`font-bold text-lg ${theme === 'dark' ? 'text-primary-300' : 'text-primary-500'} mb-4 flex items-center gap-2`}>
+            Google Gemini
+            <span className="text-[10px] px-1.5 py-0.5 rounded border border-primary-500/30 uppercase">With Search</span>
+          </h4>
+          <div className="space-y-6">
+             <div title="Percentage of mentions belonging to your brand out of all brand mentions detected.">
+               <StatsBar 
+                  label="Share of Voice" 
+                  value={stats.google.myBrandMentions} 
+                  total={stats.google.totalMentions || 1} 
+                  theme={theme}
+                  colorClass="bg-primary-500"
+                  suffix={` / ${stats.google.totalMentions} total mentions`}
+               />
+               <p className="text-[11px] text-navy-400 mt-1">How often you appear compared to everyone else.</p>
+             </div>
+
+             <div title="How often your brand was the first one mentioned in the response.">
+               <StatsBar 
+                  label="#1 Ranking Rate" 
+                  value={stats.google.myBrandRank1Mentions} 
+                  total={stats.google.myBrandMentions || 1} 
+                  theme={theme}
+                  colorClass="bg-emerald-500"
+                  suffix={` / ${stats.google.myBrandMentions} of your mentions`}
+               />
+               <p className="text-[11px] text-navy-400 mt-1">Frequency of being the top recommendation.</p>
+             </div>
+
+             <div className="grid grid-cols-2 gap-4 mt-2">
+                <div 
+                  className={`p-3 rounded-lg border ${theme === 'dark' ? 'bg-navy-900 border-navy-800' : 'bg-slate-50 border-slate-200'}`}
+                  title="Average numerical position of your brand in the response lists (Lower is better)."
+                >
+                    <div className={`text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-slate-500'} flex items-center gap-1`}>
+                      Avg My Rank <Info className="w-3 h-3" />
+                    </div>
+                    <div className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{avgRank(stats.google.myBrandRanks) || '-'}</div>
+                </div>
+                <div 
+                  className={`p-3 rounded-lg border ${theme === 'dark' ? 'bg-navy-900 border-navy-800' : 'bg-slate-50 border-slate-200'}`}
+                  title="Average numerical position of competitor brands (Higher than yours is better)."
+                >
+                    <div className={`text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-slate-500'} flex items-center gap-1`}>
+                      Avg Comp Rank <Info className="w-3 h-3" />
+                    </div>
+                    <div className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{avgRank(stats.google.competitorRanks) || '-'}</div>
+                </div>
+             </div>
           </div>
         </div>
+
+        {/* Groq Column */}
         <div>
-          <h4 className={`font-bold text-lg ${theme === 'dark' ? 'text-accent-300' : 'text-accent-500'} mb-3`}>Groq</h4>
-          <div className={`space-y-2 ${theme === 'dark' ? 'text-navy-300' : 'text-gray-600'}`}>
-            <div className="flex justify-between"><span>Detected Mentions:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stats.groq.totalMentions}</span></div>
-            <div className="flex justify-between"><span>My Brand Mentions:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stats.groq.myBrandMentions}</span></div>
-            <div className="flex justify-between"><span>#1 Ranks for My Brand:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stats.groq.myBrandRank1Mentions}</span></div>
-            <div className="flex justify-between"><span>Avg. My Brand Rank:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{avgRank(stats.groq.myBrandRanks)}</span></div>
-            <div className="flex justify-between"><span>Competitor Mentions:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stats.groq.competitorMentions}</span></div>
-            <div className="flex justify-between"><span>Avg. Competitor Rank:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{avgRank(stats.groq.competitorRanks)}</span></div>
+          <h4 className={`font-bold text-lg ${theme === 'dark' ? 'text-accent-300' : 'text-accent-500'} mb-4 flex items-center gap-2`}>
+            Groq
+            <span className="text-[10px] px-1.5 py-0.5 rounded border border-accent-500/30 uppercase">Llama 3</span>
+          </h4>
+          <div className="space-y-6">
+             <div title="Percentage of mentions belonging to your brand out of all brand mentions detected.">
+               <StatsBar 
+                  label="Share of Voice" 
+                  value={stats.groq.myBrandMentions} 
+                  total={stats.groq.totalMentions || 1} 
+                  theme={theme}
+                  colorClass="bg-accent-500"
+                  suffix={` / ${stats.groq.totalMentions} total mentions`}
+               />
+               <p className="text-[11px] text-navy-400 mt-1">How often you appear compared to everyone else.</p>
+             </div>
+
+             <div title="How often your brand was the first one mentioned in the response.">
+               <StatsBar 
+                  label="#1 Ranking Rate" 
+                  value={stats.groq.myBrandRank1Mentions} 
+                  total={stats.groq.myBrandMentions || 1} 
+                  theme={theme}
+                  colorClass="bg-emerald-500"
+                  suffix={` / ${stats.groq.myBrandMentions} of your mentions`}
+               />
+               <p className="text-[11px] text-navy-400 mt-1">Frequency of being the top recommendation.</p>
+             </div>
+
+             <div className="grid grid-cols-2 gap-4 mt-2">
+                <div 
+                  className={`p-3 rounded-lg border ${theme === 'dark' ? 'bg-navy-900 border-navy-800' : 'bg-slate-50 border-slate-200'}`}
+                  title="Average numerical position of your brand in the response lists (Lower is better)."
+                >
+                    <div className={`text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-slate-500'} flex items-center gap-1`}>
+                      Avg My Rank <Info className="w-3 h-3" />
+                    </div>
+                    <div className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{avgRank(stats.groq.myBrandRanks) || '-'}</div>
+                </div>
+                <div 
+                  className={`p-3 rounded-lg border ${theme === 'dark' ? 'bg-navy-900 border-navy-800' : 'bg-slate-50 border-slate-200'}`}
+                  title="Average numerical position of competitor brands (Higher than yours is better)."
+                >
+                    <div className={`text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-slate-500'} flex items-center gap-1`}>
+                      Avg Comp Rank <Info className="w-3 h-3" />
+                    </div>
+                    <div className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{avgRank(stats.groq.competitorRanks) || '-'}</div>
+                </div>
+             </div>
           </div>
         </div>
       </div>
@@ -143,29 +326,87 @@ const TokenUsageStats = ({ results, selectedProvider, selectedGoogleModel, selec
     });
   });
 
-  const glassCardClass = theme === 'dark'
-    ? 'glass-card'
-    : 'bg-white/60 backdrop-blur-md border border-gray-200/50 shadow-sm';
+  const cardStyle = `p-6 ${theme === 'dark' ? 'bg-navy-800/20 border-navy-700/40' : 'bg-gray-100/50 border-gray-200/40'} rounded-2xl border`;
 
   return (
-    <div className={`${glassCardClass} p-6 mt-8`}>
-      <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-navy-200' : 'text-gray-800'} mb-4`}>Token Usage</h3>
+    <div className={cardStyle}>
+      <div className="flex items-center gap-3 mb-6">
+         <div className={`p-2 rounded-lg ${theme === 'dark' ? 'bg-primary-500/10 text-primary-500' : 'bg-primary-100 text-primary-600'}`}>
+            <Zap className="w-5 h-5" />
+         </div>
+         <div>
+            <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-navy-200' : 'text-black'}`}>Token Consumption</h3>
+            <p className={`text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-slate-500'}`}>Total generated tokens for this search run</p>
+         </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {(selectedProvider === 'google' || selectedProvider === 'both') && (
-          <div>
-            <h4 className={`font-bold text-lg ${theme === 'dark' ? 'text-primary-300' : 'text-primary-500'} mb-3`}>Google Gemini ({selectedGoogleModel})</h4>
-            <div className={`space-y-2 ${theme === 'dark' ? 'text-navy-300' : 'text-gray-600'}`}>
-              <div className="flex justify-between"><span>Tokens Used:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{modelInfo.google.used}</span></div>
-            </div>
-          </div>
+           <div className={`relative overflow-hidden rounded-2xl border p-6 transition-all duration-300 ${
+              theme === 'dark' 
+                ? 'bg-navy-900/40 border-navy-800' 
+                : 'bg-white border-slate-200 shadow-sm'
+           }`}>
+              <div className="relative z-10">
+                 <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center gap-3">
+                       <div className="p-2.5 rounded-xl bg-primary-500/10 text-primary-500">
+                          <Sparkles className="w-5 h-5" />
+                       </div>
+                       <div>
+                          <h4 className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Google Gemini</h4>
+                          <p className={`text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-slate-500'}`}>{selectedGoogleModel}</p>
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className="mt-2">
+                    <div className={`text-3xl font-bold font-mono tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                       {modelInfo.google.used.toLocaleString()}
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${theme === 'dark' ? 'bg-primary-500/20 text-primary-300' : 'bg-primary-100 text-primary-700'}`}>
+                           TOKENS
+                        </span>
+                        <span className={`text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-slate-500'}`}>generated total</span>
+                    </div>
+                 </div>
+              </div>
+           </div>
         )}
+
         {(selectedProvider === 'groq' || selectedProvider === 'both') && (
-          <div>
-            <h4 className={`font-bold text-lg ${theme === 'dark' ? 'text-accent-300' : 'text-accent-500'} mb-3`}>Groq ({selectedGroqModel})</h4>
-            <div className={`space-y-2 ${theme === 'dark' ? 'text-navy-300' : 'text-gray-600'}`}>
-              <div className="flex justify-between"><span>Tokens Used:</span> <span className={`font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{modelInfo.groq.used}</span></div>
-            </div>
-          </div>
+           <div className={`relative overflow-hidden rounded-2xl border p-6 transition-all duration-300 ${
+              theme === 'dark' 
+                ? 'bg-navy-900/40 border-navy-800' 
+                : 'bg-white border-slate-200 shadow-sm'
+           }`}>
+              <div className="relative z-10">
+                 <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center gap-3">
+                       <div className="p-2.5 rounded-xl bg-accent-500/10 text-accent-500">
+                          <Zap className="w-5 h-5" />
+                       </div>
+                       <div>
+                          <h4 className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Groq</h4>
+                          <p className={`text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-slate-500'}`}>{selectedGroqModel}</p>
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className="mt-2">
+                    <div className={`text-3xl font-bold font-mono tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                       {modelInfo.groq.used.toLocaleString()}
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${theme === 'dark' ? 'bg-accent-500/20 text-accent-300' : 'bg-accent-100 text-accent-700'}`}>
+                           TOKENS
+                        </span>
+                        <span className={`text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-slate-500'}`}>generated total</span>
+                    </div>
+                 </div>
+              </div>
+           </div>
         )}
       </div>
     </div>
@@ -206,7 +447,7 @@ const FormattedAnswer = ({ text, mentions = [], theme }: { text: string; mention
     });
   };
 
-  const processText = (str: string | JSX.Element): any => {
+  const processText = (str: string | any): any => {
     if (typeof str !== 'string') return str;
 
     const parts = str.split(/(\*\*.*?\*\*)/g);
@@ -230,7 +471,7 @@ const FormattedAnswer = ({ text, mentions = [], theme }: { text: string; mention
       {sections.map((section, sIdx) => {
         if (section.startsWith('### ')) {
           return (
-            <h4 key={sIdx} className={`text-lg font-bold ${theme === 'dark' ? 'text-navy-100' : 'text-gray-900'} mt-6 mb-3 flex items-center gap-3`}>
+            <h4 key={sIdx} className={`text-lg font-bold ${theme === 'dark' ? 'text-navy-100' : 'text-black'} mt-6 mb-3 flex items-center gap-3`}>
               <span className={`h-px flex-1 bg-gradient-to-r ${theme === 'dark' ? 'from-primary-500/50' : 'from-primary-300/50'} to-transparent`}></span>
               <span className={`${theme === 'dark' ? 'text-primary-200' : 'text-primary-600'}`}>{processText(section.slice(4))}</span>
               <span className={`h-px flex-1 bg-gradient-to-l ${theme === 'dark' ? 'from-primary-500/50' : 'from-primary-300/50'} to-transparent`}></span>
@@ -248,20 +489,20 @@ const FormattedAnswer = ({ text, mentions = [], theme }: { text: string; mention
                 const match = line.match(/^\s*([-*•]|\d+\.)\s*(.*)/);
                 if (match) {
                   return (
-                    <li key={lIdx} className={`flex gap-3 text-sm ${theme === 'dark' ? 'text-navy-300' : 'text-gray-700'}`}>
+                    <li key={lIdx} className={`flex gap-3 text-sm ${theme === 'dark' ? 'text-navy-300' : 'text-black'}`}>
                       <span className={`${theme === 'dark' ? 'text-primary-400' : 'text-primary-500'} font-bold min-w-[12px] flex justify-center`}>{match[1].length > 1 ? match[1] : '•'}</span>
                       <span className="flex-1">{processText(match[2])}</span>
                     </li>
                   );
                 }
-                return <p key={lIdx} className={`text-sm ${theme === 'dark' ? 'text-navy-300' : 'text-gray-700'} ml-6`}>{processText(line)}</p>;
+                return <p key={lIdx} className={`text-sm ${theme === 'dark' ? 'text-navy-300' : 'text-black'} ml-6`}>{processText(line)}</p>;
               })}
             </ul>
           );
         }
 
         return (
-          <p key={sIdx} className={`text-sm ${theme === 'dark' ? 'text-navy-300' : 'text-gray-700'} leading-relaxed whitespace-pre-wrap`}>
+          <p key={sIdx} className={`text-sm ${theme === 'dark' ? 'text-navy-300' : 'text-black'} leading-relaxed whitespace-pre-wrap`}>
             {processText(section)}
           </p>
         );
@@ -274,7 +515,11 @@ export default function Dashboard({ theme }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, token, logout } = useAuth();
+  const { showToast } = useToast();
+  const avatarColor = localStorage.getItem('user_avatar_color') || 'bg-primary-500';
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showMainMenu, setShowMainMenu] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = async () => {
     navigate('/', { replace: true });
@@ -282,55 +527,102 @@ export default function Dashboard({ theme }) {
   };
 
   const [savedKeys, setSavedKeys] = useState<any[]>([]);
+  const [savedBrands, setSavedBrands] = useState<UserBrand[]>([]);
+  const [savedIntents, setSavedIntents] = useState<UserIntent[]>([]);
+  const [userSettings, setUserSettings] = useState<any>(null);
 
+  // Load user settings to check notification preferences
   useEffect(() => {
-    const fetchSavedKeys = async () => {
-      if (!token) return;
-      try {
-        const response = await fetch(`${API_BASE_URL}/auth/api-keys`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (response.ok) {
-          setSavedKeys(await response.json());
-        }
-      } catch (err) {
-        console.error('Failed to fetch saved keys', err);
-      }
-    };
-    fetchSavedKeys();
+    if (!token) return;
+    fetch(`${API_BASE_URL}/user/settings`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => res.ok ? res.json() : null)
+    .then(data => {
+      if (data) setUserSettings(data);
+    })
+    .catch(err => console.error("Failed to load settings", err));
   }, [token]);
 
-  const loadSavedKey = async (provider: string, keyName: string | null) => {
-    if (!token) return;
-    try {
-      const providerLower = provider.toLowerCase();
-      let url = `${API_BASE_URL}/auth/api-keys/${providerLower}/key`;
-      if (keyName) {
-        url += `?key_name=${encodeURIComponent(keyName)}`;
-      }
-      
-      const response = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setApiKeys(prev => ({ ...prev, [provider]: data.api_key }));
-      }
-    } catch (err) {
-      console.error('Failed to load API key', err);
-    }
-  };
-
-  // Set provider from query param
+  // Load saved data (keys, brands, intents) on mount
   useEffect(() => {
-    const providerParam = searchParams.get('provider');
-    if (providerParam === 'both') {
-      setSelectedProvider('both');
-    } else if (providerParam === 'google' || providerParam === 'groq') {
-      setSelectedProvider(providerParam);
+    if (!token) return;
+
+    // Load saved API keys
+    fetch(`${API_BASE_URL}/auth/api-keys`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => res.ok ? res.json() : [])
+    .then(data => setSavedKeys(data))
+    .catch(err => console.error('Failed to load API keys', err));
+
+    // Load saved brands
+    fetch(`${API_BASE_URL}/user/brands`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => res.ok ? res.json() : [])
+    .then(data => setSavedBrands(data))
+    .catch(err => console.error('Failed to load brands', err));
+
+    // Load saved intents
+    fetch(`${API_BASE_URL}/user/intents`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => res.ok ? res.json() : [])
+    .then(data => setSavedIntents(data))
+    .catch(err => console.error('Failed to load intents', err));
+  }, [token]);
+
+  const [showBrandDropdown, setShowBrandDropdown] = useState(false);
+  const [showCompetitorDropdown, setShowCompetitorDropdown] = useState(false);
+  const [showIntentDropdown, setShowIntentDropdown] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [useWizardMode, setUseWizardMode] = useState(true);
+
+  // Load view preference on mount
+  useEffect(() => {
+    const savedView = localStorage.getItem('default_view_mode');
+    if (savedView === 'classic') {
+      setUseWizardMode(false);
+    }
+  }, []);
+
+  // Handle URL params (runId, tab)
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'results' || tabParam === 'config') {
+      setActiveTab(tabParam);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!token) return;
+    const runIdParam = searchParams.get('runId');
+    
+    if (runIdParam) {
+      setRunId(runIdParam);
+      setIsRunning(true);
+      setActiveTab('results');
+
+      fetch(`${API_BASE_URL}/results/${runIdParam}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => {
+          if (!res.ok) throw new Error('Failed to fetch results');
+          return res.json();
+      })
+      .then(data => {
+          setResults(data);
+      })
+      .catch(err => {
+          console.error("Error fetching run results:", err);
+          showToast("Failed to load report", "error");
+      })
+      .finally(() => {
+          setIsRunning(false);
+      });
+    }
+  }, [token, searchParams.get('runId')]);
 
   // State
   const [activeTab, setActiveTab] = useState<'config' | 'results'>('config');
@@ -343,6 +635,17 @@ export default function Dashboard({ theme }) {
 
   // Get available models based on selected provider
   const availableModels = selectedProvider === 'google' ? GEMINI_MODELS : GROQ_MODELS;
+
+  const [myBrands, setMyBrands] = useState<string[]>(['']);
+  const [competitors, setCompetitors] = useState<string[]>(['']);
+  const [intents, setIntents] = useState<Intent[]>([{ id: '', prompt: '' }]);
+  const [isRunning, setIsRunning] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [showYamlPreview, setShowYamlPreview] = useState(false);
+  const [runId, setRunId] = useState<string | null>(null);
+  const [results, setResults] = useState<any | null>(null);
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [showKeyDropdown, setShowKeyDropdown] = useState<{[key: string]: boolean}>({});
 
   // Handle provider change - reset model to first available
   const handleProviderChange = (provider: Provider | 'both') => {
@@ -357,17 +660,18 @@ export default function Dashboard({ theme }) {
       setEnableWebSearch(true);
     }
   };
-  const [myBrands, setMyBrands] = useState<string[]>(['']);
-  const [competitors, setCompetitors] = useState<string[]>(['']);
-  const [intents, setIntents] = useState<Intent[]>([{ id: '', prompt: '' }]);
-  const [isRunning, setIsRunning] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [showYamlPreview, setShowYamlPreview] = useState(false);
-  const [runId, setRunId] = useState<string | null>(null);
-  const [results, setResults] = useState<any | null>(null);
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [showKeyDropdown, setShowKeyDropdown] = useState<{[key: string]: boolean}>({});
 
+  // Stepper State
+  const [currentStep, setCurrentStep] = useState(1);
+
+  // Validation Helpers
+  const isApiStepValid = () => {
+    if (selectedProvider === 'both') return !!(apiKeys.google && apiKeys.groq);
+    return !!apiKeys[selectedProvider];
+  };
+  const isBrandStepValid = () => myBrands.some(b => b.trim().length > 0);
+  const isCompetitorStepValid = () => true; // Optional step
+  const isIntentStepValid = () => intents.some(i => i.prompt.trim().length > 0);
 
   // Generate YAML config
   const generateConfig = useCallback((): WatcherConfig => {
@@ -429,35 +733,12 @@ export default function Dashboard({ theme }) {
 
   const yamlOutput = yaml.dump(generateConfig(), { lineWidth: -1 });
 
+  // Dynamic Styles
+  const sectionBorderClass = useWizardMode 
+    ? 'border border-rose-500/50 ring-1 ring-rose-500/20 shadow-lg shadow-rose-500/10' 
+    : 'border border-emerald-500/50 ring-1 ring-emerald-500/20 shadow-lg shadow-emerald-500/10';
+
   // Handlers
-  const addBrand = (type: 'mine' | 'competitors') => {
-    if (type === 'mine') {
-      setMyBrands([...myBrands, '']);
-    } else {
-      setCompetitors([...competitors, '']);
-    }
-  };
-
-  const removeBrand = (type: 'mine' | 'competitors', index: number) => {
-    if (type === 'mine') {
-      setMyBrands(myBrands.filter((_, i) => i !== index));
-    } else {
-      setCompetitors(competitors.filter((_, i) => i !== index));
-    }
-  };
-
-  const updateBrand = (type: 'mine' | 'competitors', index: number, value: string) => {
-    if (type === 'mine') {
-      const updated = [...myBrands];
-      updated[index] = value;
-      setMyBrands(updated);
-    } else {
-      const updated = [...competitors];
-      updated[index] = value;
-      setCompetitors(updated);
-    }
-  };
-
   const addIntent = () => {
     setIntents([...intents, { id: '', prompt: '' }]);
   };
@@ -472,9 +753,45 @@ export default function Dashboard({ theme }) {
     setIntents(updated);
   };
 
+  const applyTemplate = (templateId: string) => {
+    const template = INTENT_TEMPLATES.find(t => t.id === templateId);
+    if (!template) return;
+    
+    // Replace placeholders if brands are set
+    let prompt = template.prompt;
+    
+    const activeBrands = myBrands.filter(b => b.trim());
+    const activeCompetitors = competitors.filter(c => c.trim());
+    
+    // Create comma-separated lists
+    const brandsText = activeBrands.length > 0 
+      ? (activeBrands.length > 1 
+          ? activeBrands.slice(0, -1).join(', ') + ' and ' + activeBrands.slice(-1)
+          : activeBrands[0])
+      : '[MyBrand]';
+      
+    const competitorsText = activeCompetitors.length > 0 
+      ? (activeCompetitors.length > 1 
+          ? activeCompetitors.slice(0, -1).join(', ') + ' and ' + activeCompetitors.slice(-1)
+          : activeCompetitors[0])
+      : '[Competitor]';
+    
+    prompt = prompt.replace(/\[MyBrand\]/g, brandsText).replace(/\[Competitor\]/g, competitorsText);
+    
+    // Append to existing intents
+    // If the first intent is empty, replace it instead
+    if (intents.length === 1 && !intents[0].id && !intents[0].prompt) {
+        setIntents([{ id: template.id, prompt }]);
+    } else {
+        setIntents([...intents, { id: template.id, prompt }]);
+    }
+    showToast(`Added "${template.label}" template`, 'info');
+  };
+
   const copyToClipboard = async () => {
     await navigator.clipboard.writeText(yamlOutput);
     setCopied(true);
+    showToast('Configuration copied to clipboard', 'success');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -488,25 +805,48 @@ export default function Dashboard({ theme }) {
     URL.revokeObjectURL(url);
   };
 
-  const runSearch = async () => {
+  const loadSavedKey = async (provider: string, keyId: string, keyName: string) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/api-keys/${keyId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.api_key) {
+        setApiKeys(prev => ({ ...prev, [provider]: data.api_key }));
+        showToast(`Loaded ${keyName || 'default'} key for ${provider}`, 'success');
+      } else {
+         throw new Error("API key not returned");
+      }
+    } catch (err) {
+      console.error('Failed to load API key', err);
+      showToast('Failed to load API key', 'error');
+    }
+  };
+
+  const handleRunWatcher = async () => {
     if (selectedProvider === 'both') {
       if (!apiKeys.google || !apiKeys.groq) {
-        alert('Please enter API keys for both Google and Groq');
+        showToast('Please enter API keys for both Google and Groq', 'error');
         return;
       }
     } else {
       if (!apiKeys[selectedProvider]) {
-        alert(`Please enter your ${selectedProvider === 'google' ? 'Gemini' : 'Groq'} API key`);
+        showToast(`Please enter your ${selectedProvider === 'google' ? 'Gemini' : 'Groq'} API key`, 'error');
         return;
       }
     }
     setIsRunning(true);
     setResults(null);
     setRunId(null);
+    setActiveTab('results'); // Switch immediately to show loading state
+
     try {
       const response = await fetch(`${API_BASE_URL}/run_watcher`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
         body: JSON.stringify({ api_keys: apiKeys, yaml_config: yamlOutput }),
       });
 
@@ -517,7 +857,9 @@ export default function Dashboard({ theme }) {
 
       const runData = await response.json();
       setRunId(runData.run_id);
-
+      
+      // Poll for results if needed, or just fetch immediately if synchronous
+      // Assuming synchronous for now based on previous code, but could be async
       const resultsResponse = await fetch(`${API_BASE_URL}/results/${runData.run_id}`);
       if(!resultsResponse.ok) {
         const errorData = await resultsResponse.json();
@@ -526,11 +868,31 @@ export default function Dashboard({ theme }) {
 
       const resultsData = await resultsResponse.json();
       setResults(resultsData);
+      showToast('Search completed successfully', 'success');
 
-      setActiveTab('results');
+      // Check settings fresh to ensure we have latest preferences
+      try {
+        const settingsRes = await fetch(`${API_BASE_URL}/user/settings`, {
+           headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (settingsRes.ok) {
+           const settings = await settingsRes.json();
+           if (settings?.notifications?.browser && 'Notification' in window && Notification.permission === 'granted') {
+             showToast('Attempting to send browser notification...', 'info'); // Debug toast
+             new Notification('Scan Completed', {
+               body: 'Your brand monitoring scan has finished successfully.',
+               icon: '/vite.svg'
+             });
+           }
+        }
+      } catch (e) {
+        console.error("Failed to check notification settings", e);
+      }
+      
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      alert(`An error occurred: ${message}`);
+      showToast(`An error occurred: ${message}`, 'error');
+      setActiveTab('config'); // Switch back to config on error
     } finally {
       setIsRunning(false);
     }
@@ -636,32 +998,90 @@ export default function Dashboard({ theme }) {
 
   const glassCardClass = theme === 'dark'
     ? 'glass-card'
-    : 'bg-white/60 backdrop-blur-md border border-gray-200/50 shadow-sm';
+    : 'glass-card-light';
 
   const inputClass = theme === 'dark'
     ? 'input-field'
-    : 'input-field bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-primary-500 focus:border-primary-500';
+    : 'input-field-light';
 
   const btnGhostClass = theme === 'dark'
     ? 'btn-ghost'
-    : 'btn-ghost text-gray-600 hover:bg-gray-100 hover:text-gray-900';
+    : 'btn-ghost-light';
 
   const btnSecondaryClass = theme === 'dark'
     ? 'btn-secondary'
-    : 'btn-secondary bg-gray-100 text-gray-700 hover:bg-gray-200';
+    : 'btn-secondary-light';
 
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-navy-950 text-white' : 'bg-gray-50 text-gray-800'}`}>
+    <div className={`min-h-screen ${theme === 'dark' ? 'bg-navy-950 text-white' : 'light-mode-bg'}`}>
       {/* Background gradient */}
-      <div className={`fixed inset-0 ${theme === 'dark' ? 'bg-gradient-to-br from-primary-500/5 via-transparent to-accent-500/5' : 'bg-gray-100'} pointer-events-none`} />
+      <div className={`fixed inset-0 ${theme === 'dark' ? 'bg-gradient-to-br from-primary-500/5 via-transparent to-accent-500/5' : 'bg-slate-100/50'} pointer-events-none`} />
 
       {/* Header */}
-      <header className={`relative z-40 border-b ${theme === 'dark' ? 'border-navy-800/50 bg-navy-900/50' : 'border-gray-200 bg-white/80'} backdrop-blur-xl`}>
+      <header className={`relative z-40 border-b ${theme === 'dark' ? 'border-navy-800/50 bg-navy-900/50' : 'border-slate-200 bg-white/80'} backdrop-blur-xl`}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
+              <div className="relative">
+                <button
+                  onClick={() => setShowMainMenu(!showMainMenu)}
+                  className={`${btnGhostClass} p-2 ${showMainMenu ? (theme === 'dark' ? 'bg-navy-800 text-white' : 'bg-gray-200 text-gray-900') : ''}`}
+                  title="Menu"
+                >
+                  <Menu className="w-5 h-5" />
+                </button>
+                {showMainMenu && (
+                  <div className={`absolute left-0 top-full mt-2 w-56 rounded-xl border p-2 shadow-lg z-100 ${
+                    theme === 'dark'
+                      ? 'bg-navy-900 border-navy-700 text-navy-100'
+                      : 'bg-white border-gray-200 text-gray-900'
+                  }`}>
+                    <Link
+                      to="/setup"
+                      className={`block w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 ${
+                        theme === 'dark' ? 'hover:bg-navy-800' : 'hover:bg-gray-100'
+                      }`}
+                      onClick={() => setShowMainMenu(false)}
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      Setup Wizard
+                    </Link>
+                    <Link
+                      to="/history"
+                      className={`block w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 ${
+                        theme === 'dark' ? 'hover:bg-navy-800' : 'hover:bg-gray-100'
+                      }`}
+                      onClick={() => setShowMainMenu(false)}
+                    >
+                      <Clock className="w-4 h-4" />
+                      Run History
+                    </Link>
+                    <Link
+                      to="/settings"
+                      className={`block w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 ${
+                        theme === 'dark' ? 'hover:bg-navy-800' : 'hover:bg-gray-100'
+                      }`}
+                      onClick={() => setShowMainMenu(false)}
+                    >
+                      <Settings className="w-4 h-4" />
+                      Settings
+                    </Link>
+                    <Link
+                      to="/faq"
+                      state={{ from: 'dashboard' }}
+                      className={`block w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 ${
+                        theme === 'dark' ? 'hover:bg-navy-800' : 'hover:bg-gray-100'
+                      }`}
+                      onClick={() => setShowMainMenu(false)}
+                    >
+                      <Info className="w-4 h-4" />
+                      FAQ
+                    </Link>
+                  </div>
+                )}
+              </div>
               <button
-                onClick={() => navigate('/')}
+                onClick={() => setShowLogoutConfirm(true)}
                 className={`${btnGhostClass} p-2`}
                 title="Back to home"
               >
@@ -699,9 +1119,11 @@ export default function Dashboard({ theme }) {
               <div className="relative">
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className={`${btnGhostClass} p-2 ${showProfileMenu ? (theme === 'dark' ? 'bg-navy-800 text-white' : 'bg-gray-200 text-gray-900') : ''}`}
+                  className={`p-1 rounded-full transition-transform active:scale-95 ${avatarColor} ${showProfileMenu ? 'ring-2 ring-white shadow-lg' : 'shadow-md'} hover:scale-105`}
                 >
-                  <User className="w-5 h-5" />
+                  <div className="w-8 h-8 flex items-center justify-center">
+                    <User className="w-5 h-5 text-white" />
+                  </div>
                 </button>
 
                 {showProfileMenu && (
@@ -722,7 +1144,7 @@ export default function Dashboard({ theme }) {
                       }`}
                       onClick={() => setShowProfileMenu(false)}
                     >
-                      My Keys
+                      My Profile
                     </Link>
 
                     <button
@@ -744,16 +1166,69 @@ export default function Dashboard({ theme }) {
       <main className="relative max-w-7xl mx-auto px-6 py-8">
         {activeTab === 'config' ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column - Configuration */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* API Key Section */}
-              <section className={`${glassCardClass} p-6`}>
-                <div className="flex items-center gap-2 mb-4">
-                  <Shield className="w-5 h-5 text-primary-400" />
-                  <h2 className="section-title">API Configuration</h2>
+            {/* Left Column - Configuration (Stepper) */}
+            <div className={`${useWizardMode ? 'lg:col-span-3' : 'lg:col-span-2'} space-y-4 transition-all`}>
+              
+              {/* View Mode Toggle */}
+              <div className="flex justify-between items-center mb-4">
+                <div className="font-mono font-bold text-3xl flex items-center">
+                   <span 
+                     className={`animate-typing bg-clip-text text-transparent bg-gradient-to-r ${
+                       !useWizardMode 
+                         ? 'from-emerald-500 to-teal-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]' 
+                         : 'from-rose-500 to-rose-600 drop-shadow-[0_0_10px_rgba(244,63,94,0.5)]'
+                     }`} 
+                     style={{ 
+                       width: '19ch', 
+                       '--cursor-color': !useWizardMode ? '#10b981' : '#f43f5e' 
+                     } as React.CSSProperties}
+                   >
+                     LLM Answer Watcher
+                   </span>
                 </div>
 
-                <div className="space-y-4">
+                <button
+                  onClick={() => setUseWizardMode(!useWizardMode)}
+                  className={`relative flex items-center p-1 rounded-full border transition-all duration-300 ${
+                    theme === 'dark' ? 'bg-navy-900 border-navy-700' : 'bg-white border-gray-200'
+                  }`}
+                >
+                  {/* Sliding Background */}
+                  <div
+                    className={`absolute inset-y-1 w-[50%] rounded-full shadow-md transition-all duration-300 ease-out ${
+                      useWizardMode 
+                        ? 'left-1 bg-rose-500 shadow-rose-500/20' 
+                        : 'left-[48%] bg-emerald-500 shadow-emerald-500/20'
+                    }`}
+                  />
+
+                  {/* Wizard Option */}
+                  <div className={`relative z-10 flex items-center gap-2 px-4 py-2 rounded-full transition-colors duration-300 ${useWizardMode ? 'text-white' : (theme === 'dark' ? 'text-navy-400' : 'text-gray-500')}`}>
+                    <Sparkles className="w-4 h-4" />
+                    <span className="text-sm font-medium">Wizard</span>
+                  </div>
+
+                  {/* Classic Option */}
+                  <div className={`relative z-10 flex items-center gap-2 px-4 py-2 rounded-full transition-colors duration-300 ${!useWizardMode ? 'text-white' : (theme === 'dark' ? 'text-navy-400' : 'text-gray-500')}`}>
+                    <Layout className="w-4 h-4" />
+                    <span className="text-sm font-medium">Classic</span>
+                  </div>
+                </button>
+              </div>
+
+              {/* STEP 1: API Configuration */}
+              <CollapsibleSection 
+                key={useWizardMode ? `step1_wiz_${currentStep === 1}` : 'step1_classic'}
+                title={useWizardMode ? "1. Connect Intelligence" : "API Configuration"}
+                icon={<Shield className="w-5 h-5 text-primary-400" />}
+                theme={theme}
+                isComplete={isApiStepValid()}
+                defaultOpen={useWizardMode ? currentStep === 1 : true}
+                isOpen={undefined}
+                onToggle={undefined}
+                className={sectionBorderClass}
+              >
+                <div className="space-y-6">
                   {/* Provider Selection */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                     <button
@@ -799,7 +1274,7 @@ export default function Dashboard({ theme }) {
 
                 {selectedProvider !== 'both' ? (
                   <div>
-                    <label className="label">{selectedProvider === 'google' ? 'Gemini' : 'Groq'} API Key</label>
+                    <label className={theme === 'dark' ? 'label' : 'label-light'}>{selectedProvider === 'google' ? 'Gemini' : 'Groq'} API Key</label>
                     <div className="relative">
                       <input
                         type={showApiKey ? 'text' : 'password'}
@@ -822,24 +1297,24 @@ export default function Dashboard({ theme }) {
                       <div className="mt-2 relative">
                         <button
                           onClick={() => setShowKeyDropdown(prev => ({ ...prev, [selectedProvider]: !prev[selectedProvider] }))}
-                          className={`text-xs flex items-center gap-1 ${theme === 'dark' ? 'text-primary-400' : 'text-primary-600'} hover:underline`}
+                          className={`text-xs font-medium flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all ${theme === 'dark' ? 'bg-navy-800 border-navy-700 text-primary-300 hover:bg-navy-700 hover:border-primary-500/50' : 'bg-white border-gray-200 text-primary-600 hover:bg-gray-50 hover:border-primary-200'}`}
                         >
                           <Key className="w-3 h-3" /> Use saved key <ChevronDown className="w-3 h-3" />
                         </button>
                         
                         {showKeyDropdown[selectedProvider] && (
-                          <div className={`absolute left-0 top-full mt-1 w-full rounded-lg border shadow-lg z-20 ${
-                            theme === 'dark' ? 'bg-navy-800 border-navy-700' : 'bg-white border-gray-200'
+                          <div className={`absolute left-0 top-full mt-2 w-full rounded-xl border shadow-xl z-20 backdrop-blur-xl p-1 ${
+                            theme === 'dark' ? 'bg-navy-900/90 border-navy-700/50' : 'bg-white/90 border-gray-200/50'
                           }`}>
                             {savedKeys.filter(k => k.provider === selectedProvider).map(key => (
                               <button
                                 key={key.id}
                                 onClick={() => {
-                                  loadSavedKey(selectedProvider, key.key_name);
+                                  loadSavedKey(selectedProvider, key.id, key.key_name);
                                   setShowKeyDropdown(prev => ({ ...prev, [selectedProvider]: false }));
                                 }}
-                                className={`w-full text-left px-3 py-2 text-sm first:rounded-t-lg last:rounded-b-lg ${
-                                  theme === 'dark' ? 'hover:bg-navy-700 text-navy-100' : 'hover:bg-gray-50 text-gray-900'
+                                className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${
+                                  theme === 'dark' ? 'hover:bg-white/5 text-navy-100' : 'hover:bg-black/5 text-gray-900'
                                 }`}
                               >
                                 {key.key_name || 'Default Key'}
@@ -879,7 +1354,7 @@ export default function Dashboard({ theme }) {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="label">Google Gemini API Key</label>
+                      <label className={theme === 'dark' ? 'label' : 'label-light'}>Google Gemini API Key</label>
                       <input
                         type="password"
                         value={apiKeys.google}
@@ -891,30 +1366,22 @@ export default function Dashboard({ theme }) {
                         <div className="mt-2 relative">
                           <button
                             onClick={() => setShowKeyDropdown(prev => ({ ...prev, google: !prev.google }))}
-                            className={`text-xs flex items-center gap-1 ${theme === 'dark' ? 'text-primary-400' : 'text-primary-600'} hover:underline`}
+                            className={`text-xs font-medium flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all ${theme === 'dark' ? 'bg-navy-800 border-navy-700 text-primary-300 hover:bg-navy-700 hover:border-primary-500/50' : 'bg-white border-gray-200 text-primary-600 hover:bg-gray-50 hover:border-primary-200'}`}
                           >
                             <Key className="w-3 h-3" /> Use saved key <ChevronDown className="w-3 h-3" />
                           </button>
-                          
-                          {showKeyDropdown.google && (
-                            <div className={`absolute left-0 top-full mt-1 w-full rounded-lg border shadow-lg z-20 ${
-                              theme === 'dark' ? 'bg-navy-800 border-navy-700' : 'bg-white border-gray-200'
-                            }`}>
+                          {showKeyDropdown['google'] && (
+                            <div className={`absolute left-0 top-full mt-2 w-full rounded-xl border shadow-xl z-20 backdrop-blur-xl p-1 ${theme === 'dark' ? 'bg-navy-900/90 border-navy-700/50' : 'bg-white/90 border-gray-200/50'}`}>
                               {savedKeys.filter(k => k.provider === 'google').map(key => (
                                 <button
                                   key={key.id}
                                   onClick={() => {
-                                    loadSavedKey('google', key.key_name);
+                                    loadSavedKey('google', key.id, key.key_name);
                                     setShowKeyDropdown(prev => ({ ...prev, google: false }));
                                   }}
-                                  className={`w-full text-left px-3 py-2 text-sm first:rounded-t-lg last:rounded-b-lg ${
-                                    theme === 'dark' ? 'hover:bg-navy-700 text-navy-100' : 'hover:bg-gray-50 text-gray-900'
-                                  }`}
+                                  className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-white/5 text-navy-100' : 'hover:bg-black/5 text-gray-900'}`}
                                 >
                                   {key.key_name || 'Default Key'}
-                                  <span className={`ml-2 text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'}`}>
-                                    {new Date(key.created_at).toLocaleDateString()}
-                                  </span>
                                 </button>
                               ))}
                             </div>
@@ -923,7 +1390,7 @@ export default function Dashboard({ theme }) {
                       )}
                     </div>
                     <div>
-                      <label className="label">Groq API Key</label>
+                      <label className={theme === 'dark' ? 'label' : 'label-light'}>Groq API Key</label>
                       <input
                         type="password"
                         value={apiKeys.groq}
@@ -935,30 +1402,22 @@ export default function Dashboard({ theme }) {
                         <div className="mt-2 relative">
                           <button
                             onClick={() => setShowKeyDropdown(prev => ({ ...prev, groq: !prev.groq }))}
-                            className={`text-xs flex items-center gap-1 ${theme === 'dark' ? 'text-primary-400' : 'text-primary-600'} hover:underline`}
+                            className={`text-xs font-medium flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all ${theme === 'dark' ? 'bg-navy-800 border-navy-700 text-primary-300 hover:bg-navy-700 hover:border-primary-500/50' : 'bg-white border-gray-200 text-primary-600 hover:bg-gray-50 hover:border-primary-200'}`}
                           >
                             <Key className="w-3 h-3" /> Use saved key <ChevronDown className="w-3 h-3" />
                           </button>
-                          
-                          {showKeyDropdown.groq && (
-                            <div className={`absolute left-0 top-full mt-1 w-full rounded-lg border shadow-lg z-20 ${
-                              theme === 'dark' ? 'bg-navy-800 border-navy-700' : 'bg-white border-gray-200'
-                            }`}>
+                          {showKeyDropdown['groq'] && (
+                            <div className={`absolute left-0 top-full mt-2 w-full rounded-xl border shadow-xl z-20 backdrop-blur-xl p-1 ${theme === 'dark' ? 'bg-navy-900/90 border-navy-700/50' : 'bg-white/90 border-gray-200/50'}`}>
                               {savedKeys.filter(k => k.provider === 'groq').map(key => (
                                 <button
                                   key={key.id}
                                   onClick={() => {
-                                    loadSavedKey('groq', key.key_name);
+                                    loadSavedKey('groq', key.id, key.key_name);
                                     setShowKeyDropdown(prev => ({ ...prev, groq: false }));
                                   }}
-                                  className={`w-full text-left px-3 py-2 text-sm first:rounded-t-lg last:rounded-b-lg ${
-                                    theme === 'dark' ? 'hover:bg-navy-700 text-navy-100' : 'hover:bg-gray-50 text-gray-900'
-                                  }`}
+                                  className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-white/5 text-navy-100' : 'hover:bg-black/5 text-gray-900'}`}
                                 >
                                   {key.key_name || 'Default Key'}
-                                  <span className={`ml-2 text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'}`}>
-                                    {new Date(key.created_at).toLocaleDateString()}
-                                  </span>
                                 </button>
                               ))}
                             </div>
@@ -969,203 +1428,435 @@ export default function Dashboard({ theme }) {
                   </div>
                 )}
 
-                {selectedProvider !== 'both' ? (
+                {/* Model Selection (Simplified) */}
+                {selectedProvider !== 'both' && (
                   <div>
-                    <label className="label">Model</label>
-                    <div className="relative">
-                      <select
+                    <label className={theme === 'dark' ? 'label' : 'label-light'}>Model</label>
+                    <select
                         value={selectedModel}
                         onChange={(e) => setSelectedModel(e.target.value)}
                         className={`${inputClass} appearance-none cursor-pointer`}
                       >
                         {availableModels.map((model) => (
-                          <option key={model.id} value={model.id}>
-                            {model.name}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 ${theme === 'dark' ? 'text-navy-400' : 'text-gray-400'} pointer-events-none`} />
-                    </div>
-                    <p className={`text-xs ${theme === 'dark' ? 'text-navy-500' : 'text-gray-500'} mt-1`}>
-                      {availableModels.find((m) => m.id === selectedModel)?.description}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="label">Google Model</label>
-                      <select
-                        value={selectedGoogleModel}
-                        onChange={(e) => setSelectedGoogleModel(e.target.value)}
-                        className={inputClass}
-                      >
-                        {GEMINI_MODELS.map((model) => (
                           <option key={model.id} value={model.id}>{model.name}</option>
                         ))}
                       </select>
-                    </div>
-                    <div>
-                      <label className="label">Groq Model</label>
-                      <select
-                        value={selectedGroqModel}
-                        onChange={(e) => setSelectedGroqModel(e.target.value)}
-                        className={inputClass}
-                      >
-                        {GROQ_MODELS.map((model) => (
-                          <option key={model.id} value={model.id}>{model.name}</option>
-                        ))}
-                      </select>
-                    </div>
                   </div>
                 )}
 
-                {selectedProvider === 'google' && (
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => setEnableWebSearch(!enableWebSearch)}
-                      className={`relative w-12 h-6 rounded-full transition-colors ${enableWebSearch ? 'bg-primary-500' : (theme === 'dark' ? 'bg-navy-700' : 'bg-gray-300')}`}
+                {useWizardMode && (
+                  <div className="pt-4 border-t border-gray-200/10 flex justify-end">
+                    <button 
+                      onClick={() => {
+                          if(isApiStepValid()) setCurrentStep(2);
+                          else showToast("Please enter an API Key", "error");
+                      }} 
+                      className="btn-primary flex items-center justify-center whitespace-nowrap"
+                      disabled={!isApiStepValid()}
                     >
-                      <div
-                        className={`absolute w-5 h-5 bg-white rounded-full top-0.5 transition-transform ${enableWebSearch ? 'translate-x-6' : 'translate-x-0.5'}`}
-                      />
+                      Next: Define Identity <ArrowRight className="w-4 h-4 ml-2" />
                     </button>
-                    <span className={`text-sm ${theme === 'dark' ? 'text-navy-300' : 'text-gray-700'}`}>Enable Google Search grounding</span>
                   </div>
                 )}
-              </div>
-            </section>
-
-              {/* Brands Section */}
-              <section className={`${glassCardClass} p-6`}>
-                <div className="flex items-center gap-2 mb-4">
-                  <Target className="w-5 h-5 text-accent-400" />
-                  <h2 className="section-title">Brands to Track</h2>
                 </div>
+              </CollapsibleSection>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* My Brands */}
-                  <div>
-                    <label className="label flex items-center gap-2">
-                      <span className="tag-primary text-xs">YOUR BRANDS</span>
-                    </label>
-                    <div className="space-y-2">
-                      {myBrands.map((brand, index) => (
-                        <div key={index} className="flex gap-2">
-                          <input
-                            type="text"
-                            value={brand}
-                            onChange={(e) => updateBrand('mine', index, e.target.value)}
-                            placeholder="e.g., YourProduct"
-                            className={`${inputClass} flex-1`}
-                          />
-                          {myBrands.length > 1 && (
-                            <button
-                              onClick={() => removeBrand('mine', index)}
-                              className="btn-danger px-3"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
+              {/* STEP 2 & 3: Brands & Competitors (Conditional Layout) */}
+              {useWizardMode ? (
+                <>
+                  {/* Step 2: My Brands Only */}
+                  <CollapsibleSection 
+                    key={`step2_${currentStep === 2}`}
+                    title="2. Brands to Track" 
+                    icon={<Target className="w-5 h-5 text-accent-400" />}
+                    theme={theme}
+                    isComplete={isBrandStepValid()}
+                    defaultOpen={currentStep === 2}
+                    isOpen={undefined}
+                    onToggle={undefined}
+                    className={`${currentStep < 2 ? 'opacity-50 pointer-events-none' : ''} ${sectionBorderClass}`}
+                  >
+                    <div className="space-y-6">
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="label flex items-center gap-2 mb-0">
+                            <span className="tag-primary text-xs">YOUR BRANDS</span>
+                          </label>
+                          {savedBrands.some(b => b.is_mine) && (
+                            <div className="relative">
+                              <button
+                                onClick={() => setShowBrandDropdown(!showBrandDropdown)}
+                                className={`text-xs font-medium flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all ${theme === 'dark' ? 'bg-navy-800 border-navy-700 text-primary-300 hover:bg-navy-700 hover:border-primary-500/50' : 'bg-white border-gray-200 text-primary-600 hover:bg-gray-50 hover:border-primary-200'}`}
+                              >
+                                <Building2 className="w-3 h-3" /> Load Saved <ChevronDown className="w-3 h-3" />
+                              </button>
+                              {showBrandDropdown && (
+                                <div className={`absolute right-0 top-full mt-2 w-48 rounded-xl border shadow-xl z-20 backdrop-blur-xl p-1 ${theme === 'dark' ? 'bg-navy-900/90 border-navy-700/50' : 'bg-white/90 border-gray-200/50'}`}>
+                                  {savedBrands.filter(b => b.is_mine).map(brand => (
+                                    <button
+                                      key={brand.id}
+                                      onClick={() => {
+                                        if (!myBrands.includes(brand.brand_name)) {
+                                          const newBrands = [...myBrands];
+                                          if (newBrands.length === 1 && newBrands[0] === '') newBrands[0] = brand.brand_name;
+                                          else newBrands.push(brand.brand_name);
+                                          setMyBrands(newBrands);
+                                        }
+                                        setShowBrandDropdown(false);
+                                      }}
+                                      className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-white/5 text-navy-100' : 'hover:bg-black/5 text-gray-900'}`}
+                                    >
+                                      {brand.brand_name}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           )}
                         </div>
-                      ))}
-                      <button onClick={() => addBrand('mine')} className={`${btnGhostClass} text-sm w-full`}>
-                        <Plus className="w-4 h-4 mr-1" /> Add brand
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Competitors */}
-                  <div>
-                    <label className="label flex items-center gap-2">
-                      <span className="tag-accent text-xs">COMPETITORS</span>
-                    </label>
-                    <div className="space-y-2">
-                      {competitors.map((competitor, index) => (
-                        <div key={index} className="flex gap-2">
-                          <input
-                            type="text"
-                            value={competitor}
-                            onChange={(e) => updateBrand('competitors', index, e.target.value)}
-                            placeholder="e.g., CompetitorA"
-                            className={`${inputClass} flex-1`}
-                          />
-                          {competitors.length > 1 && (
-                            <button
-                              onClick={() => removeBrand('competitors', index)}
-                              className="btn-danger px-3"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                      <button
-                        onClick={() => addBrand('competitors')}
-                        className={`${btnGhostClass} text-sm w-full`}
-                      >
-                        <Plus className="w-4 h-4 mr-1" /> Add competitor
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* Intents Section */}
-              <section className={`${glassCardClass} p-6`}>
-                <div className="flex items-center gap-2 mb-4">
-                  <MessageSquare className="w-5 h-5 text-green-400" />
-                  <h2 className="section-title">Search Queries (Intents)</h2>
-                </div>
-
-                <p className={`text-sm ${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'} mb-4`}>
-                  Define the questions you want to ask the AI. These should be buyer-intent queries
-                  your customers might ask.
-                </p>
-
-                <div className="space-y-4">
-                  {intents.map((intent, index) => (
-                    <div key={index} className={`p-4 ${theme === 'dark' ? 'bg-navy-800/30' : 'bg-gray-100/50'} rounded-xl border ${theme === 'dark' ? 'border-navy-700/50' : 'border-gray-200/50'}`}>
-                      <div className="flex items-start gap-4">
-                        <div className="flex-1 space-y-3">
-                          <input
-                            type="text"
-                            value={intent.id}
-                            onChange={(e) => updateIntent(index, 'id', e.target.value)}
-                            placeholder="Intent ID (e.g., best-tools)"
-                            className={`${inputClass} text-sm`}
-                          />
-                          <textarea
-                            value={intent.prompt}
-                            onChange={(e) => updateIntent(index, 'prompt', e.target.value)}
-                            placeholder="What are the best email marketing tools?"
-                            rows={2}
-                            className={`${inputClass} resize-none`}
-                          />
-                        </div>
-                        {intents.length > 1 && (
-                          <button onClick={() => removeIntent(index)} className="btn-danger px-3 py-3">
-                            <X className="w-4 h-4" />
-                          </button>
-                        )}
+                        <TagInput tags={myBrands.filter(b => b.trim())} onChange={setMyBrands} placeholder="Type brand & press Enter (e.g. Nike)" theme={theme} />
+                        <p className={`text-xs mt-2 ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'}`}>Tip: Include aliases like "Nike.com" or "Nike Shoes"</p>
+                        <p className={`text-[10px] mt-1 ${theme === 'dark' ? 'text-navy-500' : 'text-gray-400'}`}>You can add multiple brands by pressing enter.</p>
+                      </div>
+                      <div className="pt-4 border-t border-gray-200/10 flex justify-end">
+                        <button onClick={() => { if(isBrandStepValid()) setCurrentStep(3); else showToast("Please define at least one brand", "error"); }} className="btn-primary flex items-center justify-center whitespace-nowrap" disabled={!isBrandStepValid()}>
+                          Next: The Competition <ArrowRight className="w-4 h-4 ml-2" />
+                        </button>
                       </div>
                     </div>
-                  ))}
+                  </CollapsibleSection>
 
-                  <button onClick={addIntent} className={`${btnSecondaryClass} w-full`}>
-                    <Plus className="w-4 h-4 mr-2" /> Add another query
+                  {/* Step 3: Competitors Only */}
+                  <CollapsibleSection 
+                    key={`step3_${currentStep === 3}`}
+                    title="3. The Competition" 
+                    icon={<Users className="w-5 h-5 text-rose-400" />}
+                    theme={theme}
+                    isComplete={competitors.filter(c => c.trim()).length > 0}
+                    defaultOpen={currentStep === 3}
+                    isOpen={undefined}
+                    onToggle={undefined}
+                    className={`${currentStep < 3 ? 'opacity-50 pointer-events-none' : ''} ${sectionBorderClass}`}
+                  >
+                    <div className="space-y-6">
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="label flex items-center gap-2 mb-0">
+                            <span className="tag-accent text-xs">COMPETITORS</span>
+                          </label>
+                          {savedBrands.some(b => !b.is_mine) && (
+                            <div className="relative">
+                              <button
+                                onClick={() => setShowCompetitorDropdown(!showCompetitorDropdown)}
+                                className={`text-xs font-medium flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all ${theme === 'dark' ? 'bg-navy-800 border-navy-700 text-primary-300 hover:bg-navy-700 hover:border-primary-500/50' : 'bg-white border-gray-200 text-primary-600 hover:bg-gray-50 hover:border-primary-200'}`}
+                              >
+                                <Users className="w-3 h-3" /> Load Saved <ChevronDown className="w-3 h-3" />
+                              </button>
+                              {showCompetitorDropdown && (
+                                <div className={`absolute right-0 top-full mt-2 w-48 rounded-xl border shadow-xl z-20 backdrop-blur-xl p-1 ${theme === 'dark' ? 'bg-navy-900/90 border-navy-700/50' : 'bg-white/90 border-gray-200/50'}`}>
+                                  {savedBrands.filter(b => !b.is_mine).map(brand => (
+                                    <button
+                                      key={brand.id}
+                                      onClick={() => {
+                                        if (!competitors.includes(brand.brand_name)) {
+                                          const newCompetitors = [...competitors];
+                                          if (newCompetitors.length === 1 && newCompetitors[0] === '') newCompetitors[0] = brand.brand_name;
+                                          else newCompetitors.push(brand.brand_name);
+                                          setCompetitors(newCompetitors);
+                                        }
+                                        setShowCompetitorDropdown(false);
+                                      }}
+                                      className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-white/5 text-navy-100' : 'hover:bg-black/5 text-gray-900'}`}
+                                    >
+                                      {brand.brand_name}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <TagInput tags={competitors.filter(c => c.trim())} onChange={setCompetitors} placeholder="Type competitor & press Enter (e.g. Adidas)" theme={theme} />
+                        <p className={`text-[10px] mt-1 ${theme === 'dark' ? 'text-navy-500' : 'text-gray-400'}`}>You can add multiple brands by pressing enter.</p>
+                      </div>
+                      <div className="pt-4 border-t border-gray-200/10 flex justify-end">
+                        <button onClick={() => setCurrentStep(4)} className="btn-primary flex items-center justify-center whitespace-nowrap">
+                          Next: Define Questions <ArrowRight className="w-4 h-4 ml-2" />
+                        </button>
+                      </div>
+                    </div>
+                  </CollapsibleSection>
+                </>
+              ) : (
+                /* Classic Mode: Combined Brands Section */
+                <CollapsibleSection 
+                  title="Brands to Track" 
+                  icon={<Target className="w-5 h-5 text-accent-400" />}
+                  theme={theme}
+                  isComplete={myBrands.filter(b => b.trim()).length > 0}
+                  defaultOpen={false}
+                  className={sectionBorderClass}
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* My Brands */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="label flex items-center gap-2 mb-0">
+                          <span className="tag-primary text-xs">YOUR BRANDS</span>
+                        </label>
+                        {savedBrands.some(b => b.is_mine) && (
+                          <div className="relative">
+                            <button
+                              onClick={() => setShowBrandDropdown(!showBrandDropdown)}
+                              className={`text-xs font-medium flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all ${theme === 'dark' ? 'bg-navy-800 border-navy-700 text-primary-300 hover:bg-navy-700 hover:border-primary-500/50' : 'bg-white border-gray-200 text-primary-600 hover:bg-gray-50 hover:border-primary-200'}`}
+                            >
+                              <Building2 className="w-3 h-3" /> Load Saved <ChevronDown className="w-3 h-3" />
+                            </button>
+                            {showBrandDropdown && (
+                              <div className={`absolute right-0 top-full mt-2 w-48 rounded-xl border shadow-xl z-20 backdrop-blur-xl p-1 ${theme === 'dark' ? 'bg-navy-900/90 border-navy-700/50' : 'bg-white/90 border-gray-200/50'}`}>
+                                {savedBrands.filter(b => b.is_mine).map(brand => (
+                                  <button
+                                    key={brand.id}
+                                    onClick={() => {
+                                      if (!myBrands.includes(brand.brand_name)) {
+                                        const newBrands = [...myBrands];
+                                        if (newBrands.length === 1 && newBrands[0] === '') newBrands[0] = brand.brand_name;
+                                        else newBrands.push(brand.brand_name);
+                                        setMyBrands(newBrands);
+                                      }
+                                      setShowBrandDropdown(false);
+                                    }}
+                                    className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-white/5 text-navy-100' : 'hover:bg-black/5 text-gray-900'}`}
+                                  >
+                                    {brand.brand_name}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <TagInput tags={myBrands.filter(b => b.trim())} onChange={setMyBrands} placeholder="Type brand & press Enter" theme={theme} />
+                      <p className={`text-[10px] mt-1 ${theme === 'dark' ? 'text-navy-500' : 'text-gray-400'}`}>You can add multiple brands by pressing enter.</p>
+                    </div>
+
+                    {/* Competitors */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="label flex items-center gap-2 mb-0">
+                          <span className="tag-accent text-xs">COMPETITORS</span>
+                        </label>
+                        {savedBrands.some(b => !b.is_mine) && (
+                          <div className="relative">
+                            <button
+                              onClick={() => setShowCompetitorDropdown(!showCompetitorDropdown)}
+                              className={`text-xs font-medium flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all ${theme === 'dark' ? 'bg-navy-800 border-navy-700 text-primary-300 hover:bg-navy-700 hover:border-primary-500/50' : 'bg-white border-gray-200 text-primary-600 hover:bg-gray-50 hover:border-primary-200'}`}
+                            >
+                              <Users className="w-3 h-3" /> Load Saved <ChevronDown className="w-3 h-3" />
+                            </button>
+                            {showCompetitorDropdown && (
+                              <div className={`absolute right-0 top-full mt-2 w-48 rounded-xl border shadow-xl z-20 backdrop-blur-xl p-1 ${theme === 'dark' ? 'bg-navy-900/90 border-navy-700/50' : 'bg-white/90 border-gray-200/50'}`}>
+                                {savedBrands.filter(b => !b.is_mine).map(brand => (
+                                  <button
+                                    key={brand.id}
+                                    onClick={() => {
+                                      if (!competitors.includes(brand.brand_name)) {
+                                        const newCompetitors = [...competitors];
+                                        if (newCompetitors.length === 1 && newCompetitors[0] === '') newCompetitors[0] = brand.brand_name;
+                                        else newCompetitors.push(brand.brand_name);
+                                        setCompetitors(newCompetitors);
+                                      }
+                                      setShowCompetitorDropdown(false);
+                                    }}
+                                    className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-white/5 text-navy-100' : 'hover:bg-black/5 text-gray-900'}`}
+                                  >
+                                    {brand.brand_name}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <TagInput tags={competitors.filter(c => c.trim())} onChange={setCompetitors} placeholder="Type competitor & press Enter" theme={theme} />
+                      <p className={`text-[10px] mt-1 ${theme === 'dark' ? 'text-navy-500' : 'text-gray-400'}`}>You can add multiple brands by pressing enter.</p>
+                    </div>
+                  </div>
+                </CollapsibleSection>
+              )}
+
+              {/* STEP 4: Intents */}
+              <CollapsibleSection 
+                key={`step4_${currentStep === 4}`}
+                title={useWizardMode ? "4. Questions to Ask" : "Search Queries (Intents)"}
+                icon={<MessageSquare className="w-5 h-5 text-green-400" />}
+                theme={theme}
+                isComplete={isIntentStepValid()}
+                defaultOpen={useWizardMode ? currentStep === 4 : false}
+                isOpen={undefined}
+                onToggle={undefined}
+                className={`${useWizardMode && currentStep < 4 ? 'opacity-50 pointer-events-none' : ''} ${sectionBorderClass}`}
+              >
+                <div className="space-y-6">
+                  {/* Suggestion Rail */}
+                  <div>
+                    <p className={`text-xs mb-3 font-medium ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'}`}>Quick Start Templates</p>
+                    <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                      {INTENT_TEMPLATES.map((template) => (
+                        <button
+                          key={template.id}
+                          onClick={() => applyTemplate(template.id)}
+                          className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                            theme === 'dark'
+                              ? 'bg-navy-800 border-navy-700 text-navy-300 hover:border-primary-500 hover:text-primary-400'
+                              : 'bg-white border-slate-200 text-slate-600 hover:border-primary-500 hover:text-primary-600'
+                          }`}
+                        >
+                          + {template.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {intents.map((intent, index) => (
+                      <div key={index} className={`p-4 ${theme === 'dark' ? 'bg-navy-800/30' : 'bg-gray-100/50'} rounded-xl border ${theme === 'dark' ? 'border-navy-700/50' : 'border-gray-200/50'}`}>
+                        <div className="flex items-start gap-4">
+                          <div className="flex-1 space-y-3">
+                            <input
+                              type="text"
+                              value={intent.id}
+                              onChange={(e) => updateIntent(index, 'id', e.target.value)}
+                              placeholder="Question ID (e.g., best-tools)"
+                              className={`${inputClass} text-sm`}
+                            />
+                            <div className="relative">
+                              <textarea
+                                value={intent.prompt}
+                                onChange={(e) => updateIntent(index, 'prompt', e.target.value)}
+                                placeholder="What are the best tools for..."
+                                rows={3}
+                                className={`${inputClass} resize-none pr-12`}
+                              />
+                              <div className="absolute bottom-2 right-2">
+                                <PromptOptimizer
+                                  currentPrompt={intent.prompt}
+                                  onOptimize={(newPrompt) => updateIntent(index, 'prompt', newPrompt)}
+                                  apiKey={selectedProvider === 'both' ? (apiKeys.google || apiKeys.groq) : apiKeys[selectedProvider]}
+                                  provider={selectedProvider === 'both' ? (apiKeys.google ? 'google' : 'groq') : selectedProvider}
+                                  modelName={selectedProvider === 'both' ? (apiKeys.google ? selectedGoogleModel : selectedGroqModel) : selectedModel}
+                                  competitors={competitors}
+                                  myBrands={myBrands}
+                                  theme={theme}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => removeIntent(index)} 
+                            className="btn-danger p-3"
+                            title="Remove query"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <button
+                      onClick={addIntent}
+                      className={`w-full py-3 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 transition-colors ${
+                        theme === 'dark'
+                          ? 'border-navy-700 text-navy-400 hover:border-primary-500/50 hover:text-primary-400'
+                          : 'border-gray-300 text-gray-500 hover:border-primary-400 hover:text-primary-600'
+                      }`}
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Another Question
+                    </button>
+                  </div>
+
+                  {useWizardMode && (
+                    <div className="pt-4 border-t border-gray-200/10 flex justify-end">
+                      <button 
+                        onClick={() => {
+                            if(isIntentStepValid()) setCurrentStep(5);
+                            else showToast("Please add at least one question", "error");
+                        }} 
+                        className="btn-primary flex items-center justify-center whitespace-nowrap"
+                        disabled={!isIntentStepValid()}
+                      >
+                        Next: Review & Launch <ArrowRight className="w-4 h-4 ml-2" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </CollapsibleSection>
+
+              {/* STEP 5: Review & Launch (Wizard Only) */}
+              {useWizardMode && currentStep === 5 && (
+                <div className={`p-6 rounded-2xl border ${theme === 'dark' ? 'bg-navy-800/50 border-primary-500/30 shadow-lg shadow-primary-500/5' : 'bg-white border-primary-200 shadow-xl'}`}>
+                  <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+                    Ready to Launch
+                  </h2>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-navy-900' : 'bg-gray-50'}`}>
+                      <p className="text-xs opacity-70 mb-1">Provider</p>
+                      <p className="font-medium capitalize">{selectedProvider}</p>
+                    </div>
+                    <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-navy-900' : 'bg-gray-50'}`}>
+                      <p className="text-xs opacity-70 mb-1">Brand</p>
+                      <p className="font-medium">{myBrands.filter(b => b.trim()).length} Aliases</p>
+                    </div>
+                    <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-navy-900' : 'bg-gray-50'}`}>
+                      <p className="text-xs opacity-70 mb-1">Competitors</p>
+                      <p className="font-medium">{competitors.filter(c => c.trim()).length} Tracked</p>
+                    </div>
+                    <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-navy-900' : 'bg-gray-50'}`}>
+                      <p className="text-xs opacity-70 mb-1">Questions</p>
+                      <p className="font-medium">{intents.filter(i => i.prompt.trim()).length} Queries</p>
+                    </div>
+                    <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-navy-900' : 'bg-gray-50'}`}>
+                      <p className="text-xs opacity-70 mb-1">Est. Cost</p>
+                      <p className="font-medium">~$0.001</p>
+                    </div>
+                    <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-navy-900' : 'bg-gray-50'}`}>
+                      <p className="text-xs opacity-70 mb-1">Est. Time</p>
+                      <p className="font-medium">~5 seconds</p>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={handleRunWatcher} 
+                    disabled={isRunning}
+                    className={`btn-primary w-full py-4 text-lg transform hover:-translate-y-0.5 transition-all ${useWizardMode ? 'shadow-xl shadow-primary-500/20 hover:shadow-primary-500/40' : 'shadow-xl shadow-emerald-500/40 hover:shadow-emerald-500/60'}`}
+                  >
+                    {isRunning ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Running Analysis...
+                      </span>
+                    ) : (
+                      <span className="flex items-center justify-center gap-2">
+                        <Play className="w-5 h-5" />
+                        Run Analysis
+                      </span>
+                    )}
                   </button>
                 </div>
-              </section>
+              )}
             </div>
 
             {/* Right Column - Preview & Actions */}
-            <div className="space-y-6">
+            <div className={`space-y-6 ${useWizardMode ? 'hidden' : ''}`}>
               {/* Run Button */}
-              <div className={`${glassCardClass} p-6 glow-primary`}>
+              <div className={`${glassCardClass} p-6 ${useWizardMode ? 'glow-primary' : 'glow-emerald'}`}>
                 <button
-                  onClick={runSearch}
+                  onClick={handleRunWatcher}
                   disabled={!isConfigValid || isRunning}
-                  className="btn-primary w-full flex items-center justify-center gap-2 text-lg py-4"
+                  className={`btn-primary w-full flex items-center justify-center gap-2 text-lg py-4 ${!useWizardMode ? 'shadow-emerald-500/50' : ''}`}
                 >
                   {isRunning ? (
                     <>
@@ -1219,19 +1910,19 @@ export default function Dashboard({ theme }) {
                 )}
 
                 <div className="flex gap-2">
-                  <button onClick={copyToClipboard} className={`${btnSecondaryClass} flex-1 text-sm`}>
+                  <button onClick={copyToClipboard} className={`${btnSecondaryClass} flex-1 text-sm flex items-center justify-center gap-2`}>
                     {copied ? (
                       <>
-                        <Check className="w-4 h-4 mr-1" /> Copied!
+                        <Check className="w-4 h-4" /> Copied!
                       </>
                     ) : (
                       <>
-                        <Copy className="w-4 h-4 mr-1" /> Copy YAML
+                        <Copy className="w-4 h-4" /> Copy YAML
                       </>
                     )}
                   </button>
-                  <button onClick={downloadYaml} className={`${btnSecondaryClass} flex-1 text-sm`}>
-                    <Download className="w-4 h-4 mr-1" /> Download
+                  <button onClick={downloadYaml} className={`${btnSecondaryClass} flex-1 text-sm flex items-center justify-center gap-2`}>
+                    <Download className="w-4 h-4" /> Download
                   </button>
                 </div>
               </div>
@@ -1293,24 +1984,110 @@ export default function Dashboard({ theme }) {
             </div>
           </div>
         ) : (
-          <div className={`${glassCardClass} p-8`}> {/* Outer div for the Results Tab, acts as single root element */}
-            {results && results.intents_data && results.intents_data.length > 0 ? (
+          <div className={`${glassCardClass} p-8`}> 
+            {isRunning ? (
+               <div className="space-y-8">
+                  {/* Loading Indicator */}
+                  <div className="flex flex-col items-center justify-center py-8 animate-fade-in">
+                    <div className="relative mb-6">
+                      <div className="absolute inset-0 bg-primary-500/30 blur-2xl rounded-full animate-pulse"></div>
+                      <div className={`relative w-20 h-20 rounded-2xl ${theme === 'dark' ? 'bg-navy-800 border-navy-700' : 'bg-white border-gray-100'} border shadow-2xl flex items-center justify-center`}>
+                        <div className="relative">
+                           <Loader2 className="w-10 h-10 text-primary-500 animate-spin" />
+                           <div className="absolute inset-0 flex items-center justify-center">
+                              <Sparkles className="w-4 h-4 text-accent-400 animate-pulse" />
+                           </div>
+                        </div>
+                      </div>
+                    </div>
+                    <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-2`}>
+                      LLM Answer Watcher is Analyzing
+                    </h3>
+                    <p className={`text-sm ${theme === 'dark' ? 'text-navy-300' : 'text-gray-500'} max-w-sm text-center`}>
+                      We're querying the models and extracting brand mentions. This may take a few seconds...
+                    </p>
+                  </div>
+
+                  {/* Skeletons */}
+                  <div className="space-y-8 animate-pulse opacity-40 pointer-events-none">
+                      <div className="flex justify-between items-center mb-6">
+                        <Skeleton className="h-8 w-64" theme={theme} />
+                        <div className="flex gap-2">
+                            <Skeleton className="h-9 w-20" theme={theme} />
+                            <Skeleton className="h-9 w-20" theme={theme} />
+                        </div>
+                      </div>
+                      {[1, 2].map((i) => (
+                        <div key={i} className={`p-6 rounded-2xl border ${theme === 'dark' ? 'border-navy-700/40 bg-navy-800/20' : 'border-gray-200/40 bg-gray-100/50'}`}>
+                            <div className="flex items-center gap-4 mb-4">
+                                <Skeleton className="w-8 h-8 rounded-lg" theme={theme} />
+                                <Skeleton className="h-6 w-1/2" theme={theme} />
+                            </div>
+                            <Skeleton className="h-32 w-full rounded-xl" theme={theme} />
+                        </div>
+                      ))}
+                   </div>
+               </div>
+            ) : results && results.intents_data && results.intents_data.length > 0 ? (
               <>
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                   <h2 className={`text-2xl font-bold ${theme === 'dark' ? 'text-navy-200' : 'text-gray-800'}`}>
                     Search Results for Run: <span className="text-primary-400">{runId}</span>
                   </h2>
-                  <div className="flex gap-2">
-                    <button onClick={downloadResultsCSV} className={`${btnSecondaryClass} text-sm px-3 py-2`} title="Download CSV">
-                      <Download className="w-4 h-4 mr-2 inline" /> CSV
-                    </button>
-                    <button onClick={downloadResultsJSON} className={`${btnSecondaryClass} text-sm px-3 py-2`} title="Download JSON">
-                      <Code className="w-4 h-4 mr-2 inline" /> JSON
-                    </button>
-                    <button onClick={downloadResultsText} className={`${btnSecondaryClass} text-sm px-3 py-2`} title="Download Text">
-                      <FileText className="w-4 h-4 mr-2 inline" /> TXT
-                    </button>
+                  <div className="flex items-center gap-4">
+                    <span className={`hidden sm:block text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'} italic text-right max-w-[150px]`}>
+                      Download your analysis for reports or further processing
+                    </span>
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowExportMenu(!showExportMenu)}
+                        className={`${btnSecondaryClass} flex items-center gap-2 px-4 py-2`}
+                      >
+                        <Download className="w-4 h-4" />
+                        Export Results
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showExportMenu ? 'rotate-180' : ''}`} />
+                      </button>
+                      
+                      {showExportMenu && (
+                      <div className={`absolute right-0 top-full mt-2 w-56 rounded-xl border shadow-xl z-50 overflow-hidden animate-scale-in origin-top-right ${
+                        theme === 'dark' ? 'bg-navy-800 border-navy-700' : 'bg-white border-gray-200'
+                      }`}>
+                         <div className={`px-4 py-2 text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-navy-400 bg-navy-900/50' : 'text-gray-500 bg-gray-50'}`}>
+                           Select Format
+                         </div>
+                         <div className="p-1">
+                           <button onClick={() => { downloadResultsCSV(); setShowExportMenu(false); }} className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-3 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-navy-700 text-navy-100' : 'hover:bg-gray-50 text-gray-900'}`}>
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${theme === 'dark' ? 'bg-emerald-500/10' : 'bg-emerald-50'} shrink-0`}>
+                                <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="font-medium">CSV Spreadsheet</span>
+                                <span className={`text-[10px] ${theme === 'dark' ? 'text-navy-400' : 'text-gray-400'}`}>For Excel/Sheets</span>
+                              </div>
+                           </button>
+                           <button onClick={() => { downloadResultsJSON(); setShowExportMenu(false); }} className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-3 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-navy-700 text-navy-100' : 'hover:bg-gray-50 text-gray-900'}`}>
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${theme === 'dark' ? 'bg-amber-500/10' : 'bg-amber-50'} shrink-0`}>
+                                <Code className="w-4 h-4 text-amber-500" />
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="font-medium">JSON Data</span>
+                                <span className={`text-[10px] ${theme === 'dark' ? 'text-navy-400' : 'text-gray-400'}`}>Raw structured data</span>
+                              </div>
+                           </button>
+                           <button onClick={() => { downloadResultsText(); setShowExportMenu(false); }} className={`w-full text-left px-3 py-2.5 text-sm flex items-center gap-3 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-navy-700 text-navy-100' : 'hover:bg-gray-50 text-gray-900'}`}>
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${theme === 'dark' ? 'bg-blue-500/10' : 'bg-blue-50'} shrink-0`}>
+                                <FileText className="w-4 h-4 text-blue-500" />
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="font-medium">Text Report</span>
+                                <span className={`text-[10px] ${theme === 'dark' ? 'text-navy-400' : 'text-gray-400'}`}>Readable summary</span>
+                              </div>
+                           </button>
+                         </div>
+                      </div>
+                    )}
                   </div>
+                </div>
                 </div>
                 <div className="space-y-8">
                   {results.intents_data.map((intentResult: any) => (
@@ -1392,19 +2169,52 @@ export default function Dashboard({ theme }) {
                   ))}
                 </div>
                 {selectedProvider === 'both' && <StatsComparison results={results} theme={theme} />}
-                <TokenUsageStats results={results} selectedProvider={selectedProvider} selectedGoogleModel={selectedGoogleModel} selectedGroqModel={selectedGroqModel} theme={theme} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                  <TokenUsageStats results={results} selectedProvider={selectedProvider} selectedGoogleModel={selectedGoogleModel} selectedGroqModel={selectedGroqModel} theme={theme} />
+                  <BrandRecommendation results={results} theme={theme} />
+                </div>
               </>
             ) : (
-              <div className="text-center">
-                <div className={`w-16 h-16 mx-auto mb-4 rounded-2xl ${theme === 'dark' ? 'bg-navy-800' : 'bg-gray-100'} flex items-center justify-center`}>
-                  <Sparkles className="w-8 h-8 text-gray-400" />
+              <div className="flex flex-col items-center justify-center py-16 animate-fade-in-up">
+                <div className="relative mb-8">
+                  <div className={`absolute inset-0 bg-primary-500/20 blur-xl rounded-full animate-pulse-glow`}></div>
+                  <div className={`relative w-24 h-24 rounded-3xl ${theme === 'dark' ? 'bg-navy-800' : 'bg-white shadow-md'} border ${theme === 'dark' ? 'border-navy-700' : 'border-gray-100'} flex items-center justify-center transform hover:scale-105 transition-transform duration-300`}>
+                    <Sparkles className="w-12 h-12 text-primary-500" />
+                  </div>
                 </div>
-                <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-navy-200' : 'text-gray-800'} mb-2`}>No Results Yet</h2>
-                <p className={`${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'} mb-6`}>
-                  Configure your search settings and run a search to see results here.
+                
+                <h2 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-3`}>
+                  Ready to Analyze
+                </h2>
+                
+                <p className={`text-center max-w-md ${theme === 'dark' ? 'text-navy-300' : 'text-gray-600'} mb-8 leading-relaxed`}>
+                  You haven't run any searches yet. Configure your brands and queries to see how AI models perceive your products.
                 </p>
-                <button onClick={() => setActiveTab('config')} className="btn-primary">
-                  <Settings className="w-4 h-4 mr-2" /> Go to Configuration
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl w-full mb-10">
+                   <div className={`p-4 rounded-xl border ${theme === 'dark' ? 'bg-navy-800/50 border-navy-700' : 'bg-white border-gray-100 shadow-sm'} flex flex-col items-center text-center`}>
+                      <Target className="w-6 h-6 text-accent-400 mb-2" />
+                      <span className={`font-medium ${theme === 'dark' ? 'text-navy-100' : 'text-gray-800'}`}>Track Visibility</span>
+                      <span className={`text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'} mt-1`}>See where you rank</span>
+                   </div>
+                   <div className={`p-4 rounded-xl border ${theme === 'dark' ? 'bg-navy-800/50 border-navy-700' : 'bg-white border-gray-100 shadow-sm'} flex flex-col items-center text-center`}>
+                      <Users className="w-6 h-6 text-blue-400 mb-2" />
+                      <span className={`font-medium ${theme === 'dark' ? 'text-navy-100' : 'text-gray-800'}`}>Monitor Rivals</span>
+                      <span className={`text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'} mt-1`}>Keep an eye on competitors</span>
+                   </div>
+                   <div className={`p-4 rounded-xl border ${theme === 'dark' ? 'bg-navy-800/50 border-navy-700' : 'bg-white border-gray-100 shadow-sm'} flex flex-col items-center text-center`}>
+                      <Brain className="w-6 h-6 text-emerald-400 mb-2" />
+                      <span className={`font-medium ${theme === 'dark' ? 'text-navy-100' : 'text-gray-800'}`}>AI Sentiment</span>
+                      <span className={`text-xs ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'} mt-1`}>Understand the narrative</span>
+                   </div>
+                </div>
+
+                <button 
+                  onClick={() => setActiveTab('config')} 
+                  className="btn-primary flex items-center gap-2 group"
+                >
+                  <Settings className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" /> 
+                  Configure Search
                 </button>
               </div>
             )}
@@ -1431,6 +2241,18 @@ export default function Dashboard({ theme }) {
           </div>
         </div>
       </footer>
+
+      {/* Logout Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={handleLogout}
+        title="Leave Dashboard?"
+        message="Are you sure you want to leave? You will be logged out of your current session."
+        confirmLabel="Logout & Leave"
+        theme={theme}
+        variant="warning"
+      />
     </div>
   );
 }

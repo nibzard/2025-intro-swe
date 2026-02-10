@@ -1,0 +1,236 @@
+/* Injected via index.css at the root of the project */
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+
+/* ==========================================================================
+   Accessibility Styles
+   ========================================================================== */
+
+/* 1. Base variables
+   ========================================================================== */
+
+:root {
+  /* Base font size, can be manipulated by JS */
+  --base-font-size: 16px; 
+  /* Base spacing unit, scales with font size */
+  --base-spacing: 1rem;
+}
+
+/* Apply base font size to the root element */
+html {
+  font-size: var(--base-font-size);
+}
+
+
+/* ==========================================================================
+   2. Feature-specific classes (applied to body)
+   ========================================================================== */
+
+/* High Contrast Mode
+   ========================================================================== */
+body.high-contrast {
+  /* Force dark background and light text */
+  background-color: #000 !important;
+  color: #fff !important;
+}
+
+body.high-contrast h1,
+body.high-contrast h2,
+body.high-contrast h3,
+body.high-contrast h4,
+body.high-contrast h5,
+body.high-contrast h6 {
+  color: #FFFF00 !important; /* Bright yellow for titles */
+  border-bottom: 1px solid #FFFF00;
+  padding-bottom: 0.2em;
+}
+
+body.high-contrast a {
+  color: #FFFF00 !important; /* Bright yellow for links */
+}
+
+/* Override component-specific colors */
+body.high-contrast .glass-card,
+body.high-contrast .glass-card-light {
+    background: #000 !important;
+    border: 2px solid #fff !important;
+    color: #fff !important;
+}
+
+body.high-contrast button,
+body.high-contrast input,
+body.high-contrast select,
+body.high-contrast textarea {
+    background: #000 !important;
+    color: #fff !important;
+    border: 1px solid #fff !important;
+}
+
+body.high-contrast .bg-primary-500,
+body.high-contrast .text-primary-500,
+body.high-contrast .text-primary-400,
+body.high-contrast .text-accent-400,
+body.high-contrast .text-emerald-400,
+body.high-contrast .text-blue-400,
+body.high-contrast .text-rose-500,
+body.high-contrast [class*="text-navy-"],
+body.high-contrast [class*="text-gray-"] {
+    background-color: transparent !important;
+    color: #fff !important;
+}
+
+body.high-contrast svg {
+    color: #fff !important;
+}
+
+body.high-contrast .bg-navy-800,
+body.high-contrast .bg-gray-200 {
+    background-color: #000 !important;
+}
+
+/* Dyslexia-Friendly Font
+   ========================================================================== */
+body.dyslexia-friendly {
+  font-family: 'Lexend', sans-serif !important;
+  letter-spacing: 0.05em; /* Increase letter spacing */
+  word-spacing: 0.1em;   /* Increase word spacing */
+  line-height: 1.6;      /* Increase line height */
+}
+
+
+/* Larger Clickable Elements
+   ========================================================================== */
+body.larger-clicks button,
+body.larger-clicks a,
+body.larger-clicks [role="button"] {
+  min-height: 48px !important;
+  min-width: 48px !important;
+  padding: 0.8rem 1rem !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.larger-clicks .relative.inline-flex {
+    height: 3rem;
+    width: 6rem;
+}
+
+body.larger-clicks .pointer-events-none.inline-block {
+    height: 2.5rem;
+    width: 2.5rem;
+}
+
+body.larger-clicks .translate-x-5 {
+    transform: translateX(3.0rem);
+}
+
+/* Ensure icons inside buttons also scale well */
+body.larger-clicks button svg,
+body.larger-clicks a svg {
+  width: 1.5em;
+  height: 1.5em;
+}
+
+
+/* Custom Range Slider Styles
+   ========================================================================== */
+   
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 0.5rem;
+  border-radius: 0.25rem;
+  background: #4A5568; /* gray-700 */
+  outline: none;
+  opacity: 0.7;
+  transition: opacity .2s;
+  margin-top: 0.5rem; /* Added margin to help with centering */
+}
+
+input[type="range"]:hover {
+  opacity: 1;
+}
+
+/* Thumb (the slider handle) */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%; 
+  background: #F63049; /* primary-500 */
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+  margin-top: -0.5rem; /* Vertically center the thumb */
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: #F63049; /* primary-500 */
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+
+/* Track */
+input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 0.5rem;
+  cursor: pointer;
+  background: #4A5568;
+  border-radius: 0.25rem;
+}
+
+input[type="range"]::-moz-range-track {
+  width: 100%;
+  height: 0.5rem;
+  cursor: pointer;
+  background: #4A5568;
+  border-radius: 0.25rem;
+}
+
+
+
+
+/* Reduced Motion
+   ========================================================================== */
+/* Apply to body to allow global disabling */
+body.reduced-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* We can also respect the user's OS-level preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus Indicators - Ensure they are always visible
+   ========================================================================== */
+*:focus-visible {
+  outline: 3px solid #005fcc !important; /* Bright blue outline */
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px rgba(0, 95, 204, 0.5) !important;
+}
+
+/* Ensure focus is not removed on elements that should have it */
+button:focus,
+a:focus,
+input:focus,
+select:focus,
+textarea:focus,
+[tabindex]:focus {
+  outline: 3px solid #005fcc !important;
+  outline-offset: 2px;
+}

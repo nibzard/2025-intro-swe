@@ -118,3 +118,35 @@ export interface APIKeyCreateRequest {
   api_key: string;
   key_name?: string;
 }
+
+export interface UserBrand {
+  id: number;
+  brand_name: string;
+  is_mine: boolean;
+  created_at: string;
+}
+
+export interface UserIntent {
+  id: number;
+  intent_alias: string;
+  prompt: string;
+  created_at: string;
+}
+
+export interface BrandCreateRequest {
+  brand_name: string;
+  is_mine: boolean;
+}
+
+export interface IntentCreateRequest {
+  intent_alias: string;
+  prompt: string;
+}
+
+export const INTENT_TEMPLATES = [
+  { id: 'pricing-compare', label: 'Pricing Comparison', prompt: 'Compare the pricing models of [MyBrand] vs [Competitor]. Which offers better value for small businesses?' },
+  { id: 'feature-analysis', label: 'Feature Analysis', prompt: 'What are the key feature differences between [MyBrand] and [Competitor]? Highlight unique selling points.' },
+  { id: 'sentiment-check', label: 'Brand Sentiment', prompt: 'What is the general user sentiment towards [MyBrand] in 2024? Mention common praises and complaints.' },
+  { id: 'alternatives', label: 'Best Alternatives', prompt: 'What are the top 3 alternatives to [Competitor] and why should I consider [MyBrand]?' },
+  { id: 'security-review', label: 'Security Review', prompt: 'How does [MyBrand] compare to [Competitor] in terms of security and compliance certifications?' },
+];

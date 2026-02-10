@@ -41,6 +41,25 @@ class UserLogin(BaseModel):
     password: str
 
 
+class UserUpdate(BaseModel):
+    """Schema for updating user profile."""
+    username: str | None = None
+    email: EmailStr | None = None
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        if not v or len(v) < 3:
+            raise ValueError("Username must be at least 3 characters")
+        if len(v) > 50:
+            raise ValueError("Username must be at most 50 characters")
+        if not all(c.isalnum() or c == "_" for c in v):
+            raise ValueError("Username must contain only letters, numbers, and underscores")
+        return v.lower()
+
+
 class Token(BaseModel):
     """Schema for JWT token response."""
 

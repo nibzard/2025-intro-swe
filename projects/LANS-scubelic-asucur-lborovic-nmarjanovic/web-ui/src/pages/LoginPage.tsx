@@ -44,18 +44,23 @@ export default function LoginPage({ theme }: LoginPageProps) {
 
   const glassCardClass = theme === 'dark'
     ? 'glass-card'
-    : 'bg-white/60 backdrop-blur-md border border-gray-200/50 shadow-sm';
+    : 'glass-card-light';
 
   const inputClass = theme === 'dark'
     ? 'input-field'
-    : 'input-field bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-primary-500 focus:border-primary-500';
+    : 'input-field-light';
 
-  const textClass = theme === 'dark' ? 'text-navy-100' : 'text-gray-900';
-  const mutedTextClass = theme === 'dark' ? 'text-navy-400' : 'text-gray-500';
-  const bgClass = theme === 'dark' ? 'bg-navy-950' : 'bg-gray-50';
+  const bgClass = theme === 'dark' ? 'bg-navy-950' : 'bg-slate-50';
+  const textClass = theme === 'dark' ? 'text-navy-100' : 'text-black';
+  const mutedTextClass = theme === 'dark' ? 'text-navy-400' : 'text-slate-500';
 
   return (
-    <div className={`min-h-screen ${bgClass} flex items-center justify-center px-4 py-12`}>
+    <div className={`min-h-screen ${bgClass} flex items-center justify-center p-4 relative overflow-hidden`}>
+      {/* Background gradient for light mode */}
+      {theme === 'light' && (
+        <div className="fixed inset-0 bg-slate-100/50 pointer-events-none -z-10" />
+      )}
+
       <div className={`w-full max-w-md ${glassCardClass} p-8 rounded-2xl`}>
         {/* Back button */}
         <Link
