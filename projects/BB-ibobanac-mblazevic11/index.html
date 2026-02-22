@@ -11,8 +11,12 @@
         <header>
             <h1>📚 Student Planner</h1>
             <p class="subtitle">Organiziraj svoje obveze i ispite - BB Team</p>
+            <button id="theme-toggle" class="theme-toggle" title="Promijeni temu">
+                <span class="theme-icon">🌙</span>
+            </button>
         </header>
 
+        <!-- Mjesečni pregled -->
         <section class="monthly-overview">
             <h2>📅 Mjesečni pregled</h2>
             <p id="current-month"></p>
@@ -36,8 +40,29 @@
             </div>
         </section>
 
+        <!-- Glavni sadržaj -->
         <div class="main-content">
+            <!-- Dodaj obvezu -->
             <section class="add-task-section">
+                <!-- Brzo dodavanje -->
+                <div class="quick-add-section">
+                    <h3>⚡ Brzo dodavanje</h3>
+                    <div class="quick-add-input-group">
+                        <input 
+                            type="text" 
+                            id="quick-add-input" 
+                            placeholder='npr. "Ispit Matematika 15.3."'
+                            autocomplete="off"
+                        >
+                        <button id="quick-add-btn" type="button">+</button>
+                    </div>
+                    <div class="quick-add-hint">
+                        <small>Primjeri: "Ispit Matematika 15.3." • "15.3. Projekt višok" • "Zadaća Fizika 20.3. hitno"</small>
+                    </div>
+                </div>
+
+                <div class="divider">ILI</div>
+
                 <h3>➕ Nova obveza</h3>
                 <form id="task-form">
                     <div class="form-group">
@@ -61,6 +86,7 @@
                 </form>
             </section>
 
+            <!-- Moje obveze -->
             <section class="tasks-section">
                 <h3>📋 Moje obveze</h3>
                 <div class="filter-buttons">
@@ -73,11 +99,39 @@
                     <button class="filter-btn" data-filter="completed">Završene</button>
                 </div>
                 <div class="tasks-list" id="tasks-list">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <p>Nemaš još nijednu obvezu.<br>Dodaj prvu da počneš organizirati svoje obveze!</p>
                     </div>
+                </div>
+            </section>
+
+            <!-- Pomodoro Timer -->
+            <section class="pomodoro-section">
+                <h2>🍅 Pomodoro Timer</h2>
+                <div class="timer-container">
+                    <div class="timer-display" id="timer-display">25:00</div>
+                    <div class="timer-controls">
+                        <button id="start-btn" class="timer-btn start-btn">Start</button>
+                        <button id="pause-btn" class="timer-btn pause-btn">Pauza</button>
+                        <button id="reset-btn" class="timer-btn reset-btn">Reset</button>
+                    </div>
+                    <div class="timer-settings">
+                        <div class="setting-group">
+                            <label for="work-duration">Rad (min):</label>
+                            <input type="number" id="work-duration" value="25" min="1" max="60">
+                        </div>
+                        <div class="setting-group">
+                            <label for="break-duration">Pauza (min):</label>
+                            <input type="number" id="break-duration" value="5" min="1" max="30">
+                        </div>
+                    </div>
+                    <div class="timer-status" id="timer-status">Spreman za rad 💪</div>
+                </div>
             </section>
         </div>
     </div>
-
+    <!-- AI Chatbot Widget -->
     <div class="chat-widget">
         <button id="chat-toggle-btn" class="chat-toggle-btn">
             🤖
@@ -98,7 +152,6 @@
             </div>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module" src="script.js"></script>
 </body>
