@@ -1,15 +1,56 @@
-/* Reset i osnovni stilovi */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+/* ==========================================
+   CSS VARIABLES - LIGHT & DARK THEMES
+   ========================================== */
+:root {
+    /* Light Theme (default) */
+    --bg-gradient-1: #667eea;
+    --bg-gradient-2: #764ba2;
+    --bg-body: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --bg-card: #ffffff;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --text-light: #999999;
+    --border-color: #e0e0e0;
+    --input-bg: #ffffff;
+    --input-border: #e0e0e0;
+    --input-border-focus: #667eea;
+    --task-bg: #f9f9f9;
+    --task-bg-hover: #f0f0f0;
+    --empty-bg: #f9f9f9;
+    --shadow: rgba(0, 0, 0, 0.1);
+}
+
+body[data-theme="dark"] {
+    /* Dark Theme */
+    --bg-gradient-1: #1a1a2e;
+    --bg-gradient-2: #16213e;
+    --bg-body: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    --bg-card: #0f3460;
+    --text-primary: #e8e8e8;
+    --text-secondary: #b8b8b8;
+    --text-light: #888888;
+    --border-color: #1e3a5f;
+    --input-bg: #1a2942;
+    --input-border: #2a4a6f;
+    --input-border-focus: #667eea;
+    --task-bg: #1a2942;
+    --task-bg-hover: #243550;
+    --empty-bg: #1a2942;
+    --shadow: rgba(0, 0, 0, 0.5);
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    background: var(--bg-body);
     min-height: 100vh;
     padding: 20px;
+    transition: background 0.3s ease;
 }
 
 .container {
@@ -17,208 +58,527 @@ body {
     margin: 0 auto;
 }
 
-/* Header */
+/* ==========================================
+   HEADER & THEME TOGGLE
+   ========================================== */
 header {
-    background: white;
+    background: var(--bg-card);
     padding: 30px;
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 5px 15px var(--shadow);
     margin-bottom: 30px;
+    text-align: center;
+    position: relative;
+    transition: all 0.3s ease;
 }
 
-h1 {
-    color: #2563eb;
-    font-size: 2.5em;
-    margin-bottom: 10px;
+header h1 {
+    color: var(--text-primary);
+    font-size: 32px;
+    margin-bottom: 5px;
 }
 
 .subtitle {
-    color: #666;
-    font-size: 1.1em;
+    color: var(--text-secondary);
+    font-size: 16px;
 }
 
-/* Mjesečni pregled */
+/* Theme Toggle Button */
+.theme-toggle {
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 3px 10px var(--shadow);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
+}
+
+.theme-toggle:active {
+    transform: scale(0.95);
+}
+
+/* User Info */
+.user-info {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-info span {
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.logout-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.logout-btn:hover {
+    background: #c0392b;
+}
+
+/* ==========================================
+   MONTHLY OVERVIEW
+   ========================================== */
 .monthly-overview {
-    background: white;
-    padding: 25px;
+    background: var(--bg-card);
+    padding: 30px;
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 5px 15px var(--shadow);
     margin-bottom: 30px;
+    transition: all 0.3s ease;
 }
 
 .monthly-overview h2 {
-    color: #2563eb;
+    color: var(--text-primary);
     margin-bottom: 15px;
-    font-size: 1.8em;
+}
+
+#current-month {
+    color: var(--text-secondary);
+    font-size: 16px;
+    margin-bottom: 20px;
 }
 
 .overview-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-top: 20px;
+    gap: 20px;
 }
 
 .stat-card {
-    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-    color: white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 20px;
     border-radius: 10px;
     text-align: center;
+    color: white;
 }
 
 .stat-number {
-    font-size: 2.5em;
+    font-size: 36px;
     font-weight: bold;
     margin-bottom: 5px;
 }
 
 .stat-label {
-    font-size: 0.9em;
-    opacity: 0.95;
+    font-size: 14px;
+    opacity: 0.9;
 }
 
-/* Glavni sadržaj */
+/* ==========================================
+   POMODORO TIMER
+   ========================================== */
+.pomodoro-section {
+    background: var(--bg-card);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px var(--shadow);
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+}
+
+.pomodoro-section h2 {
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.timer-container {
+    max-width: 400px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.timer-display {
+    font-size: 72px;
+    font-weight: bold;
+    color: var(--text-primary);
+    background: var(--task-bg);
+    padding: 40px;
+    border-radius: 20px;
+    margin-bottom: 25px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 5px;
+    box-shadow: inset 0 2px 10px var(--shadow);
+}
+
+.timer-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.timer-btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    color: white;
+}
+
+.start-btn {
+    background: #27ae60;
+}
+
+.start-btn:hover {
+    background: #229954;
+    transform: translateY(-2px);
+}
+
+.pause-btn {
+    background: #f39c12;
+}
+
+.pause-btn:hover {
+    background: #e67e22;
+    transform: translateY(-2px);
+}
+
+.reset-btn {
+    background: #e74c3c;
+}
+
+.reset-btn:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+}
+
+.timer-settings {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.setting-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.setting-group label {
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.setting-group input {
+    width: 80px;
+    padding: 8px;
+    border: 2px solid var(--input-border);
+    border-radius: 8px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    background: var(--input-bg);
+    color: var(--text-primary);
+}
+
+.setting-group input:focus {
+    outline: none;
+    border-color: var(--input-border-focus);
+}
+
+.timer-status {
+    font-size: 18px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-top: 15px;
+}
+
+/* ==========================================
+   MAIN CONTENT
+   ========================================== */
 .main-content {
     display: grid;
     grid-template-columns: 1fr 2fr;
     gap: 30px;
 }
 
-/* Dodaj obvezu */
+.pomodoro-section {
+    grid-column: 1 / -1; /* Full width - spans both columns */
+}
+
+/* ==========================================
+   ADD TASK SECTION
+   ========================================== */
 .add-task-section {
-    background: white;
+    background: var(--bg-card);
     padding: 25px;
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 5px 15px var(--shadow);
     height: fit-content;
+    transition: all 0.3s ease;
 }
 
-.add-task-section h3 {
-    color: #2563eb;
+/* Quick Add Section */
+.quick-add-section {
     margin-bottom: 20px;
-    font-size: 1.5em;
+    padding-bottom: 20px;
 }
 
-.form-group {
-    margin-bottom: 20px;
+.quick-add-section h3 {
+    color: var(--text-primary);
+    margin-bottom: 15px;
+    font-size: 18px;
 }
 
-label {
-    display: block;
-    margin-bottom: 8px;
-    color: #333;
-    font-weight: 600;
+.quick-add-input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    position: relative;
 }
 
-input, select {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e0e0e0;
+#quick-add-input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 2px dashed var(--input-border);
     border-radius: 8px;
-    font-size: 1em;
-    transition: border-color 0.3s;
+    font-size: 14px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    transition: all 0.3s;
 }
 
-input:focus, select:focus {
+#quick-add-input:focus {
     outline: none;
-    border-color: #2563eb;
+    border-color: #667eea;
+    border-style: solid;
 }
 
-button {
-    width: 100%;
-    padding: 15px;
-    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+#quick-add-btn {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
     color: white;
     border: none;
     border-radius: 8px;
-    font-size: 1.1em;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#quick-add-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 3px 10px rgba(52, 152, 219, 0.4);
+}
+
+.quick-add-hint {
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.4;
+    padding: 8px 12px;
+    background: var(--task-bg);
+    border-radius: 6px;
+    border-left: 3px solid #3498db;
+}
+
+.quick-add-feedback {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #27ae60;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    animation: feedbackSlide 0.3s ease-out;
+}
+
+@keyframes feedbackSlide {
+    from { opacity: 0; top: -30px; }
+    to { opacity: 1; top: -40px; }
+}
+
+/* Divider */
+.divider {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    margin: 20px 0;
+    position: relative;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background: var(--border-color);
+}
+
+.divider::before {
+    left: 0;
+}
+
+.divider::after {
+    right: 0;
+}
+
+.add-task-section h3 {
+    color: var(--text-primary);
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid var(--input-border);
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border 0.3s;
+    background: var(--input-bg);
+    color: var(--text-primary);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--input-border-focus);
+}
+
+#task-form button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s;
 }
 
-button:hover {
+#task-form button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
 }
 
-button:active {
-    transform: translateY(0);
-}
-
-/* Moje obveze */
+/* ==========================================
+   TASKS SECTION
+   ========================================== */
 .tasks-section {
-    background: white;
+    background: var(--bg-card);
     padding: 25px;
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 5px 15px var(--shadow);
+    transition: all 0.3s ease;
 }
 
 .tasks-section h3 {
-    color: #2563eb;
+    color: var(--text-primary);
     margin-bottom: 20px;
-    font-size: 1.5em;
 }
 
-/* Filter tipke */
 .filter-buttons {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 20px;
-    flex-wrap: wrap;
 }
 
 .filter-btn {
-    padding: 10px 20px;
-    background: #f5f5f5;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    padding: 8px 16px;
+    background: var(--task-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 20px;
     cursor: pointer;
+    font-size: 14px;
     transition: all 0.3s;
-    font-size: 0.9em;
-    width: auto;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .filter-btn:hover {
-    background: #e8e8e8;
+    background: var(--task-bg-hover);
 }
 
 .filter-btn.active {
-    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    border-color: #2563eb;
+    border-color: #667eea;
 }
 
-/* Lista obveza u gridu */
+/* ==========================================
+   TASKS LIST
+   ========================================== */
 .tasks-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: 15px;
-    margin-top: 10px;
 }
 
 .task-item {
-    background: #f9f9f9;
-    padding: 15px 20px;
-    border-radius: 12px;
-    border-left: 5px solid #2563eb;
     display: flex;
-    flex-direction: column;
     justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: var(--task-bg);
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
     transition: all 0.3s;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
 .task-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.2);
+    background: var(--task-bg-hover);
+    transform: translateX(5px);
 }
 
 .task-item.completed {
     opacity: 0.6;
-    border-left-color: #4caf50;
+    border-left-color: #95a5a6;
 }
 
 .task-item.completed .task-title {
@@ -226,65 +586,235 @@ button:active {
 }
 
 .task-info {
-    margin-bottom: 10px;
+    flex: 1;
 }
 
 .task-title {
-    font-size: 1.2em;
+    font-size: 16px;
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary);
     margin-bottom: 8px;
 }
 
 .task-meta {
     display: flex;
     gap: 15px;
-    font-size: 0.9em;
-    color: #666;
+    align-items: center;
+}
+
+.task-date {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.task-category {
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.category-ispit {
+    background: #ffe5e5;
+    color: #e74c3c;
+}
+
+.category-projekt {
+    background: #e5f5ff;
+    color: #3498db;
+}
+
+.category-zadaca {
+    background: #e5ffe5;
+    color: #27ae60;
+}
+
+.category-osobno {
+    background: #fff5e5;
+    color: #f39c12;
 }
 
 .task-actions {
     display: flex;
-    justify-content: flex-end;
     gap: 10px;
 }
 
-.task-actions .action-btn {
+.action-btn {
     width: 35px;
     height: 35px;
-    font-size: 1em;
+    border: none;
     border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s;
 }
 
-/* Boje po kategoriji */
-.category-ispit { background: #ffebee; color: #c62828; }
-.category-projekt { background: #e3f2fd; color: #1565c0; }
-.category-zadaca { background: #fff3e0; color: #e65100; }
-.category-osobno { background: #f3e5f5; color: #6a1b9a; }
-
-/* Completed / actions */
-.complete-btn { background: #4caf50; color: white; }
-.complete-btn:hover { background: #45a049; transform: scale(1.1); }
-.delete-btn { background: #f44336; color: white; }
-.delete-btn:hover { background: #da190b; transform: scale(1.1); }
-
-/* Empty state */
-.empty-state { text-align: center; padding: 60px 20px; color: #999; }
-.empty-state-icon { font-size: 4em; margin-bottom: 20px; }
-
-/* Responsivnost */
-@media (max-width: 768px) {
-    .main-content { grid-template-columns: 1fr; }
-    h1 { font-size: 1.8em; }
-    .overview-stats { grid-template-columns: repeat(2, 1fr); }
-    .stat-number { font-size: 2em; }
-    .tasks-list { grid-template-columns: 1fr; }
+.complete-btn {
+    background: #27ae60;
+    color: white;
 }
 
-/* ... (SAV TVOJ POSTOJEĆI KOD OSTAVI IZNAD OVOGA) ... */
+.complete-btn:hover {
+    background: #229954;
+    transform: scale(1.1);
+}
+
+.delete-btn {
+    background: #e74c3c;
+    color: white;
+}
+
+.delete-btn:hover {
+    background: #c0392b;
+    transform: scale(1.1);
+}
 
 /* ==========================================
-   AI CHATBOT STYLES (NOVO)
+   EMPTY STATE
+   ========================================== */
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-light);
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.empty-state p {
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* ==========================================
+   POMODORO TIMER
+   ========================================== */
+.pomodoro-section {
+    background: var(--bg-card);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.pomodoro-section h2 {
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.timer-container {
+    max-width: 400px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.timer-display {
+    font-size: 72px;
+    font-weight: bold;
+    color: var(--text-primary);
+    background: var(--task-bg);
+    padding: 40px;
+    border-radius: 20px;
+    margin-bottom: 25px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 5px;
+    box-shadow: inset 0 2px 10px var(--shadow);
+}
+
+.timer-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.timer-btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    color: white;
+}
+
+.start-btn {
+    background: #27ae60;
+}
+
+.start-btn:hover {
+    background: #229954;
+    transform: translateY(-2px);
+}
+
+.pause-btn {
+    background: #f39c12;
+}
+
+.pause-btn:hover {
+    background: #e67e22;
+    transform: translateY(-2px);
+}
+
+.reset-btn {
+    background: #e74c3c;
+}
+
+.reset-btn:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+}
+
+.timer-settings {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.setting-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.setting-group label {
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.setting-group input {
+    width: 80px;
+    padding: 8px;
+    border: 2px solid var(--input-border);
+    border-radius: 8px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    background: var(--input-bg);
+    color: var(--text-primary);
+}
+
+.setting-group input:focus {
+    outline: none;
+    border-color: var(--input-border-focus);
+}
+
+.timer-status {
+    font-size: 18px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-top: 15px;
+}
+
+/* ==========================================
+   AI CHATBOT STYLES
    ========================================== */
 .chat-widget {
     position: fixed;
@@ -298,7 +828,7 @@ button:active {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #ff4081 0%, #f50057 100%); /* Malo drugačija boja da se ističe */
+    background: linear-gradient(135deg, #ff4081 0%, #f50057 100%);
     color: white;
     font-size: 30px;
     border: none;
@@ -320,13 +850,13 @@ button:active {
     right: 0;
     width: 350px;
     height: 500px;
-    background: white;
+    background: var(--bg-card);
     border-radius: 15px;
     box-shadow: 0 5px 30px rgba(0,0,0,0.2);
-    display: none; /* Sakriveno po defaultu */
+    display: none;
     flex-direction: column;
     overflow: hidden;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-color);
 }
 
 .chat-window.open {
@@ -367,7 +897,7 @@ button:active {
     flex: 1;
     padding: 15px;
     overflow-y: auto;
-    background: #f9f9f9;
+    background: var(--empty-bg);
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -398,8 +928,8 @@ button:active {
 
 .chat-input-area {
     padding: 15px;
-    background: white;
-    border-top: 1px solid #eee;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-color);
     display: flex;
     gap: 10px;
 }
@@ -407,9 +937,11 @@ button:active {
 #chat-input {
     flex: 1;
     padding: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--input-border);
     border-radius: 20px;
     outline: none;
+    background: var(--input-bg);
+    color: var(--text-primary);
 }
 
 #send-msg-btn {
@@ -421,4 +953,84 @@ button:active {
     align-items: center;
     justify-content: center;
     font-size: 1.2em;
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+@media (max-width: 768px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+
+    .overview-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .user-info {
+        position: static;
+        justify-content: center;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .theme-toggle {
+        position: static;
+        margin: 0 auto 15px;
+    }
+
+    header h1 {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .overview-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-buttons {
+        flex-direction: column;
+    }
+
+    .filter-btn {
+        width: 100%;
+    }
+    
+    .chat-window {
+        width: 300px;
+        height: 400px;
+        right: -10px;
+    }
+    
+    .chat-toggle-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+    }
+
+    /* Pomodoro responsive */
+    .timer-display {
+        font-size: 56px;
+        padding: 30px;
+    }
+
+    .timer-controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .timer-btn {
+        width: 100%;
+    }
+
+    .timer-settings {
+        flex-direction: column;
+        gap: 15px;
+    }
 }

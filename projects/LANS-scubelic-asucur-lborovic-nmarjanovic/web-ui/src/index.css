@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./accessibility.css";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @theme {
@@ -45,6 +46,22 @@ body {
   font-family: 'Inter', system-ui, sans-serif;
 }
 
+/* Light mode - "Ceramic & Clay" Theme */
+.light-mode-bg {
+  /* Use a noticeable light gray base to kill the glare */
+  background-color: #F0F2F5;
+  color: #334155; /* Slate-700 instead of black/dark slate */
+}
+
+/* Modern Card: Solid white, subtle shadow, minimal border */
+.glass-card-light {
+  @apply bg-white rounded-2xl;
+  /* Soft, diffuse shadow */
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 1px 3px -1px rgba(0, 0, 0, 0.02);
+  /* Border matches the background slightly to blend edges */
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
 .glass-card {
   @apply bg-navy-900/50 backdrop-blur-xl border border-navy-800/50 rounded-2xl;
 }
@@ -60,14 +77,25 @@ body {
          transition-all duration-200 border border-navy-700 hover:border-navy-600;
 }
 
+/* Softer secondary button for light mode */
+.btn-secondary-light {
+  @apply px-6 py-3 bg-white hover:bg-gray-50 text-slate-700 font-medium rounded-xl
+         transition-all duration-200 border border-gray-200 shadow-sm hover:border-gray-300 hover:shadow;
+}
+
 .btn-ghost {
   @apply px-4 py-2 text-navy-400 hover:text-navy-200 hover:bg-navy-800/50
          font-medium rounded-lg transition-all duration-200;
 }
 
-.btn-danger {
-  @apply px-4 py-2 text-primary-400 hover:text-primary-300 hover:bg-primary-500/10
+.btn-ghost-light {
+  @apply px-4 py-2 text-slate-500 hover:text-slate-900 hover:bg-black/5
          font-medium rounded-lg transition-all duration-200;
+}
+
+.btn-danger {
+  @apply px-4 py-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white
+         font-medium rounded-xl transition-all duration-200 border border-rose-500/20 hover:border-rose-500;
 }
 
 .input-field {
@@ -76,8 +104,19 @@ body {
          focus:ring-2 focus:ring-primary-500/20 transition-all duration-200;
 }
 
+/* "Filled" input style for light mode - softer than outlined */
+.input-field-light {
+  @apply w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl
+         text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white
+         focus:ring-2 focus:ring-primary-500/10 focus:border-primary-200 transition-all duration-200;
+}
+
 .label {
   @apply block text-sm font-medium text-navy-300 mb-2;
+}
+
+.label-light {
+  @apply block text-sm font-semibold text-slate-700 mb-2;
 }
 
 .tag {
@@ -99,6 +138,11 @@ body {
   @apply text-lg font-semibold text-navy-100 flex items-center gap-2;
 }
 
+/* Light mode title override */
+.light-mode-bg .section-title {
+  @apply text-slate-800;
+}
+
 .code-block {
   @apply bg-navy-900 border border-navy-800 rounded-xl p-4 font-mono text-sm
          text-navy-300 overflow-auto whitespace-pre;
@@ -113,16 +157,32 @@ body {
   @apply bg-navy-900;
 }
 
+.light-mode-bg ::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
 ::-webkit-scrollbar-thumb {
   @apply bg-navy-700 rounded-full;
+}
+
+.light-mode-bg ::-webkit-scrollbar-thumb {
+  @apply bg-gray-300;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-navy-600;
 }
 
+.light-mode-bg ::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}
+
 .glow-primary {
   box-shadow: 0 0 40px -10px rgba(246, 48, 73, 0.5);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 40px -10px rgba(16, 185, 129, 0.5);
 }
 
 /* Animated gradient text */
@@ -324,7 +384,7 @@ body {
 
 @keyframes cursor {
   0%, 100% {
-    border-color: #F63049;
+    border-color: currentColor;
   }
   50% {
     border-color: transparent;
@@ -392,4 +452,20 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* Typing animation */
+.animate-typing {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 3px solid var(--cursor-color, currentColor);
+  width: 0;
+  animation: typing 5s steps(20, end) infinite, cursor 1s step-end infinite;
+}
+
+@keyframes typing {
+  0%, 10% { width: 0 }
+  50%, 80% { width: 100% }
+  90%, 100% { width: 0 }
 }

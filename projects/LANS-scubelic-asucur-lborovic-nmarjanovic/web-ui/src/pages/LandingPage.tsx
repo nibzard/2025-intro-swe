@@ -95,12 +95,12 @@ export default function LandingPage({ theme }) {
 
   const glassCardClass = theme === 'dark'
     ? 'glass-card'
-    : 'bg-white/60 backdrop-blur-md border border-gray-200/50 shadow-sm';
+    : 'glass-card-light';
 
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-navy-950 text-white' : 'bg-gray-50 text-gray-800'}`}>
+    <div className={`min-h-screen ${theme === 'dark' ? 'bg-navy-950 text-white' : 'bg-slate-50 text-black'}`}>
       {/* Background effects */}
-      <div className={`fixed inset-0 ${theme === 'dark' ? 'bg-gradient-to-br from-primary-500/5 via-transparent to-accent-500/5' : 'bg-gray-100'} pointer-events-none`} />
+      <div className={`fixed inset-0 ${theme === 'dark' ? 'bg-gradient-to-br from-primary-500/5 via-transparent to-accent-500/5' : 'bg-slate-100/50'} pointer-events-none`} />
       {theme === 'dark' && (
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-radial from-primary-500/10 to-transparent blur-3xl" />
@@ -109,7 +109,7 @@ export default function LandingPage({ theme }) {
       )}
 
       {/* Navigation */}
-      <nav className={`relative border-b ${theme === 'dark' ? 'border-navy-800/50 bg-navy-900/50' : 'border-gray-200/50 bg-white/50'} backdrop-blur-xl`}>
+      <nav className={`relative border-b ${theme === 'dark' ? 'border-navy-800/50 bg-navy-900/50' : 'border-slate-200/60 bg-white/50'} backdrop-blur-xl`}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -123,6 +123,12 @@ export default function LandingPage({ theme }) {
             </div>
 
             <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/faq', { state: { from: 'landing' } })}
+                className={`btn-ghost text-sm ${theme === 'dark' ? 'text-navy-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+              >
+                FAQ
+              </button>
               <a
                 href="https://github.com/nibzard/llm-answer-watcher"
                 target="_blank"
@@ -131,8 +137,14 @@ export default function LandingPage({ theme }) {
               >
                 Documentation
               </a>
-              <button onClick={() => navigate('/app')} className="btn-primary text-sm">
-                Get Started
+              <button
+                onClick={() => navigate('/login')}
+                className={`btn-ghost text-sm ${theme === 'dark' ? 'text-navy-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+              >
+                Login
+              </button>
+              <button onClick={() => navigate('/register')} className="btn-primary text-sm">
+                Sign Up
                 <ArrowRight className="w-4 h-4 ml-2 inline" />
               </button>
             </div>
@@ -169,11 +181,11 @@ export default function LandingPage({ theme }) {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-fade-in-up animation-delay-400" style={{ opacity: 0, animationFillMode: 'forwards' }}>
-            <button onClick={() => navigate('/app')} className="btn-primary text-lg px-8 py-4 animate-pulse-glow hover-lift">
+            <button onClick={() => navigate('/login')} className="btn-primary text-lg px-8 py-4 animate-pulse-glow hover-lift">
               <Zap className="w-5 h-5 mr-2 inline" />
               Start Monitoring Free
             </button>
-            <button onClick={() => navigate('/app?provider=both')} className="btn-secondary text-lg px-8 py-4 hover-lift">
+            <button onClick={() => navigate('/login')} className="btn-secondary text-lg px-8 py-4 hover-lift">
               <Users className="w-5 h-5 mr-2 inline" />
               Try Both
             </button>
@@ -205,6 +217,27 @@ export default function LandingPage({ theme }) {
                 <div className={`text-sm ${theme === 'dark' ? 'text-navy-400' : 'text-gray-500'}`}>{stat.label}</div>
               </div>
             ))}
+          </div>
+
+          {/* Typewriter Animation */}
+          <div className="mt-16 flex justify-center h-12">
+            <div className={`text-2xl md:text-3xl font-mono font-bold ${theme === 'dark' ? 'text-primary-400' : 'text-primary-600'} overflow-hidden border-r-4 border-primary-500 whitespace-nowrap animate-typing`}>
+              Track your brand.
+            </div>
+            <style>{`
+              @keyframes typing {
+                from { width: 0 }
+                to { width: 100% }
+              }
+              @keyframes blink-caret {
+                from, to { border-color: transparent }
+                50% { border-color: ${theme === 'dark' ? '#F63049' : '#F63049'}; }
+              }
+              .animate-typing {
+                animation: typing 2s steps(20, end) forwards, blink-caret .75s step-end infinite;
+                width: 17ch; /* "Track your brand." is 17 chars */
+              }
+            `}</style>
           </div>
         </div>
       </section>
@@ -331,7 +364,7 @@ export default function LandingPage({ theme }) {
                   )
                 )}
               </ul>
-              <button onClick={() => navigate('/app')} className="btn-secondary w-full">
+              <button onClick={() => navigate('/login')} className="btn-secondary w-full">
                 Get Started
               </button>
             </div>
@@ -349,7 +382,7 @@ export default function LandingPage({ theme }) {
               <p className={`text-sm mb-6 ${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'}`}>Managed infrastructure</p>
               <ul className="space-y-3 mb-8">
                 {[
-                  'Everything in Free',
+                  'Everything is free',
                   'Cloud dashboard',
                   'Advanced analytics',
                   'Email alerts',
@@ -429,7 +462,7 @@ export default function LandingPage({ theme }) {
           <p className={`text-xl ${theme === 'dark' ? 'text-navy-400' : 'text-gray-600'} mb-8`}>
             In a world where AI answers questions, the brands that get mentioned win.
           </p>
-          <button onClick={() => navigate('/app')} className="btn-primary text-lg px-10 py-5 animate-pulse-glow hover-lift">
+          <button onClick={() => navigate('/login')} className="btn-primary text-lg px-10 py-5 animate-pulse-glow hover-lift">
             <Zap className="w-5 h-5 mr-2 inline animate-pulse" />
             Get Started Free
             <ArrowRight className="w-5 h-5 ml-2 inline" />
@@ -470,7 +503,12 @@ export default function LandingPage({ theme }) {
               >
                 GitHub
               </a>
-              <a href="#" className={`${theme === 'dark' ? 'text-navy-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors`}>
+              <a
+                href="https://github.com/nibzard/llm-answer-watcher"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${theme === 'dark' ? 'text-navy-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors`}
+              >
                 Documentation
               </a>
             </div>

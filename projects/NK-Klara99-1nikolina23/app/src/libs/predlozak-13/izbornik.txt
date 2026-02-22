@@ -1,0 +1,12 @@
+----------------------------------
+Izbornik
+1 unos u stablo
+ i ispis
+2 traži
+3 briši
+4 unos u graf
+5 pretraga
+
+c crtaj
+0 kraj
+Unesi izbor:

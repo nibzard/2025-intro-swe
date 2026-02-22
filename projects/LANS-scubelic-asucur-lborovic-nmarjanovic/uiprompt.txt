@@ -1,0 +1,56 @@
+Your role is to design and describe a configuration page (initial setup page)
+that guides the user through the entire setup process STEP BY STEP (wizard-style).
+
+The goal of this page is:
+- to allow users with no technical knowledge to complete the full configuration
+- to ensure that no required step can be skipped
+- to clearly show users where they are in the process and what comes next at all times
+
+GENERAL STRUCTURE:
+- The configuration page must be divided into clearly numbered steps (Step 1, Step 2, Step 3, etc.)
+- Display a progress indicator (e.g., progress bar or step list with statuses: completed / active / upcoming)
+- Allow moving to the next step only after all required fields are valid
+- Allow returning to previous steps without losing entered data
+
+FOR EACH STEP, YOU MUST DEFINE:
+1. Step name (clear, simple, no technical jargon)
+2. A short description of the purpose of the step (1–2 sentences)
+3. A precise list of input fields:
+   - field type (text, dropdown, checkbox, radio button, toggle, file upload, etc.)
+   - whether the field is required or optional
+   - placeholder text or example input
+4. Validation rules (what is allowed / what is not)
+5. Tooltip or helper text for complex fields
+6. Default values (if applicable)
+7. Error messages (clear and user-friendly)
+
+USER EXPERIENCE (UX) REQUIREMENTS:
+- Each step must include:
+  - a "Next" button
+  - a "Back" button (except on the first step)
+- Disable the "Next" button until all required fields are valid
+- Display inline validation errors below the fields, not as pop-ups
+- Use human-friendly, encouraging language (e.g., "Let’s start by setting up the basics")
+
+LOGIC AND FLOW:
+- Support conditional steps (e.g., if the user selects option A, additional fields or a new step appear)
+- Automatically save configuration state (auto-save)
+- Provide a "Save & Exit" option
+
+FINAL STEP (SUMMARY & CONFIRMATION):
+- Display a summary of all entered data, grouped by sections
+- Allow clicking "Edit" on each section to jump back to that step
+- Display a "Confirm & Finish" button
+- After confirmation:
+  - show a success screen
+  - explain what happens next (e.g., "Setup is complete. You can now start using the application.")
+
+ADDITIONAL GUIDELINES:
+- Tailor all copy for beginners (avoid technical terminology)
+- Assume this is the user's first time using the system
+- Focus on clarity, simplicity, and strong user guidance
+- Communication tone: professional, friendly, and reassuring
+
+At the end, provide:
+- the complete step sequence
+- a brief explanation of why this step-by-step flow is optimal for the user experience
