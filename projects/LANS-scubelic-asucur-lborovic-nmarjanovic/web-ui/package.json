@@ -13,6 +13,7 @@
     "@tailwindcss/postcss": "^4.1.18",
     "@types/js-yaml": "^4.0.9",
     "js-yaml": "^4.1.1",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.561.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

@@ -469,6 +469,7 @@ async def run_all(
     config: RuntimeConfig,
     progress_callback: Callable[[], None] | None = None,
     config_filename: str | None = None,
+    user_id: int | None = None,
 ) -> dict:
     """
     Execute complete LLM query workflow with parallel execution and return results.
@@ -484,6 +485,8 @@ async def run_all(
         config: Runtime configuration with intents, models, API keys, paths
         progress_callback: Optional callback function to call after each query
             completes (successful or failed). Used by CLI to update progress bar.
+        config_filename: Optional filename of the config file loaded.
+        user_id: Optional ID of the user executing this run (for isolation).
 
     Returns:
         Summary dictionary with structure:
@@ -582,6 +585,7 @@ async def run_all(
                 timestamp_utc=timestamp_utc,
                 total_intents=len(config.intents),
                 total_models=total_execution_units,  # Models + runners
+                user_id=user_id,
             )
             conn.commit()
         logger.debug(f"Inserted run record: run_id={run_id}")
