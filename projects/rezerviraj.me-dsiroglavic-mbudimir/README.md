@@ -2,7 +2,11 @@
 
 **Project:** Rezerviraj.me 
 **Team:** David Siroglavić & Marijan Budimir
-**Status:** In Progress
+**Status:** Finished
+
+https://2025-intro-swe-three.vercel.app/
+https://github.com/davids2510/2025-intro-swe
+
 
 ## 🎯 Project Overview
 
