@@ -1,0 +1,63 @@
+{
+  "expo": {
+    "name": "mobile-app",
+    "slug": "mobile-app",
+    "scheme": "melodia",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Ova aplikacija koristi tvoju lokaciju za pronalaženje bliskih korisnika s sličnim glazbenim ukusima.",
+        "NSLocationAlwaysUsageDescription": "Ova aplikacija koristi tvoju lokaciju za pronalaženje bliskih korisnika s sličnim glazbenim ukusima.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "com.vuksicblago.mobileapp"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": ""
+        }
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-web-browser",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Dozvoli $(PRODUCT_NAME) da koristi tvoju lokaciju za pronalaženje bliskih korisnika s sličnim glazbenim ukusima."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "8962dc33-fc3c-4dbe-9bb2-bf29449f2a8f"
+      }
+    }
+  }
+}
