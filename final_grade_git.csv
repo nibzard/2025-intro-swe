@@ -1,0 +1,52 @@
+Prezime,Ime,Email,Dolasci_lectures,Dolasci_exercises,Dolasci_total,Dolasci_total_pct,Test_score,Control_correct,Test_time,Test_grade,Seminar_grade,Project_grade,github_username,git_status,git_commits,git_activity_grade,Final_grade_numeric_with_git,Final_grade_with_git,final_grade_with_git_delta
+Ćubelić,Stipe,scubelic@pmfst.hr,9.00,5.00,14.00,77.80,24.00,3.00,4:08,5.00,4.00,5.00,Stipe15,Very Active,18.00,10.00,5.00,5.00,0.00
+Sartori,Damjan Josip,dsartori@pmfst.hr,8.00,8.00,16.00,88.90,21.00,3.00,4:17,4.00,5.00,5.00,aeldarian1,Very Active,534.00,10.00,5.00,5.00,0.00
+Boban,Marin,mboban@pmfst.hr,9.00,6.00,15.00,83.30,22.00,2.00,3:50,5.00,5.00,5.00,ma31n,Active,9.00,7.00,4.92,5.00,-0.07
+Mihaljević,Karolina,kmihaljev@pmfst.hr,6.00,7.00,13.00,72.20,23.00,3.00,7:23,4.00,5.00,5.00,Karoll47,Very Active,24.00,10.00,4.91,5.00,0.01
+Šućur,Ante,asucur@pmfst.hr,9.00,6.00,15.00,83.30,23.00,3.00,11:22,4.00,4.00,5.00,Suki122,Very Active,15.00,10.00,4.91,5.00,0.01
+Borović,Luka,lborovic@pmfst.hr,8.00,6.00,14.00,77.80,23.00,3.00,3:26,5.00,4.00,5.00,lucinho17,Low Activity,4.00,4.00,4.85,5.00,-0.15
+Pavić,Jan,jpavic@pmfst.hr,9.00,4.00,13.00,72.20,22.00,2.00,4:59,4.00,5.00,5.00,jpavic,Lead Only - Verify,0.00,2.00,4.71,5.00,-0.20
+Težak,Andrea,atezak@pmfst.hr,8.00,6.00,14.00,77.80,23.00,3.00,6:39,4.00,5.00,5.00,atezak,Lead Only - Verify,0.00,2.00,4.71,5.00,-0.20
+Višić,Tamara,tvisic@pmfst.hr,9.00,7.00,16.00,88.90,18.00,3.00,4:10,3.00,5.00,5.00,tvisic,Very Active,36.00,10.00,4.71,5.00,0.01
+Listeš,Marino,mlistes@pmfst.hr,2.00,8.00,10.00,55.60,21.00,3.00,6:41,4.00,5.00,5.00,marinoL98,Active,5.00,7.00,4.54,5.00,-0.06
+Olujić,Augustin,aolujic@pmfst.hr,8.00,8.00,16.00,88.90,18.00,3.00,7:41,3.00,4.00,5.00,aolujic,Minimal Activity,2.00,2.00,4.42,4.00,-0.18
+Novaković,Jana,jnovakovi@pmfst.hr,9.00,6.00,15.00,83.30,16.00,1.00,7:59,2.00,5.00,5.00,jananovakovic,Active,9.00,7.00,4.36,5.00,-0.04
+Puljić,Iva,ipuljic2@pmfst.hr,9.00,9.00,18.00,100.00,16.00,2.00,6:29,2.00,5.00,5.00,ivapuljic,Active,10.00,7.00,4.36,5.00,-0.04
+Lukić,Gianna,glukic@pmfst.hr,7.00,6.00,13.00,72.20,14.00,2.00,4:22,2.00,5.00,5.00,Gianna,Very Active,26.00,10.00,4.33,4.00,0.04
+Kuzmanić,Nikša,nkuzmanic@pmfst.hr,6.00,6.00,12.00,66.70,17.00,0.00,5:32,2.00,5.00,5.00,Niksa-1,Very Active,15.00,10.00,4.24,4.00,0.04
+Siroglavić,David,dsiroglav@pmfst.hr,8.00,6.00,14.00,77.80,21.00,3.00,6:29,4.00,4.00,4.00,davids2510,Very Active,31.00,10.00,4.24,4.00,0.04
+Peričić,Lana,lpericic@pmfst.hr,6.00,5.00,11.00,61.10,20.00,2.00,7:12,3.00,4.00,5.00,lanapericic810,Minimal Activity,1.00,2.00,4.23,4.00,-0.17
+Marjanović,Nikola,nmarjanov@pmfst.hr,9.00,6.00,15.00,83.30,16.00,2.00,6:57,2.00,4.00,5.00,nxi2005,Low Activity,2.00,4.00,4.18,4.00,-0.12
+Grubić,Karmen,kgrubic@pmfst.hr,8.00,6.00,14.00,77.80,21.00,2.00,6:35,4.00,4.00,4.00,kagela58,Active,12.00,7.00,4.17,4.00,-0.04
+Ćužić,Josip,jcuzic@pmfst.hr,7.00,7.00,14.00,77.80,17.00,3.00,8:19,2.00,4.00,5.00,Zlicone,Low Activity,4.00,4.00,4.09,4.00,-0.11
+Marić Banje,Domina,dmaricban@pmfst.hr,7.00,6.00,13.00,72.20,21.00,3.00,6:41,4.00,5.00,4.00,dmaric,Lead Only - Verify,0.00,0.00,4.08,4.00,-0.21
+Ćurčija,Karlo,kcurcija@pmfst.hr,9.00,4.00,13.00,72.20,17.00,1.00,4:35,3.00,5.00,4.00,notKarlo,Very Active,22.00,10.00,4.05,4.00,0.05
+Majić,Iva,imajic1@pmfst.hr,8.00,6.00,14.00,77.80,18.00,1.00,6:20,3.00,4.00,4.00,maiva667,Very Active,48.00,10.00,3.96,4.00,0.06
+Rogulj,Đana,drogulj1@pmfst.hr,5.00,2.00,7.00,38.90,16.00,3.00,6:06,2.00,5.00,5.00,danrog101,Low Activity,3.00,4.00,3.90,4.00,-0.10
+Tomić,Lucija,ltomic@pmfst.hr,9.00,6.00,15.00,83.30,16.00,0.00,5:24,2.00,5.00,4.00,luceKomits,Very Active,26.00,10.00,3.86,4.00,0.06
+Bajić,Carla,cbajic@pmfst.hr,9.00,7.00,16.00,88.90,15.00,3.00,7:03,2.00,5.00,4.00,carla3791,Very Active,61.00,10.00,3.86,4.00,0.06
+Plazibat,Nikolina,nplazibat@pmfst.hr,10.00,7.00,17.00,94.40,16.00,3.00,6:20,2.00,4.00,4.00,1nikolina23,Very Active,18.00,10.00,3.77,4.00,0.07
+Budimir,Marijan,mbudimir@pmfst.hr,7.00,2.00,9.00,50.00,21.00,3.00,6:14,4.00,4.00,4.00,ferdoperdec23,No Git Activity,0.00,0.00,3.71,4.00,-0.20
+Bendra,Marino,mbendra@pmfst.hr,7.00,8.00,15.00,83.30,17.00,3.00,7:45,2.00,4.00,4.00,marben1512,Active,6.00,7.00,3.69,4.00,-0.01
+Pilić,Katarina,kpilic@pmfst.hr,8.00,5.00,13.00,72.20,15.00,1.00,6:59,2.00,4.00,4.00,makalu28,Very Active,45.00,10.00,3.67,4.00,0.07
+Blažević,Mateo,mblazevi1@pmfst.hr,6.00,5.00,11.00,61.10,20.00,3.00,7:59,3.00,4.00,4.00,mblazevic,No Git Activity,0.00,0.00,3.61,4.00,-0.19
+Grubišić Čabo,Antonio,agrubisic@pmfst.hr,7.00,6.00,13.00,72.20,15.00,2.00,9:01,1.00,5.00,4.00,tonigru,Very Active,24.00,10.00,3.48,4.00,0.08
+Salopek,Emma,esalopek@pmfst.hr,6.00,9.00,15.00,83.30,15.00,2.00,7:35,1.00,4.00,4.00,emmasalopek,Very Active,25.00,10.00,3.48,3.00,0.08
+Čaleta,Domagoj,dcaleta@pmfst.hr,7.00,6.00,13.00,72.20,13.00,1.00,6:10,1.00,5.00,4.00,domocal,Active,12.00,7.00,3.40,3.00,0.01
+Vitaljić,Jere,jvitaljic@pmfst.hr,8.00,6.00,14.00,77.80,13.00,2.00,7:35,1.00,5.00,4.00,JerryBebe,Low Activity,3.00,4.00,3.33,4.00,-0.07
+Bušić,Danijela,dbusic@pmfst.hr,7.00,7.00,14.00,77.80,14.00,2.00,7:37,1.00,4.00,4.00,busicdanijela,Active,6.00,7.00,3.31,3.00,0.01
+Bobanac,Ivan,ibobanac@pmfst.hr,7.00,5.00,12.00,66.70,15.00,1.00,9:26,1.00,4.00,4.00,ivanbobanac,Active,13.00,7.00,3.21,3.00,0.01
+Vidak,Klara Lana,kvidak@pmfst.hr,9.00,3.00,12.00,66.70,15.00,0.00,7:36,1.00,4.00,4.00,Klara99,Active,8.00,7.00,3.21,4.00,0.01
+Barišić,Stipe,sbarisic@pmfst.hr,7.00,5.00,12.00,66.70,13.00,2.00,9:04,1.00,3.00,4.00,stipzard,Very Active,16.00,10.00,3.19,3.00,0.10
+Ćirković,Luka,lcirkovic@pmfst.hr,9.00,6.00,15.00,83.30,12.00,3.00,5:58,1.00,3.00,4.00,cirquaza,No Git Activity,0.00,0.00,3.13,3.00,-0.17
+Đogaš,Mirta,mdogas@pmfst.hr,7.00,5.00,12.00,66.70,8.00,0.00,10:43,1.00,4.00,4.00,Mirtaaa565,Minimal Activity,1.00,2.00,3.09,3.00,-0.11
+Kević,Ela,ekevic@pmfst.hr,6.00,4.00,10.00,55.60,12.00,2.00,6:22,1.00,5.00,4.00,ekevic,No Git Activity,0.00,0.00,2.94,3.00,-0.15
+Begonja,Matea,mbegonja@pmfst.hr,7.00,5.00,12.00,66.70,,,,1.00,4.00,4.00,mbegonja,Minimal Activity,1.00,2.00,3.09,3.00,-0.11
+Češljar,Jakov,jcesljar@pmfst.hr,7.00,4.00,11.00,61.10,,,,3.00,4.00,4.00,jakces,Active,5.00,7.00,3.79,4.00,-0.01
+Dežmalj,Iva,idezmalj@pmfst.hr,7.00,6.00,13.00,72.20,,,,2.00,4.00,4.00,ivadez,Low Activity,2.00,4.00,3.52,4.00,-0.08
+Ević,Marijan,mevic@pmfst.hr,3.00,6.00,9.00,50.00,,,,2.00,5.00,,evian126,Active,10.00,7.00,,,
+Jezidžić,Barbara,bjezidzic@pmfst.hr,8.00,5.00,13.00,72.20,,,,2.00,4.00,4.00,barbjez,Low Activity,4.00,4.00,3.52,3.00,-0.08
+Šušnjar,Ante,asusnjar@pmfst.hr,7.00,5.00,12.00,66.70,,,,2.00,4.00,4.00,AnteSus10,Minimal Activity,1.00,2.00,3.38,3.00,-0.12
+Tavić,Ivan,itavic@pmfst.hr,10.00,8.00,18.00,100.00,,,,3.00,4.00,4.00,itavic371,Active,5.00,7.00,3.98,4.00,-0.03
+Tešić-Dropulić,Luka,ltesicdro@pmfst.hr,9.00,5.00,14.00,77.80,,,,3.00,4.00,4.00,,No Git Activity,0.00,0.00,3.71,4.00,-0.20
+Vukšić,Blago,bvuksic@pmfst.hr,3.00,2.00,5.00,27.80,,,,1.00,,2.00,bvuksicc,Active,14.00,7.00,,2.00,

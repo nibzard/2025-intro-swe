@@ -53,7 +53,7 @@
       "first_name": "Marino",
       "full_name": "Marino Bendra",
       "attendance_time": "14:11:25h",
-      "github_username": null,
+      "github_username": "marben1512",
       "email": null,
       "commits": 0,
       "has_git_activity": false,
@@ -211,7 +211,7 @@
       "first_name": "Jakov",
       "full_name": "Jakov Češljar",
       "attendance_time": "14:09:05h",
-      "github_username": null,
+      "github_username": "jakces",
       "email": null,
       "commits": 0,
       "has_git_activity": false,
@@ -309,7 +309,7 @@
       "first_name": "Iva",
       "full_name": "Iva Dežmalj",
       "attendance_time": "14:09:10h",
-      "github_username": null,
+      "github_username": "ivadez",
       "email": null,
       "commits": 0,
       "has_git_activity": false,
@@ -329,7 +329,7 @@
       "first_name": "Mirta",
       "full_name": "Mirta Đogaš",
       "attendance_time": null,
-      "github_username": "mdogas",
+      "github_username": "Mirtaaa565/dogasmirta2",
       "email": null,
       "commits": 0,
       "has_git_activity": false,
@@ -388,7 +388,7 @@
       "first_name": "Antonio",
       "full_name": "Antonio Grubišić Ćabo",
       "attendance_time": "14:14:40h",
-      "github_username": null,
+      "github_username": "tonigru",
       "email": null,
       "commits": 0,
       "has_git_activity": false,
@@ -645,7 +645,7 @@
       "first_name": "Lana",
       "full_name": "Lana Peričić",
       "attendance_time": null,
-      "github_username": "lpericic",
+      "github_username": "lanapericic810",
       "email": null,
       "commits": 0,
       "has_git_activity": false,
@@ -684,7 +684,7 @@
       "first_name": "Nikolina",
       "full_name": "Nikolina Plazibat",
       "attendance_time": "14:08:55h",
-      "github_username": null,
+      "github_username": "1nikolina23",
       "email": null,
       "commits": 0,
       "has_git_activity": false,
@@ -822,7 +822,7 @@
       "first_name": "Ante",
       "full_name": "Ante Šušnjar",
       "attendance_time": "14:09:10h",
-      "github_username": null,
+      "github_username": "AnteSus10",
       "email": null,
       "commits": 0,
       "has_git_activity": false,
@@ -841,7 +841,7 @@
       "first_name": "Ivan",
       "full_name": "Ivan Tavić",
       "attendance_time": "14:09:05h",
-      "github_username": null,
+      "github_username": "itavic371",
       "email": null,
       "commits": 0,
       "has_git_activity": false,
@@ -898,7 +898,7 @@
       "first_name": "Lucija",
       "full_name": "Lucija Tomić",
       "attendance_time": "14:10:05h",
-      "github_username": "luceKomits",
+      "github_username": "luceKomits/lucijatomic456",
       "email": "lucijatomic456@gmail.com",
       "commits": 3,
       "has_git_activity": true,
@@ -918,7 +918,7 @@
       "first_name": "Klara Lana",
       "full_name": "Klara Lana Vidak",
       "attendance_time": null,
-      "github_username": null,
+      "github_username": "Klara99",
       "email": null,
       "commits": 0,
       "has_git_activity": false,
@@ -977,7 +977,7 @@
       "first_name": "Blago",
       "full_name": "Blago Vukšić",
       "attendance_time": "14:09:20h",
-      "github_username": null,
+      "github_username": "bvuksicc",
       "email": null,
       "commits": 0,
       "has_git_activity": false,
@@ -1015,7 +1015,7 @@
       "first_name": "Matea",
       "full_name": "Matea Begonja",
       "attendance_time": null,
-      "github_username": null,
+      "github_username": "mbegonja",
       "email": null,
       "commits": 0,
       "has_git_activity": false,
@@ -1032,14 +1032,20 @@
   ],
   "teams": {
     "1950": {
-      "members": ["Stipe Barišić", "Luka Ćirković"],
+      "members": [
+        "Stipe Barišić",
+        "Luka Ćirković"
+      ],
       "folder": "1950-stipebarisic-lukacirkovic",
       "lead": "Stipe Barišić",
       "active_members": 1,
       "registration_date": "2025-10-27"
     },
     "404": {
-      "members": ["Andrea Težak", "Tamara Višić"],
+      "members": [
+        "Andrea Težak",
+        "Tamara Višić"
+      ],
       "folder": "404-atezak-tvisic",
       "lead": "Andrea Težak",
       "active_members": 0,
@@ -1047,28 +1053,42 @@
       "notes": "Marijan Ević (Slape team) contributed to this project"
     },
     "7.0": {
-      "members": ["Ivan Tavić", "Ante Šušnjar", "Luka Tešić-Dropulić", "Jakov Češljar"],
+      "members": [
+        "Ivan Tavić",
+        "Ante Šušnjar",
+        "Luka Tešić-Dropulić",
+        "Jakov Češljar"
+      ],
       "folder": null,
       "lead": "Ivan Tavić",
       "active_members": 0,
       "registration_date": "2025-10-27"
     },
     "BB": {
-      "members": ["Ivan Bobanac", "Mateo Blažević"],
+      "members": [
+        "Ivan Bobanac",
+        "Mateo Blažević"
+      ],
       "folder": "BB-ibobanac-mblazevic",
       "lead": "Ivan Bobanac",
       "active_members": 1,
       "registration_date": "2025-10-27"
     },
     "BobanKuzmanic": {
-      "members": ["Nikša Kuzmanić", "Marin Boban"],
+      "members": [
+        "Nikša Kuzmanić",
+        "Marin Boban"
+      ],
       "folder": "BobanKuzmanic-nkuzmanic-mboban",
       "lead": "Nikša Kuzmanić",
       "active_members": 2,
       "registration_date": "2025-10-27"
     },
     "C&G": {
-      "members": ["Carla Bajić", "Gianna Lukić"],
+      "members": [
+        "Carla Bajić",
+        "Gianna Lukić"
+      ],
       "folder": null,
       "lead": null,
       "active_members": 2,
@@ -1076,56 +1096,84 @@
       "notes": "Early team name - Carla went to BookSeeker, Gianna to KSKS"
     },
     "DDA": {
-      "members": ["Domina Marić Banje", "Domagoj Čaleta", "Antonio Grubišić Čabo"],
+      "members": [
+        "Domina Marić Banje",
+        "Domagoj Čaleta",
+        "Antonio Grubišić Čabo"
+      ],
       "folder": "SmartSchedule-dmaric-dcaleta-agrubsic",
       "lead": "Domina Marić Banje",
       "active_members": 1,
       "registration_date": "2025-10-27"
     },
     "EmaDan": {
-      "members": ["Emma Salopek", "Danijela Bušić"],
+      "members": [
+        "Emma Salopek",
+        "Danijela Bušić"
+      ],
       "folder": null,
       "lead": "Emma Salopek",
       "active_members": 2,
       "registration_date": "2025-10-27"
     },
     "Fudbaleri": {
-      "members": ["David Siroglavić", "Marijan Budimir"],
+      "members": [
+        "David Siroglavić",
+        "Marijan Budimir"
+      ],
       "folder": "rezerviraj.me-dsiroglavic-mbudimir",
       "lead": "David Siroglavić",
       "active_members": 1,
       "registration_date": "2025-10-27"
     },
     "IvaIva": {
-      "members": ["Iva Majić", "Iva Dežmalj"],
+      "members": [
+        "Iva Majić",
+        "Iva Dežmalj"
+      ],
       "folder": "cooksy-imajic-idezmalj",
       "lead": "Iva Majić",
       "active_members": 1,
       "registration_date": "2025-10-27"
     },
     "JNIP": {
-      "members": ["Jana Novaković", "Iva Puljić"],
+      "members": [
+        "Jana Novaković",
+        "Iva Puljić"
+      ],
       "folder": "JNIP-jananovakovic-ivapuljic",
       "lead": "Jana Novaković",
       "active_members": 1,
       "registration_date": "2025-10-27"
     },
     "K&M": {
-      "members": ["Katarina Pilić", "Marino Bendra"],
+      "members": [
+        "Katarina Pilić",
+        "Marino Bendra"
+      ],
       "folder": "calorieTracker-kpilic-mbendra",
       "lead": "Katarina Pilić",
       "active_members": 1,
       "registration_date": "2025-10-27"
     },
     "KMB": {
-      "members": ["Karmen Grubić", "Matea Begonja", "Barbara Jezidžić"],
+      "members": [
+        "Karmen Grubić",
+        "Matea Begonja",
+        "Barbara Jezidžić"
+      ],
       "folder": "KMB-kgrubic-mbegonja-bjezidzic",
       "lead": "Karmen Grubić",
       "active_members": 2,
       "registration_date": "2025-10-27"
     },
     "KsKs": {
-      "members": ["Josip Ćužić", "Augustin Olujić", "Lana Peričić", "Mirta Đogaš"],
+      "members": [
+        "Josip Ćužić",
+        "Augustin Olujić",
+        "Lana Peričić",
+        "Mirta Đogaš"
+      ],
       "folder": "KSKS-jcuzic-aolujic-lpericic-mdogas",
       "lead": "Josip Ćužić",
       "active_members": 1,
@@ -1133,35 +1181,53 @@
       "notes": "Gianna Lukić also contributed heavily (10 commits)"
     },
     "LANS": {
-      "members": ["Stipe Ćubelić", "Ante Šućur", "Luka Borović", "Nikola Marjanović"],
+      "members": [
+        "Stipe Ćubelić",
+        "Ante Šućur",
+        "Luka Borović",
+        "Nikola Marjanović"
+      ],
       "folder": "LANS-scubelic-asucur-lborovic-nmarjanovic",
       "lead": "Stipe Ćubelić",
       "active_members": 4,
       "registration_date": "2025-10-27"
     },
     "NK": {
-      "members": ["Klara Lana Vidak", "Nikolina Plazibat"],
+      "members": [
+        "Klara Lana Vidak",
+        "Nikolina Plazibat"
+      ],
       "folder": null,
       "lead": "Klara Lana Vidak",
       "active_members": 0,
       "registration_date": "2025-10-27"
     },
     "Paradižot": {
-      "members": ["Karlo Ćurčija", "Ela Kević", "Lucija Tomić", "Jere Vitaljić"],
+      "members": [
+        "Karlo Ćurčija",
+        "Ela Kević",
+        "Lucija Tomić",
+        "Jere Vitaljić"
+      ],
       "folder": "paradizot-kcurcija-ekevic-ltomic-jvitaljic",
       "lead": "Karlo Ćurčija",
       "active_members": 3,
       "registration_date": "2025-10-27"
     },
     "RM": {
-      "members": ["Karolina Mihaljević", "Đana Rogulj"],
+      "members": [
+        "Karolina Mihaljević",
+        "Đana Rogulj"
+      ],
       "folder": "povezivanje-timova-Rogulj-Mihaljevic",
       "lead": "Karolina Mihaljević",
       "active_members": 2,
       "registration_date": "2025-11-03"
     },
     "Slape": {
-      "members": ["Marijan Ević"],
+      "members": [
+        "Marijan Ević"
+      ],
       "folder": null,
       "lead": "Marijan Ević",
       "active_members": 1,
@@ -1169,7 +1235,11 @@
       "notes": "Marijan Ević contributed to 404 project"
     },
     "Tri Kostura": {
-      "members": ["Jan Pavić", "Marino Listeš", "Damjan Josip Sartori"],
+      "members": [
+        "Jan Pavić",
+        "Marino Listeš",
+        "Damjan Josip Sartori"
+      ],
       "folder": "trikostura-jpavic-mlistes-djsartori",
       "lead": "Jan Pavić",
       "active_members": 2,
@@ -1187,7 +1257,12 @@
     "students_with_lab01": 5,
     "students_with_lab03": 23,
     "project_leads_without_commits": 5,
-    "inactive_teams": ["7.0", "NK", "404", "C&G"]
+    "inactive_teams": [
+      "7.0",
+      "NK",
+      "404",
+      "C&G"
+    ]
   },
   "notes": [
     "This roster combines official attendance data with team registration (Oct 27, 2025)",
